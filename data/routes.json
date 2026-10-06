@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "transport_cost_unit": "synthetic_cost_points",
+  "routes": [
+    {"source": "bank_a", "destination": "hospital_1", "travel_time_minutes": 18, "distance_km": 7.2, "transport_cost": 4.5, "status": "available"},
+    {"source": "bank_a", "destination": "hospital_2", "travel_time_minutes": 31, "distance_km": 13.4, "transport_cost": 7.0, "status": "available"},
+    {"source": "bank_a", "destination": "hospital_3", "travel_time_minutes": 25, "distance_km": 10.1, "transport_cost": 5.8, "status": "available"},
+    {"source": "bank_b", "destination": "hospital_1", "travel_time_minutes": 29, "distance_km": 12.0, "transport_cost": 6.4, "status": "available"},
+    {"source": "bank_b", "destination": "hospital_2", "travel_time_minutes": 16, "distance_km": 6.5, "transport_cost": 4.0, "status": "available"},
+    {"source": "bank_b", "destination": "hospital_3", "travel_time_minutes": 34, "distance_km": 15.8, "transport_cost": 8.1, "status": "available"},
+    {"source": "bank_c", "destination": "hospital_1", "travel_time_minutes": 27, "distance_km": 11.3, "transport_cost": 6.0, "status": "available"},
+    {"source": "bank_c", "destination": "hospital_2", "travel_time_minutes": 42, "distance_km": 20.6, "transport_cost": 9.7, "status": "blocked"},
+    {"source": "bank_c", "destination": "hospital_3", "travel_time_minutes": 19, "distance_km": 8.0, "transport_cost": 4.8, "status": "available"}
+  ]
+}

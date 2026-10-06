@@ -1,0 +1,4 @@
+# Runtime packages are shared with production; this file adds the API test client.
+-r requirements-prod.txt
+# Starlette's current TestClient integrates with httpx2.
+httpx2>=2.13,<3

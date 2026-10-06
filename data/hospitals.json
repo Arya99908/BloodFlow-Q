@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "blood_groups": ["O", "A", "B", "AB"],
+  "hospitals": [
+    {
+      "id": "hospital_1",
+      "name": "Hospital 1",
+      "location_id": "LOC_HOSPITAL_1",
+      "demand": [
+        {"blood_group": "O", "units": 4, "urgency": "high", "priority_weight": 3.0},
+        {"blood_group": "A", "units": 6, "urgency": "medium", "priority_weight": 2.0},
+        {"blood_group": "B", "units": 2, "urgency": "low", "priority_weight": 1.0},
+        {"blood_group": "AB", "units": 1, "urgency": "medium", "priority_weight": 2.0}
+      ]
+    },
+    {
+      "id": "hospital_2",
+      "name": "Hospital 2",
+      "location_id": "LOC_HOSPITAL_2",
+      "demand": [
+        {"blood_group": "O", "units": 3, "urgency": "medium", "priority_weight": 2.0},
+        {"blood_group": "A", "units": 4, "urgency": "high", "priority_weight": 3.0},
+        {"blood_group": "B", "units": 5, "urgency": "medium", "priority_weight": 2.0},
+        {"blood_group": "AB", "units": 2, "urgency": "low", "priority_weight": 1.0}
+      ]
+    },
+    {
+      "id": "hospital_3",
+      "name": "Hospital 3",
+      "location_id": "LOC_HOSPITAL_3",
+      "demand": [
+        {"blood_group": "O", "units": 2, "urgency": "low", "priority_weight": 1.0},
+        {"blood_group": "A", "units": 2, "urgency": "medium", "priority_weight": 2.0},
+        {"blood_group": "B", "units": 3, "urgency": "high", "priority_weight": 3.0},
+        {"blood_group": "AB", "units": 4, "urgency": "medium", "priority_weight": 2.0}
+      ]
+    }
+  ]
+}

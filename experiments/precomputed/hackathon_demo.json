@@ -1,0 +1,898 @@
+{
+  "created_at_utc": "2026-10-06T19:04:25.363809+00:00",
+  "label": "PRECOMPUTED EXPERIMENT",
+  "record_type": "bloodflow_precomputed_demo",
+  "reproducibility": {
+    "command": "python3 -m experiments.create_precomputed_demo",
+    "note": "Each result is the unmodified response from the local FastAPI demo endpoint. QAOA rows were executed on the configured local simulator during capture. Timings describe that capture environment and are not live performance claims.",
+    "objective_weights": {
+      "critical_unmet_weight": 10.0,
+      "secondary_penalty_weight": 0.0,
+      "total_unmet_weight": 5.0,
+      "transportation_cost_weight": 1.0,
+      "transportation_time_weight": 0.1
+    },
+    "packages": {
+      "fastapi": "0.142.2",
+      "httpx": "0.28.1",
+      "numpy": "2.5.3",
+      "qiskit": "2.5.2",
+      "qiskit-aer": "0.17.2",
+      "scipy": "1.18.1"
+    },
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+    "qaoa_configuration": {
+      "max_iterations": 10,
+      "optimizer": "COBYLA",
+      "p": 1,
+      "seed": 7,
+      "shots": 256
+    },
+    "qubo_penalty_weights": {
+      "demand_penalty_weight": 10000.0,
+      "inventory_penalty_weight": 10000.0
+    },
+    "source_files_sha256": {
+      "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+      "backend/dependencies.py": "90b465b5646c7d024aa50fd6425acc1323976faff15acd6ea66d1367d68f6071",
+      "backend/main.py": "f9d351ca30a52830fc70ece0cb13b28c8e569629361e0e38beb8b28212bb77b5",
+      "backend/routes/demo.py": "fae831f0fa6407186b9c67e1a8692b76e60e63a91e9aaaaba8f220c28030abd4",
+      "backend/scenario_factory.py": "efd381509b5fc28a91db99379f3a2873ca97f4e463c5fab5936b6b48a09f8416",
+      "backend/schemas.py": "75e91eb7e792e7b4777fdd011e045de8b647fd889c87e24e527464050662eb3e",
+      "backend/services.py": "3fc856bf65b2e2ad78bc7ab4e44a025b3c12d722e4d59de064e819f7882f4e1a",
+      "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+      "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2",
+      "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+      "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+      "emergency/reoptimization.py": "6f9e5a7ab2d674d9a209de4e7f83933f9a66d2d0eb16b53aa01bb9eedf48178e",
+      "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+      "experiments/create_precomputed_demo.py": "b414b470e11df5bea51f0b1a7f616d1eeee0fddeb4f3fd80888639b3c117cfd2",
+      "optimization/benchmark.py": "cd9eed362ddca095316957f8bc06dab5f0068260eb04770106b1fb7647940191",
+      "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+      "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+      "optimization/exact.py": "618e1b239009fa56cc4dff4b6cec26ba8413a66e568a4ca649fb1926cc08cf2c",
+      "optimization/greedy.py": "30a581ec3e74251e006ab1356337b8fb2410cec60fdcef1f2f7450f38c8d6ca9",
+      "optimization/models.py": "e9cbd2320f13b0e846e20cbbd560893a20275f84e7a423a782b8a9665358a2aa",
+      "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+      "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+      "quantum/qaoa_solver.py": "ebf63f0013e9b011ef48d6ff0106498e87e2f22f290c12b9a05f037e9ccb08d2",
+      "quantum/qubo.py": "240f9d1a8ddc2f08bca03cf9aa80d945797af56b72f64a04971c5d08e236bbc5",
+      "requirements.txt": "2b63d25fd16bf5dfde850b2ec59d778df39cd6956007b95bed998bc886b10d70"
+    }
+  },
+  "runs": [
+    {
+      "configuration": {
+        "exact_max_candidate_states": 50000,
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "penalty_weights": null,
+        "qaoa": null
+      },
+      "method": "greedy",
+      "reproducibility": {
+        "command": "python3 -m experiments.create_precomputed_demo",
+        "note": "Each result is the unmodified response from the local FastAPI demo endpoint. QAOA rows were executed on the configured local simulator during capture. Timings describe that capture environment and are not live performance claims.",
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "packages": {
+          "fastapi": "0.142.2",
+          "httpx": "0.28.1",
+          "numpy": "2.5.3",
+          "qiskit": "2.5.2",
+          "qiskit-aer": "0.17.2",
+          "scipy": "1.18.1"
+        },
+        "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+        "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+        "qaoa_configuration": {
+          "max_iterations": 10,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        },
+        "qubo_penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "source_files_sha256": {
+          "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+          "backend/dependencies.py": "90b465b5646c7d024aa50fd6425acc1323976faff15acd6ea66d1367d68f6071",
+          "backend/main.py": "f9d351ca30a52830fc70ece0cb13b28c8e569629361e0e38beb8b28212bb77b5",
+          "backend/routes/demo.py": "fae831f0fa6407186b9c67e1a8692b76e60e63a91e9aaaaba8f220c28030abd4",
+          "backend/scenario_factory.py": "efd381509b5fc28a91db99379f3a2873ca97f4e463c5fab5936b6b48a09f8416",
+          "backend/schemas.py": "75e91eb7e792e7b4777fdd011e045de8b647fd889c87e24e527464050662eb3e",
+          "backend/services.py": "3fc856bf65b2e2ad78bc7ab4e44a025b3c12d722e4d59de064e819f7882f4e1a",
+          "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+          "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2",
+          "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+          "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+          "emergency/reoptimization.py": "6f9e5a7ab2d674d9a209de4e7f83933f9a66d2d0eb16b53aa01bb9eedf48178e",
+          "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+          "experiments/create_precomputed_demo.py": "b414b470e11df5bea51f0b1a7f616d1eeee0fddeb4f3fd80888639b3c117cfd2",
+          "optimization/benchmark.py": "cd9eed362ddca095316957f8bc06dab5f0068260eb04770106b1fb7647940191",
+          "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+          "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+          "optimization/exact.py": "618e1b239009fa56cc4dff4b6cec26ba8413a66e568a4ca649fb1926cc08cf2c",
+          "optimization/greedy.py": "30a581ec3e74251e006ab1356337b8fb2410cec60fdcef1f2f7450f38c8d6ca9",
+          "optimization/models.py": "e9cbd2320f13b0e846e20cbbd560893a20275f84e7a423a782b8a9665358a2aa",
+          "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+          "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+          "quantum/qaoa_solver.py": "ebf63f0013e9b011ef48d6ff0106498e87e2f22f290c12b9a05f037e9ccb08d2",
+          "quantum/qubo.py": "240f9d1a8ddc2f08bca03cf9aa80d945797af56b72f64a04971c5d08e236bbc5",
+          "requirements.txt": "2b63d25fd16bf5dfde850b2ec59d778df39cd6956007b95bed998bc886b10d70"
+        }
+      },
+      "result": {
+        "experiment_configuration": {
+          "exact_max_candidate_states": 50000,
+          "objective_weights": {
+            "critical_unmet_weight": 10.0,
+            "secondary_penalty_weight": 0.0,
+            "total_unmet_weight": 5.0,
+            "transportation_cost_weight": 1.0,
+            "transportation_time_weight": 0.1
+          },
+          "penalty_weights": null,
+          "qaoa": null
+        },
+        "method": "greedy",
+        "result": {
+          "allocation": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity": 4,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "average_transport_time": 18.0,
+          "critical_satisfaction": {
+            "rate": 1.0,
+            "satisfied_units": 4,
+            "total_units": 4
+          },
+          "feasibility": true,
+          "method": "greedy",
+          "objective_basis": null,
+          "objective_breakdown": {
+            "critical_unmet_penalty": 0.0,
+            "critical_unmet_units": 0,
+            "priority_weighted_critical_unmet": 0.0,
+            "secondary_penalties": {},
+            "secondary_penalty_cost": 0.0,
+            "secondary_penalty_total": 0,
+            "total_objective": 25.2,
+            "total_unmet_penalty": 0.0,
+            "total_unmet_units": 0,
+            "transportation_cost": 18.0,
+            "transportation_cost_penalty": 18.0,
+            "transportation_time": 72.0,
+            "transportation_time_penalty": 7.2,
+            "unmet_by_hospital_and_group": [
+              {
+                "blood_group": "O",
+                "hospital_id": "hospital_1",
+                "units": 0
+              }
+            ]
+          },
+          "scenario_id": "demo_normal",
+          "status": "completed",
+          "total_objective": 25.2,
+          "total_unmet_demand": 0,
+          "transport_cost": 18.0,
+          "unmet_demand": [
+            {
+              "blood_group": "O",
+              "hospital_id": "hospital_1",
+              "units": 0
+            }
+          ],
+          "violations": []
+        },
+        "scenario_id": "normal"
+      },
+      "run_id": "normal-greedy",
+      "scenario_id": "normal",
+      "timestamp_utc": "2026-10-06T19:04:23.917686+00:00"
+    },
+    {
+      "configuration": {
+        "exact_max_candidate_states": 50000,
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "penalty_weights": null,
+        "qaoa": null
+      },
+      "method": "exact",
+      "reproducibility": {
+        "command": "python3 -m experiments.create_precomputed_demo",
+        "note": "Each result is the unmodified response from the local FastAPI demo endpoint. QAOA rows were executed on the configured local simulator during capture. Timings describe that capture environment and are not live performance claims.",
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "packages": {
+          "fastapi": "0.142.2",
+          "httpx": "0.28.1",
+          "numpy": "2.5.3",
+          "qiskit": "2.5.2",
+          "qiskit-aer": "0.17.2",
+          "scipy": "1.18.1"
+        },
+        "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+        "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+        "qaoa_configuration": {
+          "max_iterations": 10,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        },
+        "qubo_penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "source_files_sha256": {
+          "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+          "backend/dependencies.py": "90b465b5646c7d024aa50fd6425acc1323976faff15acd6ea66d1367d68f6071",
+          "backend/main.py": "f9d351ca30a52830fc70ece0cb13b28c8e569629361e0e38beb8b28212bb77b5",
+          "backend/routes/demo.py": "fae831f0fa6407186b9c67e1a8692b76e60e63a91e9aaaaba8f220c28030abd4",
+          "backend/scenario_factory.py": "efd381509b5fc28a91db99379f3a2873ca97f4e463c5fab5936b6b48a09f8416",
+          "backend/schemas.py": "75e91eb7e792e7b4777fdd011e045de8b647fd889c87e24e527464050662eb3e",
+          "backend/services.py": "3fc856bf65b2e2ad78bc7ab4e44a025b3c12d722e4d59de064e819f7882f4e1a",
+          "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+          "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2",
+          "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+          "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+          "emergency/reoptimization.py": "6f9e5a7ab2d674d9a209de4e7f83933f9a66d2d0eb16b53aa01bb9eedf48178e",
+          "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+          "experiments/create_precomputed_demo.py": "b414b470e11df5bea51f0b1a7f616d1eeee0fddeb4f3fd80888639b3c117cfd2",
+          "optimization/benchmark.py": "cd9eed362ddca095316957f8bc06dab5f0068260eb04770106b1fb7647940191",
+          "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+          "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+          "optimization/exact.py": "618e1b239009fa56cc4dff4b6cec26ba8413a66e568a4ca649fb1926cc08cf2c",
+          "optimization/greedy.py": "30a581ec3e74251e006ab1356337b8fb2410cec60fdcef1f2f7450f38c8d6ca9",
+          "optimization/models.py": "e9cbd2320f13b0e846e20cbbd560893a20275f84e7a423a782b8a9665358a2aa",
+          "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+          "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+          "quantum/qaoa_solver.py": "ebf63f0013e9b011ef48d6ff0106498e87e2f22f290c12b9a05f037e9ccb08d2",
+          "quantum/qubo.py": "240f9d1a8ddc2f08bca03cf9aa80d945797af56b72f64a04971c5d08e236bbc5",
+          "requirements.txt": "2b63d25fd16bf5dfde850b2ec59d778df39cd6956007b95bed998bc886b10d70"
+        }
+      },
+      "result": {
+        "experiment_configuration": {
+          "exact_max_candidate_states": 50000,
+          "objective_weights": {
+            "critical_unmet_weight": 10.0,
+            "secondary_penalty_weight": 0.0,
+            "total_unmet_weight": 5.0,
+            "transportation_cost_weight": 1.0,
+            "transportation_time_weight": 0.1
+          },
+          "penalty_weights": null,
+          "qaoa": null
+        },
+        "method": "exact",
+        "result": {
+          "allocation": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity": 4,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "average_transport_time": 18.0,
+          "critical_satisfaction": {
+            "rate": 1.0,
+            "satisfied_units": 4,
+            "total_units": 4
+          },
+          "feasibility": true,
+          "method": "exact",
+          "objective_basis": null,
+          "objective_breakdown": {
+            "critical_unmet_penalty": 0.0,
+            "critical_unmet_units": 0,
+            "priority_weighted_critical_unmet": 0.0,
+            "secondary_penalties": {},
+            "secondary_penalty_cost": 0.0,
+            "secondary_penalty_total": 0,
+            "total_objective": 25.2,
+            "total_unmet_penalty": 0.0,
+            "total_unmet_units": 0,
+            "transportation_cost": 18.0,
+            "transportation_cost_penalty": 18.0,
+            "transportation_time": 72.0,
+            "transportation_time_penalty": 7.2,
+            "unmet_by_hospital_and_group": [
+              {
+                "blood_group": "O",
+                "hospital_id": "hospital_1",
+                "units": 0
+              }
+            ]
+          },
+          "scenario_id": "demo_normal",
+          "status": "completed",
+          "total_objective": 25.2,
+          "total_unmet_demand": 0,
+          "transport_cost": 18.0,
+          "unmet_demand": [
+            {
+              "blood_group": "O",
+              "hospital_id": "hospital_1",
+              "units": 0
+            }
+          ],
+          "violations": []
+        },
+        "scenario_id": "normal"
+      },
+      "run_id": "normal-exact",
+      "scenario_id": "normal",
+      "timestamp_utc": "2026-10-06T19:04:23.940614+00:00"
+    },
+    {
+      "configuration": {
+        "exact_max_candidate_states": 50000,
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "qaoa": {
+          "max_iterations": 10,
+          "max_qubits": 16,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        }
+      },
+      "method": "qaoa",
+      "reproducibility": {
+        "command": "python3 -m experiments.create_precomputed_demo",
+        "note": "Each result is the unmodified response from the local FastAPI demo endpoint. QAOA rows were executed on the configured local simulator during capture. Timings describe that capture environment and are not live performance claims.",
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "packages": {
+          "fastapi": "0.142.2",
+          "httpx": "0.28.1",
+          "numpy": "2.5.3",
+          "qiskit": "2.5.2",
+          "qiskit-aer": "0.17.2",
+          "scipy": "1.18.1"
+        },
+        "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+        "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+        "qaoa_configuration": {
+          "max_iterations": 10,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        },
+        "qubo_penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "source_files_sha256": {
+          "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+          "backend/dependencies.py": "90b465b5646c7d024aa50fd6425acc1323976faff15acd6ea66d1367d68f6071",
+          "backend/main.py": "f9d351ca30a52830fc70ece0cb13b28c8e569629361e0e38beb8b28212bb77b5",
+          "backend/routes/demo.py": "fae831f0fa6407186b9c67e1a8692b76e60e63a91e9aaaaba8f220c28030abd4",
+          "backend/scenario_factory.py": "efd381509b5fc28a91db99379f3a2873ca97f4e463c5fab5936b6b48a09f8416",
+          "backend/schemas.py": "75e91eb7e792e7b4777fdd011e045de8b647fd889c87e24e527464050662eb3e",
+          "backend/services.py": "3fc856bf65b2e2ad78bc7ab4e44a025b3c12d722e4d59de064e819f7882f4e1a",
+          "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+          "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2",
+          "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+          "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+          "emergency/reoptimization.py": "6f9e5a7ab2d674d9a209de4e7f83933f9a66d2d0eb16b53aa01bb9eedf48178e",
+          "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+          "experiments/create_precomputed_demo.py": "b414b470e11df5bea51f0b1a7f616d1eeee0fddeb4f3fd80888639b3c117cfd2",
+          "optimization/benchmark.py": "cd9eed362ddca095316957f8bc06dab5f0068260eb04770106b1fb7647940191",
+          "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+          "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+          "optimization/exact.py": "618e1b239009fa56cc4dff4b6cec26ba8413a66e568a4ca649fb1926cc08cf2c",
+          "optimization/greedy.py": "30a581ec3e74251e006ab1356337b8fb2410cec60fdcef1f2f7450f38c8d6ca9",
+          "optimization/models.py": "e9cbd2320f13b0e846e20cbbd560893a20275f84e7a423a782b8a9665358a2aa",
+          "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+          "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+          "quantum/qaoa_solver.py": "ebf63f0013e9b011ef48d6ff0106498e87e2f22f290c12b9a05f037e9ccb08d2",
+          "quantum/qubo.py": "240f9d1a8ddc2f08bca03cf9aa80d945797af56b72f64a04971c5d08e236bbc5",
+          "requirements.txt": "2b63d25fd16bf5dfde850b2ec59d778df39cd6956007b95bed998bc886b10d70"
+        }
+      },
+      "result": {
+        "experiment_configuration": {
+          "exact_max_candidate_states": 50000,
+          "objective_weights": {
+            "critical_unmet_weight": 10.0,
+            "secondary_penalty_weight": 0.0,
+            "total_unmet_weight": 5.0,
+            "transportation_cost_weight": 1.0,
+            "transportation_time_weight": 0.1
+          },
+          "penalty_weights": {
+            "demand_penalty_weight": 10000.0,
+            "inventory_penalty_weight": 10000.0
+          },
+          "qaoa": {
+            "max_iterations": 10,
+            "max_qubits": 16,
+            "optimizer": "COBYLA",
+            "p": 1,
+            "seed": 7,
+            "shots": 256
+          }
+        },
+        "method": "qaoa",
+        "result": {
+          "allocation": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity": 2,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "average_transport_time": 18.0,
+          "best_measured_bitstring": "1101101101",
+          "critical_satisfaction": {
+            "rate": 0.5,
+            "satisfied_units": 2,
+            "total_units": 4
+          },
+          "experiment_configuration": {
+            "objective_weights": {
+              "critical_unmet_weight": 10.0,
+              "secondary_penalty_weight": 0.0,
+              "total_unmet_weight": 5.0,
+              "transportation_cost_weight": 1.0,
+              "transportation_time_weight": 0.1
+            },
+            "penalty_weights": {
+              "demand_penalty_weight": 10000.0,
+              "inventory_penalty_weight": 10000.0
+            },
+            "qaoa": {
+              "max_iterations": 10,
+              "optimizer": "COBYLA",
+              "p": 1,
+              "seed": 7,
+              "shots": 256
+            }
+          },
+          "feasibility": true,
+          "method": "qaoa",
+          "objective_basis": "classical objective calculator on feasible allocation",
+          "objective_breakdown": {
+            "critical_unmet_penalty": 60.0,
+            "critical_unmet_units": 2,
+            "priority_weighted_critical_unmet": 6.0,
+            "secondary_penalties": {},
+            "secondary_penalty_cost": 0.0,
+            "secondary_penalty_total": 0,
+            "total_objective": 82.6,
+            "total_unmet_penalty": 10.0,
+            "total_unmet_units": 2,
+            "transportation_cost": 9.0,
+            "transportation_cost_penalty": 9.0,
+            "transportation_time": 36.0,
+            "transportation_time_penalty": 3.6,
+            "unmet_by_hospital_and_group": [
+              {
+                "blood_group": "O",
+                "hospital_id": "hospital_1",
+                "units": 2
+              }
+            ]
+          },
+          "optimizer_information": {
+            "final_expected_energy": 232351.04908530958,
+            "final_parameters": [
+              4.927590651355011,
+              2.818680285825393
+            ],
+            "function_evaluations": 10,
+            "initial_parameters": [
+              3.927590651355011,
+              2.818680285825393
+            ],
+            "iterations": 0,
+            "message": "Return from COBYLA because the objective function has been evaluated MAXFUN times.",
+            "name": "COBYLA",
+            "success": false
+          },
+          "qaoa_depth": 1,
+          "qubo_variable_count": 10,
+          "scenario_id": "demo_normal",
+          "shots": 256,
+          "status": "completed",
+          "total_objective": 82.6,
+          "total_unmet_demand": 2,
+          "transport_cost": 9.0,
+          "unmet_demand": [
+            {
+              "blood_group": "O",
+              "hospital_id": "hospital_1",
+              "units": 2
+            }
+          ],
+          "violations": []
+        },
+        "scenario_id": "normal"
+      },
+      "run_id": "normal-qaoa",
+      "scenario_id": "normal",
+      "timestamp_utc": "2026-10-06T19:04:23.942521+00:00"
+    },
+    {
+      "configuration": {
+        "exact_max_candidate_states": 50000,
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "qaoa": {
+          "max_iterations": 10,
+          "max_qubits": 16,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        }
+      },
+      "method": "qaoa",
+      "reproducibility": {
+        "command": "python3 -m experiments.create_precomputed_demo",
+        "note": "Each result is the unmodified response from the local FastAPI demo endpoint. QAOA rows were executed on the configured local simulator during capture. Timings describe that capture environment and are not live performance claims.",
+        "objective_weights": {
+          "critical_unmet_weight": 10.0,
+          "secondary_penalty_weight": 0.0,
+          "total_unmet_weight": 5.0,
+          "transportation_cost_weight": 1.0,
+          "transportation_time_weight": 0.1
+        },
+        "packages": {
+          "fastapi": "0.142.2",
+          "httpx": "0.28.1",
+          "numpy": "2.5.3",
+          "qiskit": "2.5.2",
+          "qiskit-aer": "0.17.2",
+          "scipy": "1.18.1"
+        },
+        "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+        "python_version": "3.14.7 (main, Aug  5 2026, 10:29:49) [Clang 21.0.0 (clang-2100.1.1.101)]",
+        "qaoa_configuration": {
+          "max_iterations": 10,
+          "optimizer": "COBYLA",
+          "p": 1,
+          "seed": 7,
+          "shots": 256
+        },
+        "qubo_penalty_weights": {
+          "demand_penalty_weight": 10000.0,
+          "inventory_penalty_weight": 10000.0
+        },
+        "source_files_sha256": {
+          "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+          "backend/dependencies.py": "90b465b5646c7d024aa50fd6425acc1323976faff15acd6ea66d1367d68f6071",
+          "backend/main.py": "f9d351ca30a52830fc70ece0cb13b28c8e569629361e0e38beb8b28212bb77b5",
+          "backend/routes/demo.py": "fae831f0fa6407186b9c67e1a8692b76e60e63a91e9aaaaba8f220c28030abd4",
+          "backend/scenario_factory.py": "efd381509b5fc28a91db99379f3a2873ca97f4e463c5fab5936b6b48a09f8416",
+          "backend/schemas.py": "75e91eb7e792e7b4777fdd011e045de8b647fd889c87e24e527464050662eb3e",
+          "backend/services.py": "3fc856bf65b2e2ad78bc7ab4e44a025b3c12d722e4d59de064e819f7882f4e1a",
+          "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+          "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2",
+          "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+          "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+          "emergency/reoptimization.py": "6f9e5a7ab2d674d9a209de4e7f83933f9a66d2d0eb16b53aa01bb9eedf48178e",
+          "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+          "experiments/create_precomputed_demo.py": "b414b470e11df5bea51f0b1a7f616d1eeee0fddeb4f3fd80888639b3c117cfd2",
+          "optimization/benchmark.py": "cd9eed362ddca095316957f8bc06dab5f0068260eb04770106b1fb7647940191",
+          "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+          "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+          "optimization/exact.py": "618e1b239009fa56cc4dff4b6cec26ba8413a66e568a4ca649fb1926cc08cf2c",
+          "optimization/greedy.py": "30a581ec3e74251e006ab1356337b8fb2410cec60fdcef1f2f7450f38c8d6ca9",
+          "optimization/models.py": "e9cbd2320f13b0e846e20cbbd560893a20275f84e7a423a782b8a9665358a2aa",
+          "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+          "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+          "quantum/qaoa_solver.py": "ebf63f0013e9b011ef48d6ff0106498e87e2f22f290c12b9a05f037e9ccb08d2",
+          "quantum/qubo.py": "240f9d1a8ddc2f08bca03cf9aa80d945797af56b72f64a04971c5d08e236bbc5",
+          "requirements.txt": "2b63d25fd16bf5dfde850b2ec59d778df39cd6956007b95bed998bc886b10d70"
+        }
+      },
+      "result": {
+        "experiment_configuration": {
+          "exact_max_candidate_states": 50000,
+          "objective_weights": {
+            "critical_unmet_weight": 10.0,
+            "secondary_penalty_weight": 0.0,
+            "total_unmet_weight": 5.0,
+            "transportation_cost_weight": 1.0,
+            "transportation_time_weight": 0.1
+          },
+          "penalty_weights": {
+            "demand_penalty_weight": 10000.0,
+            "inventory_penalty_weight": 10000.0
+          },
+          "qaoa": {
+            "max_iterations": 10,
+            "max_qubits": 16,
+            "optimizer": "COBYLA",
+            "p": 1,
+            "seed": 7,
+            "shots": 256
+          }
+        },
+        "method": "qaoa",
+        "result": {
+          "after_allocation": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity": 8,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "after_metrics": {
+            "average_transport_time": 18.0,
+            "critical_satisfaction": {
+              "rate": 0.5,
+              "satisfied_units": 8,
+              "total_units": 16
+            },
+            "feasibility": true,
+            "objective_breakdown": {
+              "critical_unmet_penalty": 240.0,
+              "critical_unmet_units": 8,
+              "priority_weighted_critical_unmet": 24.0,
+              "secondary_penalties": {},
+              "secondary_penalty_cost": 0.0,
+              "secondary_penalty_total": 0,
+              "total_objective": 330.4,
+              "total_unmet_penalty": 40.0,
+              "total_unmet_units": 8,
+              "transportation_cost": 36.0,
+              "transportation_cost_penalty": 36.0,
+              "transportation_time": 144.0,
+              "transportation_time_penalty": 14.4,
+              "unmet_by_hospital_and_group": [
+                {
+                  "blood_group": "O",
+                  "hospital_id": "hospital_1",
+                  "units": 8
+                }
+              ]
+            },
+            "total_objective": 330.4,
+            "total_unmet_demand": 8,
+            "transport_cost": 36.0,
+            "violations": []
+          },
+          "allocation_changes": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity_change": 6,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "before_allocation": [
+            {
+              "blood_group": "O",
+              "destination": "hospital_1",
+              "quantity": 2,
+              "recipient_group": "O",
+              "source": "bank_a"
+            }
+          ],
+          "before_metrics": {
+            "average_transport_time": 18.0,
+            "critical_satisfaction": {
+              "rate": 0.5,
+              "satisfied_units": 2,
+              "total_units": 4
+            },
+            "feasibility": true,
+            "objective_breakdown": {
+              "critical_unmet_penalty": 60.0,
+              "critical_unmet_units": 2,
+              "priority_weighted_critical_unmet": 6.0,
+              "secondary_penalties": {},
+              "secondary_penalty_cost": 0.0,
+              "secondary_penalty_total": 0,
+              "total_objective": 82.6,
+              "total_unmet_penalty": 10.0,
+              "total_unmet_units": 2,
+              "transportation_cost": 9.0,
+              "transportation_cost_penalty": 9.0,
+              "transportation_time": 36.0,
+              "transportation_time_penalty": 3.6,
+              "unmet_by_hospital_and_group": [
+                {
+                  "blood_group": "O",
+                  "hospital_id": "hospital_1",
+                  "units": 2
+                }
+              ]
+            },
+            "total_objective": 82.6,
+            "total_unmet_demand": 2,
+            "transport_cost": 9.0,
+            "violations": []
+          },
+          "emergency_event": {
+            "blood_group": "O",
+            "hospital_id": "hospital_1",
+            "new_demand": 16,
+            "urgency": {
+              "category": "critical",
+              "priority_weight": 3.0
+            }
+          },
+          "feasibility_status": {
+            "after": true,
+            "before": true,
+            "both_feasible": true
+          },
+          "method": "qaoa",
+          "modified_scenario": {
+            "blood_banks": [
+              {
+                "id": "bank_a",
+                "inventory": {
+                  "O": 12
+                },
+                "location_id": "LOC_BANK_A",
+                "name": "Bank A"
+              }
+            ],
+            "blood_groups": [
+              "O"
+            ],
+            "compatibility": [
+              {
+                "allowed": true,
+                "donor_group": "O",
+                "recipient_group": "O"
+              }
+            ],
+            "hospitals": [
+              {
+                "demand": {
+                  "O": 16
+                },
+                "id": "hospital_1",
+                "location_id": "LOC_HOSPITAL_1",
+                "name": "Hospital 1",
+                "urgency": {
+                  "O": {
+                    "category": "critical",
+                    "priority_weight": 3.0
+                  }
+                }
+              }
+            ],
+            "id": "demo_emergency_demand_spike_emergency",
+            "routes": [
+              {
+                "destination": "hospital_1",
+                "distance_km": 7.2,
+                "source": "bank_a",
+                "status": "available",
+                "transport_cost": 4.5,
+                "travel_time_minutes": 18.0
+              }
+            ],
+            "synthetic": true
+          },
+          "original_scenario": {
+            "blood_banks": [
+              {
+                "id": "bank_a",
+                "inventory": {
+                  "O": 12
+                },
+                "location_id": "LOC_BANK_A",
+                "name": "Bank A"
+              }
+            ],
+            "blood_groups": [
+              "O"
+            ],
+            "compatibility": [
+              {
+                "allowed": true,
+                "donor_group": "O",
+                "recipient_group": "O"
+              }
+            ],
+            "hospitals": [
+              {
+                "demand": {
+                  "O": 4
+                },
+                "id": "hospital_1",
+                "location_id": "LOC_HOSPITAL_1",
+                "name": "Hospital 1",
+                "urgency": {
+                  "O": {
+                    "category": "high",
+                    "priority_weight": 3.0
+                  }
+                }
+              }
+            ],
+            "id": "demo_emergency_demand_spike",
+            "routes": [
+              {
+                "destination": "hospital_1",
+                "distance_km": 7.2,
+                "source": "bank_a",
+                "status": "available",
+                "transport_cost": 4.5,
+                "travel_time_minutes": 18.0
+              }
+            ],
+            "synthetic": true
+          }
+        },
+        "scenario_id": "emergency_demand_spike"
+      },
+      "run_id": "emergency_demand_spike-qaoa",
+      "scenario_id": "emergency_demand_spike",
+      "timestamp_utc": "2026-10-06T19:04:24.100477+00:00"
+    }
+  ],
+  "synthetic_data_only": true
+}

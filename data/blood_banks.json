@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "blood_groups": ["O", "A", "B", "AB"],
+  "blood_banks": [
+    {
+      "id": "bank_a",
+      "name": "Bank A",
+      "location_id": "LOC_BANK_A",
+      "inventory": {"O": 12, "A": 8, "B": 3, "AB": 2}
+    },
+    {
+      "id": "bank_b",
+      "name": "Bank B",
+      "location_id": "LOC_BANK_B",
+      "inventory": {"O": 7, "A": 4, "B": 9, "AB": 3}
+    },
+    {
+      "id": "bank_c",
+      "name": "Bank C",
+      "location_id": "LOC_BANK_C",
+      "inventory": {"O": 5, "A": 6, "B": 4, "AB": 8}
+    }
+  ]
+}

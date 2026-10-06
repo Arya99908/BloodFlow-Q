@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "component_model": "red_blood_cells",
+  "compatibility_scope": "simplified_abo_only_assumption",
+  "notice": "Prototype logistics assumption only. This is not a complete transfusion compatibility system or clinical guidance. Review against authoritative transfusion guidance and qualified transfusion-service requirements before any real-world use.",
+  "blood_groups": ["O", "A", "B", "AB"],
+  "rules": [
+    {"donor_group": "O", "recipient_group": "O", "allowed": true},
+    {"donor_group": "O", "recipient_group": "A", "allowed": true},
+    {"donor_group": "O", "recipient_group": "B", "allowed": true},
+    {"donor_group": "O", "recipient_group": "AB", "allowed": true},
+    {"donor_group": "A", "recipient_group": "O", "allowed": false},
+    {"donor_group": "A", "recipient_group": "A", "allowed": true},
+    {"donor_group": "A", "recipient_group": "B", "allowed": false},
+    {"donor_group": "A", "recipient_group": "AB", "allowed": true},
+    {"donor_group": "B", "recipient_group": "O", "allowed": false},
+    {"donor_group": "B", "recipient_group": "A", "allowed": false},
+    {"donor_group": "B", "recipient_group": "B", "allowed": true},
+    {"donor_group": "B", "recipient_group": "AB", "allowed": true},
+    {"donor_group": "AB", "recipient_group": "O", "allowed": false},
+    {"donor_group": "AB", "recipient_group": "A", "allowed": false},
+    {"donor_group": "AB", "recipient_group": "B", "allowed": false},
+    {"donor_group": "AB", "recipient_group": "AB", "allowed": true}
+  ]
+}

@@ -1,0 +1,41 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Python virtual environments
+.venv/
+venv/
+ENV/
+
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Frontend dependencies and generated build output
+node_modules/
+dist/
+build/
+.vercel/
+
+# Generated experiment output (keep selected, documented results explicitly)
+results/
+artifacts/
+*.log
+
+# These checked-in synthetic experiment records back docs/EXPERIMENT_RESULTS.md
+# and docs/PRECOMPUTED_DEMO.md, so keep the reproducible source results in Git.
+!experiments/results/
+!experiments/results/*.json
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

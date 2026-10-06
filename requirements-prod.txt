@@ -1,0 +1,7 @@
+# Runtime dependencies. Use this list for the deployed API service.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+pydantic>=2.9,<3
+qiskit>=2.0,<3
+qiskit-aer>=0.17,<1
+scipy>=1.13
