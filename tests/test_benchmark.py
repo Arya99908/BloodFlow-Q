@@ -156,6 +156,53 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(len(records), 6)
         self.assertEqual({record.method for record in records}, {"greedy", "exact", "qaoa"})
 
+    def test_benchmark_includes_milp_when_requested(self) -> None:
+        records = run_baseline_benchmark(
+            scenario(),
+            ObjectiveConfig(10, 5, 1, 0.1, 0),
+            include_milp=True,
+        )
+        methods = [r.method for r in records]
+        self.assertEqual(methods, ["greedy", "milp", "exact", "qaoa"])
+        milp = next(r for r in records if r.method == "milp")
+        self.assertEqual(milp.status, "completed")
+        self.assertTrue(milp.feasibility)
+        self.assertFalse(milp.classical_repair_applied)
+        self.assertIsNotNone(milp.objective_value)
+
+    def test_qaoa_gap_computed_against_milp_when_exact_skipped(self) -> None:
+        class QAOAAdapter:
+            name = "qaoa"
+
+            def solve(self, scenario, objective_config, secondary_penalties=None):
+                qubo = build_qubo(
+                    scenario, objective_config, QUBOPenaltyConfig(100, 100),
+                    secondary_penalties=secondary_penalties,
+                )
+                bits = [0] * qubo.variable_count
+                for variable in qubo.variable_mapping:
+                    if variable.kind == "allocation":
+                        bits[variable.index] = 1
+                qiskit_key = "".join(str(bit) for bit in reversed(bits))
+                return evaluate_quantum_solution(qubo, qiskit_key)
+
+        records = run_baseline_benchmark(
+            scenario(),
+            ObjectiveConfig(10, 5, 1, 0.1, 0),
+            exact_config=ExactSolverConfig(max_candidate_states=1),  # Force exact to skip
+            qaoa_solver=QAOAAdapter(),
+            include_milp=True,
+        )
+        exact = next(r for r in records if r.method == "exact")
+        qaoa = next(r for r in records if r.method == "qaoa")
+        milp = next(r for r in records if r.method == "milp")
+
+        self.assertEqual(exact.status, "skipped_too_large")
+        self.assertEqual(milp.status, "completed")
+        self.assertEqual(qaoa.status, "completed")
+        self.assertEqual(qaoa.approximation_gap_status, "defined")
+        self.assertEqual(qaoa.approximation_gap, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

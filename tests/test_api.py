@@ -251,6 +251,42 @@ class APITests(unittest.TestCase):
         self.assertIn(measured_qaoa["status"], {"completed", "infeasible"})
         self.assertIsNotNone(measured_qaoa["objective_value"])
 
+    def test_milp_endpoint_and_benchmark_integration(self) -> None:
+        optimized = self.client.post("/optimize", json={
+            "scenario": tiny_scenario_payload(),
+            "method": "milp",
+        })
+        self.assertEqual(optimized.status_code, 200, optimized.text)
+        res = optimized.json()
+        self.assertEqual(res["method"], "milp")
+        self.assertTrue(res["feasibility"])
+        self.assertFalse(res["classical_repair_applied"])
+        self.assertEqual(res["allocation"][0]["quantity"], 1)
+
+        emergency = self.client.post("/simulate-emergency", json={
+            "scenario": tiny_scenario_payload(),
+            "method": "milp",
+            "event": {"kind": "demand_spike", "hospital_id": "hospital",
+                      "blood_group": "O", "new_demand": 4,
+                      "urgency": {"category": "critical", "priority_weight": 3}},
+        })
+        self.assertEqual(emergency.status_code, 200, emergency.text)
+        self.assertEqual(emergency.json()["method"], "milp")
+        self.assertTrue(emergency.json()["feasibility_status"]["both_feasible"])
+
+        benchmark = self.client.post("/benchmark", json={
+            "scenarios": [tiny_scenario_payload()],
+            "include_milp": True,
+        })
+        self.assertEqual(benchmark.status_code, 200, benchmark.text)
+        records = benchmark.json()["results"]
+        methods = [r["method"] for r in records]
+        self.assertEqual(methods, ["greedy", "milp", "exact", "qaoa"])
+        milp_row = next(r for r in records if r["method"] == "milp")
+        self.assertEqual(milp_row["status"], "completed")
+        self.assertTrue(milp_row["feasibility"])
+        self.assertFalse(milp_row["classical_repair_applied"])
+
     def test_cors_allows_local_vite_frontend(self) -> None:
         response = self.client.options("/health", headers={
             "Origin": "http://localhost:5173",

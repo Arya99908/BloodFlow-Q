@@ -44,6 +44,8 @@ class BenchmarkRecord:
     approximation_gap_status: str | None = None
     allocation: tuple[AllocationDecision, ...] = ()
     detail: str | None = None
+    raw_bitstring: str | None = None
+    classical_repair_applied: bool = False
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-friendly record, including allocation details."""
@@ -86,6 +88,13 @@ def _record_from_run(
     total_units = sum(decision.quantity for decision in result.allocation)
     average_time = objective.transportation_time / total_units if total_units else None
     feasible = bool(result.feasibility_report.get("feasible", False))
+    raw_bits = getattr(result, "raw_bitstring", None)
+    if raw_bits is None and hasattr(result, "decoded_candidate"):
+        decoded_cand = getattr(result, "decoded_candidate")
+        bits_tuple = getattr(decoded_cand, "bits_in_mapping_order", ())
+        if bits_tuple:
+            raw_bits = "".join(str(b) for b in bits_tuple)
+    repair_applied = bool(getattr(result, "classical_repair_applied", False))
     return BenchmarkRecord(
         scenario_id=scenario.id,
         method=method,
@@ -98,15 +107,20 @@ def _record_from_run(
         feasibility=feasible,
         runtime_seconds=runtime_seconds,
         allocation=tuple(result.allocation),
+        raw_bitstring=raw_bits,
+        classical_repair_applied=repair_applied,
     )
 
 
 def _with_qaoa_approximation_gap(
     records: Sequence[BenchmarkRecord],
 ) -> tuple[BenchmarkRecord, ...]:
-    """Compare a measured feasible QAOA result with exact, when both exist."""
+    """Compare a measured feasible QAOA result with exact or MILP, when available."""
 
-    exact = next((r for r in records if r.method == "exact" and r.status == "completed"), None)
+    exact = next(
+        (r for r in records if r.method in {"exact", "milp"} and r.status == "completed" and r.objective_value is not None),
+        None,
+    )
     qaoa = next((r for r in records if r.method == "qaoa"), None)
     if qaoa is None:
         return tuple(records)
@@ -142,8 +156,8 @@ def benchmark_solvers(
     names: set[str] = set()
     for solver in solvers:
         method = getattr(solver, "name", None)
-        if method not in {"greedy", "exact", "qaoa"}:
-            raise ValueError("solver.name must be one of: greedy, exact, qaoa")
+        if method not in {"greedy", "exact", "milp", "qaoa"}:
+            raise ValueError("solver.name must be one of: greedy, exact, milp, qaoa")
         if method in names:
             raise ValueError(f"duplicate benchmark method name {method!r}")
         names.add(method)
@@ -165,12 +179,14 @@ def run_baseline_benchmark(
     secondary_penalties: Mapping[str, float] | None = None,
     include_qaoa_placeholder: bool = True,
     qaoa_solver: BenchmarkableSolver | None = None,
+    include_milp: bool = False,
 ) -> tuple[BenchmarkRecord, ...]:
     """Run Greedy, bounded Exact, and QAOA when a real solver is supplied.
 
     An exact state-limit refusal is recorded with status ``skipped_too_large``
     and null scores. Without a QAOA adapter, the result is marked
-    ``not_requested`` and its metric fields remain null. No QAOA data is
+    ``not_requested`` and its metric fields remain null. When requested,
+    MILP provides an exact mathematical programming baseline. No QAOA data is
     fabricated.
     """
 
@@ -181,6 +197,15 @@ def run_baseline_benchmark(
         scenario, objective_config, secondary_penalties=secondary_penalties
     )
     records.append(_record_from_run(scenario, greedy.name, greedy_result, perf_counter() - start))
+
+    if include_milp:
+        from optimization.milp import MILPSolver
+        milp = MILPSolver()
+        start = perf_counter()
+        milp_result = milp.solve(
+            scenario, objective_config, secondary_penalties=secondary_penalties
+        )
+        records.append(_record_from_run(scenario, milp.name, milp_result, perf_counter() - start))
 
     exact = ExactSolver(exact_config)
     start = perf_counter()
@@ -244,6 +269,7 @@ def run_benchmark_suite(
     exact_config: ExactSolverConfig | None = None,
     secondary_penalties: Mapping[str, float] | None = None,
     qaoa_solver: BenchmarkableSolver | None = None,
+    include_milp: bool = False,
 ) -> tuple[BenchmarkRecord, ...]:
     """Run the common Greedy/Exact/QAOA comparison for every supplied scenario."""
 
@@ -255,6 +281,7 @@ def run_benchmark_suite(
             exact_config=exact_config,
             secondary_penalties=secondary_penalties,
             qaoa_solver=qaoa_solver,
+            include_milp=include_milp,
         ))
     return tuple(results)
 
@@ -301,6 +328,8 @@ def export_benchmark_results(
             "runtime_seconds",
             "approximation_gap",
             "approximation_gap_status",
+            "raw_bitstring",
+            "classical_repair_applied",
             "detail",
         )
         with target.open("w", encoding="utf-8", newline="") as output:

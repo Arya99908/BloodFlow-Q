@@ -257,6 +257,12 @@ def optimization_result_payload(scenario: Scenario, method: str, result) -> dict
     allocation = tuple(result.allocation)
     unmet = dict(result.unmet_demand)
     shipped = sum(row.quantity for row in allocation)
+    raw_bitstring: str | None = None
+    if hasattr(result, "decoded_candidate"):
+        raw_bitstring = "".join(str(b) for b in result.decoded_candidate.bits_in_mapping_order)
+    elif hasattr(result, "raw_bitstring"):
+        raw_bitstring = getattr(result, "raw_bitstring", None)
+
     return {
         "scenario_id": scenario.id,
         "method": method,
@@ -272,6 +278,8 @@ def optimization_result_payload(scenario: Scenario, method: str, result) -> dict
         "transport_cost": objective.transportation_cost,
         "average_transport_time": objective.transportation_time / shipped if shipped else None,
         "objective_basis": getattr(result, "objective_basis", None),
+        "raw_bitstring": raw_bitstring,
+        "classical_repair_applied": False,
     }
 
 
@@ -503,6 +511,9 @@ class BackendService:
                 result = self.exact_solver_factory(
                     ExactSolverConfig(request.exact_max_candidate_states)
                 ).solve(scenario, weights)
+            elif request.method == "milp":
+                from optimization.milp import MILPSolver
+                result = MILPSolver().solve(scenario, weights)
             else:
                 result, qaoa_metadata = self._quantum_result(
                     scenario, weights, _qubo_penalties(request.qaoa_penalties)
@@ -590,6 +601,7 @@ class BackendService:
                 scenarios, weights,
                 exact_config=ExactSolverConfig(request.exact_max_candidate_states),
                 qaoa_solver=qaoa_adapter,
+                include_milp=request.include_milp,
             )
         except QAOASolverError as error:
             logger.warning("Benchmark QAOA simulator failed: %s", error)
@@ -605,11 +617,12 @@ class BackendService:
                 status, "Benchmark optimization failed. Check the backend logs for diagnostic details.",
                 "benchmark_failure",
             ) from error
+        methods_list = ["greedy"] + (["milp"] if request.include_milp else []) + ["exact"] + (["qaoa"] if request.include_qaoa else [])
         payload = {
             "results": [record.to_dict() for record in records],
             "experiment_configuration": {
                 "scenario_ids": [scenario.id for scenario in scenarios],
-                "methods": ["greedy", "exact"] + (["qaoa"] if request.include_qaoa else []),
+                "methods": methods_list,
                 "objective_weights": asdict(weights),
                 "qaoa": asdict(solver.config) if request.include_qaoa and solver is not None else None,
                 "penalty_weights": asdict(penalties) if request.include_qaoa else None,

@@ -1,0 +1,138 @@
+{
+  "results": [
+    {
+      "scenario_id": "demo_emergency_demand_spike_emergency",
+      "method": "greedy",
+      "status": "completed",
+      "objective_value": 215.6,
+      "critical_unmet_demand": 4,
+      "total_unmet_demand": 4,
+      "transport_cost": 54.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 6.98000003467314e-05,
+      "approximation_gap": null,
+      "approximation_gap_status": null,
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 12
+        }
+      ],
+      "detail": null,
+      "raw_bitstring": null,
+      "classical_repair_applied": false
+    },
+    {
+      "scenario_id": "demo_emergency_demand_spike_emergency",
+      "method": "milp",
+      "status": "completed",
+      "objective_value": 215.6,
+      "critical_unmet_demand": 4,
+      "total_unmet_demand": 4,
+      "transport_cost": 54.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 0.002716899999541056,
+      "approximation_gap": null,
+      "approximation_gap_status": null,
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 12
+        }
+      ],
+      "detail": null,
+      "raw_bitstring": null,
+      "classical_repair_applied": false
+    },
+    {
+      "scenario_id": "demo_emergency_demand_spike_emergency",
+      "method": "exact",
+      "status": "completed",
+      "objective_value": 215.6,
+      "critical_unmet_demand": 4,
+      "total_unmet_demand": 4,
+      "transport_cost": 54.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 0.00029429999995045364,
+      "approximation_gap": null,
+      "approximation_gap_status": null,
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 12
+        }
+      ],
+      "detail": null,
+      "raw_bitstring": null,
+      "classical_repair_applied": false
+    },
+    {
+      "scenario_id": "demo_emergency_demand_spike_emergency",
+      "method": "qaoa",
+      "status": "completed",
+      "objective_value": 330.4,
+      "critical_unmet_demand": 8,
+      "total_unmet_demand": 8,
+      "transport_cost": 36.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 0.48012889999972685,
+      "approximation_gap": 0.5324675324675324,
+      "approximation_gap_status": "defined",
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 8
+        }
+      ],
+      "detail": null,
+      "raw_bitstring": "1101000100010",
+      "classical_repair_applied": false
+    }
+  ],
+  "experiment_configuration": {
+    "scenario_ids": [
+      "demo_emergency_demand_spike_emergency"
+    ],
+    "methods": [
+      "greedy",
+      "milp",
+      "exact",
+      "qaoa"
+    ],
+    "objective_weights": {
+      "critical_unmet_weight": 10.0,
+      "total_unmet_weight": 5.0,
+      "transportation_cost_weight": 1.0,
+      "transportation_time_weight": 0.1,
+      "secondary_penalty_weight": 0.0
+    },
+    "qaoa": {
+      "p": 1,
+      "shots": 256,
+      "optimizer": "COBYLA",
+      "max_iterations": 40,
+      "seed": 7
+    },
+    "penalty_weights": {
+      "inventory_penalty_weight": 2000.0,
+      "demand_penalty_weight": 2000.0
+    },
+    "exact_max_candidate_states": 50000
+  }
+}
