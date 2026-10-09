@@ -4,7 +4,7 @@
 
 ## Repository findings
 
-The repository is a source checkout with no Git metadata in this workspace, so a Git commit history or remote could not be inspected. The visible tree has the following deployment-relevant pieces:
+The source is maintained in the private GitHub repository [Arya99908/BloodFlow-Q](https://github.com/Arya99908/BloodFlow-Q), with `main` as the production branch. Its frontend and API are separate Vercel projects connected to that same repository. The visible tree has the following deployment-relevant pieces:
 
 - **Frontend build:** React 18 and Vite. Run `npm ci` from `frontend/`, then `npm run build`. Vite writes static files to `frontend/dist/`. There is no frontend server-side rendering or API process bundled into the assets. The checked-in `frontend/package-lock.json` is the dependency lock used by `npm ci`.
 - **Backend startup:** the development script runs `uvicorn backend.main:app --reload` on port 8000. The new production launcher is `scripts/start-backend-production.sh`; it does not pass `--reload`, enforces production mode and an explicit CORS allowlist, and defaults to `0.0.0.0:8000` for a container or service runtime.

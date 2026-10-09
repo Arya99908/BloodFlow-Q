@@ -62,7 +62,7 @@ vercel deploy --prod --project bloodflow-q
 
 Set the environment variables in Vercel before production deploys. When creating the frontend project for the first time, set Root Directory to `frontend`, Framework Preset to Vite, and set `VITE_API_BASE_URL` to the API's HTTPS origin. For the API project, use the repository root and FastAPI framework preset.
 
-This workspace has no Git metadata or remote. The initial deployment was made from local source using the Vercel CLI; automatic Git deployments are not configured.
+Both Vercel projects are connected to `Arya99908/BloodFlow-Q` and use `main` for production deployments. New commits pushed to `main` trigger production builds for the frontend (`frontend/`) and API (repository root). The latest Git-triggered builds were verified Ready after the dependency-file parser fix described in the repository history.
 
 ## Post-deployment checks
 
