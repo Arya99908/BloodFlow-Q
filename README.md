@@ -18,7 +18,7 @@ Resource allocation is a useful setting for studying optimization because it com
 
 ## 4. Solution
 
-BloodFlow-Q has a React dashboard and a FastAPI service over a Python optimization engine. It loads the versioned JSON scenario, builds logistics decisions, runs Greedy, Exact, or QAOA as requested, validates the result classically, and reports the allocation and unmet demand. Emergency events create a modified copy of the scenario and pass it through the optimization workflow again.
+BloodFlow-Q has a React dashboard and a FastAPI service over a Python optimization engine. It loads the versioned JSON scenario, builds logistics decisions, runs Greedy, MILP, Exact, or QAOA as requested, validates the result classically, and reports the allocation and unmet demand. Emergency events create a modified copy of the scenario and pass it through the optimization workflow again.
 
 ## 5. Why quantum
 
@@ -32,7 +32,8 @@ Synthetic JSON scenario
 FastAPI request and service layer
         ↓
 Scenario model → objective and constraints
-        ├── Greedy baseline
+        ├── Greedy heuristic baseline
+        ├── MILP solver (SciPy HiGHS classical optimal)
         ├── Exact solver (small cases only)
         └── QUBO → Ising → QAOA simulator → measured bitstring
                                       ↓
@@ -45,11 +46,11 @@ The frontend does not implement optimization mathematics. Backend services call 
 
 ## 7. Technology stack
 
-- Python, NumPy, SciPy, and Qiskit for modeling and optimization.
+- Python, NumPy, SciPy (HiGHS MILP), and Qiskit for modeling and classical/quantum optimization.
 - Qiskit Aer for local circuit simulation.
-- FastAPI and Pydantic for the API boundary and input validation.
-- React and Vite for the dashboard.
-- JSON for synthetic scenario inputs and experiment outputs; CSV export is supported by the benchmark utilities.
+- FastAPI and Pydantic for the API boundary, schemas, and input validation.
+- React and Vite for the dashboard, featuring an accessible design system (`StatItem`, `MetaRow`, `StatusBadge`, `EmptyState`) and responsive layouts.
+- JSON for synthetic scenario inputs and experiment outputs; CSV export is supported by benchmark utilities.
 
 ## 8. QUBO formulation
 
@@ -68,7 +69,8 @@ The emergency workflow records a baseline, applies a synthetic demand, inventory
 ## 11. Classical baselines
 
 - **Greedy** is a deterministic heuristic that prioritizes synthetic urgency and then considers compatible inventory and modeled route burden. It returns quickly, but is not guaranteed to find the global minimum.
-- **Exact** enumerates bounded allocations and finds the minimum objective among feasible candidates for instances within its state cap. It is a reference for tiny scenarios, not a scalable solver.
+- **MILP (HiGHS)** is an exact Mixed-Integer Linear Programming solver using SciPy (`scipy.optimize.milp`). It formulates integer shipment variables and continuous slack, solving the allocation problem to provable global optimality in $< 15$ ms without state-space enumeration caps.
+- **Exact** enumerates bounded allocations and finds the minimum objective among feasible candidates for instances within its 50,000 candidate-state cap. It is an exhaustive reference for tiny scenarios, not a scalable solver.
 
 These remain essential comparisons for interpreting a QAOA sample.
 

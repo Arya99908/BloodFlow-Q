@@ -43,6 +43,8 @@ def main() -> None:
     parser.add_argument("--transport-time-weight", type=float, default=0.1)
     parser.add_argument("--secondary-penalty-weight", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--include-milp", action="store_true",
+                        help="include the exact classical MILP solver (SciPy HiGHS)")
     parser.add_argument("--include-qaoa", action="store_true",
                         help="run the real local QAOA simulator (requires explicit penalty weights)")
     parser.add_argument("--qaoa-depth", type=int, default=1)
@@ -82,10 +84,12 @@ def main() -> None:
         objective_config,
         exact_config=ExactSolverConfig(args.exact_max_states),
         qaoa_solver=qaoa_adapter,
+        include_milp=args.include_milp,
     )
     target = Path(args.output)
+    methods_list = ["greedy"] + (["milp"] if args.include_milp else []) + ["exact"] + (["qaoa"] if args.include_qaoa else [])
     experiment_configuration = {
-        "scenario_ids": [scenario.id], "methods": ["greedy", "exact"] + (["qaoa"] if args.include_qaoa else []),
+        "scenario_ids": [scenario.id], "methods": methods_list,
         "objective_weights": {
             "critical_unmet_weight": args.critical_weight,
             "total_unmet_weight": args.unmet_weight,

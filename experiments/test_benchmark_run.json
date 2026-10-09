@@ -1,0 +1,105 @@
+{
+  "results": [
+    {
+      "scenario_id": "demo_normal",
+      "method": "greedy",
+      "status": "completed",
+      "objective_value": 25.2,
+      "critical_unmet_demand": 0,
+      "total_unmet_demand": 0,
+      "transport_cost": 18.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 7.090000008247443e-05,
+      "approximation_gap": null,
+      "approximation_gap_status": null,
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 4
+        }
+      ],
+      "detail": null
+    },
+    {
+      "scenario_id": "demo_normal",
+      "method": "exact",
+      "status": "completed",
+      "objective_value": 25.2,
+      "critical_unmet_demand": 0,
+      "total_unmet_demand": 0,
+      "transport_cost": 18.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 0.00013390000003710156,
+      "approximation_gap": null,
+      "approximation_gap_status": null,
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 4
+        }
+      ],
+      "detail": null
+    },
+    {
+      "scenario_id": "demo_normal",
+      "method": "qaoa",
+      "status": "completed",
+      "objective_value": 25.2,
+      "critical_unmet_demand": 0,
+      "total_unmet_demand": 0,
+      "transport_cost": 18.0,
+      "average_transport_time": 18.0,
+      "feasibility": true,
+      "runtime_seconds": 0.8036223999997674,
+      "approximation_gap": 0.0,
+      "approximation_gap_status": "defined",
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 4
+        }
+      ],
+      "detail": null
+    }
+  ],
+  "experiment_configuration": {
+    "scenario_ids": [
+      "demo_normal"
+    ],
+    "methods": [
+      "greedy",
+      "exact",
+      "qaoa"
+    ],
+    "objective_weights": {
+      "critical_unmet_weight": 10.0,
+      "total_unmet_weight": 5.0,
+      "transportation_cost_weight": 1.0,
+      "transportation_time_weight": 0.1,
+      "secondary_penalty_weight": 0.0
+    },
+    "qaoa": {
+      "p": 1,
+      "shots": 256,
+      "optimizer": "COBYLA",
+      "max_iterations": 40,
+      "seed": 7
+    },
+    "penalty_weights": {
+      "inventory_penalty_weight": 1000.0,
+      "demand_penalty_weight": 1000.0
+    },
+    "exact_max_candidate_states": 50000
+  }
+}

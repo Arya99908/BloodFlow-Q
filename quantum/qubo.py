@@ -232,6 +232,23 @@ def _binary_weights(upper_bound: int) -> tuple[int, ...]:
     return tuple(weights)
 
 
+def count_scenario_qubo_variables(scenario: Scenario) -> int:
+    """Return the exact number of binary variables required to encode a scenario."""
+    total_bits = 0
+    for variable in scenario.allocation_variables():
+        total_bits += len(_binary_weights(variable.upper_bound))
+    for hospital in scenario.hospitals:
+        for demand in hospital.demand.values():
+            if demand > 0:
+                total_bits += len(_binary_weights(demand))
+    for bank in scenario.blood_banks:
+        for available in bank.inventory.values():
+            if available > 0:
+                total_bits += len(_binary_weights(available))
+    return total_bits
+
+
+
 def _add_square(
     linear: list[float],
     quadratic: dict[tuple[int, int], float],

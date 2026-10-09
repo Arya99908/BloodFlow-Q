@@ -83,7 +83,7 @@ class QAOAConfigInput(StrictModel):
 
 class OptimizeRequest(StrictModel):
     scenario: ScenarioInput | None = None
-    method: Literal["greedy", "exact", "qaoa"] = "greedy"
+    method: Literal["greedy", "exact", "milp", "qaoa"] = "greedy"
     objective_weights: ObjectiveWeightsInput = Field(default_factory=ObjectiveWeightsInput)
     qaoa_penalties: QUBOPenaltiesInput | None = None
     qaoa_config: QAOAConfigInput | None = None
@@ -128,7 +128,7 @@ EmergencyEventInput = Annotated[
 class EmergencyRequest(StrictModel):
     scenario: ScenarioInput | None = None
     event: EmergencyEventInput
-    method: Literal["greedy", "exact", "qaoa"] = "greedy"
+    method: Literal["greedy", "exact", "milp", "qaoa"] = "greedy"
     objective_weights: ObjectiveWeightsInput = Field(default_factory=ObjectiveWeightsInput)
     qaoa_penalties: QUBOPenaltiesInput | None = None
     qaoa_config: QAOAConfigInput | None = None
@@ -138,6 +138,7 @@ class EmergencyRequest(StrictModel):
 class BenchmarkRequest(StrictModel):
     scenarios: list[ScenarioInput] | None = None
     include_qaoa: bool = False
+    include_milp: bool = False
     objective_weights: ObjectiveWeightsInput = Field(default_factory=ObjectiveWeightsInput)
     qaoa_penalties: QUBOPenaltiesInput | None = None
     qaoa_config: QAOAConfigInput | None = None
@@ -182,6 +183,8 @@ class OptimizationResponse(StrictModel):
     measured_mean_energy: float | None = None
     qaoa_runtime_seconds: float | None = None
     optimizer_information: dict[str, object] | None = None
+    raw_bitstring: str | None = None
+    classical_repair_applied: bool = False
     # The service includes the effective run settings with real QAOA results.
     # Keep this in the strict response schema so FastAPI can serialize them.
     experiment_configuration: dict[str, object] | None = None
@@ -216,7 +219,7 @@ class BenchmarkResponse(StrictModel):
 
 class DemoRunRequest(StrictModel):
     scenario_id: Literal["normal", "emergency_demand_spike", "transport_disruption"]
-    method: Literal["greedy", "exact", "qaoa"] = "qaoa"
+    method: Literal["greedy", "exact", "milp", "qaoa"] = "qaoa"
     objective_weights: ObjectiveWeightsInput = Field(default_factory=ObjectiveWeightsInput)
     qaoa_penalties: QUBOPenaltiesInput | None = None
     qaoa_config: QAOAConfigInput | None = None

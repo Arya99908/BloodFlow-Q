@@ -19,6 +19,17 @@ from optimization.exact import ExactSolver, ExactSolverConfig, ExactSolverLimitE
 from optimization.greedy import GreedyAllocator
 from optimization.models import AllocationDecision, Scenario
 from optimization.objective import ObjectiveConfig, ObjectiveResult
+from quantum.qubo import QUBOInputError, count_scenario_qubo_variables
+
+try:
+    from quantum.qaoa_solver import QAOAResourceLimitError, QAOASolverError
+except ImportError:
+    class QAOAResourceLimitError(ValueError):
+        pass
+
+    class QAOASolverError(RuntimeError):
+        pass
+
 
 
 @dataclass(frozen=True)
@@ -44,6 +55,8 @@ class BenchmarkRecord:
     approximation_gap_status: str | None = None
     allocation: tuple[AllocationDecision, ...] = ()
     detail: str | None = None
+    raw_bitstring: str | None = None
+    classical_repair_applied: bool = False
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-friendly record, including allocation details."""
@@ -86,6 +99,13 @@ def _record_from_run(
     total_units = sum(decision.quantity for decision in result.allocation)
     average_time = objective.transportation_time / total_units if total_units else None
     feasible = bool(result.feasibility_report.get("feasible", False))
+    raw_bits = getattr(result, "raw_bitstring", None)
+    if raw_bits is None and hasattr(result, "decoded_candidate"):
+        decoded_cand = getattr(result, "decoded_candidate")
+        bits_tuple = getattr(decoded_cand, "bits_in_mapping_order", ())
+        if bits_tuple:
+            raw_bits = "".join(str(b) for b in bits_tuple)
+    repair_applied = bool(getattr(result, "classical_repair_applied", False))
     return BenchmarkRecord(
         scenario_id=scenario.id,
         method=method,
@@ -98,15 +118,20 @@ def _record_from_run(
         feasibility=feasible,
         runtime_seconds=runtime_seconds,
         allocation=tuple(result.allocation),
+        raw_bitstring=raw_bits,
+        classical_repair_applied=repair_applied,
     )
 
 
 def _with_qaoa_approximation_gap(
     records: Sequence[BenchmarkRecord],
 ) -> tuple[BenchmarkRecord, ...]:
-    """Compare a measured feasible QAOA result with exact, when both exist."""
+    """Compare a measured feasible QAOA result with exact or MILP, when available."""
 
-    exact = next((r for r in records if r.method == "exact" and r.status == "completed"), None)
+    exact = next(
+        (r for r in records if r.method in {"exact", "milp"} and r.status == "completed" and r.objective_value is not None),
+        None,
+    )
     qaoa = next((r for r in records if r.method == "qaoa"), None)
     if qaoa is None:
         return tuple(records)
@@ -142,19 +167,52 @@ def benchmark_solvers(
     names: set[str] = set()
     for solver in solvers:
         method = getattr(solver, "name", None)
-        if method not in {"greedy", "exact", "qaoa"}:
-            raise ValueError("solver.name must be one of: greedy, exact, qaoa")
+        if method not in {"greedy", "exact", "milp", "qaoa"}:
+            raise ValueError("solver.name must be one of: greedy, exact, milp, qaoa")
         if method in names:
             raise ValueError(f"duplicate benchmark method name {method!r}")
         names.add(method)
         start = perf_counter()
-        result = solver.solve(
-            scenario,
-            objective_config,
-            secondary_penalties=secondary_penalties,
-        )
-        runtime_seconds = perf_counter() - start
-        records.append(_record_from_run(scenario, method, result, runtime_seconds))
+        try:
+            result = solver.solve(
+                scenario,
+                objective_config,
+                secondary_penalties=secondary_penalties,
+            )
+            runtime_seconds = perf_counter() - start
+            records.append(_record_from_run(scenario, method, result, runtime_seconds))
+        except (ExactSolverLimitError, QAOAResourceLimitError) as error:
+            records.append(
+                BenchmarkRecord(
+                    scenario_id=scenario.id,
+                    method=method,
+                    status="skipped_too_large",
+                    objective_value=None,
+                    critical_unmet_demand=None,
+                    total_unmet_demand=None,
+                    transport_cost=None,
+                    average_transport_time=None,
+                    feasibility=None,
+                    runtime_seconds=perf_counter() - start,
+                    detail=str(error),
+                )
+            )
+        except Exception as error:
+            records.append(
+                BenchmarkRecord(
+                    scenario_id=scenario.id,
+                    method=method,
+                    status="error",
+                    objective_value=None,
+                    critical_unmet_demand=None,
+                    total_unmet_demand=None,
+                    transport_cost=None,
+                    average_transport_time=None,
+                    feasibility=None,
+                    runtime_seconds=perf_counter() - start,
+                    detail=str(error),
+                )
+            )
     return _with_qaoa_approximation_gap(records)
 
 
@@ -165,22 +223,68 @@ def run_baseline_benchmark(
     secondary_penalties: Mapping[str, float] | None = None,
     include_qaoa_placeholder: bool = True,
     qaoa_solver: BenchmarkableSolver | None = None,
+    include_milp: bool = False,
 ) -> tuple[BenchmarkRecord, ...]:
     """Run Greedy, bounded Exact, and QAOA when a real solver is supplied.
 
     An exact state-limit refusal is recorded with status ``skipped_too_large``
     and null scores. Without a QAOA adapter, the result is marked
-    ``not_requested`` and its metric fields remain null. No QAOA data is
-    fabricated.
+    ``not_requested`` and its metric fields remain null. An oversized QAOA
+    instance is checked before execution and marked ``skipped_too_large``
+    without crashing the benchmark suite. When requested, MILP provides an exact
+    mathematical programming baseline. No QAOA data is fabricated.
     """
 
     records: list[BenchmarkRecord] = []
     greedy = GreedyAllocator()
     start = perf_counter()
-    greedy_result = greedy.solve(
-        scenario, objective_config, secondary_penalties=secondary_penalties
-    )
-    records.append(_record_from_run(scenario, greedy.name, greedy_result, perf_counter() - start))
+    try:
+        greedy_result = greedy.solve(
+            scenario, objective_config, secondary_penalties=secondary_penalties
+        )
+        records.append(_record_from_run(scenario, greedy.name, greedy_result, perf_counter() - start))
+    except Exception as error:
+        records.append(
+            BenchmarkRecord(
+                scenario_id=scenario.id,
+                method=greedy.name,
+                status="error",
+                objective_value=None,
+                critical_unmet_demand=None,
+                total_unmet_demand=None,
+                transport_cost=None,
+                average_transport_time=None,
+                feasibility=None,
+                runtime_seconds=perf_counter() - start,
+                detail=str(error),
+            )
+        )
+
+    if include_milp:
+        from optimization.milp import MILPSolver
+        milp = MILPSolver()
+        start = perf_counter()
+        try:
+            milp_result = milp.solve(
+                scenario, objective_config, secondary_penalties=secondary_penalties
+            )
+            records.append(_record_from_run(scenario, milp.name, milp_result, perf_counter() - start))
+        except Exception as error:
+            records.append(
+                BenchmarkRecord(
+                    scenario_id=scenario.id,
+                    method=milp.name,
+                    status="error",
+                    objective_value=None,
+                    critical_unmet_demand=None,
+                    total_unmet_demand=None,
+                    transport_cost=None,
+                    average_transport_time=None,
+                    feasibility=None,
+                    runtime_seconds=perf_counter() - start,
+                    detail=str(error),
+                )
+            )
 
     exact = ExactSolver(exact_config)
     start = perf_counter()
@@ -204,19 +308,103 @@ def run_baseline_benchmark(
                 detail=str(error),
             )
         )
+    except Exception as error:
+        records.append(
+            BenchmarkRecord(
+                scenario_id=scenario.id,
+                method="exact",
+                status="error",
+                objective_value=None,
+                critical_unmet_demand=None,
+                total_unmet_demand=None,
+                transport_cost=None,
+                average_transport_time=None,
+                feasibility=None,
+                runtime_seconds=perf_counter() - start,
+                detail=str(error),
+            )
+        )
     else:
         records.append(_record_from_run(scenario, exact.name, exact_result, perf_counter() - start))
 
     if qaoa_solver is not None:
         if getattr(qaoa_solver, "name", None) != "qaoa":
             raise ValueError("qaoa_solver.name must be 'qaoa'")
-        start = perf_counter()
-        quantum_result = qaoa_solver.solve(
-            scenario, objective_config, secondary_penalties=secondary_penalties
-        )
-        records.append(_record_from_run(
-            scenario, "qaoa", quantum_result, perf_counter() - start
-        ))
+
+        # Determine configured maximum qubits
+        max_qubits = 16
+        inner_solver = getattr(qaoa_solver, "solver", qaoa_solver)
+        config = getattr(inner_solver, "config", None)
+        if config is not None and getattr(config, "max_qubits", None) is not None:
+            max_qubits = config.max_qubits
+
+        estimated_qubits = count_scenario_qubo_variables(scenario)
+        if estimated_qubits > max_qubits:
+            records.append(
+                BenchmarkRecord(
+                    scenario_id=scenario.id,
+                    method="qaoa",
+                    status="skipped_too_large",
+                    objective_value=None,
+                    critical_unmet_demand=None,
+                    total_unmet_demand=None,
+                    transport_cost=None,
+                    average_transport_time=None,
+                    feasibility=None,
+                    runtime_seconds=None,
+                    approximation_gap=None,
+                    approximation_gap_status="unavailable: QAOA instance exceeds simulator limit",
+                    detail=(
+                        f"QAOA benchmark skipped: instance requires {estimated_qubits} qubits, "
+                        f"exceeding the simulator safety limit of {max_qubits} qubits."
+                    ),
+                )
+            )
+        else:
+            start = perf_counter()
+            try:
+                quantum_result = qaoa_solver.solve(
+                    scenario, objective_config, secondary_penalties=secondary_penalties
+                )
+                records.append(_record_from_run(
+                    scenario, "qaoa", quantum_result, perf_counter() - start
+                ))
+            except (QAOAResourceLimitError, ExactSolverLimitError) as error:
+                records.append(
+                    BenchmarkRecord(
+                        scenario_id=scenario.id,
+                        method="qaoa",
+                        status="skipped_too_large",
+                        objective_value=None,
+                        critical_unmet_demand=None,
+                        total_unmet_demand=None,
+                        transport_cost=None,
+                        average_transport_time=None,
+                        feasibility=None,
+                        runtime_seconds=perf_counter() - start,
+                        approximation_gap=None,
+                        approximation_gap_status="unavailable: QAOA instance exceeds limit",
+                        detail=str(error),
+                    )
+                )
+            except Exception as error:
+                records.append(
+                    BenchmarkRecord(
+                        scenario_id=scenario.id,
+                        method="qaoa",
+                        status="unsupported" if isinstance(error, QUBOInputError) else "error",
+                        objective_value=None,
+                        critical_unmet_demand=None,
+                        total_unmet_demand=None,
+                        transport_cost=None,
+                        average_transport_time=None,
+                        feasibility=None,
+                        runtime_seconds=perf_counter() - start,
+                        approximation_gap=None,
+                        approximation_gap_status="unavailable: QAOA execution failed",
+                        detail=str(error),
+                    )
+                )
     elif include_qaoa_placeholder:
         records.append(
             BenchmarkRecord(
@@ -244,6 +432,7 @@ def run_benchmark_suite(
     exact_config: ExactSolverConfig | None = None,
     secondary_penalties: Mapping[str, float] | None = None,
     qaoa_solver: BenchmarkableSolver | None = None,
+    include_milp: bool = False,
 ) -> tuple[BenchmarkRecord, ...]:
     """Run the common Greedy/Exact/QAOA comparison for every supplied scenario."""
 
@@ -255,6 +444,7 @@ def run_benchmark_suite(
             exact_config=exact_config,
             secondary_penalties=secondary_penalties,
             qaoa_solver=qaoa_solver,
+            include_milp=include_milp,
         ))
     return tuple(results)
 
@@ -301,6 +491,8 @@ def export_benchmark_results(
             "runtime_seconds",
             "approximation_gap",
             "approximation_gap_status",
+            "raw_bitstring",
+            "classical_repair_applied",
             "detail",
         )
         with target.open("w", encoding="utf-8", newline="") as output:

@@ -132,6 +132,10 @@ def _run_method(
     if method == "exact":
         result = ExactSolver(exact_config).solve(scenario, objective_config, secondary_penalties)
         return result, result.allocation, result.unmet_demand, None, None
+    if method == "milp":
+        from optimization.milp import MILPSolver
+        result = MILPSolver().solve(scenario, objective_config, secondary_penalties)
+        return result, result.allocation, result.unmet_demand, None, None
     if method == "qaoa":
         if qaoa_solver is None:
             raise QAOAUnavailableError(
@@ -150,7 +154,7 @@ def _run_method(
         sampled = qaoa_solver.solve(qubo)
         candidate = evaluate_quantum_solution(qubo, _qaoa_bitstring(sampled))
         return candidate, candidate.decoded_allocation, candidate.unmet_demand, qubo, sampled
-    raise ReoptimizationError("method must be one of: greedy, exact, qaoa")
+    raise ReoptimizationError("method must be one of: greedy, exact, milp, qaoa")
 
 
 def run_emergency_reoptimization(

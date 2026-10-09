@@ -18,5 +18,10 @@ export function ErrorState({ message, onRetry }) {
 }
 
 export function EmptyState({ title, detail }) {
-  return <div className="empty-state" role="status"><strong>{title}</strong><p>{detail}</p></div>;
+  return (
+    <div className="empty-state" role="status">
+      {title && <strong>{title}</strong>}
+      {detail && <p>{detail}</p>}
+    </div>
+  );
 }

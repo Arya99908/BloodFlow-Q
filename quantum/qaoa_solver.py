@@ -135,13 +135,8 @@ class QAOASolver:
 
         def expected_energy(angles: np.ndarray) -> float:
             circuit = self.build_circuit(ising, angles)
-            probabilities = Statevector.from_instruction(circuit).probabilities()
-            energy = 0.0
-            for state_index, probability in enumerate(probabilities):
-                if probability:
-                    bits = tuple((state_index >> bit) & 1 for bit in range(qubo.variable_count))
-                    energy += float(probability) * qubo.energy(bits)
-            return energy
+            state = Statevector.from_instruction(circuit)
+            return float(state.expectation_value(ising.cost_hamiltonian).real)
 
         try:
             optimized = minimize(

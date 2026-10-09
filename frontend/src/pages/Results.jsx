@@ -4,9 +4,11 @@ import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
+import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
+import { calculateObjectiveUpperBound } from '../utils/scenarioBounds';
 
-const METHODS = ['greedy', 'exact', 'qaoa'];
-const methodNames = { greedy: 'Greedy', exact: 'Exact', qaoa: 'QAOA' };
+const METHODS = ['greedy', 'milp', 'exact', 'qaoa'];
+const methodNames = { greedy: 'Greedy baseline', milp: 'MILP (HiGHS)', exact: 'Exact', qaoa: 'QAOA' };
 
 export default function Results() {
   const { data, loading, error, reload } = useApi(api.getResults, []);
@@ -26,6 +28,8 @@ export default function Results() {
     if (experimentDefaults?.objective_weights) setObjectiveWeights(experimentDefaults.objective_weights);
     if (experimentDefaults?.qaoa_config) setQaoaConfig(experimentDefaults.qaoa_config);
   }, [experimentDefaults]);
+
+  const objectiveBound = useMemo(() => calculateObjectiveUpperBound(scenario, objectiveWeights), [scenario, objectiveWeights]);
 
   const savedBenchmarkEntry = useMemo(() => {
     const entries = data?.results || [];
@@ -50,10 +54,15 @@ export default function Results() {
   const runBenchmark = async () => {
     setBenchmarkError(''); setBenchmarkLoading(true); setRecords(null);
     try {
-      const request = { include_qaoa: includeQAOA, objective_weights: objectiveWeights };
+      const request = { include_qaoa: includeQAOA, include_milp: true, objective_weights: objectiveWeights };
       if (includeQAOA) {
         if (!inventoryPenalty || !demandPenalty) throw new Error('Enter both QUBO penalty weights to run QAOA.');
-        request.qaoa_penalties = { inventory_penalty_weight: Number(inventoryPenalty), demand_penalty_weight: Number(demandPenalty) };
+        const inv = Number(inventoryPenalty);
+        const dem = Number(demandPenalty);
+        if (objectiveBound && (inv <= objectiveBound || dem <= objectiveBound)) {
+          throw new Error(`QUBO penalty weights must strictly exceed this scenario's theoretical objective bound (> ${objectiveBound.toFixed(1)}). Please enter larger values (e.g. ${Math.ceil(objectiveBound * 1.5)} or 10000).`);
+        }
+        request.qaoa_penalties = { inventory_penalty_weight: inv, demand_penalty_weight: dem };
         request.qaoa_config = qaoaConfig;
       }
       const response = await api.benchmark(request);
@@ -68,8 +77,24 @@ export default function Results() {
     <PageHeader eyebrow="MEASURED COMPARISON" title="Results" description="Compare solver outputs returned by the backend. Missing or skipped measurements remain unavailable." action={<button className="button button-secondary" onClick={reload}><Clock3 size={15} /> Refresh history</button>} />
     <section className="panel results-benchmark-panel">
       <div className="panel-heading"><div><h2>Benchmark comparison</h2><p>Runs each method against the backend scenario using the shared objective.</p></div><BarChart3 size={18} className="muted-icon" /></div>
-      <div className="results-benchmark-controls"><div><label className="checkbox-label"><input type="checkbox" checked={includeQAOA} onChange={(event) => setIncludeQAOA(event.target.checked)} /> Include a measured QAOA simulator run</label><p className="comparison-help">Greedy and Exact are requested by default. QAOA runs only when selected and supported by the backend.</p></div><button className="button button-primary" onClick={runBenchmark} disabled={benchmarkLoading}><Play size={14} />{benchmarkLoading ? 'RUNNING BENCHMARK…' : 'RUN BENCHMARK'}</button></div>
-      {includeQAOA && <div className="comparison-qaoa-inputs results-penalties"><label>Inventory penalty weight<input type="number" min="0.0001" step="any" value={inventoryPenalty} onChange={(event) => setInventoryPenalty(event.target.value)} /></label><label>Demand penalty weight<input type="number" min="0.0001" step="any" value={demandPenalty} onChange={(event) => setDemandPenalty(event.target.value)} /></label></div>}
+      <div className="results-benchmark-controls">
+        <div className="benchmark-toggle-group">
+          <label className="checkbox-label"><input type="checkbox" checked={includeQAOA} onChange={(event) => setIncludeQAOA(event.target.checked)} /> Include a measured QAOA simulator run</label>
+          <p className="comparison-help">Greedy, MILP, and Exact are requested by default. QAOA runs only when selected and supported by the backend.</p>
+        </div>
+        <button className="button button-primary run-benchmark-btn" onClick={runBenchmark} disabled={benchmarkLoading}><Play size={14} />{benchmarkLoading ? 'RUNNING BENCHMARK…' : 'RUN BENCHMARK'}</button>
+      </div>
+      {includeQAOA && <>
+        <div className="comparison-qaoa-inputs results-penalties">
+          <label className="field-label-wrap">Inventory penalty weight (min &gt; {objectiveBound != null ? objectiveBound.toFixed(1) : '—'})
+            <input className="field-control" type="number" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step="any" value={inventoryPenalty} onChange={(event) => setInventoryPenalty(event.target.value)} />
+          </label>
+          <label className="field-label-wrap">Demand penalty weight (min &gt; {objectiveBound != null ? objectiveBound.toFixed(1) : '—'})
+            <input className="field-control" type="number" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step="any" value={demandPenalty} onChange={(event) => setDemandPenalty(event.target.value)} />
+          </label>
+        </div>
+        <p className="comparison-help">Penalty weights must strictly exceed the objective bound (&gt; {objectiveBound != null ? objectiveBound.toFixed(1) : '—'}). If QAOA exceeds local qubit limits, it will be skipped cleanly without affecting other solvers.</p>
+      </>}
       <details className="demo-objective-settings results-repro-controls"><summary>Experiment configuration · objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <label className="demo-field" key={key}>{key.replaceAll('_', ' ')}<input className="field-control" type="number" min="0" step="any" value={value} onChange={(event) => setObjectiveWeights((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}</div></details>
       {includeQAOA && <div className="demo-settings-grid results-qaoa-settings">{[['seed','Random seed'],['p','QAOA depth'],['shots','Shots'],['max_iterations','Optimizer iterations']].map(([key,label]) => <label className="demo-field" key={key}>{label}<input className="field-control" type="number" min="0" value={qaoaConfig[key]} onChange={(event) => setQaoaConfig((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}<label className="demo-field">Classical optimizer<select className="field-control" value={qaoaConfig.optimizer} onChange={(event) => setQaoaConfig((current) => ({ ...current, optimizer: event.target.value }))}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label></div>}
       {benchmarkLoading && <LoadingState label="The backend is running the requested benchmark methods…" />}
@@ -77,9 +102,25 @@ export default function Results() {
       {!benchmarkLoading && benchmarkRows && <>
         <div className="evidence-labels"><span className="evidence-measured">MEASURED · completed backend run</span><span className="evidence-expected">EXPECTED · no expected values used</span><span className="evidence-unavailable">NOT AVAILABLE · not run or unsupported</span></div>
         {(experimentConfiguration || savedBenchmarkEntry?.experiment_configuration) && <details className="saved-result-details results-experiment-config"><summary>Reproduce this benchmark · stored configuration</summary><pre>{JSON.stringify(experimentConfiguration || savedBenchmarkEntry.experiment_configuration, null, 2)}</pre></details>}
-        <div className="table-scroll" role="region" aria-label="Scrollable data table" tabIndex={0}><table className="data-table results-comparison-table"><thead><tr><th>Method</th><th>Result</th><th>Objective</th><th>Critical satisfaction</th><th>Total unmet</th><th>Transport cost</th><th>Average time</th><th>Feasible</th><th>Runtime</th><th>Gap vs exact</th></tr></thead><tbody>
-          {rows.map((row) => <BenchmarkRow key={row.method} row={row} criticalTotal={criticalTotal} />)}
-        </tbody></table></div>
+        <div className="table-scroll" role="region" aria-label="Scrollable data table" tabIndex={0}><table className="data-table results-comparison-table">
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">Result status</th>
+              <th scope="col" className="num-cell">Objective</th>
+              <th scope="col" className="num-cell">Critical satisfaction</th>
+              <th scope="col" className="num-cell">Total unmet</th>
+              <th scope="col" className="num-cell">Transport cost</th>
+              <th scope="col" className="num-cell">Avg time</th>
+              <th scope="col">Feasibility</th>
+              <th scope="col" className="num-cell">Runtime</th>
+              <th scope="col" className="num-cell">Gap vs exact</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => <BenchmarkRow key={row.method} row={row} criticalTotal={criticalTotal} />)}
+          </tbody>
+        </table></div>
         <p className="comparison-help">Critical satisfaction is derived from the returned critical/high unmet units and the active scenario’s returned critical/high demand. Runtime and objective values are backend measurements. Approximation gap is reported only when the backend supplies a defined value.</p>
         <BenchmarkCharts rows={rows} />
       </>}
@@ -99,9 +140,34 @@ export default function Results() {
 function BenchmarkRow({ row, criticalTotal }) {
   const complete = row.status === 'completed' || row.status === 'infeasible';
   const criticalSatisfaction = complete && criticalTotal != null && criticalTotal > 0 && row.critical_unmet_demand != null ? Math.max(0, (criticalTotal - row.critical_unmet_demand) / criticalTotal) : null;
-  const statusLabel = complete ? (row.feasibility === false ? 'Measured · infeasible' : 'Measured') : `Not available · ${statusText(row.status)}`;
   const gap = row.approximation_gap == null ? (row.approximation_gap_status?.startsWith('unavailable') || row.approximation_gap_status?.startsWith('undefined') ? 'Not available' : '—') : `${(row.approximation_gap * 100).toFixed(2)}%`;
-  return <tr><td><strong>{methodNames[row.method] || row.method}</strong></td><td><span className={`measurement-pill ${complete ? 'measurement-done' : 'measurement-missing'}`}>{statusLabel}</span>{row.detail && !complete && <small className="missing-detail">{row.detail}</small>}</td><td>{metric(row.objective_value)}</td><td>{criticalSatisfaction == null ? 'Not available' : `${(criticalSatisfaction * 100).toFixed(1)}%`}</td><td>{metric(row.total_unmet_demand)}</td><td>{metric(row.transport_cost)}</td><td>{row.average_transport_time == null ? 'Not available' : `${metric(row.average_transport_time)} min`}</td><td>{row.feasibility == null ? 'Not available' : row.feasibility ? 'Feasible' : 'Infeasible'}</td><td>{row.runtime_seconds == null ? 'Not available' : `${Number(row.runtime_seconds).toFixed(4)} s`}</td><td>{gap}</td></tr>;
+
+  return <tr>
+    <td><strong className="method-label">{methodNames[row.method] || row.method}</strong></td>
+    <td>
+      <StatusBadge
+        tone={complete ? (row.feasibility === false ? 'warning' : 'success') : 'neutral'}
+        label={complete ? (row.feasibility === false ? 'Measured (infeasible)' : 'Measured') : `Not available · ${statusText(row.status)}`}
+      />
+      {row.detail && !complete && <div className="missing-detail">{row.detail}</div>}
+    </td>
+    <td className="num-cell">{metric(row.objective_value)}</td>
+    <td className="num-cell">{criticalSatisfaction == null ? 'Not available' : `${(criticalSatisfaction * 100).toFixed(1)}%`}</td>
+    <td className="num-cell">{metric(row.total_unmet_demand)}</td>
+    <td className="num-cell">{metric(row.transport_cost)}</td>
+    <td className="num-cell">{row.average_transport_time == null ? 'Not available' : `${metric(row.average_transport_time)} min`}</td>
+    <td>
+      {row.feasibility == null ? (
+        <StatusBadge tone="neutral" label="Not available" />
+      ) : row.feasibility ? (
+        <StatusBadge tone="success" label="Feasible" />
+      ) : (
+        <StatusBadge tone="danger" label="Infeasible" />
+      )}
+    </td>
+    <td className="num-cell">{row.runtime_seconds == null ? 'Not available' : `${Number(row.runtime_seconds).toFixed(4)} s`}</td>
+    <td className="num-cell">{gap}</td>
+  </tr>;
 }
 
 function BenchmarkCharts({ rows }) {
@@ -112,10 +178,10 @@ function BenchmarkCharts({ rows }) {
     { key: 'average_transport_time', label: 'Average transport time', lowerBetter: true, suffix: 'min' },
   ];
   return <div className="results-charts"><div className="results-chart-heading"><div><h3>Measured metric charts</h3><p>Each chart scales only the completed values shown in this benchmark.</p></div></div><div className="results-chart-grid">{metrics.map((metricSpec) => {
-    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && Number.isFinite(Number(row[metricSpec.key]))).map((row) => ({ method: methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
+    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && Number.isFinite(Number(row[metricSpec.key]))).map((row) => ({ methodKey: row.method, method: methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
     const max = Math.max(...entries.map((item) => item.value), 0);
     return <article className="results-chart-card" key={metricSpec.key}><div className="results-chart-card-heading"><strong>{metricSpec.label}</strong><span>MEASURED</span></div>
-      {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.method}`} key={entry.method}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(3, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}
+      {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.methodKey}`} key={entry.methodKey}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(3, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}
       <small>Lower values are smaller for this metric; this chart does not rank overall solver quality.</small>
     </article>;
   })}</div></div>;
@@ -124,14 +190,49 @@ function BenchmarkCharts({ rows }) {
 function ResultCard({ entry }) {
   const result = entry.result || {}; const emergency = entry.endpoint === '/simulate-emergency';
   const metrics = emergency ? result.after_metrics || {} : result;
-  const label = emergency ? 'Emergency re-optimization' : entry.endpoint === '/benchmark' ? 'Benchmark' : 'Optimization';
-  return <article className="panel saved-result-card"><div className="saved-result-head"><span className="saved-result-icon"><Clock3 size={18} /></span><div><strong>{label}</strong><small>{new Date(entry.created_at).toLocaleString()}</small></div><span className="run-status"><span className="status-indicator" />recorded</span></div>
-    {emergency ? <div className="saved-result-metrics"><span>Method <strong>{result.method || 'Not available'}</strong></span><span>Unmet after <strong>{metrics.total_unmet_demand ?? 'Not available'}</strong></span><span>Transport cost <strong>{metrics.transport_cost ?? 'Not available'}</strong></span><span>Allocation rows <strong>{result.after_allocation?.length ?? 0}</strong></span></div>
-      : entry.endpoint === '/benchmark' ? <div className="saved-result-metrics"><span>Benchmark records <strong>{result.results?.length ?? 0}</strong></span><span>Methods with completed measurements <strong>{result.results?.filter((row) => row.status === 'completed' || row.status === 'infeasible').length ?? 0}</strong></span></div>
-      : <div className="saved-result-metrics"><span>Method <strong>{result.method || 'Not available'}</strong></span><span>Objective <strong>{result.total_objective ?? 'Not available'}</strong></span><span>Unmet units <strong>{result.total_unmet_demand ?? 'Not available'}</strong></span><span>Allocation rows <strong>{result.allocation?.length ?? 0}</strong></span></div>}
-    <details className="saved-result-details"><summary>View exact API response</summary><pre>{JSON.stringify(result, null, 2)}</pre></details>
+  const label = emergency ? 'Emergency re-optimization' : entry.endpoint === '/benchmark' ? 'Benchmark run' : 'Optimization run';
+
+  return <article className="panel saved-result-card">
+    <div className="saved-result-head">
+      <span className="saved-result-icon"><Clock3 size={18} /></span>
+      <div className="saved-result-title-block">
+        <strong>{label}</strong>
+        <small className="saved-result-timestamp">{new Date(entry.created_at).toLocaleString()}</small>
+      </div>
+      <StatusBadge tone="neutral" label="Recorded" />
+    </div>
+
+    {emergency ? (
+      <div className="saved-result-metrics-grid">
+        <StatItem label="Method" value={result.method ? methodNames[result.method] || result.method : 'Not available'} />
+        <StatItem label="Unmet after" value={metrics.total_unmet_demand != null ? metric(metrics.total_unmet_demand) : 'Not available'} unit={metrics.total_unmet_demand != null ? 'units' : ''} />
+        <StatItem label="Transport cost" value={metrics.transport_cost != null ? metric(metrics.transport_cost) : 'Not available'} />
+        <StatItem label="Allocation shipments" value={result.after_allocation?.length ?? 0} />
+      </div>
+    ) : entry.endpoint === '/benchmark' ? (
+      <div className="saved-result-metrics-grid">
+        <StatItem label="Total solver runs" value={result.results?.length ?? 0} />
+        <StatItem label="Completed runs" value={result.results?.filter((row) => row.status === 'completed' || row.status === 'infeasible').length ?? 0} tone="success" />
+      </div>
+    ) : (
+      <div className="saved-result-metrics-grid">
+        <StatItem label="Method" value={result.method ? methodNames[result.method] || result.method : 'Not available'} />
+        <StatItem label="Total objective" value={result.total_objective != null ? metric(result.total_objective) : 'Not available'} />
+        <StatItem label="Unmet demand" value={result.total_unmet_demand != null ? metric(result.total_unmet_demand) : '0'} unit="units" />
+        <StatItem label="Shipment routes" value={result.allocation?.length ?? 0} />
+      </div>
+    )}
+
+    <details className="saved-result-details">
+      <summary>View exact API response</summary>
+      <pre>{JSON.stringify(result, null, 2)}</pre>
+    </details>
   </article>;
 }
 
 function metric(value) { return value == null || !Number.isFinite(Number(value)) ? 'Not available' : Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 }); }
-function statusText(status) { return String(status || 'unknown').replaceAll('_', ' '); }
+function statusText(status) {
+  if (!status) return 'Unknown';
+  if (status === 'skipped_too_large') return 'Skipped (Too Large)';
+  return String(status).replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
