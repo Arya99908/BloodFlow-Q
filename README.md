@@ -88,7 +88,7 @@ To run tests, install `pytest` in the project environment, then run:
 - The simplified compatibility assumptions require authoritative review before any real-world use; this prototype is not suitable for clinical use.
 - Results do not establish quantum advantage, clinical validity, hospital deployment, or patient outcomes.
 
-Read [security and safety](docs/SECURITY_AND_SAFETY.md), [limitations and results](docs/EXPERIMENT_RESULTS.md), and [deployment instructions](docs/VERCEL_DEPLOYMENT.md) before presenting the project.
+
 
 ## Live demo
 
