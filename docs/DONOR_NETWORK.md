@@ -7,6 +7,8 @@ BloodFlow-Q now includes two deliberately separate coordination paths:
 
 This module is for operational coordination research. It is not a clinical system, does not decide whether anyone may donate, and does not establish transfusion compatibility. The live inventory table is component-specific and separate from the aggregate JSON used by the research optimizer.
 
+**Database setup status (2026-10-13):** The schema is applied to a new, empty Mumbai test project and its hosted RLS checks passed using only temporary fictional records. The Vercel production frontend and local development config point to that test project. Do not enter real donor or hospital contact details there. Supabase Auth email/SMS delivery has not been configured or tested. See [Supabase setup](SUPABASE_SETUP.md) for migration history, policy checks, and remaining gates.
+
 ## What the module supports
 
 - Donor registration, profile editing, self-reported availability, separate outreach/contact-sharing consents, consent history, in-app request responses, and appointment responses.
@@ -81,10 +83,10 @@ The **Emergency Blood Request** and **Donor Network** pages include a determinis
 
 ## What is not connected
 
-- No Supabase project credentials or live database are included in this repository. The migration has not been applied to a project in this workspace.
+- The blank Supabase test project is configured for the frontend, but it has no real accounts, institutions, donor profiles, requests, or inventory. Auth email/SMS delivery is not configured.
 - No SMS/email emergency notifications, external blood-bank inventory, clinical compatibility engine, live map/GPS, or real collection-team dispatch integration exists.
 - Dashboard coordination counts remain unavailable to ordinary users. The database aggregate is restricted to an authorized platform administrator.
-- Authentication, RLS, and status rules have source-level regression checks, but the database policies must still be exercised against a disposable Supabase project before live use. A passing frontend build or Python unit test is not a security certification.
+- RLS behavior has been exercised against the blank test project with rollback-safe fictional rows. The checks are not a security certification, and real use would require provider setup, browser-client role testing, institutional verification, and a separate production project.
 
 ## Local commands
 
