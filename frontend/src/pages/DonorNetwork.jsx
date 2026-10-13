@@ -36,6 +36,20 @@ export default function DonorNetwork({ demoState, onStartDemo, onDemoAction }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [demoBusy, setDemoBusy] = useState(false);
+  // This sandbox is deliberately local to the page. It lets a presenter
+  // exercise donor profile and consent controls without sending personal data
+  // to Supabase or contacting anyone.
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+  const [sandboxSaved, setSandboxSaved] = useState(false);
+  const [sandboxProfile, setSandboxProfile] = useState({
+    full_name: 'Synthetic Donor A', blood_group: 'O+', phone: '+910000000001',
+    email: 'donor-a@example.invalid', city: 'Demo City', approximate_area: 'North District',
+    availability: 'temporarily_unavailable', preferred_contact: 'phone',
+    consent_receive_requests: false, consent_share_contact: false,
+  });
+  const [sandboxRegisteredAt, setSandboxRegisteredAt] = useState('');
+  const [sandboxUpdatedAt, setSandboxUpdatedAt] = useState('');
+  const [sandboxMessage, setSandboxMessage] = useState('');
 
   const reload = useCallback(async () => {
     if (!client || !user) return;
@@ -152,11 +166,44 @@ export default function DonorNetwork({ demoState, onStartDemo, onDemoAction }) {
     finally { setDemoBusy(false); }
   };
 
+  const saveSandboxProfile = (event) => {
+    event.preventDefault();
+    setSandboxMessage('');
+    if (!/^\+?[0-9][0-9()\-\s]{6,38}$/.test(sandboxProfile.phone.trim())) {
+      setSandboxMessage('Enter a sample phone value containing 7–40 digits.');
+      return;
+    }
+    if (sandboxProfile.preferred_contact === 'email' && !sandboxProfile.email.trim()) {
+      setSandboxMessage('Add a sample email address when email is the preferred contact method.');
+      return;
+    }
+    // Without outreach consent, the sandbox enforces the same safe default as
+    // the live profile service: the donor cannot remain marked as available.
+    const nextProfile = sandboxProfile.consent_receive_requests
+      ? sandboxProfile
+      : { ...sandboxProfile, availability: 'do_not_contact', consent_share_contact: false };
+    setSandboxProfile(nextProfile);
+    const now = new Date().toISOString();
+    setSandboxRegisteredAt((current) => current || now);
+    setSandboxUpdatedAt(now);
+    setSandboxSaved(true);
+    setSandboxMessage(sandboxSaved ? 'Synthetic profile updated in this page only.' : 'Synthetic profile registered in this page only.');
+  };
+
+  const withdrawSandboxConsent = () => {
+    setSandboxProfile((current) => ({
+      ...current, consent_receive_requests: false, consent_share_contact: false,
+      availability: 'do_not_contact',
+    }));
+    setSandboxUpdatedAt(new Date().toISOString());
+    setSandboxMessage('Synthetic consents withdrawn; sample donor is now Do Not Contact.');
+  };
+
   return <>
     <PageHeader eyebrow="VOLUNTEER COORDINATION" title="Donor Network" description="Manage a private volunteer profile and review in-app requests. A donor response is not a donation or an eligibility determination." />
-    {!configured && <section className="notice notice-warning donor-live-gate" role="status"><LockKeyhole size={19} /><div><strong>Private donor records are disabled in this deployment</strong><p>Apply and verify the Supabase migration, then configure the public project URL and publishable key. Do not enter personal contact information until the access policies have been tested.</p></div></section>}
+    {!configured && <section className="notice notice-warning donor-live-gate" role="status"><LockKeyhole size={19} /><div><strong>Live Supabase profile access is unavailable in this build</strong><p>The live profile area needs the public Supabase project URL and publishable key. Use the synthetic sandbox below to test the donor controls; its sample state is not saved or transmitted.</p></div></section>}
     {configured && !user && !authLoading && <>
-      <section className="notice notice-warning donor-live-gate"><LockKeyhole size={18} /><div><strong>Private sign-in is required</strong><p>Only your authenticated account can read or change its own donor profile. A one-time code is sent through the configured email or SMS service.</p></div></section>
+      <section className="notice notice-warning donor-live-gate"><LockKeyhole size={18} /><div><strong>Private sign-in is required</strong><p>Only your authenticated account can read or change its own donor profile. Sign-in uses a Supabase one-time code; delivery depends on the project’s email or SMS provider settings. The synthetic sandbox below needs no sign-in.</p></div></section>
       <SecureSignIn client={client} allowCreate title="Create or access a donor account" />
     </>}
     {authLoading && <LoadingState label="Checking private donor sign-in…" />}
@@ -214,6 +261,27 @@ export default function DonorNetwork({ demoState, onStartDemo, onDemoAction }) {
         {profileExists && <div className="coordination-columns donor-bottom-grid"><section className="panel"><div className="panel-heading"><div><h2>Consent history</h2><p>Consent changes are recorded with a timestamp.</p></div><ShieldCheck size={18} className="muted-icon" /></div>{consentHistory.length ? <div className="consent-event-list">{consentHistory.map((item) => <div key={item.id}><strong>{item.consent_kind === 'receive_requests' ? 'Receive requests' : 'Share contact'}</strong><span>{item.granted ? 'Granted' : 'Withdrawn'} · {new Date(item.recorded_at).toLocaleString()}</span></div>)}</div> : <p className="helper-text">No consent changes were recorded.</p>}</section><section className="panel consent-withdraw-panel"><div className="panel-heading"><div><h2>Stop requests</h2><p>Withdraw both optional consents and stop new outreach.</p></div><UserRoundX size={18} className="muted-icon" /></div><button type="button" className="button button-danger" onClick={withdrawConsent} disabled={!profile.consent_receive_requests && !profile.consent_share_contact}>Withdraw consent and stop requests</button><p className="helper-text">This sets availability to Do Not Contact and withdraws pending in-app notifications.</p></section></div>}
       </>}
     </>}
+
+    <section className="panel donor-demo-panel donor-sandbox-panel"><div className="panel-heading"><div><span className="eyebrow">SAFE, LOCAL TEST PATH</span><h2>Synthetic donor profile sandbox</h2><p>Exercise registration, editing, availability, and consent withdrawal without entering real contact details.</p></div><span className="demo-watermark">BROWSER ONLY</span></div>
+      <div className="notice notice-info donor-sandbox-notice"><ShieldCheck size={17} /><div><strong>Use fictional values only</strong><p>This sandbox stays in this browser page, is not written to Supabase, and cannot send SMS, email, or donor requests. Profile registration does not establish donation eligibility.</p></div></div>
+      {!sandboxOpen && <button className="button button-secondary" type="button" onClick={() => setSandboxOpen(true)}>Open synthetic profile</button>}
+      {sandboxOpen && <>
+        <form className="donor-profile-form" onSubmit={saveSandboxProfile}>
+          <label>Full name<input className="field-control" required maxLength="120" value={sandboxProfile.full_name} onChange={(event) => setSandboxProfile((current) => ({ ...current, full_name: event.target.value }))} /></label>
+          <label>Blood group<select className="field-control" required value={sandboxProfile.blood_group} onChange={(event) => setSandboxProfile((current) => ({ ...current, blood_group: event.target.value }))}>{BLOOD_GROUPS.map((group) => <option key={group}>{group}</option>)}</select></label>
+          <label>Sample phone<input className="field-control" type="tel" required minLength="7" maxLength="40" value={sandboxProfile.phone} onChange={(event) => setSandboxProfile((current) => ({ ...current, phone: event.target.value }))} /></label>
+          <label>Sample email <span className="field-optional">optional</span><input className="field-control" type="email" maxLength="254" value={sandboxProfile.email} onChange={(event) => setSandboxProfile((current) => ({ ...current, email: event.target.value }))} /></label>
+          <label>City<input className="field-control" required maxLength="120" value={sandboxProfile.city} onChange={(event) => setSandboxProfile((current) => ({ ...current, city: event.target.value }))} /></label>
+          <label>Approximate area<input className="field-control" required maxLength="120" value={sandboxProfile.approximate_area} onChange={(event) => setSandboxProfile((current) => ({ ...current, approximate_area: event.target.value }))} /></label>
+          <label>Availability<select className="field-control" value={sandboxProfile.availability} onChange={(event) => setSandboxProfile((current) => ({ ...current, availability: event.target.value }))}><option value="available">Available</option><option value="temporarily_unavailable">Temporarily unavailable</option><option value="do_not_contact">Do not contact</option></select></label>
+          <label>Preferred contact<select className="field-control" value={sandboxProfile.preferred_contact} onChange={(event) => setSandboxProfile((current) => ({ ...current, preferred_contact: event.target.value }))}><option value="phone">Phone</option><option value="email">Email</option></select></label>
+          <div className="donor-consent-preview"><label><input type="checkbox" checked={sandboxProfile.consent_receive_requests} onChange={(event) => setSandboxProfile((current) => ({ ...current, consent_receive_requests: event.target.checked }))} /> I consent to simulated voluntary requests.</label><label><input type="checkbox" checked={sandboxProfile.consent_share_contact} onChange={(event) => setSandboxProfile((current) => ({ ...current, consent_share_contact: event.target.checked }))} /> Separate simulated consent to share necessary details with verified staff after accepting.</label></div>
+          <div className="button-row form-span-two"><button className="button button-primary" type="submit">{sandboxSaved ? 'Save profile changes' : 'Register synthetic donor'}</button>{sandboxSaved && <button className="button button-danger" type="button" onClick={withdrawSandboxConsent} disabled={!sandboxProfile.consent_receive_requests && !sandboxProfile.consent_share_contact}>Withdraw both consents</button>}</div>
+        </form>
+        <div className="donor-sandbox-meta" aria-live="polite"><strong>{sandboxSaved ? 'Synthetic profile registered' : 'Sample profile ready to register'}</strong><span>Availability: {sandboxProfile.availability.replaceAll('_', ' ')}</span>{sandboxRegisteredAt && <span>Registered: {new Date(sandboxRegisteredAt).toLocaleString()}</span>}{sandboxUpdatedAt && <span>Last updated: {new Date(sandboxUpdatedAt).toLocaleString()}</span>}</div>
+        {sandboxMessage && <p className="inline-success" role="status">{sandboxMessage}</p>}
+      </>}
+    </section>
 
     <section className="panel donor-demo-panel"><div className="panel-heading"><div><span className="eyebrow">SYNTHETIC PRESENTATION PATH</span><h2>Interactive donor inbox demo</h2><p>Works without collecting donor details. This simulation is separate from live records.</p></div><span className="demo-watermark">SIMULATED ONLY</span></div>
       {!demoState && <button className="button button-secondary" type="button" disabled={demoBusy} onClick={runDemo}>{demoBusy ? 'Starting…' : 'Open deterministic synthetic inbox'}</button>}

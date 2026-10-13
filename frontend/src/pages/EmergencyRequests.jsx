@@ -35,6 +35,7 @@ const ACTION_LABELS = {
   confirm_dispatch: 'Confirm simulated dispatch',
   confirm_receipt: 'Confirm simulated hospital receipt',
   complete: 'Complete after simulated receipt',
+  cancel: 'Cancel this synthetic request',
 };
 
 function related(value) { return Array.isArray(value) ? value[0] : value; }
@@ -69,6 +70,7 @@ function DemoWorkflow({ demoState, onStartDemo, onDemoAction }) {
       {state.blood_centre_release && <div className="appointment-card"><strong>Simulated centre-confirmed quantity · not live stock</strong><span>{state.blood_centre_release.confirmed_units} unit(s) confirmed after the demo's simulated collection and testing steps.</span><span>Remaining shortfall in this synthetic walkthrough: {state.inventory_check.remaining_shortfall_units} unit(s).</span></div>}
       {state.next_actions?.filter((action) => ACTION_LABELS[action]).map((action) => <button key={action} type="button" className="button button-primary workflow-action" disabled={busy} onClick={() => step(action)}>{busy ? 'Updating simulated workflow…' : ACTION_LABELS[action]}</button>)}
       {state.request.status === 'Completed' && <div className="notice notice-success"><ShieldCheck size={17} /> Completed after simulated blood-centre release, transport, and hospital receipt. This is not a real fulfillment.</div>}
+      {state.request.status === 'Cancelled' && <div className="notice notice-warning"><AlertTriangle size={17} /> Synthetic request cancelled. No real request or notification was created.</div>}
       <div className="timeline-list"><h3>Simulated request history</h3>{state.history.map((event, index) => <div className="timeline-item" key={`${event.status}-${index}`}><i /><span>{event.status}</span><small>{event.at} · simulated</small></div>)}</div>
     </div>}
     {error && <p className="inline-error" role="alert">{error}</p>}

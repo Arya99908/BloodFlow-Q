@@ -64,6 +64,14 @@ class EmergencyCoordinationDemoTests(unittest.TestCase):
         state = apply_demo_action(state, "accept_donor", "DEMO-DONOR-02")
         self.assertEqual(state["accepted_donor"]["donor_id"], "DEMO-DONOR-02")
 
+    def test_synthetic_request_can_be_cancelled_and_not_cancelled_twice(self):
+        state = apply_demo_action(start_demo(), "cancel")
+        self.assertEqual(state["request"]["status"], "Cancelled")
+        self.assertEqual(state["next_actions"], [])
+        self.assertTrue(state["history"][-1]["simulated"])
+        with self.assertRaisesRegex(ValueError, "cannot be cancelled again"):
+            apply_demo_action(state, "cancel")
+
     def test_api_rebuilds_demo_only_from_allowed_action_log(self):
         client = TestClient(create_app())
         started = client.post("/coordination/demo/start")
@@ -76,6 +84,16 @@ class EmergencyCoordinationDemoTests(unittest.TestCase):
         })
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(response.json()["request"]["status"], "Donor Accepted")
+
+    def test_api_accepts_cancellation_as_a_synthetic_workflow_action(self):
+        client = TestClient(create_app())
+        started = client.post("/coordination/demo/start").json()
+        response = client.post("/coordination/demo/action", json={
+            "actions": started["action_log"], "action": "cancel",
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["request"]["status"], "Cancelled")
+        self.assertEqual(response.json()["next_actions"], [])
 
     def test_api_rejects_skipped_steps_and_extra_untrusted_state(self):
         client = TestClient(create_app())
@@ -94,9 +112,11 @@ class EmergencyCoordinationDemoTests(unittest.TestCase):
         capabilities = client.get("/coordination/capabilities").json()
         self.assertFalse(capabilities["live_records_enabled"])
         self.assertTrue(capabilities["synthetic_demo_enabled"])
+        self.assertIn("frontend Supabase client", capabilities["live_records_reason"])
         dashboard = client.get("/coordination/dashboard").json()
         self.assertFalse(dashboard["available"])
         self.assertIsNone(dashboard["metrics"]["registered_donors"])
+        self.assertIn("does not query private Supabase", dashboard["message"])
 
 
 if __name__ == "__main__":

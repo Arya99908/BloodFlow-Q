@@ -4477,6 +4477,12 @@ th.num-cell {
 .helper-text { color: var(--text-muted); font-size: 12px; line-height: 1.55; }
 .donor-profile-form .helper-text { grid-column: 1 / -1; margin: 0; }
 .donor-profile-form > button { justify-self: start; }
+.donor-sandbox-panel { margin-bottom: 18px; }
+.donor-sandbox-notice { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; }
+.donor-sandbox-notice svg { flex: 0 0 auto; margin-top: 1px; }
+.donor-sandbox-notice p { margin: 4px 0 0; line-height: 1.45; }
+.donor-sandbox-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-default); color: var(--text-secondary); font-size: 11px; }
+.donor-sandbox-meta strong { color: var(--text-primary); }
 .donor-inbox-empty { display: grid; justify-items: start; gap: 7px; text-align: left; }
 .donor-inbox-empty p { margin: 0 0 8px; }
 .demo-watermark { display: inline-flex; align-items: center; min-height: 25px; padding: 4px 8px; border: 1px solid #dbbd78; border-radius: 999px; color: #72500b; background: #fff8df; font-size: 9px; font-weight: 750; letter-spacing: .06em; }

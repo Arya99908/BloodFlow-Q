@@ -18,7 +18,7 @@ class DemoAction(StrictModel):
     action: Literal[
         "accept_donor", "decline_donor", "arrange_appointment",
         "confirm_collection", "begin_testing", "confirm_testing_and_release",
-        "assign_transport", "confirm_dispatch", "confirm_receipt", "complete",
+        "assign_transport", "confirm_dispatch", "confirm_receipt", "complete", "cancel",
     ]
     donor_id: str | None = Field(default=None, max_length=80)
 
@@ -30,18 +30,18 @@ class DemoActionRequest(StrictModel):
     action: Literal[
         "accept_donor", "decline_donor", "arrange_appointment",
         "confirm_collection", "begin_testing", "confirm_testing_and_release",
-        "assign_transport", "confirm_dispatch", "confirm_receipt", "complete",
+        "assign_transport", "confirm_dispatch", "confirm_receipt", "complete", "cancel",
     ]
     donor_id: str | None = Field(default=None, max_length=80)
 
 
 @router.get("/capabilities")
 def capabilities(service=Depends(get_service)):
-    """Report honestly which coordination capabilities are configured.
+    """Report the capabilities of this API, not the separate Supabase client.
 
-    The existing deployment has no identity provider or donor database. The
-    live personal-data features therefore fail closed; the safe synthetic
-    walkthrough remains available without account credentials.
+    Private profile CRUD uses Supabase Auth and row-level security in the
+    frontend. This API stays out of that private data path; synthetic
+    coordination endpoints remain available without account credentials.
     """
 
     return service.donor_network_capabilities()

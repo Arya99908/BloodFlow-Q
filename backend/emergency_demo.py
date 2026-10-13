@@ -104,7 +104,7 @@ def start_demo() -> dict[str, Any]:
             {"status": "Searching for Donors", "at": now, "simulated": True},
             {"status": "Donor Contacted", "at": now, "simulated": True},
         ],
-        "next_actions": ["accept_donor", "decline_donor"],
+        "next_actions": ["accept_donor", "decline_donor", "cancel"],
         "privacy_note": "Synthetic area labels only. No donor phone, email, exact address, or GPS is included.",
         "safety_note": "Group labels only identify candidates for coordination. Authorized professionals must assess eligibility, collection, testing, compatibility, release, and transport.",
     }
@@ -128,6 +128,14 @@ def apply_demo_action(
         history.append({"status": status, "at": "SIMULATED · deterministic demo", "simulated": True})
         current["version"] = version + 1
 
+    if action == "cancel":
+        if current["request"].get("status") in {"Completed", "Cancelled"}:
+            raise ValueError("a completed or cancelled request cannot be cancelled again")
+        advance("Cancelled")
+        current["next_actions"] = []
+        current["action_log"].append({"action": action, "donor_id": donor_id})
+        return current
+
     if action == "accept_donor" or action == "decline_donor":
         if action not in current.get("next_actions", []):
             raise ValueError("donor responses are not available at this point in the workflow")
@@ -144,7 +152,7 @@ def apply_demo_action(
         current["responses"].append({"donor_id": donor_id, "response": response, "simulated": True})
         if response == "accepted":
             advance("Donor Accepted")
-            current["next_actions"] = ["arrange_appointment"]
+            current["next_actions"] = ["arrange_appointment", "cancel"]
             current["accepted_donor"] = {
                 "donor_id": donor_id,
                 "area": notification["area"],
@@ -166,10 +174,10 @@ def apply_demo_action(
                     "notification_id": f"{DEMO_REQUEST_ID}:{next_suggestion['donor_id']}",
                     "status": "contacted",
                 })
-                current["next_actions"] = ["accept_donor", "decline_donor"]
+                current["next_actions"] = ["accept_donor", "decline_donor", "cancel"]
             else:
                 advance("Searching for Donors")
-                current["next_actions"] = []
+                current["next_actions"] = ["cancel"]
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current
 
@@ -196,18 +204,18 @@ def apply_demo_action(
             "status": "proposed · simulated",
             "collection_team": {"status": "not assigned", "simulated": True},
         }
-        current["next_actions"] = ["confirm_collection"]
+        current["next_actions"] = ["confirm_collection", "cancel"]
     elif action == "confirm_collection":
         current["collection"] = {"status": "confirmed · simulated", "simulated": True}
         current["request"]["status"] = "At Authorized Blood Centre"
         history.append({"status": "At Authorized Blood Centre", "at": "SIMULATED · deterministic demo", "simulated": True})
-        current["next_actions"] = ["begin_testing"]
+        current["next_actions"] = ["begin_testing", "cancel"]
         current["version"] = version + 1
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current
     elif action == "begin_testing":
         current["testing"] = {"status": "in progress · simulated", "simulated": True}
-        current["next_actions"] = ["confirm_testing_and_release"]
+        current["next_actions"] = ["confirm_testing_and_release", "cancel"]
     elif action == "confirm_testing_and_release":
         # In this fixed teaching example, the synthetic centre confirms the
         # entire three-unit shortfall only after the simulated collection and
@@ -225,7 +233,7 @@ def apply_demo_action(
         }
         current["request"]["status"] = "Ready for Dispatch"
         history.append({"status": "Ready for Dispatch", "at": "SIMULATED · deterministic demo", "simulated": True})
-        current["next_actions"] = ["assign_transport"]
+        current["next_actions"] = ["assign_transport", "cancel"]
         current["version"] = version + 1
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current
@@ -235,7 +243,7 @@ def apply_demo_action(
             "simulated": True,
             "estimated_arrival": "2030-01-01T10:25:00Z (simulated)",
         }
-        current["next_actions"] = ["confirm_dispatch"]
+        current["next_actions"] = ["confirm_dispatch", "cancel"]
         current["version"] = version + 1
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current
@@ -243,7 +251,7 @@ def apply_demo_action(
         current["transport"]["status"] = "dispatched · simulated"
         current["request"]["status"] = "Dispatched"
         history.append({"status": "Dispatched", "at": "SIMULATED · deterministic demo", "simulated": True})
-        current["next_actions"] = ["confirm_receipt"]
+        current["next_actions"] = ["confirm_receipt", "cancel"]
         current["version"] = version + 1
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current
@@ -251,7 +259,7 @@ def apply_demo_action(
         current["transport"]["status"] = "received · simulated"
         current["request"]["status"] = "Received by Hospital"
         history.append({"status": "Received by Hospital", "at": "SIMULATED · deterministic demo", "simulated": True})
-        current["next_actions"] = ["complete"]
+        current["next_actions"] = ["complete", "cancel"]
         current["version"] = version + 1
         current["action_log"].append({"action": action, "donor_id": donor_id})
         return current

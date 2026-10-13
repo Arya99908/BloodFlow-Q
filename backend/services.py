@@ -388,21 +388,26 @@ class BackendService:
                 "qaoa_available": self.qaoa_solver is not None}
 
     def donor_network_capabilities(self) -> dict[str, object]:
-        """Describe the safe prototype boundary for donor coordination."""
+        """Describe which coordination paths this API itself provides.
+
+        The private donor profile client talks directly to Supabase with the
+        public browser key and relies on Supabase Auth/RLS. This FastAPI
+        service does not query or persist private Supabase rows.
+        """
         return {
             "live_records_enabled": False,
-            "live_records_reason": "Verified identity and persistent private storage are not configured.",
+            "live_records_reason": "Private donor profile access is handled by the frontend Supabase client; this API does not query private donor rows.",
             "synthetic_demo_enabled": True,
             "synthetic_only": True,
-            "external_notifications": "not configured",
-            "live_inventory_integration": "not configured",
-            "live_location_or_tracking": "not configured",
+            "external_notifications": "not connected; the synthetic workflow records no SMS or email delivery",
+            "live_inventory_integration": "not connected; inventory shown in demos is synthetic",
+            "live_location_or_tracking": "not connected; demo locations and tracking are synthetic",
         }
 
     def donor_network_dashboard(self) -> dict[str, object]:
         """Do not turn missing live data into misleading zero-valued cards."""
         return {
-            "source": "live donor/request database",
+            "source": "private Supabase records (not queried by this API)",
             "available": False,
             "metrics": {
                 "registered_donors": None,
@@ -413,7 +418,7 @@ class BackendService:
                 "fulfilled_from_verified_stock": None,
                 "awaiting_blood_bank_confirmation": None,
             },
-            "message": "Live counts are unavailable until private identity and database services are configured.",
+            "message": "The API does not query private Supabase donor or request tables, so live counts are unavailable. Synthetic workflows remain available.",
         }
 
     def start_coordination_demo(self) -> dict[str, Any]:
