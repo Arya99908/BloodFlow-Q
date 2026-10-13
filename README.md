@@ -49,6 +49,10 @@ Scenario model → objective and constraints
 
 The frontend does not implement optimization mathematics. Backend services call the shared solver modules, and QAOA candidates pass through a classical validator without silent repair.
 
+## Donor coordination extension
+
+The site also includes **Donor Network** and **Emergency Blood Request** pages. A deterministic, interactive synthetic workflow works without accounts. Private donor profiles and verified hospital workflows are optional and stay disabled unless Supabase Auth/Postgres is configured and the RLS migration has been applied. The live flow checks authorized, component-specific inventory before offering an in-app request to one consented candidate at a time; there is no real SMS/email outreach, live GPS, clinical compatibility engine, or collection-team dispatch integration. Read [docs/DONOR_NETWORK.md](docs/DONOR_NETWORK.md) before configuring the private data path.
+
 ## 7. Technology stack
 
 - Python, NumPy, SciPy (HiGHS MILP), and Qiskit for modeling and classical/quantum optimization.

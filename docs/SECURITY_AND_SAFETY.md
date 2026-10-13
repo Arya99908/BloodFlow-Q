@@ -38,11 +38,13 @@ Only public configuration belongs in frontend `VITE_*` variables. Vite embeds th
 
 If future integrations require credentials, store them only in server-side environment variables or a dedicated secret manager. Do not commit local `.env` files, print secret values in logs, or return them in API responses. Keep `.env.example` limited to harmless placeholders and public settings.
 
+The optional donor and hospital coordination module uses Supabase Auth and Postgres only when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are supplied. These are public browser settings, not secrets. Never put a Supabase service-role or secret key in the frontend. The database migration applies row-level security to private tables, and the code intentionally disables live personal-data forms while Supabase is not configured. A configured public key is safe only when the reviewed migration and RLS policies are actually applied.
+
 ## CORS and deployment
 
 Development allows requests from `http://localhost:5173` and `http://127.0.0.1:5173`, with credentials disabled. Production mode now requires an explicit `BLOODFLOW_CORS_ORIGINS` allowlist of exact HTTPS frontend origins, disables FastAPI debug/docs routes, and sanitizes server-error details returned to clients. These CORS controls do not provide authentication. Before public or organizational exposure, review transport security, authentication, authorization, rate limits, request-size limits, logging, and data retention.
 
-The prototype API has no user authentication or authorization. Do not expose it to the public internet or connect it to live inventory or hospital systems. Keep development services bound to localhost unless you understand the network exposure.
+The optimization FastAPI API remains unauthenticated and uses only synthetic aggregate scenarios. It does not expose donor records. The optional donor/emergency workflow is separate and uses Supabase Auth plus database policies when configured. Do not connect the optimizer API to live inventory or hospital systems. Keep development services bound to localhost unless you understand the network exposure.
 
 ## Known limitations and follow-up risks
 
@@ -53,6 +55,8 @@ The prototype API has no user authentication or authorization. Do not expose it 
 - The frontend may be configured with a different public API URL at build time. Deployments must verify that it points to a trusted backend and uses HTTPS.
 - The project is now connected to its private GitHub repository. The current source tree was scanned for likely credential patterns and local secret/key files before pushing. This scan is not a guarantee about credentials that may have existed in other historical copies; keep secrets out of Git and rotate any credential if one is ever exposed.
 - Compatibility, urgency, and transport values are synthetic assumptions. No clinical or operational safety conclusion can be inferred from a successful software test.
+- The Supabase migration and role-gated flows have source-level regression checks only in this checkout. There is no configured Supabase project or disposable PostgreSQL instance here, so the SQL has not been applied and live RLS/auth/role behavior has not been integration-tested. Do not enable the private forms until a project operator applies the migration and tests donor, hospital, blood-bank, centre, and unauthorized-account access.
+- Donor group-label filtering is exact-label matching for conservative coordination suggestions. It is not a blood-component compatibility engine, donation eligibility assessment, or transfusion safety check.
 
 ## Change record
 

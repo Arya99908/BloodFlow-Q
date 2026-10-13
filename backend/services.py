@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from backend.data_loader import load_data
+from backend.emergency_demo import apply_demo_action, start_demo
 from backend.scenario_factory import scenario_from_loaded_data
 from backend.schemas import (
     BenchmarkRequest,
@@ -385,6 +386,51 @@ class BackendService:
     def health(self) -> dict[str, object]:
         return {"status": "ok", "synthetic_data_only": True,
                 "qaoa_available": self.qaoa_solver is not None}
+
+    def donor_network_capabilities(self) -> dict[str, object]:
+        """Describe the safe prototype boundary for donor coordination."""
+        return {
+            "live_records_enabled": False,
+            "live_records_reason": "Verified identity and persistent private storage are not configured.",
+            "synthetic_demo_enabled": True,
+            "synthetic_only": True,
+            "external_notifications": "not configured",
+            "live_inventory_integration": "not configured",
+            "live_location_or_tracking": "not configured",
+        }
+
+    def donor_network_dashboard(self) -> dict[str, object]:
+        """Do not turn missing live data into misleading zero-valued cards."""
+        return {
+            "source": "live donor/request database",
+            "available": False,
+            "metrics": {
+                "registered_donors": None,
+                "available_registered_donors": None,
+                "active_emergency_requests": None,
+                "requests_awaiting_donor_responses": None,
+                "collection_appointments": None,
+                "fulfilled_from_verified_stock": None,
+                "awaiting_blood_bank_confirmation": None,
+            },
+            "message": "Live counts are unavailable until private identity and database services are configured.",
+        }
+
+    def start_coordination_demo(self) -> dict[str, Any]:
+        """Start a fixed synthetic scenario; no allocation or QAOA is implied."""
+        return start_demo()
+
+    def advance_coordination_demo(
+        self, actions: list[dict[str, Any]], action: str, donor_id: str | None = None
+    ) -> dict[str, Any]:
+        """Rebuild demo state from a small log; never trust browser-sent state."""
+        try:
+            state = start_demo()
+            for previous in actions:
+                state = apply_demo_action(state, previous["action"], previous.get("donor_id"))
+            return apply_demo_action(state, action, donor_id)
+        except (TypeError, KeyError, ValueError) as error:
+            raise APIServiceError(422, str(error), "invalid_demo_action") from error
 
     def experiment_defaults(self) -> dict[str, object]:
         """Expose the real solver defaults so experiment controls are inspectable."""

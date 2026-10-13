@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Activity, ArrowUpRight, Boxes, Building2, CircleHelp, Clock3, Droplets, Hospital, Play, TriangleAlert } from 'lucide-react';
+import { Activity, ArrowUpRight, Boxes, Building2, CircleHelp, Clock3, Droplets, Hospital, Play, TriangleAlert, UserRoundPlus, Siren, ClipboardCheck, Truck } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import LoadingState, { EmptyState, ErrorState } from '../components/Feedback';
@@ -7,6 +7,7 @@ import MetricCard from '../components/MetricCard';
 import NetworkOverview from '../components/NetworkOverview';
 import PageHeader from '../components/PageHeader';
 import { MetaRow } from '../components/DataField';
+import { getDashboardMetrics } from '../services/donorNetwork';
 
 function summarize(scenario, savedResults) {
   const banks = scenario.blood_banks || [];
@@ -44,8 +45,46 @@ function formatMethodLabel(method) {
 
 export default function Dashboard({ onNavigate, onOptimization }) {
   const { data, loading, error, reload } = useApi(async () => {
-    const [scenario, health, resultSet] = await Promise.all([api.getScenario(), api.getHealth(), api.getResults()]);
-    return { scenario, health, results: resultSet.results || [] };
+    const [scenario, health, resultSet, coordination] = await Promise.all([
+      api.getScenario(), api.getHealth(), api.getResults(),
+      api.getDonorNetworkDashboard().catch((issue) => ({
+        available: false,
+        message: `Coordination service is unavailable: ${issue.message}`,
+        metrics: {},
+      })),
+    ]);
+    let coordinationMetrics = coordination;
+    const hasPrivateConfig = Boolean(
+      import.meta.env.VITE_SUPABASE_URL?.trim()
+      && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim(),
+    );
+    if (hasPrivateConfig) {
+      try {
+        // Keep the authentication SDK out of the first dashboard bundle.
+        const { supabase } = await import('../services/supabase');
+        const { data: authData, error: authError } = await supabase.auth.getSession();
+        if (!authError && authData.session) {
+          coordinationMetrics = {
+            available: true,
+            message: '',
+            metrics: await getDashboardMetrics(supabase),
+          };
+        } else {
+          coordinationMetrics = {
+            available: false,
+            message: 'Sign in with an authorized platform-administrator account to view private coordination counts.',
+            metrics: {},
+          };
+        }
+      } catch {
+        coordinationMetrics = {
+          available: false,
+          message: 'Counts require an authorized platform-administrator account.',
+          metrics: {},
+        };
+      }
+    }
+    return { scenario, health, results: resultSet.results || [], coordination: coordinationMetrics };
   }, []);
 
   const summary = useMemo(() => data ? summarize(data.scenario, data.results) : null, [data]);
@@ -100,6 +139,23 @@ export default function Dashboard({ onNavigate, onOptimization }) {
             detail={summary.latestRun ? `Latest method: ${formatMethodLabel(summary.latestRun.result?.method)}` : 'Waiting for first run'}
             tone="blue"
           />
+        </section>
+        <section className="donor-dashboard-section" aria-labelledby="donor-dashboard-title">
+          <div className="donor-dashboard-heading"><div><span className="eyebrow">DONOR COORDINATION</span><h2 id="donor-dashboard-title">Donor network activity</h2><p>Private counts appear only after the authenticated coordination database is configured.</p></div><button type="button" className="button button-secondary button-small" onClick={() => onNavigate('donor-network')}>Open Donor Network <ArrowUpRight size={14} /></button></div>
+          <div className="metric-grid coordination-dashboard-grid" aria-label="Donor coordination metrics">
+            {[
+              [UserRoundPlus, 'Registered donors', 'registered_donors'],
+              [UserRoundPlus, 'Available donors', 'available_registered_donors'],
+              [Siren, 'Active requests', 'active_emergency_requests'],
+              [CircleHelp, 'Awaiting donor responses', 'requests_awaiting_donor_responses'],
+              [ClipboardCheck, 'Collection appointments', 'collection_appointments'],
+              [Boxes, 'Fulfilled from verified stock', 'fulfilled_from_verified_stock'],
+              [Truck, 'Awaiting bank confirmation', 'awaiting_blood_bank_confirmation'],
+            ].map(([Icon, label, key]) => {
+              const value = data.coordination?.metrics?.[key];
+              return <MetricCard key={key} icon={Icon} label={label} value={value == null ? 'Unavailable' : value.toLocaleString()} detail={value == null ? (data.coordination?.message || 'Live database not configured') : 'Live authorized records'} tone="slate" />;
+            })}
+          </div>
         </section>
         <div className="dashboard-columns">
           <NetworkOverview scenario={data.scenario} />

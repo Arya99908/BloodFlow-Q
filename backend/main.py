@@ -17,6 +17,7 @@ from backend.routes.demo import router as demo_router
 from backend.routes.operations import router as operations_router
 from backend.routes.results import router as results_router
 from backend.routes.scenario import router as scenario_router
+from backend.routes.donor_network import router as donor_network_router
 from backend.services import APIServiceError, BackendService
 
 logger = logging.getLogger(__name__)
@@ -131,6 +132,7 @@ def create_app(
     application.include_router(scenario_router)
     application.include_router(operations_router)
     application.include_router(results_router)
+    application.include_router(donor_network_router)
     return application
 
 

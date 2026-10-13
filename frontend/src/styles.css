@@ -4457,3 +4457,97 @@ th.num-cell {
     gap: 10px;
   }
 }
+
+/* Donor network and emergency coordination prototype */
+.coordination-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 18px; }
+.donor-live-gate, .critical-safety-banner, .simulated-callout { display: flex; align-items: flex-start; gap: 12px; }
+.donor-live-gate { margin-bottom: 18px; }
+.donor-live-gate p, .critical-safety-banner p { margin: 4px 0 0; line-height: 1.5; }
+.critical-safety-banner { padding: 15px 17px; margin-bottom: 18px; border: 1px solid #f2c7a3; border-radius: var(--radius-lg); color: #763e11; background: #fff8ef; }
+.critical-safety-banner svg { flex: 0 0 auto; margin-top: 1px; }
+.critical-safety-banner strong { font-size: 14px; }
+.critical-safety-banner p { font-size: 12px; }
+.donor-profile-form, .emergency-request-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 14px; }
+.donor-profile-form > label, .emergency-request-form > label { display: grid; gap: 6px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.donor-profile-form .field-control:disabled, .emergency-request-form .field-control:disabled { color: #65738a; background: #f5f7fa; cursor: not-allowed; opacity: .85; }
+.field-optional { color: var(--text-muted); font-size: 11px; font-weight: 400; }
+.form-span-two, .donor-consent-preview { grid-column: 1 / -1; }
+.donor-consent-preview { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: #f8fafc; }
+.donor-consent-preview label { display: flex; gap: 9px; align-items: flex-start; color: var(--text-secondary); font-size: 12px; line-height: 1.45; }
+.helper-text { color: var(--text-muted); font-size: 12px; line-height: 1.55; }
+.donor-profile-form .helper-text { grid-column: 1 / -1; margin: 0; }
+.donor-profile-form > button { justify-self: start; }
+.donor-inbox-empty { display: grid; justify-items: start; gap: 7px; text-align: left; }
+.donor-inbox-empty p { margin: 0 0 8px; }
+.demo-watermark { display: inline-flex; align-items: center; min-height: 25px; padding: 4px 8px; border: 1px solid #dbbd78; border-radius: 999px; color: #72500b; background: #fff8df; font-size: 9px; font-weight: 750; letter-spacing: .06em; }
+.donor-request-card { margin-top: 12px; padding: 13px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: #fff; }
+.donor-request-heading, .donor-request-heading > div { display: flex; align-items: center; gap: 8px; }
+.donor-request-heading { justify-content: space-between; }
+.donor-request-heading strong { font-size: 12px; }
+.donor-request-details { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin: 14px 0 8px; }
+.donor-request-details > div { min-width: 0; }
+.donor-request-details dt { margin-bottom: 3px; color: var(--text-muted); font-size: 10px; }
+.donor-request-details dd { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--text-primary); font-size: 11px; font-weight: 600; }
+.suggestion-reason { margin: 10px 0; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.donor-response-note { margin: 10px 0 0; color: var(--text-secondary); font-size: 12px; }
+.privacy-footnote { display: flex; align-items: flex-start; gap: 7px; margin-top: 14px; color: var(--text-muted); font-size: 11px; line-height: 1.45; }
+.privacy-footnote svg { flex: 0 0 auto; color: #24856f; }
+.donor-history-panel, .request-form-panel, .synthetic-request-panel, .coordination-status-panel { margin-top: 18px; }
+.history-placeholder { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; border-radius: var(--radius-md); background: #f8fafc; }
+.history-placeholder p { max-width: 740px; margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+.inline-success { color: #166534; font-size: 12px; }
+.inline-error { color: #b42318; font-size: 12px; }
+.request-form-panel, .synthetic-request-panel { margin-bottom: 18px; }
+.synthetic-request-panel .panel-heading { align-items: flex-start; }
+.synthetic-request-panel .panel-heading > div { min-width: 0; }
+.synthetic-request-body { margin-top: 18px; }
+.simulated-callout { padding: 13px; border: 1px solid #e5c97d; border-radius: var(--radius-md); color: #65490a; background: #fff9e7; font-size: 12px; line-height: 1.5; }
+.simulated-callout svg { flex: 0 0 auto; margin-top: 1px; }
+.demo-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.demo-summary-grid > div, .coordination-progress-grid > article { min-width: 0; padding: 12px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: #fff; }
+.demo-summary-grid span, .demo-summary-grid small, .coordination-progress-grid span, .coordination-progress-grid small { display: block; color: var(--text-muted); font-size: 10px; line-height: 1.45; }
+.demo-summary-grid strong { display: block; margin: 5px 0; color: var(--text-primary); font-size: 15px; overflow-wrap: anywhere; }
+.demo-workflow-steps { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0 17px; color: var(--text-muted); font-size: 11px; }
+.workflow-step { padding: 5px 8px; border: 1px solid var(--border-default); border-radius: 999px; background: #f8fafc; }
+.workflow-step.current { border-color: #efb6be; color: #8a2b3b; background: #fff1f3; font-weight: 650; }
+.workflow-step.done { border-color: #9fd2c4; color: #176653; background: #effaf6; }
+.workflow-action, .coordination-action { margin-top: 12px; }
+.appointment-card { display: grid; gap: 4px; margin: 13px 0; padding: 13px; border-left: 3px solid #537aaa; border-radius: var(--radius-sm); background: #f4f7fb; color: var(--text-secondary); font-size: 12px; }
+.appointment-card strong { color: var(--text-primary); }
+.appointment-card small { color: var(--text-muted); }
+.timeline-list { margin-top: 18px; }
+.timeline-list h3 { margin: 0 0 12px; font-size: 14px; }
+.timeline-item { position: relative; display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 9px; min-height: 35px; color: var(--text-secondary); font-size: 12px; }
+.timeline-item:not(:last-child)::before { position: absolute; top: 20px; bottom: -15px; left: 5px; width: 1px; background: var(--border-default); content: ''; }
+.timeline-item i { z-index: 1; width: 10px; height: 10px; border: 2px solid #6687b2; border-radius: 50%; background: #fff; }
+.timeline-item small { color: var(--text-muted); font-size: 10px; text-align: right; }
+.donor-dashboard-section { margin: 20px 0 18px; }
+.donor-dashboard-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 12px; }
+.donor-dashboard-heading h2 { margin: 4px 0; font-size: 17px; }
+.donor-dashboard-heading p { margin: 0; color: var(--text-muted); font-size: 12px; }
+.coordination-dashboard-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.coordination-progress-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 15px 0; }
+.coordination-progress-grid > article { display: grid; justify-items: start; gap: 5px; }
+.coordination-progress-grid > article svg { color: #537aaa; }
+.coordination-progress-grid strong { font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .coordination-columns { grid-template-columns: 1fr; }
+  .coordination-dashboard-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .coordination-progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .breadcrumbs { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
+  .breadcrumbs > span:first-child, .breadcrumbs .breadcrumb-slash { display: none; }
+  .breadcrumbs strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-right { flex: 0 0 auto; }
+  .mobile-menu { flex: 0 0 auto; }
+  .donor-profile-form, .emergency-request-form { grid-template-columns: 1fr; }
+  .form-span-two, .donor-consent-preview { grid-column: auto; }
+  .demo-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .coordination-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donor-dashboard-heading, .history-placeholder { align-items: flex-start; flex-direction: column; }
+  .timeline-item { grid-template-columns: 12px minmax(0, 1fr); }
+  .timeline-item small { grid-column: 2; text-align: left; }
+}

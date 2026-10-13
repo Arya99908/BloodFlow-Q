@@ -38,6 +38,14 @@ export const api = {
   getExperimentDefaults: () => request('/experiment-defaults'),
   getPrecomputedDemo: () => request('/precomputed-demo'),
   runDemo: (options) => post('/demo-run', options),
+  getDonorNetworkCapabilities: () => request('/coordination/capabilities'),
+  getDonorNetworkDashboard: () => request('/coordination/dashboard'),
+  startEmergencyRequestDemo: () => post('/coordination/demo/start', {}),
+  advanceEmergencyRequestDemo: (actions, action, donorId = null) => post('/coordination/demo/action', {
+    actions,
+    action,
+    donor_id: donorId,
+  }),
 };
 
 export function unwrapSavedResult(entry) {
