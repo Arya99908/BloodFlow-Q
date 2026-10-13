@@ -141,7 +141,7 @@ export default function Dashboard({ onNavigate, onOptimization }) {
           />
         </section>
         <section className="donor-dashboard-section" aria-labelledby="donor-dashboard-title">
-          <div className="donor-dashboard-heading"><div><span className="eyebrow">DONOR COORDINATION</span><h2 id="donor-dashboard-title">Donor network activity</h2><p>Private counts appear only after the authenticated coordination database is configured.</p></div><button type="button" className="button button-secondary button-small" onClick={() => onNavigate('donor-network')}>Open Donor Network <ArrowUpRight size={14} /></button></div>
+          <div className="donor-dashboard-heading"><div><span className="eyebrow">DONOR COORDINATION</span><h2 id="donor-dashboard-title">Donor network activity</h2><p>Private counts are shown only in an authenticated platform-administrator session. Synthetic coordination walkthroughs are available in Donor Network.</p></div><button type="button" className="button button-secondary button-small" onClick={() => onNavigate('donor-network')}>Open Donor Network <ArrowUpRight size={14} /></button></div>
           <div className="metric-grid coordination-dashboard-grid" aria-label="Donor coordination metrics">
             {[
               [UserRoundPlus, 'Registered donors', 'registered_donors'],
