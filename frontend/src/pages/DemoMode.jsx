@@ -5,6 +5,7 @@ import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
+import { getComparableResult } from '../utils/demoComparison';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
 const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
@@ -225,7 +226,10 @@ export default function DemoMode() {
               </thead>
               <tbody>
                 {comparableRuns.map((record) => {
-                  const row = record.result?.result;
+                  // Live API responses already put metrics directly under
+                  // `result`; older saved artifacts may wrap that response
+                  // once more. Normalize both shapes before rendering.
+                  const row = getComparableResult(record);
                   return (
                     <tr key={record.run_id || `${record.scenario_id}-${record.method}`}>
                       <td><strong>{record.method.toUpperCase()}</strong></td>
