@@ -14,3 +14,10 @@ export function getComparableResult(record) {
 
   return firstResult;
 }
+
+/** Keep preformatted percentages intact while formatting numeric metrics. */
+export function formatDemoMetric(value) {
+  if (typeof value === 'string' && /^\d+(?:\.\d+)?%$/.test(value.trim())) return value;
+  if (value == null || !Number.isFinite(Number(value))) return 'Not available';
+  return Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 });
+}

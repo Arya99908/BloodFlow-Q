@@ -5,7 +5,7 @@ import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
-import { getComparableResult } from '../utils/demoComparison';
+import { formatDemoMetric, getComparableResult } from '../utils/demoComparison';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
 const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
@@ -382,6 +382,6 @@ function NumberField({ label, value, onChange, min, max }) {
   return <label className="demo-field">{label}<input className="field-control" type="number" value={value} min={min} max={max} step="any" onChange={(event) => onChange(event.target.value)} /></label>;
 }
 
-function showMetric(value) { return value == null || !Number.isFinite(Number(value)) ? 'Not available' : Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 }); }
+function showMetric(value) { return formatDemoMetric(value); }
 function percent(value) { return value?.rate == null ? null : `${(value.rate * 100).toFixed(1)}%`; }
 function formatDate(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? 'Not available' : date.toLocaleString(); }
