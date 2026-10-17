@@ -79,6 +79,8 @@ class QAOAConfigInput(StrictModel):
     optimizer: Literal["COBYLA", "Nelder-Mead", "Powell"] = "COBYLA"
     max_iterations: int = Field(default=40, ge=1, le=500)
     seed: int = Field(default=7, ge=0, le=4_294_967_295)
+    warm_start: bool = Field(default=False)
+    mixer: Literal["x", "xy", "warm_start"] = "x"
 
 
 class OptimizeRequest(StrictModel):
@@ -185,6 +187,8 @@ class OptimizationResponse(StrictModel):
     optimizer_information: dict[str, object] | None = None
     raw_bitstring: str | None = None
     classical_repair_applied: bool = False
+    warm_start_used: bool = False
+    mixer_type: str = "x"
     # The service includes the effective run settings with real QAOA results.
     # Keep this in the strict response schema so FastAPI can serialize them.
     experiment_configuration: dict[str, object] | None = None

@@ -197,8 +197,15 @@ def _qaoa_config(value: QAOAConfigInput | None) -> QAOAConfig | None:
         return None
     if QAOAConfig is None:
         return None
-    return QAOAConfig(p=value.p, shots=value.shots, optimizer=value.optimizer,
-                      max_iterations=value.max_iterations, seed=value.seed)
+    return QAOAConfig(
+        p=value.p,
+        shots=value.shots,
+        optimizer=value.optimizer,
+        max_iterations=value.max_iterations,
+        seed=value.seed,
+        warm_start=value.warm_start,
+        mixer=value.mixer,
+    )
 
 
 def _allocation_rows(allocation) -> list[dict[str, object]]:
@@ -534,16 +541,23 @@ class BackendService:
             "qubo_variable_count": qubo.variable_count,
             "qaoa_depth": sample_value("qaoa_depth"),
             "shots": sample_value("number_of_shots", sample_value("shots")),
+            "warm_start_used": sample_value("warm_start_used", False),
+            "mixer_type": sample_value("mixer_type", "x"),
             "best_measured_bitstring": sample_value("best_bitstring"),
             "counts": dict(sample_value("counts", {})),
             "measured_mean_energy": sample_value("measured_mean_energy"),
             "qaoa_runtime_seconds": sample_value("runtime_seconds"),
             "optimizer_information": sample_value("optimizer_information"),
             "experiment_configuration": {
-                "qaoa": {"p": solver.config.p, "shots": solver.config.shots,
-                         "optimizer": solver.config.optimizer,
-                         "max_iterations": solver.config.max_iterations,
-                         "seed": solver.config.seed},
+                "qaoa": {
+                    "p": solver.config.p,
+                    "shots": solver.config.shots,
+                    "optimizer": solver.config.optimizer,
+                    "max_iterations": solver.config.max_iterations,
+                    "seed": solver.config.seed,
+                    "warm_start": getattr(solver.config, "warm_start", False),
+                    "mixer": getattr(solver.config, "mixer", "x"),
+                },
                 "objective_weights": asdict(weights),
                 "penalty_weights": asdict(penalties),
             },
