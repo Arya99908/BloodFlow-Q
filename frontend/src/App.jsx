@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Activity, AlertTriangle, Boxes, ChevronDown, ClipboardPlus, FileClock, FlaskConical, HeartPulse, Hospital, LayoutDashboard, Menu, Network, Settings2, Siren, X, PlayCircle, UserRoundPlus, Truck } from 'lucide-react';
+import { Activity, AlertTriangle, Boxes, ChevronDown, ClipboardPlus, FileClock, FlaskConical, HeartPulse, Hospital, LayoutDashboard, Menu, Moon, Network, Settings2, Siren, Sun, X, PlayCircle, UserRoundPlus, Truck } from 'lucide-react';
 import { api } from './services/api';
 import Dashboard from './pages/Dashboard';
 import BloodBanks from './pages/BloodBanks';
@@ -11,6 +11,8 @@ import Results from './pages/Results';
 import About from './pages/About';
 import DemoMode from './pages/DemoMode';
 import LoadingState from './components/Feedback';
+import Chatbot from './components/Chatbot';
+import AlertCenter from './components/AlertCenter';
 
 // The private coordination module includes an optional auth client. Load it
 // only when a user opens those pages so the public research dashboard stays
@@ -38,11 +40,20 @@ const TITLES = Object.fromEntries(NAV_ITEMS.map(({ id, label }) => [id, label]))
 
 export default function App() {
   const [page, setPage] = useState('dashboard');
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('bloodflow-theme') === 'dark' ? 'dark' : 'light'; }
+    catch { return 'light'; }
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState(null);
   const [optimizationLoading, setOptimizationLoading] = useState(false);
   const [optimizationError, setOptimizationError] = useState('');
   const [coordinationDemo, setCoordinationDemo] = useState(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('bloodflow-theme', theme); } catch { /* Storage may be unavailable in private browsing. */ }
+  }, [theme]);
 
   const startCoordinationDemo = async () => {
     const state = await api.startEmergencyRequestDemo();
@@ -100,9 +111,28 @@ export default function App() {
       <div className="sidebar-bottom"><div className="sidebar-status"><span className="status-dot" /><span><strong>Prototype mode</strong><small>Operational research only</small></span></div><div className="sidebar-disclaimer"><AlertTriangle size={13} /> Not for clinical decisions</div></div>
     </aside>
     <div className="main-shell">
-      <header className="topbar"><button className="mobile-menu" aria-label="Open navigation" aria-controls="primary-navigation" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><div className="breadcrumbs" aria-label="Breadcrumb"><span>BloodFlow-Q</span><span className="breadcrumb-slash" aria-hidden="true">/</span><strong aria-current="page">{TITLES[page] || 'Dashboard'}</strong></div><div className="topbar-right"><span className="environment-pill"><i aria-hidden="true" />Synthetic data</span><span className="topbar-divider" /><div className="user-chip"><span aria-hidden="true">R</span><strong>Researcher</strong></div></div></header>
+      <header className="topbar">
+        <button className="mobile-menu" aria-label="Open navigation" aria-controls="primary-navigation" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}><Menu size={20} /></button>
+        <div className="breadcrumbs" aria-label="Breadcrumb"><span>BloodFlow-Q</span><span className="breadcrumb-slash" aria-hidden="true">/</span><strong aria-current="page">{TITLES[page] || 'Dashboard'}</strong></div>
+        <div className="topbar-right">
+          <AlertCenter onNavigate={navigate} onOptimization={runQuickOptimization} />
+          <button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}<span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          </button>
+          <span className="environment-pill"><i aria-hidden="true" />Synthetic data</span>
+          <span className="topbar-divider" />
+          <div className="user-chip"><span aria-hidden="true">R</span><strong>Researcher</strong></div>
+        </div>
+      </header>
       <main className="page-content" id="main-content"><div className="page-container"><Suspense fallback={<LoadingState label="Loading coordination tools…" />}>{renderPage()}</Suspense></div></main>
       <footer className="app-footer"><span><Activity size={13} /> BloodFlow-Q research prototype</span><span>Aggregate logistics model <i /> Synthetic data only</span></footer>
     </div>
+    <Chatbot
+      currentPage={page}
+      currentTheme={theme}
+      onNavigate={navigate}
+      onOptimization={runQuickOptimization}
+      onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+    />
   </div>;
 }
