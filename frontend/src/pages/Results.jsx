@@ -96,7 +96,33 @@ export default function Results() {
         <p className="comparison-help">Penalty weights must strictly exceed the objective bound (&gt; {objectiveBound != null ? objectiveBound.toFixed(1) : '—'}). If QAOA exceeds local qubit limits, it will be skipped cleanly without affecting other solvers.</p>
       </>}
       <details className="demo-objective-settings results-repro-controls"><summary>Experiment configuration · objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <label className="demo-field" key={key}>{key.replaceAll('_', ' ')}<input className="field-control" type="number" min="0" step="any" value={value} onChange={(event) => setObjectiveWeights((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}</div></details>
-      {includeQAOA && <div className="demo-settings-grid results-qaoa-settings">{[['seed','Random seed'],['p','QAOA depth'],['shots','Shots'],['max_iterations','Optimizer iterations']].map(([key,label]) => <label className="demo-field" key={key}>{label}<input className="field-control" type="number" min="0" value={qaoaConfig[key]} onChange={(event) => setQaoaConfig((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}<label className="demo-field">Classical optimizer<select className="field-control" value={qaoaConfig.optimizer} onChange={(event) => setQaoaConfig((current) => ({ ...current, optimizer: event.target.value }))}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label></div>}
+      {includeQAOA && (
+        <div className="demo-settings-grid results-qaoa-settings">
+          {[['seed','Random seed'],['p','QAOA depth'],['shots','Shots'],['max_iterations','Optimizer iterations']].map(([key,label]) => (
+            <label className="demo-field" key={key}>{label}
+              <input className="field-control" type="number" min="0" value={qaoaConfig[key]} onChange={(event) => setQaoaConfig((current) => ({ ...current, [key]: Number(event.target.value) }))} />
+            </label>
+          ))}
+          <label className="demo-field">Classical optimizer
+            <select className="field-control" value={qaoaConfig.optimizer} onChange={(event) => setQaoaConfig((current) => ({ ...current, optimizer: event.target.value }))}>
+              <option>COBYLA</option>
+              <option>Nelder-Mead</option>
+              <option>Powell</option>
+            </select>
+          </label>
+          <label className="demo-field">Mixer type
+            <select className="field-control" value={qaoaConfig.mixer || 'x'} onChange={(event) => setQaoaConfig((current) => ({ ...current, mixer: event.target.value }))}>
+              <option value="x">Standard X-Mixer</option>
+              <option value="xy">XY-Mixer (Conserves Excitations)</option>
+              <option value="warm_start">Warm-Started Mixer</option>
+            </select>
+          </label>
+          <label className="demo-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}>
+            <input type="checkbox" checked={Boolean(qaoaConfig.warm_start)} onChange={(event) => setQaoaConfig((current) => ({ ...current, warm_start: event.target.checked }))} />
+            <span>Warm-Start from MILP Bias</span>
+          </label>
+        </div>
+      )}
       {benchmarkLoading && <LoadingState label="The backend is running the requested benchmark methods…" />}
       {benchmarkError && <ErrorState message={benchmarkError} />}
       {!benchmarkLoading && benchmarkRows && <>

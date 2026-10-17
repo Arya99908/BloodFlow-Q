@@ -8,7 +8,7 @@ import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { formatDemoMetric, getComparableResult } from '../utils/demoComparison';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
-const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
+const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, warm_start: false, mixer: 'x' };
 
 export default function DemoMode() {
   const { data: catalog, loading, error, reload } = useApi(api.getDemoScenarios, []);
@@ -49,7 +49,10 @@ export default function DemoMode() {
   }, [liveRuns, mode, storedRuns]);
 
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
-  const setQaoaValue = (key, value) => setQaoa((current) => ({ ...current, [key]: key === 'optimizer' ? value : Number(value) }));
+  const setQaoaValue = (key, value) => setQaoa((current) => ({
+    ...current,
+    [key]: (key === 'optimizer' || key === 'mixer' || key === 'warm_start') ? value : Number(value),
+  }));
 
   const demoBound = useMemo(() => {
     const costWeight = Number(objectiveWeights?.transportation_cost_weight ?? 1);
@@ -132,6 +135,8 @@ export default function DemoMode() {
               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
               <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
               <label className="demo-field">Classical optimizer<select className="field-control" value={qaoaSettings.optimizer} onChange={(event) => setQaoaValue('optimizer', event.target.value)}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label>
+              <label className="demo-field">Mixer type<select className="field-control" value={qaoaSettings.mixer || 'x'} onChange={(event) => setQaoaValue('mixer', event.target.value)}><option value="x">Standard X-Mixer</option><option value="xy">XY-Mixer (Conserves Excitations)</option><option value="warm_start">Warm-Started Mixer</option></select></label>
+              <label className="demo-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}><input type="checkbox" checked={Boolean(qaoaSettings.warm_start)} onChange={(event) => setQaoaValue('warm_start', event.target.checked)} /> <span>Warm-Start from MILP Bias</span></label>
             </div>
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
@@ -192,6 +197,8 @@ export default function DemoMode() {
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
+                  <MetaRow label="Warm-Start" value={(output?.after_qaoa || output)?.warm_start_used ? 'Enabled (MILP bias)' : 'Disabled'} />
+                  <MetaRow label="Mixer" value={((output?.after_qaoa || output)?.mixer_type || 'x').toUpperCase()} />
                   <div className="bitstring-box">
                     <span className="bitstring-label">Best measured bitstring:</span>
                     <code className="bitstring-code">{(output?.after_qaoa || output)?.best_measured_bitstring ?? 'Not available'}</code>
