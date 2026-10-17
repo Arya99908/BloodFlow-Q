@@ -8,6 +8,7 @@ import NetworkOverview from '../components/NetworkOverview';
 import PageHeader from '../components/PageHeader';
 import { MetaRow } from '../components/DataField';
 import { getDashboardMetrics } from '../services/donorNetwork';
+import { formatDashboardCount, getDashboardAccessState } from '../utils/dashboardAccess';
 
 function summarize(scenario, savedResults) {
   const banks = scenario.blood_banks || [];
@@ -53,35 +54,32 @@ export default function Dashboard({ onNavigate, onOptimization }) {
         metrics: {},
       })),
     ]);
-    let coordinationMetrics = coordination;
     const hasPrivateConfig = Boolean(
       import.meta.env.VITE_SUPABASE_URL?.trim()
       && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim(),
     );
-    if (hasPrivateConfig) {
+    let coordinationMetrics = { ...coordination, metrics: {}, access: null };
+    if (!hasPrivateConfig) {
+      coordinationMetrics.access = getDashboardAccessState({ configured: false });
+    } else {
+      // Keep the authentication SDK out of the first dashboard bundle.
+      const { supabase } = await import('../services/supabase');
       try {
-        // Keep the authentication SDK out of the first dashboard bundle.
-        const { supabase } = await import('../services/supabase');
         const { data: authData, error: authError } = await supabase.auth.getSession();
-        if (!authError && authData.session) {
-          coordinationMetrics = {
-            available: true,
-            message: '',
-            metrics: await getDashboardMetrics(supabase),
-          };
+        if (authError) {
+          coordinationMetrics.access = getDashboardAccessState({ configured: true, session: null, error: authError });
+        } else if (!authData.session) {
+          coordinationMetrics.access = getDashboardAccessState({ configured: true, session: null });
         } else {
-          coordinationMetrics = {
-            available: false,
-            message: 'Sign in with an authorized platform-administrator account to view private coordination counts.',
-            metrics: {},
-          };
+          try {
+            coordinationMetrics.metrics = await getDashboardMetrics(supabase);
+            coordinationMetrics.access = getDashboardAccessState({ configured: true, session: authData.session });
+          } catch (issue) {
+            coordinationMetrics.access = getDashboardAccessState({ configured: true, session: authData.session, error: issue });
+          }
         }
-      } catch {
-        coordinationMetrics = {
-          available: false,
-          message: 'Counts require an authorized platform-administrator account.',
-          metrics: {},
-        };
+      } catch (issue) {
+        coordinationMetrics.access = getDashboardAccessState({ configured: true, session: null, error: issue });
       }
     }
     return { scenario, health, results: resultSet.results || [], coordination: coordinationMetrics };
@@ -141,7 +139,11 @@ export default function Dashboard({ onNavigate, onOptimization }) {
           />
         </section>
         <section className="donor-dashboard-section" aria-labelledby="donor-dashboard-title">
-          <div className="donor-dashboard-heading"><div><span className="eyebrow">DONOR COORDINATION</span><h2 id="donor-dashboard-title">Donor network activity</h2><p>Private counts are shown only in an authenticated platform-administrator session. Synthetic coordination walkthroughs are available in Donor Network.</p></div><button type="button" className="button button-secondary button-small" onClick={() => onNavigate('donor-network')}>Open Donor Network <ArrowUpRight size={14} /></button></div>
+          <div className="donor-dashboard-heading"><div><span className="eyebrow">DONOR COORDINATION</span><h2 id="donor-dashboard-title">Donor network activity</h2><p>Counts come from the live Supabase database and are restricted to verified platform administrators. Empty tables appear as 0 only after the database confirms that count.</p></div><button type="button" className="button button-secondary button-small" onClick={() => onNavigate('donor-network')}>{data.coordination?.access?.key === 'available' ? 'Open Donor Network' : 'Sign in to view counts'} <ArrowUpRight size={14} /></button></div>
+          {data.coordination?.access?.key !== 'available' && <div className={`notice ${data.coordination?.access?.key === 'database_error' ? 'notice-error' : 'notice-info'}`} role="status">
+            <CircleHelp size={17} />
+            <span>{data.coordination?.access?.message || 'Live database counts are not available in this session.'} The public dashboard cannot read private donor records.</span>
+          </div>}
           <div className="metric-grid coordination-dashboard-grid" aria-label="Donor coordination metrics">
             {[
               [UserRoundPlus, 'Registered donors', 'registered_donors'],
@@ -152,8 +154,20 @@ export default function Dashboard({ onNavigate, onOptimization }) {
               [Boxes, 'Fulfilled from verified stock', 'fulfilled_from_verified_stock'],
               [Truck, 'Awaiting bank confirmation', 'awaiting_blood_bank_confirmation'],
             ].map(([Icon, label, key]) => {
-              const value = data.coordination?.metrics?.[key];
-              return <MetricCard key={key} icon={Icon} label={label} value={value == null ? 'Unavailable' : value.toLocaleString()} detail={value == null ? (data.coordination?.message || 'Live database not configured') : 'Live authorized records'} tone="slate" />;
+              const access = data.coordination?.access;
+              const value = access?.key === 'available'
+                ? formatDashboardCount(data.coordination?.metrics, key, 'Not returned')
+                : (access?.valueLabel || 'Unavailable');
+              const detail = access?.key === 'available'
+                ? 'Live authorized database count'
+                : access?.key === 'admin_required'
+                  ? 'Verified admin role required'
+                  : access?.key === 'sign_in_required'
+                    ? 'Administrator sign-in required'
+                    : access?.key === 'not_configured'
+                      ? 'Database connection not configured'
+                      : 'Database query needs attention';
+              return <MetricCard key={key} icon={Icon} label={label} value={value} detail={detail} tone="slate" />;
             })}
           </div>
         </section>

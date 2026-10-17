@@ -158,7 +158,19 @@ export async function advanceRequestStatus(client, requestId, status) {
 
 export async function getDashboardMetrics(client) {
   const { data, error } = await client.rpc('get_coordination_dashboard');
-  if (error) throw new Error(error.message);
+  if (error) {
+    // Preserve Supabase's authorization code so the dashboard can distinguish
+    // a missing admin role from a temporary database/query problem.
+    throw Object.assign(new Error(error.message), { code: error.code });
+  }
+  const expectedCounts = [
+    'registered_donors', 'available_registered_donors', 'active_emergency_requests',
+    'requests_awaiting_donor_responses', 'collection_appointments',
+    'fulfilled_from_verified_stock', 'awaiting_blood_bank_confirmation',
+  ];
+  if (!data || expectedCounts.some((key) => !Number.isInteger(data[key]) || data[key] < 0)) {
+    throw new Error('The database returned an incomplete dashboard metrics response.');
+  }
   return data;
 }
 
