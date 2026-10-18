@@ -56,13 +56,14 @@ export default function Results() {
     try {
       const request = { include_qaoa: includeQAOA, include_milp: true, objective_weights: objectiveWeights };
       if (includeQAOA) {
-        if (!inventoryPenalty || !demandPenalty) throw new Error('Enter both QUBO penalty weights to run QAOA.');
-        const inv = Number(inventoryPenalty);
-        const dem = Number(demandPenalty);
-        if (objectiveBound && (inv <= objectiveBound || dem <= objectiveBound)) {
-          throw new Error(`QUBO penalty weights must strictly exceed this scenario's theoretical objective bound (> ${objectiveBound.toFixed(1)}). Please enter larger values (e.g. ${Math.ceil(objectiveBound * 1.5)} or 10000).`);
+        if (inventoryPenalty && demandPenalty) {
+          const inv = Number(inventoryPenalty);
+          const dem = Number(demandPenalty);
+          if (objectiveBound && (inv <= objectiveBound || dem <= objectiveBound)) {
+            throw new Error(`QUBO penalty weights must strictly exceed this scenario's theoretical objective bound (> ${objectiveBound.toFixed(1)}). Please enter larger values (e.g. ${Math.ceil(objectiveBound * 1.5)} or 10000).`);
+          }
+          request.qaoa_penalties = { inventory_penalty_weight: inv, demand_penalty_weight: dem };
         }
-        request.qaoa_penalties = { inventory_penalty_weight: inv, demand_penalty_weight: dem };
         request.qaoa_config = qaoaConfig;
       }
       const response = await api.benchmark(request);

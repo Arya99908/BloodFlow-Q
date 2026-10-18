@@ -213,3 +213,114 @@ class MILPSolver:
             status="completed" if report["feasible"] else "infeasible",
             runtime_seconds=time.perf_counter() - start_time,
         )
+
+    def solve_relaxation(
+        self,
+        scenario: Scenario,
+        objective_config: ObjectiveConfig,
+        secondary_penalties: Mapping[str, float] | None = None,
+    ) -> dict[str, dict]:
+        """Solve the continuous LP relaxation, returning fractional values for warm-starting."""
+        allocation_vars = scenario.allocation_variables()
+        routes = {(r.source, r.destination): r for r in scenario.routes}
+
+        num_x = len(allocation_vars)
+        demand_rows: list[tuple[str, str, int]] = []
+        for hospital in scenario.hospitals:
+            for group, req in hospital.demand.items():
+                if req > 0:
+                    demand_rows.append((hospital.id, group, req))
+        num_u = len(demand_rows)
+        num_vars = num_x + num_u
+
+        if num_vars == 0:
+            return {"allocation": {}, "unmet_demand": {}, "slack": {}}
+
+        c = np.zeros(num_vars, dtype=float)
+        lb = np.zeros(num_vars, dtype=float)
+        ub = np.zeros(num_vars, dtype=float)
+
+        for i, var in enumerate(allocation_vars):
+            route = routes[(var.source, var.destination)]
+            c[i] = (
+                objective_config.transportation_cost_weight * route.transport_cost
+                + objective_config.transportation_time_weight * route.travel_time_minutes
+            )
+            lb[i] = 0.0
+            ub[i] = float(var.upper_bound)
+
+        hospitals = {h.id: h for h in scenario.hospitals}
+        for j, (h_id, group, req) in enumerate(demand_rows):
+            var_idx = num_x + j
+            urgency = hospitals[h_id].urgency[group]
+            unit_penalty = objective_config.total_unmet_weight
+            if urgency.category in {"high", "critical"}:
+                unit_penalty += objective_config.critical_unmet_weight * urgency.priority_weight
+            c[var_idx] = unit_penalty
+            lb[var_idx] = 0.0
+            ub[var_idx] = float(req)
+
+        # 0 for continuous variables in SciPy HiGHS milp
+        integrality = np.zeros(num_vars, dtype=int)
+
+        num_demand_constraints = len(demand_rows)
+        bank_inv_rows: list[tuple[str, str, int]] = []
+        for bank in scenario.blood_banks:
+            for group, avail in bank.inventory.items():
+                bank_inv_rows.append((bank.id, group, avail))
+        num_inv_constraints = len(bank_inv_rows)
+
+        total_constraints = num_demand_constraints + num_inv_constraints
+        A = np.zeros((total_constraints, num_vars), dtype=float)
+        lhs = np.zeros(total_constraints, dtype=float)
+        rhs = np.zeros(total_constraints, dtype=float)
+
+        for row_idx, (h_id, group, req) in enumerate(demand_rows):
+            for x_idx, var in enumerate(allocation_vars):
+                if var.destination == h_id and var.recipient_group == group:
+                    A[row_idx, x_idx] = 1.0
+            u_idx = num_x + row_idx
+            A[row_idx, u_idx] = 1.0
+            lhs[row_idx] = float(req)
+            rhs[row_idx] = float(req)
+
+        for inv_idx, (b_id, group, avail) in enumerate(bank_inv_rows):
+            row_idx = num_demand_constraints + inv_idx
+            for x_idx, var in enumerate(allocation_vars):
+                if var.source == b_id and var.blood_group == group:
+                    A[row_idx, x_idx] = 1.0
+            lhs[row_idx] = 0.0
+            rhs[row_idx] = float(avail)
+
+        res = milp(c=c, integrality=integrality, bounds=Bounds(lb, ub), constraints=LinearConstraint(A, lhs, rhs))
+        if not res.success:
+            raise MILPSolverError(f"LP relaxation solver failed: {res.status} ({res.message})")
+
+        sol = res.x
+        alloc_dict: dict[tuple[str, str, str, str], float] = {}
+        used_stock: dict[tuple[str, str], float] = {}
+        for i, var in enumerate(allocation_vars):
+            val = float(sol[i])
+            if val > 1e-6:
+                key = (var.source, var.destination, var.blood_group, var.recipient_group)
+                alloc_dict[key] = val
+                used_stock[(var.source, var.blood_group)] = used_stock.get((var.source, var.blood_group), 0.0) + val
+
+        unmet_dict: dict[tuple[str, str], float] = {}
+        for j, (h_id, group, _) in enumerate(demand_rows):
+            val = float(sol[num_x + j])
+            if val > 1e-6:
+                unmet_dict[(h_id, group)] = val
+
+        slack_dict: dict[tuple[str, str], float] = {}
+        for bank in scenario.blood_banks:
+            for grp, avail in bank.inventory.items():
+                if avail > 0:
+                    used = used_stock.get((bank.id, grp), 0.0)
+                    slack_dict[(bank.id, grp)] = max(0.0, float(avail) - used)
+
+        return {
+            "allocation": alloc_dict,
+            "unmet_demand": unmet_dict,
+            "slack": slack_dict,
+        }

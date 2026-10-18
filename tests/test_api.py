@@ -304,5 +304,96 @@ class APITests(unittest.TestCase):
                             "https://untrusted.example")
 
 
+    def test_benchmark_with_include_qaoa_without_explicit_penalties_auto_derives_safely(self) -> None:
+        response = self.client.post("/benchmark", json={
+            "include_qaoa": True,
+            "include_milp": True,
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        data = response.json()
+        records = data["results"]
+        methods = [r["method"] for r in records]
+        self.assertEqual(methods, ["greedy", "milp", "exact", "qaoa"])
+        greedy_row = next(r for r in records if r["method"] == "greedy")
+        milp_row = next(r for r in records if r["method"] == "milp")
+        exact_row = next(r for r in records if r["method"] == "exact")
+        qaoa_row = next(r for r in records if r["method"] == "qaoa")
+        self.assertEqual(greedy_row["status"], "completed")
+        self.assertEqual(milp_row["status"], "completed")
+        self.assertEqual(exact_row["status"], "skipped_too_large")
+        self.assertEqual(qaoa_row["status"], "skipped_too_large")
+        self.assertIn("16 qubits", qaoa_row["detail"])
+        self.assertIn("222 qubits", qaoa_row["detail"])
+        # Classical solver results were not corrupted or discarded
+        self.assertIsNotNone(greedy_row["objective_value"])
+        self.assertIsNotNone(milp_row["objective_value"])
+
+    def test_benchmark_tiny_scenario_with_include_qaoa_without_penalties(self) -> None:
+        service = BackendService(qaoa_solver=QAOASolver(QAOAConfig(
+            p=1, shots=32, max_iterations=5, seed=3, max_qubits=8,
+        )))
+        client = TestClient(create_app(service))
+        response = client.post("/benchmark", json={
+            "scenarios": [tiny_scenario_payload()],
+            "include_qaoa": True,
+            "include_milp": True,
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        records = response.json()["results"]
+        qaoa = next(r for r in records if r["method"] == "qaoa")
+        self.assertIn(qaoa["status"], {"completed", "infeasible"})
+        self.assertIsNotNone(qaoa["objective_value"])
+        self.assertIsNotNone(qaoa["runtime_seconds"])
+
+    def test_benchmark_with_insufficient_penalties_preserves_classical_results(self) -> None:
+        service = BackendService(qaoa_solver=QAOASolver(QAOAConfig(
+            p=1, shots=32, max_iterations=5, seed=3, max_qubits=8,
+        )))
+        client = TestClient(create_app(service))
+        response = client.post("/benchmark", json={
+            "scenarios": [tiny_scenario_payload()],
+            "include_qaoa": True,
+            "include_milp": True,
+            "qaoa_penalties": {"inventory_penalty_weight": 0.01, "demand_penalty_weight": 0.01},
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        records = response.json()["results"]
+        greedy = next(r for r in records if r["method"] == "greedy")
+        milp = next(r for r in records if r["method"] == "milp")
+        qaoa = next(r for r in records if r["method"] == "qaoa")
+        self.assertEqual(greedy["status"], "completed")
+        self.assertEqual(milp["status"], "completed")
+        self.assertEqual(qaoa["status"], "unsupported")
+        self.assertIn("greater than the conservative objective upper bound", qaoa["detail"])
+
+    def test_benchmark_with_failing_qaoa_solver_preserves_classical_results(self) -> None:
+        client = TestClient(create_app(BackendService(qaoa_solver=FailingQAOA())))
+        response = client.post("/benchmark", json={
+            "scenarios": [tiny_scenario_payload()],
+            "include_qaoa": True,
+            "include_milp": True,
+            "qaoa_penalties": {"inventory_penalty_weight": 100, "demand_penalty_weight": 100},
+        })
+        self.assertEqual(response.status_code, 200, response.text)
+        records = response.json()["results"]
+        greedy = next(r for r in records if r["method"] == "greedy")
+        milp = next(r for r in records if r["method"] == "milp")
+        qaoa = next(r for r in records if r["method"] == "qaoa")
+        self.assertEqual(greedy["status"], "completed")
+        self.assertEqual(milp["status"], "completed")
+        self.assertEqual(qaoa["status"], "error")
+        self.assertIn("simulated QAOA simulator failure", qaoa["detail"])
+
+    def test_benchmark_with_qaoa_not_implemented_returns_501(self) -> None:
+        client = TestClient(create_app(BackendService(qaoa_solver=None)))
+        response = client.post("/benchmark", json={
+            "scenarios": [tiny_scenario_payload()],
+            "include_qaoa": True,
+        })
+        self.assertEqual(response.status_code, 501)
+        self.assertEqual(response.json()["error"], "qaoa_not_implemented")
+
+
 if __name__ == "__main__":
     unittest.main()
+

@@ -51,7 +51,12 @@ from optimization.models import (
     Urgency,
 )
 from optimization.objective import ObjectiveConfig, ObjectiveResult
-from quantum.qubo import QUBOInputError, QUBOPenaltyConfig, build_qubo
+from quantum.qubo import (
+    QUBOInputError,
+    QUBOPenaltyConfig,
+    build_qubo,
+    compute_conservative_objective_bound,
+)
 try:
     from quantum.qaoa_solver import QAOAConfig, QAOAResourceLimitError, QAOASolver, QAOASolverError
     _QAOA_IMPORT_ERROR: Exception | None = None
@@ -92,12 +97,20 @@ class QAOASolverAdapter:
 
     name = "qaoa"
 
-    def __init__(self, solver, penalties: QUBOPenaltyConfig) -> None:
+    def __init__(self, solver, penalties: QUBOPenaltyConfig | None = None) -> None:
         self.solver = solver
         self.penalties = penalties
 
     def solve(self, scenario, objective_config, secondary_penalties=None):
-        qubo = build_qubo(scenario, objective_config, self.penalties, secondary_penalties)
+        penalties = self.penalties
+        if penalties is None:
+            bound = compute_conservative_objective_bound(scenario, objective_config)
+            safe_penalty = max(100.0, bound * 1.5 + 10.0)
+            penalties = QUBOPenaltyConfig(
+                inventory_penalty_weight=safe_penalty,
+                demand_penalty_weight=safe_penalty,
+            )
+        qubo = build_qubo(scenario, objective_config, penalties, secondary_penalties)
         run = self.solver.solve(qubo)
         bitstring = _extract_best_bitstring(run)
         return evaluate_quantum_solution(qubo, bitstring)
@@ -652,14 +665,12 @@ class BackendService:
         weights = _objective_weights(request.objective_weights)
         solver = self._solver_for(request.qaoa_config) if request.include_qaoa else self.qaoa_solver
         qaoa_adapter = None
+        penalties = None
         if request.include_qaoa:
-            penalties = _qubo_penalties(request.qaoa_penalties)
             if solver is None:
                 raise APIServiceError(501, f"{_qaoa_unavailable_detail()}; QAOA metrics will not be generated",
                                       "qaoa_not_implemented")
-            if penalties is None:
-                raise APIServiceError(422, "qaoa_penalties are required when include_qaoa is true",
-                                      "missing_qaoa_penalties")
+            penalties = _qubo_penalties(request.qaoa_penalties)
             qaoa_adapter = QAOASolverAdapter(solver, penalties)
         try:
             records = run_benchmark_suite(
@@ -670,17 +681,20 @@ class BackendService:
             )
         except QAOASolverError as error:
             logger.warning("Benchmark QAOA simulator failed: %s", error)
-            raise APIServiceError(502, str(error), "qaoa_failure") from error
+            raise APIServiceError(502, f"Benchmark QAOA simulator failed: {error}", "qaoa_failure") from error
         except Exception as error:
-            logger.exception("Benchmark optimizer failed")
+            logger.exception("Benchmark optimizer failed: %s", error)
             status = 502 if request.include_qaoa else 500
+            error_code = "benchmark_failure"
             if isinstance(error, QUBOInputError):
                 status = 422
-            if isinstance(error, QAOAResourceLimitError):
+                error_code = "invalid_qubo_configuration"
+            elif isinstance(error, QAOAResourceLimitError):
                 status = 422
+                error_code = "qaoa_instance_too_large"
             raise APIServiceError(
-                status, "Benchmark optimization failed. Check the backend logs for diagnostic details.",
-                "benchmark_failure",
+                status, f"Benchmark optimization failed: {error}",
+                error_code,
             ) from error
         methods_list = ["greedy"] + (["milp"] if request.include_milp else []) + ["exact"] + (["qaoa"] if request.include_qaoa else [])
         payload = {
@@ -689,8 +703,14 @@ class BackendService:
                 "scenario_ids": [scenario.id for scenario in scenarios],
                 "methods": methods_list,
                 "objective_weights": asdict(weights),
-                "qaoa": asdict(solver.config) if request.include_qaoa and solver is not None else None,
-                "penalty_weights": asdict(penalties) if request.include_qaoa else None,
+                "qaoa": (
+                    asdict(solver.config)
+                    if hasattr(solver, "config") and is_dataclass(solver.config)
+                    else (solver.config if hasattr(solver, "config") and isinstance(solver.config, dict) else None)
+                ) if request.include_qaoa and solver is not None else None,
+                "penalty_weights": asdict(penalties) if (request.include_qaoa and penalties is not None) else (
+                    {"auto_calculated": True} if request.include_qaoa else None
+                ),
                 "exact_max_candidate_states": request.exact_max_candidate_states,
             },
         }

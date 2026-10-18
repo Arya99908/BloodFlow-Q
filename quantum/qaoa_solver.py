@@ -113,15 +113,27 @@ class QAOASolver:
 
             try:
                 from optimization.milp import MILPSolver
-                milp_res = MILPSolver().solve(
-                    scenario,
-                    qubo.objective_config,
-                    getattr(qubo, "secondary_penalties", None),
-                )
-                for dec in milp_res.allocation:
-                    alloc_map[(dec.source, dec.destination, dec.blood_group, dec.recipient_group)] = dec.quantity
-                unmet_map = dict(milp_res.unmet_demand)
-                solved = True
+                milp_solver = MILPSolver()
+                if hasattr(milp_solver, "solve_relaxation"):
+                    lp_res = milp_solver.solve_relaxation(
+                        scenario,
+                        qubo.objective_config,
+                        getattr(qubo, "secondary_penalties", None),
+                    )
+                    alloc_map = lp_res["allocation"]
+                    unmet_map = lp_res["unmet_demand"]
+                    slack_map = lp_res["slack"]
+                    solved = True
+                else:
+                    milp_res = milp_solver.solve(
+                        scenario,
+                        qubo.objective_config,
+                        getattr(qubo, "secondary_penalties", None),
+                    )
+                    for dec in milp_res.allocation:
+                        alloc_map[(dec.source, dec.destination, dec.blood_group, dec.recipient_group)] = dec.quantity
+                    unmet_map = dict(milp_res.unmet_demand)
+                    solved = True
             except Exception:
                 pass
 
@@ -141,33 +153,38 @@ class QAOASolver:
                     pass
 
             if solved and hasattr(qubo, "_integer_bit_indices"):
-                used_stock: dict[tuple[str, str], int] = {}
-                for dec_key, qty in alloc_map.items():
-                    src, _, b_grp, _ = dec_key
-                    used_stock[(src, b_grp)] = used_stock.get((src, b_grp), 0) + qty
+                if not slack_map:
+                    used_stock: dict[tuple[str, str], float] = {}
+                    for dec_key, qty in alloc_map.items():
+                        src, _, b_grp, _ = dec_key
+                        used_stock[(src, b_grp)] = used_stock.get((src, b_grp), 0.0) + float(qty)
 
-                slack_map: dict[tuple[str, str], int] = {}
-                for bank in scenario.blood_banks:
-                    for grp, avail in bank.inventory.items():
-                        if avail > 0:
-                            used = used_stock.get((bank.id, grp), 0)
-                            slack_map[(bank.id, grp)] = max(0, avail - used)
+                    slack_map = {}
+                    for bank in scenario.blood_banks:
+                        for grp, avail in bank.inventory.items():
+                            if avail > 0:
+                                used = used_stock.get((bank.id, grp), 0.0)
+                                slack_map[(bank.id, grp)] = max(0.0, float(avail) - used)
 
                 for (kind, key), bit_pairs in qubo._integer_bit_indices.items():
                     if kind == "allocation":
-                        val = alloc_map.get(key, 0)
+                        val = alloc_map.get(key, 0.0)
                     elif kind == "unmet":
-                        val = unmet_map.get(key, 0)
+                        val = unmet_map.get(key, 0.0)
                     elif kind == "slack":
-                        val = slack_map.get(key, 0)
+                        val = slack_map.get(key, 0.0)
                     else:
-                        val = 0
+                        val = 0.0
 
-                    rem = val
+                    rem = float(val)
                     for bit_idx, bit_weight in sorted(bit_pairs, key=lambda item: item[1], reverse=True):
-                        if rem >= bit_weight:
+                        w = float(bit_weight)
+                        if rem >= w:
                             classical_bits[bit_idx] = 1.0
-                            rem -= bit_weight
+                            rem -= w
+                        elif rem > 0.0:
+                            classical_bits[bit_idx] = min(1.0, max(0.0, rem / w))
+                            rem = 0.0
                         else:
                             classical_bits[bit_idx] = 0.0
 

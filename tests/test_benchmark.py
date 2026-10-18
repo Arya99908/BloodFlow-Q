@@ -19,7 +19,7 @@ from optimization.models import BloodBank, Hospital, Route, Scenario, Urgency
 from optimization.objective import ObjectiveConfig
 from optimization.decoder import evaluate_quantum_solution
 from optimization.benchmark import run_benchmark_suite
-from quantum.qubo import QUBOPenaltyConfig, build_qubo
+from quantum.qubo import QUBOInputError, QUBOPenaltyConfig, build_qubo
 
 
 def scenario() -> Scenario:
@@ -229,5 +229,71 @@ class BenchmarkTests(unittest.TestCase):
         self.assertIn("exceeding the simulator safety limit", qaoa.detail)
 
 
+    def test_qaoa_solver_raising_qubo_input_error_is_recorded_as_unsupported_without_crashing_benchmark(self) -> None:
+        class FailingQUBOQAOA:
+            name = "qaoa"
+
+            def solve(self, scenario, objective_config, secondary_penalties=None):
+                raise QUBOInputError("simulated penalty bound violation")
+
+        records = run_baseline_benchmark(
+            scenario(),
+            ObjectiveConfig(10, 5, 1, 0.1, 0),
+            qaoa_solver=FailingQUBOQAOA(),
+        )
+        greedy = next(r for r in records if r.method == "greedy")
+        exact = next(r for r in records if r.method == "exact")
+        qaoa = next(r for r in records if r.method == "qaoa")
+
+        self.assertEqual(greedy.status, "completed")
+        self.assertEqual(exact.status, "completed")
+        self.assertEqual(qaoa.status, "unsupported")
+        self.assertIn("simulated penalty bound violation", qaoa.detail)
+
+    def test_qaoa_solver_raising_generic_error_is_recorded_as_error_without_crashing_benchmark(self) -> None:
+        class CrashingQAOA:
+            name = "qaoa"
+
+            def solve(self, scenario, objective_config, secondary_penalties=None):
+                raise RuntimeError("simulated quantum circuit compilation error")
+
+        records = run_baseline_benchmark(
+            scenario(),
+            ObjectiveConfig(10, 5, 1, 0.1, 0),
+            qaoa_solver=CrashingQAOA(),
+        )
+        greedy = next(r for r in records if r.method == "greedy")
+        exact = next(r for r in records if r.method == "exact")
+        qaoa = next(r for r in records if r.method == "qaoa")
+
+        self.assertEqual(greedy.status, "completed")
+        self.assertEqual(exact.status, "completed")
+        self.assertEqual(qaoa.status, "error")
+        self.assertIn("simulated quantum circuit compilation error", qaoa.detail)
+
+    def test_qaoa_solver_adapter_auto_derives_penalties_when_penalties_is_none(self) -> None:
+        from backend.services import QAOASolverAdapter
+
+        class DummySolver:
+            def solve(self, qubo):
+                bits = [0] * qubo.variable_count
+                for variable in qubo.variable_mapping:
+                    if variable.kind == "allocation":
+                        bits[variable.index] = 1
+                return {"best_bitstring": "".join(str(bit) for bit in reversed(bits))}
+
+        adapter = QAOASolverAdapter(DummySolver(), None)
+        records = run_baseline_benchmark(
+            scenario(),
+            ObjectiveConfig(10, 5, 1, 0.1, 0),
+            qaoa_solver=adapter,
+        )
+        qaoa = next(r for r in records if r.method == "qaoa")
+        self.assertEqual(qaoa.status, "completed")
+        self.assertTrue(qaoa.feasibility)
+        self.assertIsNotNone(qaoa.objective_value)
+
+
 if __name__ == "__main__":
     unittest.main()
+
