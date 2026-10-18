@@ -269,6 +269,34 @@ def _add_square(
             quadratic[pair] = quadratic.get(pair, 0.0) + 2 * penalty * coefficient_a * coefficient_b
 
 
+def compute_conservative_objective_bound(
+    scenario: Scenario, objective_config: ObjectiveConfig
+) -> float:
+    """Return the conservative upper bound on the objective spread for a scenario.
+
+    All objective weights and variable bounds are non-negative, so this is a safe
+    upper bound on the spread between the cheapest and most expensive bit string.
+    """
+    bound = 0.0
+    routes = {(route.source, route.destination): route for route in scenario.routes}
+    for variable in scenario.allocation_variables():
+        route = routes.get((variable.source, variable.destination))
+        if route is not None:
+            coefficient = (
+                objective_config.transportation_cost_weight * route.transport_cost
+                + objective_config.transportation_time_weight * route.travel_time_minutes
+            )
+            bound += coefficient * variable.upper_bound
+    for hospital in scenario.hospitals:
+        for group, demand in hospital.demand.items():
+            urgency = hospital.urgency.get(group)
+            coefficient = objective_config.total_unmet_weight
+            if urgency and urgency.category in {"high", "critical"}:
+                coefficient += objective_config.critical_unmet_weight * urgency.priority_weight
+            bound += coefficient * demand
+    return float(bound)
+
+
 def build_qubo(
     scenario: Scenario,
     objective_config: ObjectiveConfig,
@@ -292,35 +320,7 @@ def build_qubo(
         raise QUBOInputError("penalty_config: expected a QUBOPenaltyConfig")
     named_secondary = _validate_secondary_penalties(secondary_penalties)
 
-    # All objective coefficients are non-negative, so this is a safe upper
-    # bound on the spread between the cheapest and most expensive bit string.
-    objective_upper_bound = 0.0
-    integer_specs: list[tuple[str, object, int, str, dict[str, object]]] = []
-    routes = {(route.source, route.destination): route for route in scenario.routes}
-    for variable in scenario.allocation_variables():
-        route = routes[(variable.source, variable.destination)]
-        coefficient = (
-            objective_config.transportation_cost_weight * route.transport_cost
-            + objective_config.transportation_time_weight * route.travel_time_minutes
-        )
-        key = (variable.source, variable.destination, variable.blood_group, variable.recipient_group)
-        objective_upper_bound += coefficient * variable.upper_bound
-        integer_specs.append(("allocation", key, variable.upper_bound, "allocation shipment quantity", {
-            "source": variable.source, "hospital": variable.destination,
-            "blood_group": variable.blood_group, "recipient_group": variable.recipient_group,
-        }))
-    for hospital in scenario.hospitals:
-        for group, demand in hospital.demand.items():
-            urgency = hospital.urgency[group]
-            coefficient = objective_config.total_unmet_weight
-            if urgency.category in {"high", "critical"}:
-                coefficient += objective_config.critical_unmet_weight * urgency.priority_weight
-            objective_upper_bound += coefficient * demand
-            if demand > 0:
-                key = (hospital.id, group)
-                integer_specs.append(("unmet", key, demand, "unmet demand for hospital/group", {
-                    "hospital": hospital.id, "recipient_group": group,
-                }))
+    objective_upper_bound = compute_conservative_objective_bound(scenario, objective_config)
     required_penalty = objective_upper_bound
     if penalty_config.inventory_penalty_weight <= required_penalty:
         raise QUBOInputError(
@@ -332,6 +332,22 @@ def build_qubo(
             "demand_penalty_weight must be greater than the conservative "
             f"objective upper bound ({required_penalty:g})"
         )
+
+    integer_specs: list[tuple[str, object, int, str, dict[str, object]]] = []
+    routes = {(route.source, route.destination): route for route in scenario.routes}
+    for variable in scenario.allocation_variables():
+        key = (variable.source, variable.destination, variable.blood_group, variable.recipient_group)
+        integer_specs.append(("allocation", key, variable.upper_bound, "allocation shipment quantity", {
+            "source": variable.source, "hospital": variable.destination,
+            "blood_group": variable.blood_group, "recipient_group": variable.recipient_group,
+        }))
+    for hospital in scenario.hospitals:
+        for group, demand in hospital.demand.items():
+            if demand > 0:
+                key = (hospital.id, group)
+                integer_specs.append(("unmet", key, demand, "unmet demand for hospital/group", {
+                    "hospital": hospital.id, "recipient_group": group,
+                }))
 
     # Inventory slack turns each <= inventory limit into an equality. A
     # zero-inventory row has no possible shipment variable and needs no slack.

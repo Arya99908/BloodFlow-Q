@@ -53,6 +53,10 @@ def main() -> None:
     parser.add_argument("--max-iterations", type=int, default=40)
     parser.add_argument("--inventory-penalty-weight", type=float)
     parser.add_argument("--demand-penalty-weight", type=float)
+    parser.add_argument("--warm-start", action="store_true",
+                        help="enable Warm-Started QAOA from classical solution")
+    parser.add_argument("--mixer", choices=("x", "xy", "warm_start"), default="x",
+                        help="QAOA mixer unitary type: standard x, excitation-conserving xy, or warm_start")
     args = parser.parse_args()
 
     # These are explicit demonstration settings and can be overridden. They
@@ -69,9 +73,15 @@ def main() -> None:
         scenario, event = build_demo_case(scenario, args.demo_scenario)
         if event is not None:
             scenario = apply_emergency_events(scenario, [event])
-    qaoa_config = QAOAConfig(p=args.qaoa_depth, shots=args.shots,
-                              optimizer=args.classical_optimizer,
-                              max_iterations=args.max_iterations, seed=args.seed)
+    qaoa_config = QAOAConfig(
+        p=args.qaoa_depth,
+        shots=args.shots,
+        optimizer=args.classical_optimizer,
+        max_iterations=args.max_iterations,
+        seed=args.seed,
+        warm_start=args.warm_start,
+        mixer=args.mixer,
+    )
     penalties = None
     qaoa_adapter = None
     if args.include_qaoa:

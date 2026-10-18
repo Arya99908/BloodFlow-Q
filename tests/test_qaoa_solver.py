@@ -67,6 +67,37 @@ class QAOASolverTests(unittest.TestCase):
         with self.assertRaises(QAOAResourceLimitError):
             solver.solve(qubo)
 
+    def test_warm_started_qaoa_executes_and_flags_metadata(self) -> None:
+        qubo = tiny_qubo()
+        solver = QAOASolver(QAOAConfig(
+            p=1, shots=64, max_iterations=5, seed=7, warm_start=True,
+        ))
+        result = solver.solve(qubo)
+        self.assertTrue(result.warm_start_used)
+        self.assertEqual(result.mixer_type, "x")
+        self.assertEqual(sum(result.counts.values()), 64)
+
+    def test_xy_mixer_qaoa_executes_and_flags_metadata(self) -> None:
+        qubo = tiny_qubo()
+        solver = QAOASolver(QAOAConfig(
+            p=1, shots=64, max_iterations=5, seed=7, mixer="xy",
+        ))
+        result = solver.solve(qubo)
+        self.assertFalse(result.warm_start_used)
+        self.assertEqual(result.mixer_type, "xy")
+        self.assertEqual(sum(result.counts.values()), 64)
+
+    def test_warm_started_xy_mixer_executes_successfully(self) -> None:
+        qubo = tiny_qubo()
+        solver = QAOASolver(QAOAConfig(
+            p=1, shots=64, max_iterations=5, seed=7, warm_start=True, mixer="xy",
+        ))
+        result = solver.solve(qubo)
+        self.assertTrue(result.warm_start_used)
+        self.assertEqual(result.mixer_type, "xy")
+        self.assertEqual(sum(result.counts.values()), 64)
+
 
 if __name__ == "__main__":
     unittest.main()
+
