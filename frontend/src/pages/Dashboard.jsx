@@ -17,6 +17,17 @@ import DotField from '../components/DotField';
 import Orb from '../components/Orb';
 import ClickSpark from '../components/ClickSpark';
 import HospitalDataShelf from '../components/HospitalDataShelf';
+import { formatDashboardCount, getDashboardAccessState } from '../utils/dashboardAccess';
+
+const COORDINATION_METRIC_KEYS = [
+  'registered_donors',
+  'available_registered_donors',
+  'active_emergency_requests',
+  'requests_awaiting_donor_responses',
+  'collection_appointments',
+  'fulfilled_from_verified_stock',
+  'awaiting_blood_bank_confirmation',
+];
 
 function summarize(scenario, savedResults) {
   const banks = scenario.blood_banks || [];
@@ -75,33 +86,44 @@ export default function Dashboard({ onNavigate, onOptimization, theme = 'light' 
       import.meta.env.VITE_SUPABASE_URL?.trim()
       && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim(),
     );
+    let coordinationAccess = getDashboardAccessState({ configured: hasPrivateConfig });
     if (hasPrivateConfig) {
       try {
         // Keep the authentication SDK out of the first dashboard bundle.
         const { supabase } = await import('../services/supabase');
         const { data: authData, error: authError } = await supabase.auth.getSession();
-        if (!authError && authData.session) {
-          coordinationMetrics = {
-            available: true,
-            message: '',
-            metrics: await getDashboardMetrics(supabase),
-          };
+        if (authError) {
+          coordinationAccess = getDashboardAccessState({ configured: true, error: authError });
+          coordinationMetrics = { available: false, message: coordinationAccess.message, metrics: {} };
+        } else if (authData.session) {
+          try {
+            const metrics = await getDashboardMetrics(supabase);
+            const invalidCount = !metrics || COORDINATION_METRIC_KEYS.some((key) =>
+              !Number.isInteger(metrics[key]) || metrics[key] < 0,
+            );
+            if (invalidCount) throw Object.assign(new Error('Dashboard metrics were malformed.'), { code: 'INVALID_METRICS' });
+            coordinationAccess = getDashboardAccessState({ configured: true, session: authData.session });
+            coordinationMetrics = { available: true, message: '', metrics };
+          } catch (issue) {
+            coordinationAccess = getDashboardAccessState({ configured: true, session: authData.session, error: issue });
+            coordinationMetrics = { available: false, message: coordinationAccess.message, metrics: {} };
+          }
         } else {
-          coordinationMetrics = {
-            available: false,
-            message: 'Sign in with an authorized platform-administrator account to view private coordination counts.',
-            metrics: {},
-          };
+          coordinationAccess = getDashboardAccessState({ configured: true, session: null });
+          coordinationMetrics = { available: false, message: coordinationAccess.message, metrics: {} };
         }
-      } catch {
-        coordinationMetrics = {
-          available: false,
-          message: 'Counts require an authorized platform-administrator account.',
-          metrics: {},
-        };
+      } catch (issue) {
+        coordinationAccess = getDashboardAccessState({ configured: true, error: issue });
+        coordinationMetrics = { available: false, message: coordinationAccess.message, metrics: {} };
       }
     }
-    return { scenario, health, results: resultSet.results || [], coordination: coordinationMetrics };
+    return {
+      scenario,
+      health,
+      results: resultSet.results || [],
+      coordination: coordinationMetrics,
+      coordinationAccess,
+    };
   }, []);
 
   const summary = useMemo(() => data ? summarize(data.scenario, data.results) : null, [data]);
@@ -204,7 +226,9 @@ export default function Dashboard({ onNavigate, onOptimization, theme = 'light' 
               [Truck, 'Awaiting bank confirmation', 'awaiting_blood_bank_confirmation'],
             ].map(([Icon, label, key]) => {
               const value = data.coordination?.metrics?.[key];
-              return <MetricCard key={key} icon={Icon} label={label} value={value == null ? 'Unavailable' : value.toLocaleString()} detail={value == null ? (data.coordination?.message || 'Live database not configured') : 'Live authorized records'} tone="slate" />;
+              const count = formatDashboardCount(data.coordination?.metrics, key, data.coordinationAccess?.valueLabel || 'Data issue');
+              const hasCount = Number.isInteger(value) && value >= 0;
+              return <MetricCard key={key} icon={Icon} label={label} value={count} detail={hasCount ? 'Live authorized records' : (data.coordinationAccess?.message || 'Sign in with an authorized platform-administrator account to view private counts.')} tone={hasCount ? 'blue' : 'slate'} />;
             })}
           </div>
         </section>
