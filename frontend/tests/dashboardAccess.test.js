@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatDashboardCount, getDashboardAccessState } from '../src/utils/dashboardAccess.js';
+import { getDashboardMetrics } from '../src/services/donorNetwork.js';
 
 test('reports sign-in requirement instead of implying the database is empty', () => {
   const state = getDashboardAccessState({ configured: true, session: null });
@@ -36,4 +37,22 @@ test('reports missing Supabase configuration separately', () => {
   const state = getDashboardAccessState({ configured: false });
   assert.equal(state.key, 'not_configured');
   assert.equal(state.valueLabel, 'Not set up');
+});
+
+test('preserves Supabase authorization codes for the dashboard access state', async () => {
+  const client = {
+    rpc: async () => ({ data: null, error: { code: '42501', message: 'permission denied' } }),
+  };
+
+  await assert.rejects(getDashboardMetrics(client), (error) => {
+    assert.equal(error.code, '42501');
+    const state = getDashboardAccessState({
+      configured: true,
+      session: { user: { id: 'synthetic-user' } },
+      error,
+    });
+    assert.equal(state.key, 'admin_required');
+    assert.equal(state.valueLabel, 'Admin only');
+    return true;
+  });
 });
