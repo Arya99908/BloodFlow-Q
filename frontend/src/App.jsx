@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { api } from './services/api';
 import LoadingState from './components/Feedback';
 import AlertCenter from './components/AlertCenter';
@@ -196,6 +197,7 @@ export default function App() {
     })} style={{position:'fixed',bottom:12,zIndex:60}} />
     <NavigationTransition destination={transition} reducedMotion={window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false} />
     {welcome && <div className="welcome-backdrop"><section className="welcome-card welcome-stepper-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title"><button type="button" className="dialog-close" aria-label="Dismiss welcome modal" onClick={() => { try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); } catch {} setWelcome(false); }}>×</button><img src="/bloodflow-q-logo.webp" alt="BloodFlow-Q" /><div className="eyebrow">YOUR RESEARCH WORKSPACE</div><h1 id="welcome-title">Hello, welcome {researcherName.trim() || 'Researcher'}.</h1><p>Set up your workspace in a moment. Explore synthetic blood logistics, compare optimization methods, and test network resilience.</p><Stepper initialStep={1} theme={theme} accentColor="#ef233c" width={420} radius={16} completeButtonText="Enter workspace" onFinalStepCompleted={() => { const name = researcherName.trim() || 'Researcher'; setResearcherName(name); try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); localStorage.setItem('bloodflow-researcher-name',name); } catch {} setWelcome(false); }} completedContent={<span>Welcome to the synthetic research workspace.</span>}><Step title="Profile"><label htmlFor="researcher-name">What should we call you?</label><input id="researcher-name" maxLength="40" value={researcherName} placeholder="Your name" onChange={(event) => setResearcherName(event.target.value)} /></Step><Step title="Workspace"><strong>Research workspace</strong><p>Explore simulated inventory, hospital demand, routes, and solver results.</p></Step><Step title="Ready"><strong>Ready to explore</strong><p>All records shown in this prototype are synthetic and for logistics research only.</p></Step></Stepper><small>Your display name stays on this device.</small></section></div>}
+    <SpeedInsights />
   </div></ClickSpark>;
 }
 
