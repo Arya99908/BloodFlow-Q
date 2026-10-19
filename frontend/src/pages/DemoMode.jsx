@@ -6,10 +6,13 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { formatDemoMetric, getComparableResult } from '../utils/demoComparison';
+import TextType from '../components/TextType';
+import SpecularButton from '../components/SpecularButton';
+import ClickSpark from '../components/ClickSpark';
 import GlideSelect from '../components/GlideSelect';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
-const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, warm_start: false, mixer: 'x' };
+const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
 const FALLBACK_CASES = [
   { id: 'normal', name: 'NORMAL', description: 'Bundled synthetic Bank A to Hospital 1 O-group allocation.' },
   { id: 'emergency_demand_spike', name: 'EMERGENCY DEMAND SPIKE', description: 'Raises the same synthetic demand and escalates its logistics urgency.' },
@@ -57,10 +60,7 @@ export default function DemoMode() {
   }, [liveRuns, mode, storedRuns]);
 
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
-  const setQaoaValue = (key, value) => setQaoa((current) => ({
-    ...current,
-    [key]: ['optimizer', 'mixer', 'warm_start'].includes(key) ? value : Number(value),
-  }));
+  const setQaoaValue = (key, value) => setQaoa((current) => ({ ...current, [key]: key === 'optimizer' ? value : Number(value) }));
 
   const demoBound = useMemo(() => {
     const costWeight = Number(objectiveWeights?.transportation_cost_weight ?? 1);
@@ -144,17 +144,15 @@ export default function DemoMode() {
               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
               <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
             <label className="demo-field">Classical optimizer<GlideSelect ariaLabel="Classical optimizer" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
-              <label className="demo-field">QAOA mixer<GlideSelect ariaLabel="QAOA mixer" options={[{value:'x',label:'Standard X mixer'}, {value:'xy',label:'XY mixer'}, {value:'warm_start',label:'Warm-start mixer'}]} value={qaoaSettings.mixer || 'x'} onChange={(value) => setQaoaValue('mixer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
-              <label className="demo-field demo-warm-start"><input type="checkbox" checked={Boolean(qaoaSettings.warm_start)} onChange={(event) => setQaoaValue('warm_start', event.target.checked)} /><span>Warm-start QAOA using the classical MILP baseline</span></label>
             </div>
-            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} optimizer iterations`}><span className="eyebrow">ENGINE BUDGET</span><strong>{Number(qaoaSettings.shots).toLocaleString()} shots · {qaoaSettings.max_iterations} optimizer iterations</strong></div>
+            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} optimizer iterations`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} optimizer iterations`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
           </>}
           {method === 'qaoa' && configStep === 2 && <>
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
           </>}
           <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, then QAOA in turn. Completed responses stay visible for this browser session.</p>
-          <div className="demo-step-actions">{configStep > 0 && <button type="button" className="button button-secondary" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type="button" className="button button-primary" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <button type="button" className="button button-primary run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</button>}</div>
+          <div className="demo-step-actions">{configStep > 0 && <button type="button" className="button button-secondary" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type="button" className="button button-primary" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <ClickSpark className="demo-run-spark" style={{width:'auto',height:'auto'}} sparkColor="#edf2f4"><SpecularButton size="md" radius={10} tint="#d90429" textColor="#fff" lineColor="#ff9aa8" baseColor="#d90429" className="run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</SpecularButton></ClickSpark>}</div>
           <p className="demo-qaoa-status"><ShieldCheck size={14} /> QAOA availability reported by backend: <strong>{defaults?.qaoa_available == null ? 'checking' : defaults.qaoa_available ? 'available' : 'unavailable'}</strong>. {defaults?.qaoa_unavailable_reason || 'A failed QAOA request stays an error.'}</p>
         </section> : <section className="panel demo-config">
           <div className="panel-heading"><div><h2>Stored experiment</h2><p>Choose a captured run. Values are read-only.</p></div></div>
@@ -208,8 +206,6 @@ export default function DemoMode() {
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
-                  <MetaRow label="Warm-start" value={(output?.after_qaoa || output)?.warm_start_used ? 'Enabled' : 'Disabled'} />
-                  <MetaRow label="Mixer" value={String((output?.after_qaoa || output)?.mixer_type || 'x').toUpperCase()} />
                   <div className="bitstring-box">
                     <span className="bitstring-label">Best measured bitstring:</span>
                     <code className="bitstring-code">{(output?.after_qaoa || output)?.best_measured_bitstring ?? 'Not available'}</code>

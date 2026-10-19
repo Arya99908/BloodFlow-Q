@@ -196,7 +196,7 @@ export default function Network() {
                 detail="Switch filter to view all scenario routes."
               />
             ) : (
-              <div className="network-routes-grid" role="listbox" aria-label="Selectable transport routes">
+              <div className="network-routes-grid" role="group" aria-label="Transport routes">
                 {filteredRoutes.map((route) => {
                   const key = `${route.source}|${route.destination}`;
                   const source = banks.find((item) => item.id === route.source);
@@ -212,7 +212,8 @@ export default function Network() {
                         isBlocked ? 'route-card-blocked' : ''
                       }`}
                       onClick={() => setSelectedKey(key)}
-                      aria-selected={isSelected}
+                      aria-pressed={Boolean(isSelected)}
+                      aria-label={`${source?.name || route.source} to ${destination?.name || route.destination}, ${isBlocked ? 'blocked' : 'available'}${isSelected ? ', selected' : ''}`}
                     >
                       <div className="route-card-header">
                         <div className="route-endpoints-flow">

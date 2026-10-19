@@ -1,5 +1,5 @@
 import {
-  Activity, Boxes, ClipboardPlus, FileClock,
+  Activity, Atom, Boxes, ClipboardPlus, FileChartColumn, FileClock,
   FlaskConical, Hospital, House, LayoutDashboard, Network, PlayCircle,
   Settings2, Siren, Truck, UserRoundPlus, Waypoints,
 } from 'lucide-react';
@@ -36,6 +36,8 @@ export const NAV_GROUPS = [
     id: 'research', label: 'Research', landing: 'results',
     items: [
       { id: 'results', label: 'Solver Lab', icon: FileClock },
+      { id: 'reports', label: 'Experiment reports', icon: FileChartColumn },
+      { id: 'quantum-lab', label: 'Quantum Optimization Lab', icon: Atom },
       { id: 'flow', label: 'How it works', icon: Waypoints },
       { id: 'about', label: 'About / methodology', icon: FlaskConical },
     ],

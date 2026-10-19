@@ -1,4 +1,5 @@
-/* ===================================================================   BloodFlow-Q Enterprise Design System
+/* ==========================================================================
+   BloodFlow-Q Enterprise Design System
    Professional, clean, accessible medical/logistics optimization UI.
    ========================================================================== */
 
@@ -53,38 +54,6 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-pill: 9999px;
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg-canvas: #0b1220;
-  --bg-surface: #111c2e;
-  --bg-subtle: #18263a;
-  --bg-hover: #1b2b42;
-  --border-subtle: #1b2b42;
-  --border-default: #2a3b52;
-  --border-strong: #3b506b;
-  --text-primary: #e5edf7;
-  --text-secondary: #c0ccdc;
-  --text-muted: #91a2b8;
-  --text-subtle: #71839a;
-  --primary: #fb7185;
-  --primary-hover: #f43f5e;
-  --primary-subtle: #3b1d2b;
-  --primary-border: #713047;
-  --accent-blue: #60a5fa;
-  --accent-blue-hover: #93c5fd;
-  --accent-blue-subtle: #172d49;
-  --accent-emerald: #34d399;
-  --accent-emerald-subtle: #12352f;
-  --accent-amber: #fbbf24;
-  --accent-amber-subtle: #3a2c15;
-  --accent-indigo: #818cf8;
-  --accent-violet: #a78bfa;
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.22);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.28);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.32);
 }
 
 /* Base Reset & Typography */
@@ -147,7 +116,8 @@ a {
   transform: translateY(0);
 }
 
-/* ===================================================================   App Shell Layout
+/* ==========================================================================
+   App Shell Layout
    ========================================================================== */
 
 .app-shell {
@@ -456,52 +426,6 @@ a {
   font-weight: 600;
 }
 
-.theme-toggle {
-  min-height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 0 10px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  background: var(--bg-surface);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.theme-toggle:hover { background: var(--bg-hover); color: var(--text-primary); }
-
-:root[data-theme="dark"] body { color-scheme: dark; }
-:root[data-theme="dark"] .sidebar { background: #080e19; border-color: #1b2b42; }
-:root[data-theme="dark"] .panel,
-:root[data-theme="dark"] .card,
-:root[data-theme="dark"] .metric-card,
-:root[data-theme="dark"] .topbar,
-:root[data-theme="dark"] .app-footer { border-color: var(--border-default); }
-:root[data-theme="dark"] input,
-:root[data-theme="dark"] select,
-:root[data-theme="dark"] textarea { color: var(--text-primary); background-color: var(--bg-surface); border-color: var(--border-default); }
-:root[data-theme="dark"] input::placeholder,
-:root[data-theme="dark"] textarea::placeholder { color: var(--text-subtle); }
-:root[data-theme="dark"] .notice-info { background: #172d49; border-color: #284d76; color: #bfdbfe; }
-:root[data-theme="dark"] .notice-error { background: #3b1d2b; border-color: #713047; color: #fecdd3; }
-:root[data-theme="dark"] .status-completed,
-:root[data-theme="dark"] .measurement-done,
-:root[data-theme="dark"] .status-pill-success { background: #12352f; border-color: #17604f; color: #a7f3d0; }
-:root[data-theme="dark"] .status-infeasible,
-:root[data-theme="dark"] .status-pill-danger { background: #3b1d2b; border-color: #713047; color: #fecdd3; }
-:root[data-theme="dark"] .status-pill-warning { background: #3a2c15; border-color: #66501f; color: #fde68a; }
-:root[data-theme="dark"] .status-pill-info { background: #172d49; border-color: #284d76; color: #bfdbfe; }
-:root[data-theme="dark"] .metric-violet .metric-icon { background: #2c2148; }
-
-@media (max-width: 680px) {
-  .theme-toggle { width: 34px; padding: 0; }
-  .theme-toggle span { display: none; }
-}
-
 /* Page Content */
 .page-content {
   flex: 1;
@@ -550,7 +474,8 @@ a {
   flex-shrink: 0;
 }
 
-/* ===================================================================   Status Strip (API & Scenario Metadata Bar)
+/* ==========================================================================
+   Status Strip (API & Scenario Metadata Bar)
    ========================================================================== */
 
 .status-strip {
@@ -607,7 +532,8 @@ a {
   color: var(--text-primary);
 }
 
-/* ===================================================================   Buttons & Interactive Elements
+/* ==========================================================================
+   Buttons & Interactive Elements
    ========================================================================== */
 
 .button {
@@ -702,7 +628,8 @@ a {
   text-decoration: underline;
 }
 
-/* ===================================================================   Panels, Cards & Surfaces
+/* ==========================================================================
+   Panels, Cards & Surfaces
    ========================================================================== */
 
 .panel {
@@ -747,7 +674,8 @@ a {
   color: var(--accent-blue);
 }
 
-/* ===================================================================   Metrics Grid (Dashboard & Stats)
+/* ==========================================================================
+   Metrics Grid (Dashboard & Stats)
    ========================================================================== */
 
 .metric-grid {
@@ -813,7 +741,8 @@ a {
   gap: 20px;
 }
 
-/* ===================================================================   Forms & Controls
+/* ==========================================================================
+   Forms & Controls
    ========================================================================== */
 
 .form-stack {
@@ -1040,7 +969,8 @@ a {
   overflow-wrap: anywhere;
 }
 
-/* ===================================================================   Optimization Method Comparison & Benchmarks
+/* ==========================================================================
+   Optimization Method Comparison & Benchmarks
    ========================================================================== */
 
 .comparison-panel {
@@ -1171,7 +1101,8 @@ a {
   color: #1e3a8a;
 }
 
-/* ===================================================================   Data Tables
+/* ==========================================================================
+   Data Tables
    ========================================================================== */
 
 .table-scroll {
@@ -1315,7 +1246,8 @@ a {
   border-radius: 2px;
 }
 
-/* ===================================================================   Badges, Pills & Status Tokens
+/* ==========================================================================
+   Badges, Pills & Status Tokens
    ========================================================================== */
 
 .run-status, .measurement-pill, .count-pill {
@@ -1557,7 +1489,8 @@ a {
   to { transform: rotate(360deg); }
 }
 
-/* ===================================================================   Benchmark Results & Charts
+/* ==========================================================================
+   Benchmark Results & Charts
    ========================================================================== */
 
 .results-benchmark-panel {
@@ -1829,7 +1762,8 @@ a {
   line-height: 1.5;
 }
 
-/* ===================================================================   Controlled Demo Mode
+/* ==========================================================================
+   Controlled Demo Mode
    ========================================================================== */
 
 .demo-mode-switch {
@@ -2130,7 +2064,8 @@ a {
 .quantum-study-allocations .table-scroll { margin-top: 10px; }
 .quantum-study-footnote { margin: 12px 0 0; color: var(--text-muted); font-size: 12px; }
 
-/* ===================================================================   Emergency Simulation Workflow
+/* ==========================================================================
+   Emergency Simulation Workflow
    ========================================================================== */
 
 .emergency-workflow {
@@ -2286,7 +2221,8 @@ a {
 .quantity-increase { color: var(--accent-emerald) !important; font-weight: 600; }
 .quantity-decrease { color: var(--primary) !important; font-weight: 600; }
 
-/* ===================================================================   Methodology & About Page
+/* ==========================================================================
+   Methodology & About Page
    ========================================================================== */
 
 .methodology-callout {
@@ -2545,7 +2481,8 @@ a {
   color: var(--text-secondary);
 }
 
-/* ===================================================================   Network Topology & Visuals
+/* ==========================================================================
+   Network Topology & Visuals
    ========================================================================== */
 
 .network-summary-pills {
@@ -2896,7 +2833,8 @@ a {
   display: inline-block;
 }
 
-/* ===================================================================   Design Tokens & Shared Micro-Components (BloodFlow-Q Design System)
+/* ==========================================================================
+   Design Tokens & Shared Micro-Components (BloodFlow-Q Design System)
    ========================================================================== */
 
 /* StatItem: High-contrast, unambiguous metric card */
@@ -3259,7 +3197,8 @@ th.num-cell {
   gap: 2px;
 }
 
-/* ===================================================================   Page Specific Layouts
+/* ==========================================================================
+   Page Specific Layouts
    ========================================================================== */
 
 /* Hospitals Page */
@@ -3564,9 +3503,9 @@ th.num-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
+  background: var(--critical-surface, #fee2e2);
+  color: var(--critical-ink, #b91c1c);
+  border: 1px solid var(--critical-border, #fca5a5);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   font-size: 11px;
@@ -3627,6 +3566,7 @@ th.num-cell {
   box-shadow: var(--shadow-xs);
   transition: all 0.15s ease;
   width: 100%;
+  color: var(--text-primary);
 }
 
 .route-card-item:hover {
@@ -3635,14 +3575,34 @@ th.num-cell {
 }
 
 .route-card-selected {
-  border-color: var(--accent-blue) !important;
-  background: #f8faff !important;
+  border-color: var(--route-selected-border) !important;
+  background: var(--route-selected-surface) !important;
+  color: var(--text-primary);
   box-shadow: 0 0 0 1px var(--accent-blue);
 }
 
-.route-card-blocked {
-  border-color: #fecdd3;
-  background: #fffafa;
+.route-card-blocked:not(.route-card-selected) {
+  border-color: var(--route-blocked-border);
+  background: var(--route-blocked-surface);
+  color: var(--text-primary);
+}
+
+.route-card-item:is(.route-card-selected, .route-card-blocked) .entry-label,
+.route-card-item:is(.route-card-selected, .route-card-blocked) .endpoint-arrow {
+  color: var(--text-secondary);
+}
+
+.route-card-item:focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 3px;
+}
+
+.route-card-item:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  border-color: var(--border-strong);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
 }
 
 .route-card-header {
@@ -3715,10 +3675,11 @@ th.num-cell {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #b91c1c;
+  color: var(--critical-ink, #b91c1c);
   font-size: 11px;
   font-weight: 600;
-  background: #fee2e2;
+  background: var(--critical-surface, #fee2e2);
+  border: 1px solid var(--critical-border, #fca5a5);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
 }
@@ -4363,7 +4324,8 @@ th.num-cell {
   margin-bottom: 12px;
 }
 
-/* ===================================================================   Responsive Adaptations
+/* ==========================================================================
+   Responsive Adaptations
    ========================================================================== */
 
 .mobile-menu, .mobile-close, .mobile-scrim {
@@ -4614,23 +4576,6 @@ th.num-cell {
 .timeline-item { position: relative; display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 9px; min-height: 35px; color: var(--text-secondary); font-size: 12px; }
 .timeline-item:not(:last-child)::before { position: absolute; top: 20px; bottom: -15px; left: 5px; width: 1px; background: var(--border-default); content: ''; }
 .timeline-item i { z-index: 1; width: 10px; height: 10px; border: 2px solid #6687b2; border-radius: 50%; background: #fff; }
-
-/* Keep the optional coordination and demo workflows readable in dark mode. */
-:root[data-theme="dark"] .donor-request-card,
-:root[data-theme="dark"] .demo-summary-grid > div,
-:root[data-theme="dark"] .coordination-progress-grid > article { background: var(--bg-surface); }
-:root[data-theme="dark"] .history-placeholder,
-:root[data-theme="dark"] .appointment-card,
-:root[data-theme="dark"] .workflow-step,
-:root[data-theme="dark"] .donor-consent-preview { background: var(--bg-subtle); }
-:root[data-theme="dark"] .workflow-step.current { border-color: #713047; color: #fecdd3; background: #3b1d2b; }
-:root[data-theme="dark"] .workflow-step.done { border-color: #17604f; color: #a7f3d0; background: #12352f; }
-:root[data-theme="dark"] .simulated-callout,
-:root[data-theme="dark"] .demo-watermark { border-color: #66501f; color: #fde68a; background: #3a2c15; }
-:root[data-theme="dark"] .critical-safety-banner { border-color: #79502e; color: #fed7aa; background: #382719; }
-:root[data-theme="dark"] .donor-profile-form .field-control:disabled,
-:root[data-theme="dark"] .emergency-request-form .field-control:disabled { color: var(--text-muted); background: #1b2636; }
-:root[data-theme="dark"] .status-pill-neutral { background: var(--bg-subtle); border-color: var(--border-default); color: var(--text-secondary); }
 .timeline-item small { color: var(--text-muted); font-size: 10px; text-align: right; }
 .donor-dashboard-section { margin: 20px 0 18px; }
 .donor-dashboard-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 12px; }
@@ -4966,7 +4911,8 @@ textarea.field-control { min-height: 96px; resize: vertical; }
 :root[data-theme="dark"] .emergency-request-form .field-control:disabled { color: var(--text-muted); background: #1b2636; }
 :root[data-theme="dark"] .status-pill-neutral { background: var(--bg-subtle); border-color: var(--border-default); color: var(--text-secondary); }
 
-/* ===================================================================   AI Logistics Copilot (Chatbot)
+/* ==========================================================================
+   AI Logistics Copilot (Chatbot)
    Seamless integration with Light and Dark themes.
    ========================================================================== */
 
@@ -5523,7 +5469,8 @@ textarea.field-control { min-height: 96px; resize: vertical; }
 }
 
 
-/* ===================================================================   Alert Notification Center (Urgent & Emergency Requirements)
+/* ==========================================================================
+   Alert Notification Center (Urgent & Emergency Requirements)
    Compatible with Light and Dark themes.
    ========================================================================== */
 
@@ -6364,11 +6311,6 @@ textarea.field-control { min-height: 96px; resize: vertical; }
 .home-destination-card:hover { transform:translateY(-2px); border-color:rgba(239,35,60,.5); box-shadow:var(--shadow-sm); }
 .home-destination-number { position:absolute; top:11px; right:13px; color:var(--text-subtle); font-size:9px; font-weight:700; }
 .home-destination-icon { display:grid; place-items:center; width:38px; height:38px; border:1px solid rgba(239,35,60,.16); border-radius:11px; color:var(--primary); background:var(--primary-subtle); }
-.home-destinations { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.home-logo-tile { display:grid; place-items:center; width:min(240px,70%); aspect-ratio:1; padding:24px; border:1px solid rgba(237,242,244,.2); border-radius:24px; background:rgba(237,242,244,.06); }
-.home-logo-tile img { display:block; width:100%; height:100%; border-radius:18px; object-fit:cover; }
-.home-scope-note { display:flex; align-items:center; gap:8px; margin:20px 0 0; color:#c0c8d7; font-size:12px; }
-.home-scope-note svg { flex:0 0 auto; color:#ff8e9c; }
 .home-destination-copy { display:grid; gap:4px; }
 .home-destination-copy small { color:var(--text-subtle); font-size:9px; font-weight:750; letter-spacing:.1em; }
 .home-destination-copy strong { font-size:15px; letter-spacing:-.02em; }
@@ -6377,7 +6319,7 @@ textarea.field-control { min-height: 96px; resize: vertical; }
 .home-disclaimer { display:flex; align-items:center; gap:9px; padding:12px 15px; border:1px solid var(--border-subtle); border-radius:11px; color:var(--text-muted); background:var(--bg-surface); font-size:11px; }
 .home-disclaimer svg { color:var(--primary); flex:none; }
 @media(max-width:900px) { .home-hero { grid-template-columns:1fr; }.home-hero-visual { position:absolute; right:0; top:50%; width:45%; min-height:260px; opacity:.35; transform:translateY(-50%); }.home-hero-content { max-width:700px; }.topbar .breadcrumbs { display:none; }.topbar-brand { flex:1; margin:0; } }
-@media(max-width:680px) { .topbar { height:60px; padding-inline:14px; }.topbar-brand img { width:30px; height:30px; }.topbar-right { gap:7px; }.page-glide-select { width:108px; flex-basis:108px; }.home-hero { min-height:490px; padding:25px 21px; border-radius:18px; }.home-hero-visual { right:-70px; width:70%; }.home-hero h1 { max-width:90%; font-size:42px; }.home-kicker { flex-wrap:wrap; }.home-destination-grid,.home-destinations { grid-template-columns:1fr; }.home-section-heading { align-items:flex-start; flex-direction:column; }.home-section-heading > span { display:none; }.home-trust-row { gap:9px 14px; }.app-footer { padding-bottom:88px; }.solver-glide-select,.demo-glide-select { min-width:100%; width:100%; } }
+@media(max-width:680px) { .topbar { height:60px; padding-inline:14px; }.topbar-brand img { width:30px; height:30px; }.topbar-right { gap:7px; }.page-glide-select { width:108px; flex-basis:108px; }.home-hero { min-height:490px; padding:25px 21px; border-radius:18px; }.home-hero-visual { right:-70px; width:70%; }.home-hero h1 { max-width:90%; font-size:42px; }.home-kicker { flex-wrap:wrap; }.home-destination-grid { grid-template-columns:1fr; }.home-section-heading { align-items:flex-start; flex-direction:column; }.home-section-heading > span { display:none; }.home-trust-row { gap:9px 14px; }.app-footer { padding-bottom:88px; }.solver-glide-select,.demo-glide-select { min-width:100%; width:100%; } }
 @media(prefers-reduced-motion:reduce) { .home-visual-orbit { animation:none; } }
 /* Keep native selects used in dense forms consistent with the selected theme. */
 select.field-control { color-scheme:light; border-color:var(--border-default); background-color:var(--bg-surface); color:var(--text-primary); }
@@ -6663,6 +6605,13 @@ select.field-control option { color:#2b2d42; background:#edf2f4; }
   --accent-blue:#285caa;
   --accent-indigo:#2b2d42;
   --accent-violet:#716b91;
+  --route-selected-surface:#fff1f3;
+  --route-selected-border:#b42338;
+  --route-blocked-surface:#fff4f4;
+  --route-blocked-border:#c56878;
+  --critical-surface:#fee2e2;
+  --critical-ink:#8f1d2c;
+  --critical-border:#e8a0a9;
 }
 :root[data-theme="dark"] {
   --bg-canvas:#171a2a;
@@ -6682,6 +6631,13 @@ select.field-control option { color:#2b2d42; background:#edf2f4; }
   --primary-border:#793341;
   --accent-indigo:#2b2d42;
   --accent-violet:#8d99ae;
+  --route-selected-surface:#342238;
+  --route-selected-border:#ff7181;
+  --route-blocked-surface:#2d202d;
+  --route-blocked-border:#be6b7f;
+  --critical-surface:#492430;
+  --critical-ink:#fecdd3;
+  --critical-border:#793341;
 }
 :root[data-theme="dark"] .dashboard-capability-hero { background:radial-gradient(ellipse at 90% 12%,rgba(239,35,60,.2),transparent 36%),linear-gradient(130deg,#2b2d42,#343950 68%,#38465f); }
 :root[data-theme="dark"] .research-snapshot,
@@ -6927,3 +6883,131 @@ select.field-control option { color:#2b2d42; background:#edf2f4; }
   border-color: var(--border-default) !important;
   color: var(--text-secondary) !important;
 }
+
+
+
+
+:root[data-theme="dark"] .selected-route-inspector .eyebrow {
+  color: #fda4af;
+}
+
+/* Contrast corrections verified against the rendered light and dark themes. */
+:root {
+  --primary: #d90429;
+  --primary-hover: #a51c30;
+}
+:root[data-theme="dark"] {
+  --primary: #d90429;
+  --primary-hover: #a51c30;
+}
+.page-header .eyebrow,
+.eyebrow { color: #8f1d2c; }
+.alert-badge-pill { color: #2b2d42; }
+.alert-badge-pill.badge-critical { color: #fff; background: #d90429; }
+.dashboard-capability-hero .button-primary {
+  border-color: #d90429;
+  background: #d90429;
+}
+.dashboard-capability-hero .button-primary:hover { background: #a51c30; }
+.dashboard-network-art svg text { fill: #a1abc0; }
+.data-table th { color: #526174; }
+:root[data-theme="dark"] .page-header .eyebrow,
+:root[data-theme="dark"] .eyebrow { color: #fda4af; }
+:root[data-theme="dark"] .data-table th { color: var(--text-secondary); }
+:root[data-theme="dark"] .demo-case-selected,
+:root[data-theme="dark"] .demo-mode-switch button.demo-mode-active {
+  border-color: #8ebdff;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+:root[data-theme="dark"] .demo-case-selected .demo-case-index {
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+}
+:root[data-theme="dark"] .workflow-step-title,
+:root[data-theme="dark"] .optimization-journey-number,
+:root[data-theme="dark"] .optimization-journey-step > div > span {
+  color: var(--text-secondary);
+}
+:root[data-theme="dark"] .urgency-pill.urgency-critical,
+:root[data-theme="dark"] .urgency-pill-critical,
+:root[data-theme="dark"] .urgency-critical {
+  color: #fecdd3;
+  background: #492430;
+  border-color: #793341;
+}
+:root[data-theme="dark"] .qlab-feasible,
+:root[data-theme="dark"] .check-pass { color: #a7f3d0; }
+:root[data-theme="dark"] .tag-formulation { color: #bfdbfe; background: #172d49; }
+:root[data-theme="dark"] .topbar-brand > span > span { color: #ff9baa; }
+
+/* Coolors-inspired semantic light palette with a matching dark counterpart. */
+:root {
+  --bg-canvas: #f5f7fb;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eaf0f7;
+  --bg-hover: #e4edf5;
+  --border-subtle: #e0e7ef;
+  --border-default: #ced8e4;
+  --border-strong: #9eafc1;
+  --text-primary: #172033;
+  --text-secondary: #475569;
+  --text-muted: #5e6d81;
+  --text-subtle: #64748b;
+  --primary: #920942;
+  --primary-hover: #700832;
+  --primary-subtle: #fbe8ef;
+  --primary-border: #e6bdcb;
+  --accent-blue: #0b3c65;
+  --accent-indigo: #0b3c65;
+  --accent-violet: #3a7188;
+  --focus-ring: #0b3c65;
+  --link-color: #920942;
+}
+:root[data-theme="dark"] {
+  --bg-canvas: #171a2a;
+  --bg-surface: #202438;
+  --bg-subtle: #292d42;
+  --bg-hover: #2d3249;
+  --border-subtle: #30354b;
+  --border-default: #3c425b;
+  --border-strong: #737e98;
+  --text-primary: #edf2f4;
+  --text-secondary: #ccd2df;
+  --text-muted: #a1abc0;
+  --text-subtle: #a1abc0;
+  --primary: #d90429;
+  --primary-hover: #a51c30;
+  --primary-subtle: #492430;
+  --primary-border: #793341;
+  --accent-blue: #8ebdff;
+  --accent-indigo: #8ebdff;
+  --accent-violet: #9ba8c0;
+  --focus-ring: #a9caff;
+  --link-color: #ff9baa;
+}
+:root[data-theme="light"] .home-hero {
+  border-color: rgba(11, 60, 101, .24);
+  background: radial-gradient(ellipse at 80% 38%, #17476d 0%, #0b3c65 48%, #0b3046 100%);
+}
+.home-destination-card:hover,
+.home-flow-step:hover { border-color: var(--primary); }
+.home-destination-card:focus-visible,
+.home-flow-step:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.home-section-heading .eyebrow { color: var(--primary); }
+.home-flow-step > span:last-of-type { color: var(--text-secondary); }
+.home-disclaimer { color: var(--text-secondary); }
+.page-glide-select .glide-select__label[data-empty] { opacity: 1; color: var(--text-secondary); }
+:root[data-theme="dark"] .home-section-heading .eyebrow,
+:root[data-theme="dark"] .home-flow-step > svg,
+:root[data-theme="dark"] .home-destination-icon,
+:root[data-theme="dark"] .home-disclaimer svg { color: #ff9baa; }
+.bloodflow-dock .dock-item:is([data-active], [data-open]) .dock-face {
+  color: var(--dock-label-ink) !important;
+}
+.bloodflow-dock .dock-item[data-active] .dock-face { background: var(--dock-label); }
+:root[data-theme="light"] .bloodflow-dock {
+  --dock-accent: #0b3c65;
+  --dock-dot: rgba(11, 60, 101, .6);
+}
+.page-content { scroll-padding-bottom: 88px; }

@@ -50,7 +50,7 @@ const THEMES = {
     '--dock-tile-highlight': 'rgba(255, 255, 255, 1)',
     '--dock-tile-shadow': '0 4px 10px -5px rgba(43, 45, 66, 0.2)',
     '--dock-ink': '#2b2d42',
-    '--dock-label': '#ef233c',
+    '--dock-label': '#920942',
     '--dock-label-ink': '#ffffff',
     '--dock-dot': 'rgba(43, 45, 66, 0.55)',
     '--dock-separator': 'rgba(43, 45, 66, 0.12)',
