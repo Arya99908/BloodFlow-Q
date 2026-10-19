@@ -106,6 +106,7 @@ export default function AlertCenter({ onNavigate, onOptimization }) {
 
   const dropdownRef = useRef(null);
   const alertedIdsRef = useRef(new Set());
+  const scenarioBaselineRef = useRef(false);
 
   // Close dropdown on outside click or Escape
   useEffect(() => {
@@ -185,6 +186,7 @@ export default function AlertCenter({ onNavigate, onOptimization }) {
 
         const hospitals = scenario.hospitals || [];
         const routes = scenario.routes || [];
+        const announceNewScenarioAlerts = scenarioBaselineRef.current;
 
         // 1. Scan for critical/high demands
         hospitals.forEach((h) => {
@@ -210,7 +212,7 @@ export default function AlertCenter({ onNavigate, onOptimization }) {
                   units: qty,
                   actionType: 'optimize',
                   actionLabel: 'Solve with Optimizer',
-                });
+                }, announceNewScenarioAlerts);
               }
             }
           });
@@ -229,11 +231,12 @@ export default function AlertCenter({ onNavigate, onOptimization }) {
                 title: `Route Disrupted: ${r.source} ➔ ${r.destination}`,
                 message: `Corridor from ${r.source} to ${r.destination} is blocked (${r.distance_km} km). Excluded from delivery graph.`,
                 actionType: 'emergency',
-                actionLabel: 'Simulate Rerouting',
-              });
+                  actionLabel: 'Simulate Rerouting',
+                }, announceNewScenarioAlerts);
             }
           }
         });
+        scenarioBaselineRef.current = true;
       } catch {
         // Scenario fetch may fail if backend is not started
       }

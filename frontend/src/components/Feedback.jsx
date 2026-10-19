@@ -1,7 +1,9 @@
 import { AlertCircle, LoaderCircle, RefreshCw } from 'lucide-react';
+import LatticeLoader from './LatticeLoader';
 
 export function LoadingState({ label = 'Loading data from the API…' }) {
-  return <div className="state-card" role="status" aria-live="polite"><LoaderCircle className="spin" size={20} aria-hidden="true" /> <span>{label}</span></div>;
+  const optimizing = /optim|solver|qaoa|benchmark|pipeline/i.test(label);
+  return <div className={`state-card ${optimizing ? 'state-optimizing' : ''}`} role="status" aria-live="polite">{optimizing ? <LatticeLoader label={label} pattern="orbit" grid={3} color="#ef233c" glow glowColor="#d90429" showTimer={false} /> : <><LoaderCircle className="spin" size={20} aria-hidden="true" /><span>{label}</span></>}</div>;
 }
 
 export default LoadingState;

@@ -6,9 +6,15 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { formatDemoMetric, getComparableResult } from '../utils/demoComparison';
+import GlideSelect from '../components/GlideSelect';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
 const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, warm_start: false, mixer: 'x' };
+const FALLBACK_CASES = [
+  { id: 'normal', name: 'NORMAL', description: 'Bundled synthetic Bank A to Hospital 1 O-group allocation.' },
+  { id: 'emergency_demand_spike', name: 'EMERGENCY DEMAND SPIKE', description: 'Raises the same synthetic demand and escalates its logistics urgency.' },
+  { id: 'transport_disruption', name: 'TRANSPORT DISRUPTION', description: 'Blocks the only route in the compact synthetic scenario.' },
+];
 
 export default function DemoMode() {
   const { data: catalog, loading, error, reload } = useApi(api.getDemoScenarios, []);
@@ -25,6 +31,8 @@ export default function DemoMode() {
   const [selectedPrecomputedId, setSelectedPrecomputedId] = useState('normal-qaoa');
   const [running, setRunning] = useState(false);
   const [runError, setRunError] = useState('');
+  const [configStep, setConfigStep] = useState(0);
+  const configLastStep = method === 'qaoa' ? 2 : 1;
 
   useEffect(() => {
     if (defaults?.objective_weights) setWeights(defaults.objective_weights);
@@ -33,9 +41,9 @@ export default function DemoMode() {
 
   const objectiveWeights = weights;
   const qaoaSettings = qaoa;
-  const cases = catalog?.scenarios || [];
+  const cases = catalog?.scenarios?.length ? catalog.scenarios : FALLBACK_CASES;
   const storedRuns = precomputed?.runs || [];
-  const selectedCase = cases.find((item) => item.id === scenarioId);
+  const selectedCase = cases.find((item) => item.id === scenarioId) || FALLBACK_CASES[0];
   const selectedStoredRun = storedRuns.find((item) => item.run_id === selectedPrecomputedId) || storedRuns[0];
   const shownResult = mode === 'live' ? result : selectedStoredRun?.result;
   const output = shownResult?.result;
@@ -51,7 +59,7 @@ export default function DemoMode() {
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
   const setQaoaValue = (key, value) => setQaoa((current) => ({
     ...current,
-    [key]: (key === 'optimizer' || key === 'mixer' || key === 'warm_start') ? value : Number(value),
+    [key]: ['optimizer', 'mixer', 'warm_start'].includes(key) ? value : Number(value),
   }));
 
   const demoBound = useMemo(() => {
@@ -114,36 +122,39 @@ export default function DemoMode() {
       <button type="button" role="radio" aria-checked={mode === 'live'} className={mode === 'live' ? 'demo-mode-active' : ''} onClick={() => setMode('live')}><strong>LIVE COMPUTATION</strong><span>New request to the running optimization backend</span></button>
       <button type="button" role="radio" aria-checked={mode === 'precomputed'} className={mode === 'precomputed' ? 'demo-mode-active' : ''} onClick={switchToPrecomputed} disabled={!storedRuns.length}><strong>PRECOMPUTED EXPERIMENT</strong><span>{storedRuns.length ? 'Saved measurements with configuration and provenance' : precomputedLoading ? 'Loading stored experiment…' : 'No stored experiment is available'}</span></button>
     </section>
-    {mode === 'live' && loading && <LoadingState label="Loading the fixed demo scenarios from the backend…" />}
-    {mode === 'live' && !loading && error && <ErrorState message={error} onRetry={reload} />}
-    {(mode === 'precomputed' || (!loading && !error)) && <>
+    {mode === 'live' && error && <div className="notice notice-info demo-api-status" role="status"><Activity size={16} /><span><strong>API is offline.</strong> The workflow remains available with the fixed synthetic scenario catalog. Live run requests need the backend.</span><button type="button" className="button button-secondary button-small" onClick={reload}>Retry</button></div>}
+    {mode === 'live' && loading && <div className="demo-catalog-loading"><LoadingState label="Checking the demo API…" /></div>}
+    {(mode === 'precomputed' || !loading) && <>
       {mode === 'live' && <div className="demo-case-grid" role="radiogroup" aria-label="Select a deterministic demo scenario">
         {cases.map((item, index) => <button type="button" role="radio" aria-checked={scenarioId === item.id} key={item.id} className={`demo-case ${scenarioId === item.id ? 'demo-case-selected' : ''}`} onClick={() => { setScenarioId(item.id); setResult(null); }}>
           <span className="demo-case-index">{String(index + 1).padStart(2, '0')}</span><strong>{item.name}</strong><span>{item.description}</span>
         </button>)}
       </div>}
-      {!cases.length && mode === 'live' && <EmptyState title="No demo scenarios are available" detail="The API did not return the controlled scenario catalog." />}
       <div className="demo-layout">
         {mode === 'live' ? <section className="panel demo-config">
           <div className="panel-heading"><div><h2>Run configuration</h2><p>Every setting is passed to the API with the run.</p></div><Settings2 size={17} className="muted-icon" /></div>
-          <label className="field-label" htmlFor="demo-method">Optimization method</label>
-          <select id="demo-method" className="field-control" value={method} onChange={(event) => setMethod(event.target.value)}><option value="greedy">Greedy baseline</option><option value="milp">MILP (HiGHS classical optimal)</option><option value="exact">Exact small-instance solver</option><option value="qaoa">QAOA local simulator</option></select>
-          {method === 'qaoa' && <>
+          <div className="demo-config-steps" aria-label="Run configuration steps"><span className={configStep === 0 ? 'active' : configStep > 0 ? 'done' : ''}>1 <b>Solver</b></span><i /><span className={configStep === 1 ? 'active' : configStep > 1 ? 'done' : ''}>2 <b>Settings</b></span><i /><span className={configStep === 2 ? 'active' : ''}>3 <b>Penalties</b></span></div>
+          {configStep === 0 && <><label className="field-label" htmlFor="demo-method">Optimization method</label>
+          <GlideSelect ariaLabel="Optimization method" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP · HiGHS classical optimal'},{value:'exact',label:'Exact small-instance solver'},{value:'qaoa',label:'QAOA local simulator'}]} value={method} onChange={(value) => { setMethod(value); setConfigStep(0); }} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" />
+          <details className="demo-objective-settings"><summary>Objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min="0" onChange={(next) => setWeight(key, next)} />)}</div></details></>}
+          {method === 'qaoa' && configStep === 1 && <>
             <div className="demo-settings-grid">
               <NumberField label="Random seed" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min="0" />
               <NumberField label="QAOA depth (p)" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min="1" max="5" />
               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
               <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
-              <label className="demo-field">Classical optimizer<select className="field-control" value={qaoaSettings.optimizer} onChange={(event) => setQaoaValue('optimizer', event.target.value)}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label>
-              <label className="demo-field">Mixer type<select className="field-control" value={qaoaSettings.mixer || 'x'} onChange={(event) => setQaoaValue('mixer', event.target.value)}><option value="x">Standard X-Mixer</option><option value="xy">XY-Mixer (Conserves Excitations)</option><option value="warm_start">Warm-Started Mixer</option></select></label>
-              <label className="demo-field" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}><input type="checkbox" checked={Boolean(qaoaSettings.warm_start)} onChange={(event) => setQaoaValue('warm_start', event.target.checked)} /> <span>Warm-Start from MILP Bias</span></label>
+            <label className="demo-field">Classical optimizer<GlideSelect ariaLabel="Classical optimizer" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
+              <label className="demo-field">QAOA mixer<GlideSelect ariaLabel="QAOA mixer" options={[{value:'x',label:'Standard X mixer'}, {value:'xy',label:'XY mixer'}, {value:'warm_start',label:'Warm-start mixer'}]} value={qaoaSettings.mixer || 'x'} onChange={(value) => setQaoaValue('mixer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
+              <label className="demo-field demo-warm-start"><input type="checkbox" checked={Boolean(qaoaSettings.warm_start)} onChange={(event) => setQaoaValue('warm_start', event.target.checked)} /><span>Warm-start QAOA using the classical MILP baseline</span></label>
             </div>
+            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} optimizer iterations`}><span className="eyebrow">ENGINE BUDGET</span><strong>{Number(qaoaSettings.shots).toLocaleString()} shots · {qaoaSettings.max_iterations} optimizer iterations</strong></div>
+          </>}
+          {method === 'qaoa' && configStep === 2 && <>
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
           </>}
-          <details className="demo-objective-settings"><summary>Objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min="0" onChange={(next) => setWeight(key, next)} />)}</div></details>
           <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, then QAOA in turn. Completed responses stay visible for this browser session.</p>
-          <button type="button" className="button button-primary button-wide run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</button>
+          <div className="demo-step-actions">{configStep > 0 && <button type="button" className="button button-secondary" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type="button" className="button button-primary" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <button type="button" className="button button-primary run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</button>}</div>
           <p className="demo-qaoa-status"><ShieldCheck size={14} /> QAOA availability reported by backend: <strong>{defaults?.qaoa_available == null ? 'checking' : defaults.qaoa_available ? 'available' : 'unavailable'}</strong>. {defaults?.qaoa_unavailable_reason || 'A failed QAOA request stays an error.'}</p>
         </section> : <section className="panel demo-config">
           <div className="panel-heading"><div><h2>Stored experiment</h2><p>Choose a captured run. Values are read-only.</p></div></div>
@@ -171,7 +182,7 @@ export default function DemoMode() {
           {mode === 'live' && !running && !runError && !result && (
             <EmptyState
               title="No live run yet"
-              detail="Select a scenario and run it to see an actual backend response."
+              detail={error ? 'Your configuration is ready. Start the backend to run this scenario and receive measured results.' : 'Select a scenario and run it to see an actual backend response.'}
             />
           )}
           {mode === 'precomputed' && !selectedStoredRun && <EmptyState title="No precomputed result is available" detail="The repository has no captured experiment to display." />}
@@ -197,8 +208,8 @@ export default function DemoMode() {
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
-                  <MetaRow label="Warm-Start" value={(output?.after_qaoa || output)?.warm_start_used ? 'Enabled (MILP bias)' : 'Disabled'} />
-                  <MetaRow label="Mixer" value={((output?.after_qaoa || output)?.mixer_type || 'x').toUpperCase()} />
+                  <MetaRow label="Warm-start" value={(output?.after_qaoa || output)?.warm_start_used ? 'Enabled' : 'Disabled'} />
+                  <MetaRow label="Mixer" value={String((output?.after_qaoa || output)?.mixer_type || 'x').toUpperCase()} />
                   <div className="bitstring-box">
                     <span className="bitstring-label">Best measured bitstring:</span>
                     <code className="bitstring-code">{(output?.after_qaoa || output)?.best_measured_bitstring ?? 'Not available'}</code>

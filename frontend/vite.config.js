@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig(({ command, mode }) => {
   const { VITE_API_BASE_URL: fileApiBaseUrl } = loadEnv(mode, process.cwd(), 'VITE_');
@@ -23,6 +24,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
+    resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
     // Vite embeds this public API origin in the browser bundle. The matching
     // Vercel deployment URL keeps preview deployments isolated from production.
     define: {
