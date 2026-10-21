@@ -1,0 +1,42 @@
+{
+  "backend/schemas.py": {
+    "before": "4f6886ff266e1b452c7fd8e3c5ff82e5627e63ee8f0e0b768f64540ed2797ee2",
+    "after": "ae0adcd96449048b6fbfb644cc41862279b6e04d1e17a7ec48083c3f44975c51"
+  },
+  "backend/services.py": {
+    "before": "7daaafbc643edf2210e0c3edbd6e9d2baad58db0dd16c214f00bb2aae7e6a25b",
+    "after": "324109423012299dfaada21c22f48dd96c0bcc2f72d9b622f9f11331cd1d36dc"
+  },
+  "frontend/src/pages/DemoMode.jsx": {
+    "before": "9a1a73659aaa3197059c2f11f3a838c3be28fbde58bff5b0fc2fc638e1517016",
+    "after": "0b8371561a559f1841e70a21a3772cad2322df85a52c74763df81ffd209466bd"
+  },
+  "quantum/qaoa_solver.py": {
+    "before": "16892397e56a8e8122541ea18355dfa17ce5179a930d5399241c50a0e42d8707",
+    "after": "e7149a5762a11f56c8752921f1638ca809c18972d5075ec4cbadf0ed97d939dc"
+  },
+  "tests/test_pipeline_integration.py": {
+    "before": "7c81f833e36b6a80a1474741b00fe89b3f14932358c2c31e0b3bc2eabe1490ba",
+    "after": "14dad41f7da7a8668837d41fc59fda305ef85da40c97d0bef7107427e92836df"
+  },
+  "tests/test_warm_qaoa_audit.py": {
+    "before": null,
+    "after": "82f0a04029138a6515e7291333d4cba177acb0fa9124b4bf85f6135862aea7da"
+  },
+  "experiments/audit_warm_qaoa.py": {
+    "before": null,
+    "after": "bce6ccf7383bd9ca0520e85b015442458678cdd04aab7e4e54bae2cbeeab48b7"
+  },
+  "audit/WARM_QAOA_AUDIT.md": {
+    "sha256": "808b9d61fb1417bf4902c4d24fc645df4238a44f1aeaba61c7c131eb5ad3cbd1"
+  },
+  "audit/warm_qaoa_changes.patch": {
+    "sha256": "12c3d70bc77827b65321f30337de5a038254934302494ac0d7facad335a120ce"
+  },
+  "audit/warm_qaoa_verified_results.json": {
+    "sha256": "1441997a7f352402574a4170ac9a8c444095ad4b73b5ec5b6105ffc6470b1cf5"
+  },
+  "audit/warm_qaoa_final_tests.log": {
+    "sha256": "73ba00f65787a1c3ebf74cb6cd965d322d3e94a6338b3a4c184cec9636a281d5"
+  }
+}

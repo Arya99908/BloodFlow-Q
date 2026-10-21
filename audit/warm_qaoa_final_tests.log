@@ -1,0 +1,26 @@
+..........................greedy optimizer failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 593, in optimize
+    result = self.greedy_solver.solve(scenario, weights)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_api.py", line 35, in solve
+    raise RuntimeError("simulated greedy failure")
+RuntimeError: simulated greedy failure
+..QAOA solver failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 539, in _quantum_result
+    sample = solver.solve(qubo)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_api.py", line 40, in solve
+    raise RuntimeError("simulated QAOA simulator failure")
+RuntimeError: simulated QAOA simulator failure
+...................................................................................................QAOA solver failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 539, in _quantum_result
+    sample = solver.solve(qubo)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_pipeline_integration.py", line 45, in solve
+    raise RuntimeError("private simulator diagnostic")
+RuntimeError: private simulator diagnostic
+..............................
+----------------------------------------------------------------------
+Ran 157 tests in 1.441s
+
+OK

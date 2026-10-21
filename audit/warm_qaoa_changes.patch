@@ -1,0 +1,479 @@
+--- before/backend/schemas.py
++++ after/backend/schemas.py
+@@ -80,6 +80,9 @@
+     max_iterations: int = Field(default=40, ge=1, le=500)
+     seed: int = Field(default=7, ge=0, le=4_294_967_295)
+     warm_start: bool = Field(default=False)
++    warm_start_epsilon: float = Field(default=0.25, gt=0, lt=0.5, allow_inf_nan=False)
++    normalize_cost: bool = True
++    restarts: int = Field(default=1, ge=1, le=10)
+     mixer: Literal["x", "xy", "warm_start"] = "x"
+ 
+ 
+--- before/backend/services.py
++++ after/backend/services.py
+@@ -217,6 +217,9 @@
+         max_iterations=value.max_iterations,
+         seed=value.seed,
+         warm_start=value.warm_start,
++        warm_start_epsilon=value.warm_start_epsilon,
++        normalize_cost=value.normalize_cost,
++        restarts=value.restarts,
+         mixer=value.mixer,
+     )
+ 
+@@ -570,6 +573,9 @@
+                     "seed": solver.config.seed,
+                     "warm_start": getattr(solver.config, "warm_start", False),
+                     "mixer": getattr(solver.config, "mixer", "x"),
++                    "warm_start_epsilon": getattr(solver.config, "warm_start_epsilon", 0.25),
++                    "normalize_cost": getattr(solver.config, "normalize_cost", True),
++                    "restarts": getattr(solver.config, "restarts", 1),
+                 },
+                 "objective_weights": asdict(weights),
+                 "penalty_weights": asdict(penalties),
+--- before/frontend/src/pages/DemoMode.jsx
++++ after/frontend/src/pages/DemoMode.jsx
+@@ -12,7 +12,7 @@
+ import GlideSelect from '../components/GlideSelect';
+ 
+ const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
+-const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
++const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, restarts: 1, warm_start_epsilon: 0.25, normalize_cost: true };
+ const FALLBACK_CASES = [
+   { id: 'normal', name: 'NORMAL', description: 'Bundled synthetic Bank A to Hospital 1 O-group allocation.' },
+   { id: 'emergency_demand_spike', name: 'EMERGENCY DEMAND SPIKE', description: 'Raises the same synthetic demand and escalates its logistics urgency.' },
+@@ -40,7 +40,7 @@
+ 
+   useEffect(() => {
+     if (defaults?.objective_weights) setWeights(defaults.objective_weights);
+-    if (defaults?.qaoa_config) setQaoa(defaults.qaoa_config);
++    if (defaults?.qaoa_config) setQaoa({ ...FALLBACK_QAOA, ...defaults.qaoa_config });
+   }, [defaults]);
+ 
+   const objectiveWeights = weights;
+@@ -141,6 +141,12 @@
+           <GlideSelect ariaLabel="Optimization method" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP · HiGHS classical optimal'},{value:'exact',label:'Exact small-instance solver'},{value:'qaoa',label:'QAOA local simulator'}]} value={method} onChange={(value) => { setMethod(value); setConfigStep(0); }} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" />
+           <details className="demo-objective-settings"><summary>Objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min="0" onChange={(next) => setWeight(key, next)} />)}</div></details></>}
+           {method === 'qaoa' && configStep === 1 && <>
++            <button type="button" className="button button-secondary button-small" disabled={running} onClick={() => {
++              setQaoa((current) => ({ ...current, p: 2, shots: 512, max_iterations: 80, restarts: 3, warm_start_epsilon: 0.1, normalize_cost: true }));
++              const recommended = String(Math.max(1, Math.ceil(demoBound * 1.5)));
++              setPenalties({ inventory_penalty_weight: recommended, demand_penalty_weight: recommended });
++            }}>Use audited comparison settings</button>
++            <p className="comparison-help">Preset: depth 2, 512 shots, 3 starts × 80 optimizer iterations; warm-start epsilon 0.1. Uses more compute. Compare both variants with the same budget.</p>
+             <label className="demo-field" htmlFor="demo-qaoa-variant">QAOA variant</label>
+             <select id="demo-qaoa-variant" className="field-control" value={warmStart ? 'warm' : 'standard'} onChange={(event) => setWarmStart(event.target.value === 'warm')} disabled={running}>
+               <option value="standard">Standard QAOA</option>
+@@ -151,10 +157,12 @@
+               <NumberField label="Random seed" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min="0" />
+               <NumberField label="QAOA depth (p)" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min="1" max="5" />
+               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
+-              <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
++              <NumberField label="Optimizer restarts" value={qaoaSettings.restarts} onChange={(value) => setQaoaValue('restarts', value)} min="1" max="10" />
++              {warmStart && <NumberField label="Warm-start epsilon" value={qaoaSettings.warm_start_epsilon} onChange={(value) => setQaoaValue('warm_start_epsilon', value)} min="0.01" max="0.49" />}
++              <NumberField label="Optimizer iterations per restart" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
+             <label className="demo-field">Classical optimizer<GlideSelect ariaLabel="Classical optimizer" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
+             </div>
+-            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} optimizer iterations`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} optimizer iterations`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
++            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
+           </>}
+           {method === 'qaoa' && configStep === 2 && <>
+             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
+@@ -213,6 +221,7 @@
+                 <div className="metadata-panel-heading">QAOA circuit & execution telemetry</div>
+                 <div className="metadata-row-grid">
+                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
++                  <MetaRow label="Feasible shot rate" value={(output?.after_qaoa || output)?.optimizer_information?.feasible_shot_rate == null ? 'Not available' : `${(100 * (output?.after_qaoa || output).optimizer_information.feasible_shot_rate).toFixed(1)}%`} />
+                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
+                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
+                   <div className="bitstring-box">
+--- before/quantum/qaoa_solver.py
++++ after/quantum/qaoa_solver.py
+@@ -10,8 +10,8 @@
+ 
+ import math
+ import time
+-from dataclasses import dataclass
+-from typing import Mapping
++from dataclasses import dataclass, replace
++from typing import Mapping, Sequence
+ 
+ import numpy as np
+ from qiskit import QuantumCircuit, transpile
+@@ -21,6 +21,41 @@
+ 
+ from quantum.ising import IsingRepresentation, convert_qubo_to_ising
+ from quantum.qubo import QUBOInputError, QUBOResult
++
++
++def encode_register_probabilities(value: float, bit_pairs: Sequence[tuple[int, int]]) -> dict[int, float]:
++    """Interpolate encodings of adjacent integers; preserve the expected quantity.
++
++    Integral classical quantities must map to binary registers, not fractional
++    occupancy of a larger-weight bit. Fractions interpolate bit marginals only;
++    the product state does not preserve correlations or guarantee feasibility.
++    """
++    maximum = sum(weight for _, weight in bit_pairs)
++    if not math.isfinite(value) or value < -1e-7 or value > maximum + 1e-7:
++        raise ValueError("classical seed quantity is outside the register bounds")
++    value = min(float(maximum), max(0.0, value))
++    def encode(integer: int) -> dict[int, int]:
++        bits = {}
++        for index, weight in sorted(bit_pairs, key=lambda pair: pair[1], reverse=True):
++            bits[index] = int(integer >= weight)
++            integer -= weight * bits[index]
++        if integer:
++            raise ValueError("register cannot represent the classical quantity")
++        return bits
++    low = math.floor(value)
++    fraction = value - low
++    lower, upper = encode(low), encode(math.ceil(value))
++    return {i: (1 - fraction) * lower[i] + fraction * upper[i] for i, _ in bit_pairs}
++
++
++def normalize_ising(ising: IsingRepresentation) -> tuple[IsingRepresentation, float]:
++    """Positive uniform scaling preserves every energy ordering and minimizer."""
++    scale = max([abs(c) for c in ising.linear_z] +
++                [abs(c) for _, _, c in ising.quadratic_zz] + [1.0])
++    return replace(ising, cost_hamiltonian=ising.cost_hamiltonian / scale,
++                   constant_offset=ising.constant_offset / scale,
++                   linear_z=tuple(c / scale for c in ising.linear_z),
++                   quadratic_zz=tuple((a, b, c / scale) for a, b, c in ising.quadratic_zz)), scale
+ 
+ 
+ class QAOASolverError(RuntimeError):
+@@ -44,6 +79,8 @@
+     warm_start: bool = False
+     mixer: str = "x"
+     warm_start_epsilon: float = 0.25
++    normalize_cost: bool = True
++    restarts: int = 1
+ 
+     def __post_init__(self) -> None:
+         if isinstance(self.p, bool) or not isinstance(self.p, int) or self.p < 1:
+@@ -54,6 +91,10 @@
+             raise ValueError("max_iterations must be a positive integer")
+         if isinstance(self.max_qubits, bool) or not isinstance(self.max_qubits, int) or self.max_qubits < 1:
+             raise ValueError("max_qubits must be a positive integer")
++        if isinstance(self.restarts, bool) or not isinstance(self.restarts, int) or not 1 <= self.restarts <= 10:
++            raise ValueError("restarts must be an integer from 1 to 10")
++        if not isinstance(self.normalize_cost, bool):
++            raise ValueError("normalize_cost must be boolean")
+         if self.optimizer not in {"COBYLA", "Nelder-Mead", "Powell"}:
+             raise ValueError("optimizer must be one of: COBYLA, Nelder-Mead, Powell")
+         if self.mixer not in {"x", "xy", "warm_start"}:
+@@ -177,17 +218,9 @@
+                     else:
+                         val = 0.0
+ 
+-                    rem = float(val)
+-                    for bit_idx, bit_weight in sorted(bit_pairs, key=lambda item: item[1], reverse=True):
+-                        w = float(bit_weight)
+-                        if rem >= w:
+-                            classical_bits[bit_idx] = 1.0
+-                            rem -= w
+-                        elif rem > 0.0:
+-                            classical_bits[bit_idx] = min(1.0, max(0.0, rem / w))
+-                            rem = 0.0
+-                        else:
+-                            classical_bits[bit_idx] = 0.0
++                    probabilities = encode_register_probabilities(float(val), bit_pairs)
++                    for bit_idx, probability in probabilities.items():
++                        classical_bits[bit_idx] = probability
+ 
+         c_reg = eps + (1.0 - 2.0 * eps) * classical_bits
+         c_reg = np.clip(c_reg, 1e-4, 1.0 - 1e-4)
+@@ -294,7 +327,9 @@
+                 f"local QAOA limited to {self.config.max_qubits} qubits by configuration; "
+                 f"this QUBO has {qubo.variable_count} binary variables"
+             )
+-        ising = convert_qubo_to_ising(qubo)
++        started = time.perf_counter()
++        original_ising = convert_qubo_to_ising(qubo)
++        ising, cost_scale = normalize_ising(original_ising) if self.config.normalize_cost else (original_ising, 1.0)
+ 
+         use_warm_start = self.config.warm_start or self.config.mixer == "warm_start"
+         thetas = self._compute_warm_start_thetas(qubo) if use_warm_start else None
+@@ -305,7 +340,7 @@
+             rng.uniform(0.0, 2 * math.pi, self.config.p),
+             rng.uniform(0.0, math.pi, self.config.p),
+         ))
+-        started = time.perf_counter()
++        preparation_seconds = time.perf_counter() - started
+ 
+         def expected_energy(angles: np.ndarray) -> float:
+             circuit = self.build_circuit(ising, angles, thetas=thetas, xy_pairs=xy_pairs)
+@@ -313,12 +348,18 @@
+             return float(state.expectation_value(ising.cost_hamiltonian).real)
+ 
+         try:
+-            optimized = minimize(
+-                expected_energy,
+-                initial,
+-                method=self.config.optimizer,
+-                options={"maxiter": self.config.max_iterations},
+-            )
++            runs = []
++            starts = []
++            for restart in range(self.config.restarts):
++                if restart:
++                    initial = np.concatenate((rng.uniform(0, 2 * math.pi, self.config.p),
++                                              rng.uniform(0, math.pi, self.config.p)))
++                starts.append(initial.copy())
++                runs.append(minimize(expected_energy, initial, method=self.config.optimizer,
++                                     options={"maxiter": self.config.max_iterations}))
++            selected = min(range(len(runs)), key=lambda index: runs[index].fun)
++            optimized = runs[selected]
++            initial = starts[selected]
+             measured = self.build_circuit(
+                 ising, optimized.x, measure=True, thetas=thetas, xy_pairs=xy_pairs
+             )
+@@ -331,7 +372,6 @@
+         except Exception as error:
+             raise QAOASolverError(f"local QAOA run failed: {error}") from error
+ 
+-        runtime = time.perf_counter() - started
+         candidates = [
+             QAOACandidate(
+                 bitstring=key,
+@@ -348,6 +388,14 @@
+         if not candidates:
+             raise QAOASolverError("local simulator returned no measured candidates")
+         mean_energy = sum(item.energy * item.count for item in candidates) / self.config.shots
++        feasible_candidates = []
++        feasible_shots = 0
++        for candidate in candidates:
++            assignment = qubo.evaluate_assignment(tuple(int(bit) for bit in candidate.bitstring.replace(" ", "")[::-1]))
++            if assignment.total_penalty == 0:
++                feasible_shots += candidate.count
++                feasible_candidates.append((assignment.classical_objective, candidate.bitstring))
++        best_feasible = min(feasible_candidates) if feasible_candidates else None
+         return QAOAResult(
+             best_bitstring=candidates[0].bitstring,
+             objective_value=candidates[0].energy,
+@@ -360,14 +408,23 @@
+                 "success": bool(optimized.success),
+                 "message": str(optimized.message),
+                 "iterations": int(getattr(optimized, "nit", 0)),
+-                "function_evaluations": int(getattr(optimized, "nfev", 0)),
+-                "final_expected_energy": float(optimized.fun),
++                "function_evaluations": sum(int(getattr(run, "nfev", 0)) for run in runs),
++                "restarts": self.config.restarts,
++                "selected_restart": selected,
++                "restart_expected_energies": [float(run.fun) * cost_scale for run in runs],
++                "cost_scale": cost_scale,
++                "preparation_seconds": preparation_seconds,
++                "warm_start_epsilon": self.config.warm_start_epsilon,
++                "feasible_shot_rate": feasible_shots / self.config.shots,
++                "best_feasible_objective": best_feasible[0] if best_feasible else None,
++                "best_feasible_bitstring": best_feasible[1] if best_feasible else None,
++                "final_expected_energy": float(optimized.fun) * cost_scale,
+                 "initial_parameters": initial.tolist(),
+                 "final_parameters": np.asarray(optimized.x, dtype=float).tolist(),
+             },
+-            runtime_seconds=runtime,
++            runtime_seconds=time.perf_counter() - started,
+             variable_mapping=qubo.variable_mapping,
+-            cost_hamiltonian=ising.cost_hamiltonian,
++            cost_hamiltonian=original_ising.cost_hamiltonian,
+             measured_mean_energy=mean_energy,
+             warm_start_used=use_warm_start,
+             mixer_type=self.config.mixer,
+--- before/tests/test_pipeline_integration.py
++++ after/tests/test_pipeline_integration.py
+@@ -62,6 +62,7 @@
+         self.assertEqual(qubo.variable_count, 10)
+         qaoa_config = QAOAConfig(
+             p=1, shots=64, max_iterations=10, seed=3, max_qubits=16,
++            normalize_cost=False,  # Preserve the historical measured fixture.
+         )
+         measured_run = QAOASolver(qaoa_config).solve(qubo)
+         self.assertEqual(sum(measured_run.counts.values()), 64)
+@@ -91,7 +92,7 @@
+             },
+             "qaoa_config": {
+                 "p": 1, "shots": 64, "optimizer": "COBYLA",
+-                "max_iterations": 10, "seed": 3,
++                "max_iterations": 10, "seed": 3, "normalize_cost": False,
+             },
+         })
+         self.assertEqual(response.status_code, 200, response.text)
+--- /dev/null
++++ after/tests/test_warm_qaoa_audit.py
+@@ -0,0 +1,70 @@
++import itertools
++import unittest
++import numpy as np
++from qiskit.quantum_info import Statevector
++from quantum.qaoa_solver import encode_register_probabilities, normalize_ising, QAOASolver, QAOAConfig
++from quantum.qubo import _binary_weights
++from quantum.ising import convert_qubo_to_ising
++from tests.test_qaoa_solver import tiny_qubo
++
++class WarmAuditTests(unittest.TestCase):
++    def test_all_bounded_registers_integer_and_fractional(self):
++        for maximum in range(1, 65):
++            pairs = tuple(enumerate(_binary_weights(maximum)))
++            for quarter in range(4 * maximum + 1):
++                value = quarter / 4
++                probabilities = encode_register_probabilities(value, pairs)
++                self.assertAlmostEqual(sum(probabilities[i] * w for i, w in pairs), value)
++                self.assertTrue(all(0 <= p <= 1 for p in probabilities.values()))
++                if value.is_integer():
++                    self.assertTrue(all(p in (0, 1) for p in probabilities.values()))
++
++    def test_normalization_preserves_all_energies(self):
++        qubo = tiny_qubo()
++        original = convert_qubo_to_ising(qubo)
++        normalized, scale = normalize_ising(original)
++        for bits in itertools.product((0, 1), repeat=qubo.variable_count):
++            self.assertAlmostEqual(normalized.energy(bits) * scale, qubo.energy(bits))
++        angles = np.array([0.37, 0.29])
++        solver = QAOASolver()
++        a = Statevector.from_instruction(solver.build_circuit(original, angles))
++        b = Statevector.from_instruction(solver.build_circuit(normalized, angles * [scale, 1]))
++        self.assertTrue(a.equiv(b))
++
++    def test_warm_mixer_preserves_prepared_state_without_cost(self):
++        qubo = tiny_qubo()
++        solver = QAOASolver(QAOAConfig(warm_start=True))
++        thetas = solver._compute_warm_start_thetas(qubo)
++        ising = convert_qubo_to_ising(qubo)
++        a = Statevector.from_instruction(solver.build_circuit(ising, np.array([0, 0]), thetas=thetas))
++        b = Statevector.from_instruction(solver.build_circuit(ising, np.array([0, 0.7]), thetas=thetas))
++        self.assertTrue(a.equiv(b))
++
++    def test_restarts_select_by_expectation_and_preserve_measured_energy(self):
++        qubo = tiny_qubo()
++        result = QAOASolver(QAOAConfig(warm_start=True, restarts=2, max_iterations=8, shots=64)).solve(qubo)
++        info = result.optimizer_information
++        self.assertAlmostEqual(info['final_expected_energy'], min(info['restart_expected_energies']))
++        self.assertGreaterEqual(result.runtime_seconds, info['preparation_seconds'])
++        for candidate in result.ranked_candidates:
++            self.assertAlmostEqual(candidate.energy, qubo.energy(tuple(map(int, candidate.bitstring[::-1]))))
++
++    def test_api_preserves_hybrid_controls_and_measured_metrics(self):
++        from fastapi.testclient import TestClient
++        from backend.main import create_app
++        response = TestClient(create_app()).post('/demo-run', json={
++            'scenario_id': 'normal', 'method': 'qaoa',
++            'qaoa_penalties': {'inventory_penalty_weight': 10000, 'demand_penalty_weight': 10000},
++            'qaoa_config': {'warm_start': True, 'warm_start_epsilon': 0.1,
++                            'normalize_cost': True, 'restarts': 2, 'shots': 64, 'max_iterations': 8},
++        })
++        self.assertEqual(response.status_code, 200, response.text)
++        result = response.json()['result']
++        config = result['experiment_configuration']['qaoa']
++        self.assertEqual(config['restarts'], 2)
++        self.assertEqual(config['warm_start_epsilon'], 0.1)
++        self.assertTrue(config['normalize_cost'])
++        info = result['optimizer_information']
++        self.assertTrue(0 <= info['feasible_shot_rate'] <= 1)
++        if info['best_feasible_bitstring'] is not None:
++            self.assertIn(info['best_feasible_bitstring'], result['counts'])
+--- /dev/null
++++ after/experiments/audit_warm_qaoa.py
+@@ -0,0 +1,102 @@
++"""Reproducible compact-demo audit; no classical candidates enter measured results.
++
++Run: python -m experiments.audit_warm_qaoa --output audit/warm_qaoa_results.json
++"""
++import argparse
++import hashlib
++import importlib.util
++import importlib.metadata
++import itertools
++import json
++import math
++import platform
++import sys
++import time
++from pathlib import Path
++from dataclasses import asdict
++from backend.data_loader import load_data
++from backend.scenario_factory import scenario_from_loaded_data
++from backend.demo_scenarios import build_demo_case
++from optimization.objective import ObjectiveConfig
++from optimization.exact import ExactSolver
++from optimization.milp import MILPSolver
++from quantum.qubo import build_qubo, QUBOPenaltyConfig, compute_conservative_objective_bound
++from quantum.qaoa_solver import QAOASolver, QAOAConfig
++
++ROOT = Path(__file__).resolve().parents[1]
++
++def main():
++    parser = argparse.ArgumentParser()
++    parser.add_argument('--output', required=True)
++    args = parser.parse_args()
++    destination = Path(args.output)
++    if destination.exists():
++        raise FileExistsError('Use a new output path to preserve prior measurements')
++    spec = importlib.util.spec_from_file_location('audit_original_qaoa', ROOT / 'audit/warm_qaoa_before/quantum/qaoa_solver.py')
++    old = importlib.util.module_from_spec(spec)
++    sys.modules[spec.name] = old
++    spec.loader.exec_module(old)
++    scenario, _ = build_demo_case(scenario_from_loaded_data(load_data()), 'normal')
++    weights = ObjectiveConfig(10, 5, 1, 0.1, 0)
++    bound = compute_conservative_objective_bound(scenario, weights)
++    penalty = float(max(1, math.ceil(1.5 * bound)))
++    exact = ExactSolver().solve(scenario, weights)
++    lp = MILPSolver().solve_relaxation(scenario, weights)
++    results = []
++    checks = []
++    for penalty_value in (10000.0, penalty):
++        qubo = build_qubo(scenario, weights, QUBOPenaltyConfig(penalty_value, penalty_value))
++        evaluated = [(bits, qubo.evaluate_assignment(bits)) for bits in itertools.product((0, 1), repeat=qubo.variable_count)]
++        feasible = [entry.classical_objective for _, entry in evaluated if entry.total_penalty == 0]
++        minimum_energy = min(entry.energy for _, entry in evaluated)
++        minimizers = [entry for _, entry in evaluated if abs(entry.energy - minimum_energy) < 1e-7]
++        assert all(entry.total_penalty == 0 for entry in minimizers)
++        assert abs(min(feasible) - exact.objective_value) < 1e-7
++        checks.append({'penalty': penalty_value, 'states': len(evaluated), 'qubits': qubo.variable_count,
++                       'all_qubo_minimizers_feasible': True, 'exact_objective': exact.objective_value})
++        variants = [('original_warm', old.QAOASolver, old.QAOAConfig, {'warm_start': True}),
++                    ('encoding_fixed_warm', QAOASolver, QAOAConfig, {'warm_start': True, 'normalize_cost': False}),
++                    ('normalized_standard', QAOASolver, QAOAConfig, {'warm_start': False}),
++                    ('normalized_warm', QAOASolver, QAOAConfig, {'warm_start': True}),
++                    ('tuned_standard_more_compute', QAOASolver, QAOAConfig, {'warm_start': False, 'p': 2, 'restarts': 3}),
++                    ('tuned_warm_more_compute', QAOASolver, QAOAConfig, {'warm_start': True, 'p': 2, 'restarts': 3, 'warm_start_epsilon': 0.1})]
++        for label, solver_class, config_class, extra in variants:
++            for seed in (7, 11, 19):
++                config = config_class(**{'p': 1, 'shots': 512, 'max_iterations': 80, 'seed': seed, **extra})
++                started = time.perf_counter()
++                result = solver_class(config).solve(qubo)
++                wall_seconds = time.perf_counter() - started
++                feasible_count = optimal_count = 0
++                best = None
++                for bitstring, count in result.counts.items():
++                    entry = qubo.evaluate_assignment(tuple(map(int, bitstring[::-1])))
++                    if entry.total_penalty == 0:
++                        feasible_count += count
++                        best = entry.classical_objective if best is None else min(best, entry.classical_objective)
++                        if abs(entry.classical_objective - exact.objective_value) < 1e-7:
++                            optimal_count += count
++                row = {'variant': label, 'penalty': penalty_value, 'config': asdict(config),
++                       'feasible_shot_rate': feasible_count / config.shots,
++                       'optimal_shot_rate': optimal_count / config.shots,
++                       'best_feasible_objective': best,
++                       'absolute_gap': None if best is None else best - exact.objective_value,
++                       'wall_seconds_including_preparation': wall_seconds,
++                       'optimizer': dict(result.optimizer_information), 'counts': dict(result.counts)}
++                results.append(row)
++                print(label, penalty_value, seed, 'gap', row['absolute_gap'], 'feasible', row['feasible_shot_rate'], flush=True)
++    paths = ['quantum/qaoa_solver.py', 'quantum/qubo.py', 'quantum/ising.py',
++             'optimization/milp.py', 'experiments/audit_warm_qaoa.py',
++             'audit/warm_qaoa_before/quantum/qaoa_solver.py']
++    payload = {'scope': 'Normal compact synthetic demo only; three seeds; no hardware or quantum advantage claim',
++               'python': platform.python_version(),
++               'versions': {name: importlib.metadata.version(name) for name in ('numpy','scipy','qiskit','qiskit-aer')},
++               'source_sha256': {path: hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in paths},
++               'scenario': repr(scenario), 'objective_weights': asdict(weights), 'bound': bound,
++               'lp_seed': {kind: {str(k): v for k,v in values.items()} for kind, values in lp.items()},
++               'exhaustive_checks': checks, 'runs': results}
++    destination.parent.mkdir(parents=True, exist_ok=True)
++    with destination.open('x') as stream:
++        json.dump(payload, stream, indent=2, allow_nan=False)
++
++if __name__ == '__main__':
++    main()

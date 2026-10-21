@@ -1,0 +1,39 @@
+..........................greedy optimizer failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 593, in optimize
+    result = self.greedy_solver.solve(scenario, weights)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_api.py", line 35, in solve
+    raise RuntimeError("simulated greedy failure")
+RuntimeError: simulated greedy failure
+..QAOA solver failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 539, in _quantum_result
+    sample = solver.solve(qubo)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_api.py", line 40, in solve
+    raise RuntimeError("simulated QAOA simulator failure")
+RuntimeError: simulated QAOA simulator failure
+.................................................................................................F.QAOA solver failed
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/backend/services.py", line 539, in _quantum_result
+    sample = solver.solve(qubo)
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_pipeline_integration.py", line 45, in solve
+    raise RuntimeError("private simulator diagnostic")
+RuntimeError: private simulator diagnostic
+.............................
+======================================================================
+FAIL: test_infeasible_measured_demo_candidate_keeps_its_bits_and_energy (test_pipeline_integration.FullPipelineIntegrationTests.test_infeasible_measured_demo_candidate_keeps_its_bits_and_energy)
+A finite-shot sample with no feasible observed state stays infeasible.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/tests/test_pipeline_integration.py", line 68, in test_infeasible_measured_demo_candidate_keeps_its_bits_and_energy
+    self.assertEqual(measured_run.best_bitstring, "1101100101")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '1101011100' != '1101100101'
+- 1101011100
++ 1101100101
+
+
+----------------------------------------------------------------------
+Ran 156 tests in 1.236s
+
+FAILED (failures=1)

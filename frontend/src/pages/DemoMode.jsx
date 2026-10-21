@@ -8,7 +8,7 @@ import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { formatDemoMetric, getComparableResult } from '../utils/demoComparison';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
-const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
+const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, restarts: 1, warm_start_epsilon: 0.25, normalize_cost: true };
 
 export default function DemoMode() {
   const { data: catalog, loading, error, reload } = useApi(api.getDemoScenarios, []);
@@ -18,6 +18,7 @@ export default function DemoMode() {
   const [scenarioId, setScenarioId] = useState('normal');
   const [method, setMethod] = useState('qaoa');
   const [weights, setWeights] = useState(FALLBACK_WEIGHTS);
+  const [warmStart, setWarmStart] = useState(false);
   const [qaoa, setQaoa] = useState(FALLBACK_QAOA);
   const [penalties, setPenalties] = useState({ inventory_penalty_weight: '10000', demand_penalty_weight: '10000' });
   const [result, setResult] = useState(null);
@@ -28,11 +29,11 @@ export default function DemoMode() {
 
   useEffect(() => {
     if (defaults?.objective_weights) setWeights(defaults.objective_weights);
-    if (defaults?.qaoa_config) setQaoa(defaults.qaoa_config);
+    if (defaults?.qaoa_config) setQaoa({ ...FALLBACK_QAOA, ...defaults.qaoa_config });
   }, [defaults]);
 
   const objectiveWeights = weights;
-  const qaoaSettings = qaoa;
+  const qaoaSettings = { ...qaoa, warm_start: warmStart, mixer: warmStart ? 'warm_start' : 'x' };
   const cases = catalog?.scenarios || [];
   const storedRuns = precomputed?.runs || [];
   const selectedCase = cases.find((item) => item.id === scenarioId);
@@ -45,7 +46,7 @@ export default function DemoMode() {
   const actualScenario = output?.modified_scenario || output?.scenario || null;
   const comparableRuns = useMemo(() => {
     if (mode === 'precomputed') return storedRuns.filter((run) => run.scenario_id === 'normal');
-    return ['greedy', 'milp', 'exact', 'qaoa'].map((solver) => liveRuns[`normal:${solver}`]).filter(Boolean);
+    return ['greedy', 'milp', 'exact', 'qaoa', 'warm_qaoa'].map((solver) => liveRuns[`normal:${solver}`]).filter(Boolean);
   }, [liveRuns, mode, storedRuns]);
 
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
@@ -93,8 +94,10 @@ export default function DemoMode() {
     }
     try {
       const measured = await api.runDemo(request);
-      setResult(measured);
-      setLiveRuns((current) => ({ ...current, [`${scenarioId}:${method}`]: measured }));
+      const runKey = method === 'qaoa' && warmStart ? 'warm_qaoa' : method;
+      const labeledRun = { ...measured, demo_method_label: method === 'qaoa' ? (warmStart ? 'Warm-start QAOA' : 'Standard QAOA') : method.toUpperCase() };
+      setResult(labeledRun);
+      setLiveRuns((current) => ({ ...current, [`${scenarioId}:${runKey}`]: labeledRun }));
     } catch (issue) { setRunError(issue.message || 'The requested demo run failed.'); }
     finally { setRunning(false); }
   };
@@ -126,18 +129,32 @@ export default function DemoMode() {
           <label className="field-label" htmlFor="demo-method">Optimization method</label>
           <select id="demo-method" className="field-control" value={method} onChange={(event) => setMethod(event.target.value)}><option value="greedy">Greedy baseline</option><option value="milp">MILP (HiGHS classical optimal)</option><option value="exact">Exact small-instance solver</option><option value="qaoa">QAOA local simulator</option></select>
           {method === 'qaoa' && <>
+            <button type="button" className="button button-secondary button-small" disabled={running} onClick={() => {
+              setQaoa((current) => ({ ...current, p: 2, shots: 512, max_iterations: 80, restarts: 3, warm_start_epsilon: 0.1, normalize_cost: true }));
+              const recommended = String(Math.max(1, Math.ceil(demoBound * 1.5)));
+              setPenalties({ inventory_penalty_weight: recommended, demand_penalty_weight: recommended });
+            }}>Use audited comparison settings</button>
+            <p className="comparison-help">Preset: depth 2, 512 shots, 3 starts × 80 optimizer iterations; warm-start epsilon 0.1. Uses more compute. Compare both variants with the same budget.</p>
+            <label className="demo-field" htmlFor="demo-qaoa-variant">QAOA variant</label>
+            <select id="demo-qaoa-variant" className="field-control" value={warmStart ? 'warm' : 'standard'} onChange={(event) => setWarmStart(event.target.value === 'warm')} disabled={running}>
+              <option value="standard">Standard QAOA</option>
+              <option value="warm">Warm-start QAOA</option>
+            </select>
+            <p className="comparison-help">{warmStart ? 'Uses a classical allocation to prepare the initial quantum state and its matching mixer.' : 'Starts from a uniform quantum state with the standard X mixer.'}</p>
             <div className="demo-settings-grid">
               <NumberField label="Random seed" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min="0" />
               <NumberField label="QAOA depth (p)" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min="1" max="5" />
               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
-              <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
+              <NumberField label="Optimizer restarts" value={qaoaSettings.restarts} onChange={(value) => setQaoaValue('restarts', value)} min="1" max="10" />
+              {warmStart && <NumberField label="Warm-start epsilon" value={qaoaSettings.warm_start_epsilon} onChange={(value) => setQaoaValue('warm_start_epsilon', value)} min="0.01" max="0.49" />}
+              <NumberField label="Optimizer iterations per restart" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
               <label className="demo-field">Classical optimizer<select className="field-control" value={qaoaSettings.optimizer} onChange={(event) => setQaoaValue('optimizer', event.target.value)}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label>
             </div>
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
           </>}
           <details className="demo-objective-settings"><summary>Objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min="0" onChange={(next) => setWeight(key, next)} />)}</div></details>
-          <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, then QAOA in turn. Completed responses stay visible for this browser session.</p>
+          <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, Standard QAOA and Warm-start QAOA in turn. Completed responses stay visible for this browser session.</p>
           <button type="button" className="button button-primary button-wide run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</button>
           <p className="demo-qaoa-status"><ShieldCheck size={14} /> QAOA availability reported by backend: <strong>{defaults?.qaoa_available == null ? 'checking' : defaults.qaoa_available ? 'available' : 'unavailable'}</strong>. {defaults?.qaoa_unavailable_reason || 'A failed QAOA request stays an error.'}</p>
         </section> : <section className="panel demo-config">
@@ -177,7 +194,7 @@ export default function DemoMode() {
               </span>
               <StatusBadge
                 status={afterMetrics?.feasibility ? 'feasible' : 'infeasible'}
-                label={`${shownResult.method?.toUpperCase()} · ${afterMetrics?.feasibility ? 'FEASIBLE' : 'INFEASIBLE'}`}
+                label={`${shownResult.demo_method_label || shownResult.method?.toUpperCase()} · ${afterMetrics?.feasibility ? 'FEASIBLE' : 'INFEASIBLE'}`}
               />
             </div>
             {mode === 'precomputed' && <p className="comparison-help">This is the saved response from the experiment capture date, not a computation performed now.</p>}
@@ -190,6 +207,7 @@ export default function DemoMode() {
                 <div className="metadata-panel-heading">QAOA circuit & execution telemetry</div>
                 <div className="metadata-row-grid">
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
+                  <MetaRow label="Feasible shot rate" value={(output?.after_qaoa || output)?.optimizer_information?.feasible_shot_rate == null ? 'Not available' : `${(100 * (output?.after_qaoa || output).optimizer_information.feasible_shot_rate).toFixed(1)}%`} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
                   <div className="bitstring-box">
@@ -231,8 +249,8 @@ export default function DemoMode() {
                   // once more. Normalize both shapes before rendering.
                   const row = getComparableResult(record);
                   return (
-                    <tr key={record.run_id || `${record.scenario_id}-${record.method}`}>
-                      <td><strong>{record.method.toUpperCase()}</strong></td>
+                    <tr key={record.run_id || `${record.scenario_id}-${record.demo_method_label || record.method}`}>
+                      <td><strong>{record.demo_method_label || record.method.toUpperCase()}</strong></td>
                       <td className="text-right num-cell">{showMetric(row?.total_objective)}</td>
                       <td className="text-right num-cell">{row?.critical_satisfaction?.rate == null ? 'Not available' : `${(row.critical_satisfaction.rate * 100).toFixed(1)}%`}</td>
                       <td className="text-right num-cell">{showMetric(row?.total_unmet_demand)}</td>
