@@ -1,0 +1,215 @@
+ 
+
+ [1812.04170] For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances 
+
+ Skip to main content 
+
+ Search 
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:1812.04170 (quant-ph)
+
+ [Submitted on 11 Dec 2018]
+
+ Title: For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances
+
+ Authors: Fernando G.S.L. Brandao , Michael Broughton , Edward Farhi , Sam Gutmann , Hartmut Neven 
+ View a PDF of the paper titled For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances, by Fernando G.S.L. Brandao and 4 other authors
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: The Quantum Approximate Optimization Algorithm, QAOA, uses a shallow depth quantum circuit to produce a parameter dependent state. For a given combinatorial optimization problem instance, the quantum expectation of the associated cost function is the parameter dependent objective function of the QAOA. We demonstrate that if the parameters are fixed and the instance comes from a reasonable distribution then the objective function value is concentrated in the sense that typical instances have (nearly) the same value of the objective function. This applies not just for optimal parameters as the whole landscape is instance independent. We can prove this is true for low depth quantum circuits for instances of MaxCut on large 3-regular graphs. Our results generalize beyond this example. We support the arguments with numerical examples that show remarkable concentration. For higher depth circuits the numerics also show concentration and we argue for this using the Law of Large Numbers. We also observe by simulation that if we find parameters which result in good performance at say 10 bits these same parameters result in good performance at say 24 bits. These findings suggest ways to run the QAOA that reduce or eliminate the use of the outer loop optimization and may allow us to find good solutions with fewer calls to the quantum computer.
+
+ Comments: 
+ 16 pages, 1 figure 
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Cite as: 
+ arXiv:1812.04170 [quant-ph] 
+
+ (or 
+ arXiv:1812.04170v1 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.1812.04170 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Submission history
+ From: Fernando Brandao [ view email ] [v1] 
+ Tue, 11 Dec 2018 01:03:58 UTC (18 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances, by Fernando G.S.L. Brandao and 4 other authors
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2018-12 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ SciX 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+
+ 

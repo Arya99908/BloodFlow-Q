@@ -1,0 +1,90 @@
+[
+  {
+    "route": "http://127.0.0.1:5173/",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/dashboard",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/blood-banks",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/hospitals",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/network",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/optimization",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/emergency",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/demo",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/donor-network",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/emergency-requests",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/coordination",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/results",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/reports",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/quantum-lab",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/flow",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "route": "http://127.0.0.1:5173/about",
+    "status": 200,
+    "scope": "Vite SPA shell response, not visual browser execution"
+  },
+  {
+    "asset": "quantum-value-study.json",
+    "status": 200
+  },
+  {
+    "asset": "quantum-followup-study.json",
+    "status": 200
+  }
+]

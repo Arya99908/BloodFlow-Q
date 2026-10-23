@@ -1,0 +1,226 @@
+ 
+
+ [1411.4028] A Quantum Approximate Optimization Algorithm 
+
+ Skip to main content 
+
+ Search 
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:1411.4028 (quant-ph)
+
+ [Submitted on 14 Nov 2014]
+
+ Title: A Quantum Approximate Optimization Algorithm
+
+ Authors: Edward Farhi , Jeffrey Goldstone , Sam Gutmann 
+ View a PDF of the paper titled A Quantum Approximate Optimization Algorithm, by Edward Farhi and 2 other authors
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: We introduce a quantum algorithm that produces approximate solutions for combinatorial optimization problems. The algorithm depends on a positive integer p and the quality of the approximation improves as p is increased. The quantum circuit that implements the algorithm consists of unitary gates whose locality is at most the locality of the objective function whose optimum is sought. The depth of the circuit grows linearly with p times (at worst) the number of constraints. If p is fixed, that is, independent of the input size, the algorithm makes use of efficient classical preprocessing. If p grows with the input size a different strategy is proposed. We study the algorithm as applied to MaxCut on regular graphs and analyze its performance on 2-regular and 3-regular graphs for fixed p. For p = 1, on 3-regular graphs the quantum algorithm always finds a cut that is at least 0.6924 times the size of the optimal cut.
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Report number: 
+ MIT-CTP/4610 
+
+ Cite as: 
+ arXiv:1411.4028 [quant-ph] 
+
+ (or 
+ arXiv:1411.4028v1 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.1411.4028 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Submission history
+ From: Edward Farhi [ view email ] [v1] 
+ Fri, 14 Nov 2014 19:57:57 UTC (22 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled A Quantum Approximate Optimization Algorithm, by Edward Farhi and 2 other authors
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2014-11 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ SciX 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ 6 blog links 
+ ( what is this? )
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+
+ 

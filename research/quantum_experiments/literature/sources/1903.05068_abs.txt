@@ -1,0 +1,242 @@
+ 
+
+ [1903.05068] Domain wall encoding of discrete variables for quantum annealing and QAOA 
+
+ Skip to main content 
+
+ Search
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:1903.05068 (quant-ph)
+
+ [Submitted on 12 Mar 2019 ( v1 ), last revised 20 Jul 2019 (this version, v4)]
+
+ Title: Domain wall encoding of discrete variables for quantum annealing and QAOA
+
+ Authors: Nicholas Chancellor 
+ View a PDF of the paper titled Domain wall encoding of discrete variables for quantum annealing and QAOA, by Nicholas Chancellor
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: In this paper I propose a new method of encoding discrete variables into Ising model qubits for quantum optimization. The new method is based on the physics of domain walls in one dimensional Ising spin chains. I find that these encodings and the encoding of arbitrary two variable interactions is possible with only two body Ising terms. Following on from similar results for the `one hot' method of encoding discrete variables [Hadfield et. al. Algorithms 12.2 (2019): 34] I also demonstrate that it is possible to construct two body mixer terms which do not leave the logical subspace, an important consideration for optimising using the quantum alternating operator ansatz (QAOA). I additionally discuss how, since the couplings in the domain wall encoding only need to be ferromagnetic and therefore could in principle be much stronger than anti-ferromagnetic couplers, application specific quantum annealers for discrete problems based on this construction may be beneficial. Finally, I compare embedding for synthetic scheduling and colouring problems with the domain wall and one hot encodings on two graphs which are relevant for quantum annealing, the chimera graph and the Pegasus graph. For every case I examine I find a similar or better performance from the domain wall encoding as compared to one hot, but this advantage is highly dependent on the structure of the problem. For encoding some problems, I find an advantage similar to the one found by embedding in a Pegasus graph compared to embedding in a chimera graph.
+
+ Comments: 
+ 17 pages 9 figures, code, including simple python module for domain wall encoding, available at this https URL additional acknowledgement and discussion about efficiency of encoding added in v2; changes in response to referees added in v3, title change from 'integer' to 'discrete' in v3. accepted in IoP quantum science and technology, v4 matches accepted version 
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Cite as: 
+ arXiv:1903.05068 [quant-ph] 
+
+ (or 
+ arXiv:1903.05068v4 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.1903.05068 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Journal reference: 
+ Quantum Sci. Technol. 4 045004 (2019) 
+
+ Related DOI :
+
+ https://doi.org/10.1088/2058-9565/ab33c2 
+
+ Focus to learn more 
+
+ DOI(s) linking to related resources
+
+ Submission history
+ From: Nicholas Chancellor [ view email ] [v1] 
+ Tue, 12 Mar 2019 17:21:50 UTC (77 KB) 
+ [v2] 
+ Tue, 16 Apr 2019 17:02:01 UTC (654 KB) 
+ [v3] 
+ Fri, 21 Jun 2019 14:23:21 UTC (85 KB) 
+ [v4] 
+ Sat, 20 Jul 2019 14:52:16 UTC (86 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled Domain wall encoding of discrete variables for quantum annealing and QAOA, by Nicholas Chancellor
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2019-03 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ NASA ADS 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ 

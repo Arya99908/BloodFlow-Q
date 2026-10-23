@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '' : 'http://127.0.0.1:8000')).replace(/\/$/, '');
+const API_BASE = (import.meta.env?.VITE_API_BASE_URL || (import.meta.env?.PROD ? '' : 'http://127.0.0.1:8000')).replace(/\/$/, '');
 
 /** Shared API boundary: components never build URLs or fetch directly. */
 async function request(path, options = {}) {
@@ -46,6 +46,7 @@ export const api = {
     action,
     donor_id: donorId,
   }),
+  chat: (message, history = [], context = {}) => post('/chat', { message, history, context }),
 };
 
 export function unwrapSavedResult(entry) {

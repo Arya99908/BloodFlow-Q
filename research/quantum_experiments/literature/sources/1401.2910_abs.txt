@@ -1,0 +1,241 @@
+ 
+
+ [1401.2910] Defining and detecting quantum speedup 
+
+ Skip to main content 
+
+ Search
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:1401.2910 (quant-ph)
+
+ [Submitted on 13 Jan 2014]
+
+ Title: Defining and detecting quantum speedup
+
+ Authors: Troels F. Rønnow , Zhihui Wang , Joshua Job , Sergio Boixo , Sergei V. Isakov , David Wecker , John M. Martinis , Daniel A. Lidar , Matthias Troyer 
+ View a PDF of the paper titled Defining and detecting quantum speedup, by Troels F. R{\o}nnow and 8 other authors
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: The development of small-scale digital and analog quantum devices raises the question of how to fairly assess and compare the computational power of classical and quantum devices, and of how to detect quantum speedup. Here we show how to define and measure quantum speedup in various scenarios, and how to avoid pitfalls that might mask or fake quantum speedup. We illustrate our discussion with data from a randomized benchmark test on a D-Wave Two device with up to 503 qubits. Comparing the performance of the device on random spin glass instances with limited precision to simulated classical and quantum annealers, we find no evidence of quantum speedup when the entire data set is considered, and obtain inconclusive results when comparing subsets of instances on an instance-by-instance basis. Our results for one particular benchmark do not rule out the possibility of speedup for other classes of problems and illustrate that quantum speedup is elusive and can depend on the question posed.
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Cite as: 
+ arXiv:1401.2910 [quant-ph] 
+
+ (or 
+ arXiv:1401.2910v1 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.1401.2910 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Journal reference: 
+ Science 345, 420 (2014) 
+
+ Related DOI :
+
+ https://doi.org/10.1126/science.1252319 
+
+ Focus to learn more 
+
+ DOI(s) linking to related resources
+
+ Submission history
+ From: Troels Frimodt Rønnow [ view email ] [v1] 
+ Mon, 13 Jan 2014 16:43:16 UTC (852 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled Defining and detecting quantum speedup, by Troels F. R{\o}nnow and 8 other authors
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Ancillary-file links: 
+ Ancillary files ( details ) :
+
+ supplementary.pdf 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2014-01 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ NASA ADS 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ 5 blog links 
+ ( what is this? )
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ 

@@ -1,0 +1,1481 @@
+ 
+
+ Quantum Approximate Optimization Algorithm: Performance, Mechanism, and Implementation on Near-Term Devices 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ I Introduction 
+
+ II Quantum Approximate Optimization Algorithm 
+
+ III Optimizing Variational Parameters 
+
+ III.1 Patterns in optimal parameters 
+
+ III.2 Heuristic optimization strategy for large p p 
+
+ IV Performance of heuristically optimized QAOA 
+
+ IV.1 Comparison between our heuristics and randomly initialized (RI) optimizations 
+
+ IV.2 Performance of QAOA on typical instances 
+
+ V Adiabatic mechanism, quantum annealing, and QAOA 
+
+ V.1 Comparing QAOA with quantum annealing 
+
+ V.2 Beyond the adiabatic mechanism: a case study 
+
+ VI Considerations for experimental implementation 
+
+ VI.1 Finite measurement samples 
+
+ VI.2 Implementation for large problem sizes 
+
+ VI.2.1 Reducing interaction range 
+
+ VI.2.2 Example Implementation with Rydberg Atoms 
+
+ VII Conclusion and Outlook 
+
+ Acknowledgements 
+
+ References 
+
+ A Optimal parameter pattern for weighed graphs 
+
+ B Details of heuristic optimization strategies 
+
+ B.1 Interpolation-based strategy 
+
+ B.2 Details of FOURIER[ q , R q,R ] strategy 
+
+ B.3 Comparison between heuristics 
+
+ C Time-to-solution (TTS) for example graph instance 
+
+ D Effective few-level understanding of the diabatic bump 
+
+ E Comparing different classical optimization routines 
+
+ F Details of Simulation with Measurement Projection Noise 
+
+ G Techniques to speed up numerical simulation 
+
+ H QAOA for Maximum Independent Set 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:1812.01041v2 [quant-ph] 09 Nov 2019
+
+ Quantum Approximate Optimization Algorithm: Performance, Mechanism, and Implementation on Near-Term Devices
+
+ Leo Zhou
+
+ Email:  leozhou@g.harvard.edu 
+
+ Affiliation:  Department of Physics, Harvard University, Cambridge, MA 02138, USA 
+
+ Sheng-Tao Wang
+
+ Email:  shengtaowst@gmail.com 
+
+ Thanks:  
+ L.Z. and S.-T.W. contributed equally to this work.
+
+ Affiliation:  Department of Physics, Harvard University, Cambridge, MA 02138, USA 
+
+ Soonwon Choi
+
+ Affiliation:  Department of Physics, Harvard University, Cambridge, MA 02138, USA 
+
+ Affiliation:  Department of Physics, University of California Berkeley, Berkeley, CA 94720, USA 
+
+ Hannes Pichler
+
+ Affiliation:  ITAMP, Harvard-Smithsonian Center for Astrophysics, Cambridge, MA 02138, USA 
+
+ Affiliation:  Department of Physics, Harvard University, Cambridge, MA 02138, USA 
+
+ Mikhail D. Lukin
+
+ Affiliation:  Department of Physics, Harvard University, Cambridge, MA 02138, USA 
+
+ August 24, 2026
+
+ Abstract
+
+ The Quantum Approximate Optimization Algorithm (QAOA) is a hybrid quantum-classical variational algorithm designed to tackle combinatorial optimization problems.
+Despite its promise for near-term quantum applications, not much is currently understood about QAOA’s performance beyond its lowest-depth variant.
+An essential but missing ingredient for understanding and deploying QAOA is a constructive approach to carry out the outer-loop classical optimization.
+We provide an in-depth study of the performance of QAOA on MaxCut problems by developing an efficient parameter-optimization procedure and revealing its ability to exploit non-adiabatic operations.
+Building on observed patterns in optimal parameters, we propose heuristic strategies for initializing optimizations to find quasi-optimal p p -level QAOA parameters in O ⁡ ( poly ⁡ ( p ) ) O(\poly(p)) time, whereas the standard strategy of random initialization requires 2 O ⁡ ( p ) 2^{O(p)} optimization runs to achieve similar performance.
+We then benchmark QAOA and compare it with quantum annealing, especially on difficult instances where adiabatic quantum annealing fails due to small spectral gaps.
+The comparison reveals that QAOA can learn via optimization to utilize non-adiabatic mechanisms to circumvent the challenges associated with vanishing spectral gaps.
+Finally, we provide a realistic resource analysis on the experimental implementation of QAOA.
+When quantum fluctuations in measurements are accounted for,
+we illustrate that optimization will be important only for
+problem sizes beyond numerical simulations, but accessible on near-term devices.
+We propose a feasible implementation of large MaxCut problems with a few hundred vertices in a system of 2D neutral atoms, reaching the regime to challenge the best classical algorithms.
+
+ I Introduction
+
+ As quantum computing technology develops,
+there is a growing interest in finding useful applications of near-term quantum machines  [ 1 ] .
+In the near future, however, the number of reliable quantum operations will be limited by noise and decoherence.
+As such, hybrid quantum-classical algorithms  [ 2 , 3 , 4 ] have been proposed to make the best of available quantum resources and integrate them with classical routines.
+The Quantum Approximate Optimization Algorithm (QAOA) [ 2 ] and the Variational Quantum Eigensolver [ 3 ] are such algorithms put forward to address classical combinatorial optimization and quantum chemistry problems, respectively.
+Proof-of-principle experiments running these algorithms have already been demonstrated in the lab  [ 5 , 6 , 7 , 8 ] .
+
+ In these hybrid algorithms, a quantum processor prepares a quantum state according to a set of variational parameters.
+Using measurement outputs, the parameters are then optimized by a classical computer and fed back to the quantum machine in a closed loop. In QAOA, the state is prepared by a p p -level circuit specified by 2 ​ p 2p variational parameters.
+Even at the lowest circuit depth ( p = 1 p=1 ), QAOA has non-trivial provable performance guarantees  [ 2 , 9 ] and is not efficiently simulatable by classical computers  [ 10 ] .
+It is thus an appealing algorithm to explore quantum speedups on near-term quantum machines.
+
+ However, very little is known about QAOA beyond the lowest depth.
+While QAOA is known to monotonically improve with depth and succeed in the p → ∞ p\to\infty limit  [ 2 ] , its performance when 1 < p < ∞ 1<p<\infty is largely unexplored.
+In fact, it has been argued that one needs to go beyond low-depth QAOA in order to compete with the best classical algorithm for some problems on bounded-degree graphs  [ 11 , 12 ] .
+It thus remains a critical problem to assess QAOA at intermediate depths where one may hope for a quantum computational advantage.
+One major hurdle lies in the difficulty to efficiently optimize in the non-convex, high-dimensional parameter landscape.
+Without constructive approaches to perform the parameter optimization, any potential advantages of the hybrid algorithms could be lost  [ 13 ] .
+
+ In this work, we contribute, in three major aspects, to the understanding and applicability of QAOA on near-term devices, with a focus on MaxCut problems.
+First, we develop heuristic strategies to efficiently optimize QAOA variational parameters.
+These strategies are found, via extensive benchmarking, to be quasi-optimal in the sense that they usually produce known global optima. The standard approach with random initialization generically require 2 O ⁡ ( p ) 2^{O(p)} optimization runs to surpass our heuristics.
+Secondly, we benchmark the performance of QAOA and compare it with quantum annealing.
+On difficult graph instances where the minimum spectral gap is very small, the time required for quantum annealing to remain adiabatic is very long as it scales inversely with the square of the gap.
+For these instances, QAOA is found to outperform adiabatic quantum annealing by multiple orders of magnitude in computation time.
+Lastly, we provide a detailed resource analysis on the experimental implementation of QAOA with near-term quantum devices. Taking into account of quantum fluctuations in projective measurements, we argue that optimization will play a role only for much larger problem sizes than numerically accessible ones. We also propose a 2D physical implementation of QAOA on MaxCut with a few hundred Rydberg-interacting atoms, which can be put to the test against the best classical algorithm for potential quantum advantages.
+
+ Our main results can be summarized as follows.
+By performing extensive searches in the entire parameter space, we discover persistent patterns in the optimal parameters.
+Based on the observed patterns, we develop strategies
+for selecting initial parameters in optimization,
+which allow us to efficiently optimize QAOA at a cost scaling polynomially in p p .
+This is in stark contrast to the 2 O ⁡ ( p ) 2^{O(p)} optimization runs required by random initialization approaches.
+We also propose a new parametrization of QAOA that may significantly simplify optimization by reducing the dimension of the search space. Using our heuristic strategy, we benchmark the performance of QAOA on many instances of MaxCut up to N ≤ 22 N\leq 22 vertices and level p ≤ 50 p\leq 50 . Comparing QAOA with quantum annealing, we find the former can learn via optimization to utilize diabatic mechanisms  [ 14 , 15 , 16 , 17 ] and overcome the challenges faced by adiabatic quantum annealing due to very small spectral gaps.
+Considering realistic experimental implementations, we also study the effects of quantum “projection noise” in measurement:
+we find that, for numerically accessible problem sizes, QAOA can often obtain the solution among measurement outputs before the best variational parameters are found.
+Parameter optimization will be more useful at large system sizes (a few hundred vertices), as one expects the probability of finding the solution from projective measurements to decrease exponentially.
+At such system sizes, we analyze a procedure to make graphs more experimentally realizable by reducing the required range of qubit interactions via vertex renumbering.
+Finally, we discuss a specific implementation using neutral atoms interacting via Rydberg excitations  [ 18 , 19 ] , where a 2D implementation with a few hundred atoms appears feasible on a near-term device.
+
+ The rest of the paper is organized in the following order: In Sec.  II , we review QAOA and the MaxCut problem. In Sec.  III , we describe some patterns found for QAOA optimal parameters and introduce heuristic optimization strategies based on the observed patterns. We benchmark our heuristic strategies and study the performance of QAOA on typical MaxCut graph instances in Sec.  IV . We then, in Sec.  V , compare QAOA with quantum annealing, shedding light on the non-adiabatic mechanism of QAOA. Lastly, we discuss considerations for experimental implementations for large problem sizes in Sec.  VI .
+
+ Figure 1: 
+(a) Schematic of a p p -level Quantum Approximation Optimization Algorithm  [ 2 ] .
+A quantum circuit takes input | + ⟩ ⊗ n |+\rangle^{\otimes n} and alternately applies e − i ​ γ i ​ H C e^{-i\gamma_{i}H_{C}} and X β i = e − i ​ β i ​ σ x X_{\beta_{i}}=e^{-i\beta_{i}\sigma^{x}} , and the final state is measured to obtain expectation value with respect to the objective function H C H_{C} . This is fed to a (classical) optimizer to find the best parameters ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) that maximizes ⟨ H C ⟩ \left<H_{C}\right> .
+(b) An example of a MaxCut problem on a 5-vertex graph, where one seeks
+an assignment of spin variables on the vertices such that the sum of edge weights between anti-aligned spins is maximized (black edges).
+
+ II Quantum Approximate Optimization Algorithm 
+
+ Many interesting real-world problems can be framed as combinatorial optimization problems  [ 20 , 21 ] .
+These are problems defined on N N -bit binary strings 𝒛 = z 1 ⋯ z N \bm{z}=z_{1}\cdots z_{N} , where the goal
+is to determine a string that maximizes a given classical objective function
+ C ⁡ ( 𝒛 ) : { + 1 , − 1 } N ↦ ℝ ≥ 0 C(\bm{z}):\{+1,-1\}^{N}\mapsto\mathds{R}_{\geq 0} .
+An approximate optimization algorithm aims to find a string 𝒛 \bm{z} that achieves a desired approximation ratio
+
+ C ⁡ ( 𝒛 ) C max ≥ r ∗ , \frac{C(\bm{z})}{C_{\text{max}}}\geq r^{*}, 
+
+ (1) 
+
+ where C max = max 𝒛 ⁡ C ⁡ ( 𝒛 ) C_{\text{max}}=\max_{\bm{z}}C(\bm{z}) .
+
+ The Quantum Approximate Optimization Algorithm (QAOA) is a quantum algorithm recently introduced to tackle these combinatorial optimization problems  [ 2 ] .
+To encode the problem, the classical objective function can be converted to a quantum problem Hamiltonian by promoting each binary variable z i z_{i} to a quantum spin σ i z \sigma^{z}_{i} :
+
+ H C = C ⁡ ( σ 1 z , σ 2 z , ⋯ , σ N z ) . H_{C}=C(\sigma^{z}_{1},\sigma_{2}^{z},\cdots,\sigma_{N}^{z}). 
+
+ (2) 
+
+ For p p -level QAOA, which is visualized in Fig.  1 (a), we initialize the quantum processor in the state | + ⟩ ⊗ N |+\rangle^{\otimes N} , and then apply the problem Hamiltonian H C H_{C} and a mixing Hamiltonian H B = ∑ j = 1 N σ j x H_{B}=\sum_{j=1}^{N}\sigma_{j}^{x} alternately with controlled durations to generate a variational wavefunction
+
+ | ψ p ( 𝜸 → , 𝜷 → ) ⟩ = e − i ​ β p ​ H B e − i ​ γ p ​ H C ⋯ e − i ​ β 1 ​ H B e − i ​ γ 1 ​ H C | + ⟩ ⊗ N , |\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle=e^{-i\beta_{p}H_{B}}e^{-i\gamma_{p}H_{C}}\cdots e^{-i\beta_{1}H_{B}}e^{-i\gamma_{1}H_{C}}|+\rangle^{\otimes N}, 
+
+ (3) 
+
+ which is parameterized by 2 ​ p 2p variational parameters γ i \gamma_{i} and β i \beta_{i} ( i = 1 , 2 , ⋯ p i=1,2,\cdots p ).
+We then determine the expectation value H C H_{C} in this variational state
+
+ F p ​ ( 𝜸 → , 𝜷 → ) = ⟨ ψ p ​ ( 𝜸 → , 𝜷 → ) | H C | ψ p ​ ( 𝜸 → , 𝜷 → ) ⟩ , F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})=\langle\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})|H_{C}|\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle, 
+
+ (4) 
+
+ which is done by repeated measurements of the quantum system in the computational basis.
+A classical computer is used to search for the optimal parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) so as to maximize the averaged measurement output F p ​ ( 𝜸 → , 𝜷 → ) F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}}) ,
+
+ ( 𝜸 → ∗ , 𝜷 → ∗ ) = arg ⁡ max 𝜸 → , 𝜷 → ​ F p ​ ( 𝜸 → , 𝜷 → ) . (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*})=\arg\max_{\vec{\bm{\gamma}},\vec{\bm{\beta}}}F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}}). 
+
+ (5) 
+
+ This is typically done by starting with some initial guess of the parameters and performing simplex or gradient-based optimization.
+A figure of merit for benchmarking the performance of QAOA is the approximation ratio
+
+ r = F p ​ ( 𝜸 → ∗ , 𝜷 → ∗ ) C max . r=\dfrac{F_{p}(\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*})}{C_{\max}}. 
+
+ (6) 
+
+ The framework of QAOA can be applied to general combinatorial optimization problems. Here, we focus on its application to an archetypical problem called MaxCut, which is a combinatorial problem whose approximate optimization beyond a minimum ratio r ∗ r^{*} is NP-hard  [ 22 , 23 ] .
+The MaxCut problem, visualized in Fig.  1 (b), is defined for any input graph G = ( V , E ) G=(V,E) .
+Here, V = { 1 , 2 , … , N } V=\{1,2,\ldots,N\} denotes the set of vertices and E = { ( ⟨ i , j ⟩ , w i ​ j ) } E=\{(\left<i,j\right>,w_{ij})\} is the set of edges, where w i ​ j ∈ ℝ ≥ 0 w_{ij}\in\mathds{R}_{\geq 0} is the weight of the edge ⟨ i , j ⟩ \left<i,j\right> connecting vertices i i and j j .
+The goal of MaxCut is to maximize the following objective function
+
+ H C = ∑ ⟨ i , j ⟩ w i ​ j 2 ​ ( 𝟙 − σ i z ​ σ j z ) , H_{C}=\sum_{\left<i,j\right>}\frac{w_{ij}}{2}(\mathds{1}-\sigma_{i}^{z}\sigma_{j}^{z}), 
+
+ (7) 
+
+ where an edge ⟨ i , j ⟩ \left<i,j\right> contributes with weight w i ​ j w_{ij} if and only if spins σ i z \sigma_{i}^{z} and σ j z \sigma_{j}^{z} are anti-aligned.
+
+ For simplicity, we restrict our attention to MaxCut on d d -regular graphs, where every vertex is connected to exactly d d other vertices.
+We study two classes of graphs:
+the first is unweighted d d -regular graphs (u d d R), where all edges have equal weights w i ​ j = 1 w_{ij}=1 ; the second is weighted d d -regular graphs (w d d R), where the weights w i ​ j w_{ij} are chosen uniformly at random from the interval [ 0 , 1 ] [0,1] .
+It is NP-hard to design an algorithm that guarantees a minimum approximation ratio of r ∗ ≥ 16 / 17 r^{*}\geq 16/17 for MaxCut on all graphs  [ 22 ] , or r ∗ ≥ 331 / 332 r^{*}\geq 331/332 when restricted to u3R graphs  [ 23 ] .
+The current record for approximation ratio guarantee
+on generic graphs belongs to Goemans-Williamson  [ 24 ] , which achieves r ∗ ≈ 0.87856 r^{*}\approx 0.87856 using semi-definite programming. This lower bound can be raised to r ∗ ≈ 0.9326 r^{*}\approx 0.9326 when restricted to u3R graphs  [ 25 ] .
+Farhi et al.   [ 2 ] were able to prove that QAOA at level p = 1 p=1 achieves r ∗ ≥ 0.6924 r^{*}\geq 0.6924 for u3R graphs, using the fact that F p F_{p} can be written as a sum of quasi-local terms, each corresponding to a subgraph involving edges at most p p steps away from a given edge.
+However, this approach to bound r ∗ r^{*} quickly becomes intractable since the locality of each term (i.e., size of each subgraph) grows exponentially in p p , as does the number of subgraph types involved.
+
+ QAOA is believed to be a promising algorithm for multiple reasons  [ 2 , 9 , 26 , 10 , 27 , 28 , 29 , 30 , 31 ] .
+As mentioned above, for certain cases one can prove a guaranteed minimum approximation ratio when p = 1 p=1   [ 2 , 9 ] .
+Additionally, under reasonable complexity-theoretic assumptions, QAOA cannot be efficiently simulated by any classical computer even when p = 1 p=1 , making it a suitable candidate algorithm to establish the so-called “quantum supremacy”  [ 10 ] .
+It has also been argued that the square-pulse (“bang-bang”) ansatz of dynamical evolution, of which QAOA is an example, is optimal given a fixed quantum computation time  [ 28 ] .
+In general, the performance of QAOA can only improve with increasing p p , achieving r → 1 r\to 1 when p → ∞ p\to\infty since it can approximate adiabatic quantum annealing via Trotterization; this monotonicity makes it more attractive than quantum annealing whose performance may decrease with increased run time  [ 14 ] .
+
+ While QAOA has a simple description, not much is currently understood beyond p = 1 p=1 . To establish potential quantum advantage over classical algorithms, it is of critical importance to investigate QAOA at intermediate depths ( p > 1 p>1 ).
+Refs.  [ 2 , 11 , 12 ] have shown that QAOA have limited performance on some problems on bounded-degree graphs when the depth is shallow.
+This limitation may result from the fact that the algorithm cannot “see” the entire graph at low depth.
+It thus indicates that one may need the depth of QAOA to grow with the system size (e.g., p ≥ log ⁡ N p\geq\log N ) in order to outperform the best classical algorithms.
+For the toy example of MaxCut on u2R graphs, i.e. 1D antiferromagnetic rings, it is conjectured that QAOA yields r ≥ ( 2 ​ p + 1 ) / ( 2 ​ p + 2 ) r\geq(2p+1)/(2p+2) based on numerical evidence [ 2 , 26 ] 1 1 
+ 1 
+
+ The approximation ratio r = ( 2 ​ p + 1 ) / ( 2 ​ p + 2 ) r=(2p+1)/(2p+2) is found for an infinite ring. For a finite ring with N N vertices, numerical calculations show that for p < ⌊ N / 2 ⌋ p<\left\lfloor N/2\right\rfloor one has r = ( 2 ​ p + 1 ) / ( 2 ​ p + 2 ) r=(2p+1)/(2p+2) for even N N and r = ( 2 ​ p + 1 ) ​ ( N + 1 ) ( 2 ​ p + 2 ) ​ N r=\frac{(2p+1)(N+1)}{(2p+2)N} for odd N N , and for p ≥ ⌊ N / 2 ⌋ p\geq\left\lfloor N/2\right\rfloor one has r = 1 r=1 .
+In another example of Grover’s unstructured search problem among n n items, QAOA is shown to be able to find the target state with p = Θ ⁡ ( n ) p=\Theta(\sqrt{n}) , achieving the optimal query complexity within a constant factor  [ 30 ] .
+For more general problems, Farhi et al.   [ 2 ] proposed a simple approach by discretizing each parameter into O ⁡ ( poly ⁡ ( N ) ) O(\poly(N)) grid points; this, however, requires examining N O ⁡ ( p ) N^{O(p)} possibilities at level p p , which quickly becomes impractical as p p grows.
+Efficient optimization of QAOA parameters and understanding the algorithm for 1 < p < ∞ 1<p<\infty remain outstanding problems.
+We address these problems in the present work.
+
+ Figure 2: 
+(a) Optimal QAOA parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) for an example instance of MaxCut on a 16-vertex unweighted 3-regular (u3R) graph at level p = 7 p=7 .
+(b) The parameter pattern visualized by plotting the optimal parameters of 40 instances of 16 16 -vertex u3R graphs, for 3 ≤ p ≤ 5 3\leq p\leq 5 . Each dashed line connects parameters for one particular graph instance. For each instance and each p p , we use the classical BFGS optimization routine  [ 33 , *BFGS2 , *BFGS3 , *BFGS4 ] from 10 4 10^{4} random initial points, and keep the best parameters.
+
+ III Optimizing Variational Parameters
+
+ In this section, we address the issue of parameter optimization in QAOA, since searching for the best parameters via standard approaches that rely on random initialization generally become exponentially difficult as level p p increases.
+We mostly restrict our discussion to randomly generated instances of u3R and w3R graphs.
+Similar results are found for u4R and w4R graphs, as well as complete graphs with random weights. We utilize patterns in the optimal parameters to develop heuristic strategies that can efficiently find quasi-optimal solutions in O ⁡ ( poly ⁡ ( p ) ) O(\poly(p)) time.
+
+ III.1 Patterns in optimal parameters
+
+ Before searching for patterns in optimal QAOA parameters,
+it is useful to eliminate degeneracies in the parameter space due to symmetries.
+Generally, QAOA has a time-reversal symmetry, F p ​ ( 𝜸 → , 𝜷 → ) = F p ​ ( − 𝜸 → , − 𝜷 → ) F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})=F_{p}(-\vec{\bm{\gamma}},-\vec{\bm{\beta}}) , since both H B H_{B} and H C H_{C} are real-valued.
+For QAOA applied to MaxCut, there is an additional ℤ 2 \mathds{Z}_{2} symmetry, as e − i ⁡ ( π / 2 ) ​ H B ≡ ( σ x ) ⊗ N e^{-i(\pi/2)H_{B}}\equiv(\sigma^{x})^{\otimes N} commutes through the circuit.
+Furthermore, the structure of the MaxCut problem on u d d R graphs creates redundancy since e − i ​ π ​ H C = 𝟙 e^{-i\pi H_{C}}=\mathds{1} if d d is even, and ( σ z ) ⊗ N (\sigma^{z})^{\otimes N} if d d is odd.
+These symmetries allow us to restrict β i ∈ [ − π 4 , π 4 ) \beta_{i}\in[-\frac{\pi}{4},\frac{\pi}{4}) in general, and
+ γ i ∈ [ − π 2 , π 2 ) \gamma_{i}\in[-\frac{\pi}{2},\frac{\pi}{2}) for u d d R graphs.
+
+ We start by numerically investigating the optimal QAOA parameters for MaxCut on random u3R and w3R graphs with vertex number 8 ≤ N ≤ 22 8\leq N\leq 22 , with extensive searches in the entire parameter space.
+For each graph instance and a given level p p , we choose a random initial point (seed) in the parameter space  2 2 
+ 2 
+
+ The initial points β i 0 \beta^{0}_{i} are drawn uniformly from [ − π 4 , π 4 ) [-\frac{\pi}{4},\frac{\pi}{4}) , and γ i 0 \gamma^{0}_{i} are drawn uniformly [ − π 2 , π 2 ) [-\frac{\pi}{2},\frac{\pi}{2}) for u3R graphs or [ − 2 π , 2 π ) [-2\pi,2\pi) for w3R graphs. Although γ i 0 \gamma_{i}^{0} can meaningfully take values beyond the restricted range γ i 0 ∈ [ − 2 π , 2 π ) \gamma_{i}^{0}\in[-2\pi,2\pi) for w3R graph, we find that broadening the range does not improve performance. The ranges of the output parameters are not restricted in our unconstrained optimization routine. and use a commonly used, gradient-based optimization routine known as BFGS  [ 33 , *BFGS2 , *BFGS3 , *BFGS4 ] to find a local optimum ( 𝜸 → L , 𝜷 → L ) (\vec{\bm{\gamma}}^{L},\vec{\bm{\beta}}^{L}) .
+This local optimization is repeated with sufficiently many different seeds to find the global optimum ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*})   3 3 
+ 3 
+
+ We denote the best of all local optima optimized from k k random initial points (seeds) to be ( 𝜸 → B ⁡ [ k ] , 𝜷 → B ⁡ [ k ] ) (\vec{\bm{\gamma}}^{B[k]},\vec{\bm{\beta}}^{B[k]}) . When the same optimum ( 𝜸 → B ⁡ [ k ] , 𝜷 → B ⁡ [ k ] ) (\vec{\bm{\gamma}}^{B[k]},\vec{\bm{\beta}}^{B[k]}) is found from many different seeds and continues to yield the best F p ​ ( 𝜸 → B ⁡ [ k ] , 𝜷 → B ⁡ [ k ] ) F_{p}(\vec{\bm{\gamma}}^{B[k]},\vec{\bm{\beta}}^{B[k]}) as we increase the number of seeds k k , we then claim that it is a global optimum, i.e., ( 𝜸 → ∗ , 𝜷 → ∗ ) = lim k → ∞ ( 𝜸 → B ⁡ [ k ] , 𝜷 → B ⁡ [ k ] ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*})=\lim_{k\to\infty}(\vec{\bm{\gamma}}^{B[k]},\vec{\bm{\beta}}^{B[k]}) . .
+We then reduce the degeneracies of the optimal parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) using the aforementioned symmetries. In all cases examined, we find that the global optimum is non-degenerate up to these symmetries.
+
+ After performing the above numerical experiment for 100 random u3R and w3R graphs with various vertex number N N , we discover some patterns in the optimal parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) .
+Generically, the optimal γ i ∗ \gamma^{*}_{i} tends to increase smoothly with i = 1 , 2 , ⋯ , p i=1,2,\cdots\!,p , while β i ∗ \beta^{*}_{i} tends to decrease smoothly, as shown for the example instance in Fig.  2 (a).
+In Fig.  2 (b), we illustrate the pattern by simultaneously plotting the optimal parameters for 40 instances of 16-vertex u3R graphs for 3 ≤ p ≤ 5 3\leq p\leq 5 .
+Furthermore, for a given class of graphs, the optimal parameters are observed to roughly occupy the same range of values as p p is varied.
+Similar patterns are found for w3R graphs and weighted complete graphs, which we illustrate in Appendix  A .
+This demonstrates a clear pattern in the optimal QAOA parameters that we can exploit in the optimization, as we discuss later in Sec.  III.2 .
+Similar patterns are found for parameters up to p ≲ 15 p\lesssim 15 , if the number of random seeds is increased accordingly.
+
+ We give two remarks here:
+First, we note that surprisingly, even at small depth, this parameter pattern is reminiscent of adiabatic quantum annealing where H C H_{C} is gradually turned on while H B H_{B} is gradually turned off.
+However, we will demonstrate in Sec.  V that the mechanism of QAOA goes beyond the adiabatic principle.
+Secondly, we note that these optimal parameters have a small spread over many different instances.
+This is because the objective function F p ​ ( 𝜸 → , 𝜷 → ) F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}}) is a sum of terms corresponding to subgraphs involving vertices that are distance ≤ p \leq p away from every edge.
+At small p p , there are only a few relevant subgraph types that enter into F p F_{p} and effectively determine the optimal parameters.
+As N → ∞ N\to\infty and at a fixed finite p p , we expect the probability of a relevant subgraph type appearing in a random graph to approach a fixed fraction.
+This implies that the distribution of optimal parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) should converge to a fixed set of values in this limit.
+
+ III.2 Heuristic optimization strategy for large p p 
+
+ The optimal parameter patterns observed above indicate that generically, there is a slowly varying continuous curve that underlies the parameters γ i ∗ \gamma^{*}_{i} and β i ∗ \beta^{*}_{i} .
+Moreover, this curve changes only slightly from level p p to p + 1 p+1 .
+These observations allow us to choose educated guesses of variational parameters for ( p + 1 ) (p+1) -level QAOA based on optimized parameters from p p -level (or in general from q q -level, where q ≤ p q\leq p ).
+These educated guesses can serve as initial points fed to various classical optimization routines that find a nearby local optimum.
+Based on this idea,
+we have developed two types of heuristic strategies for initializing optimization.
+We give a high-level overview of these heuristics in this section, while deferring the details of its implementation to Appendix  B .
+While these heuristics are not guaranteed to find the global optimum of QAOA parameters, we show that in Sec.  IV.1 , it can produce, in O ⁡ ( poly ⁡ ( p ) ) O(\poly(p)) time, quasi-optima that require 2 O ⁡ ( p ) 2^{O(p)} randomly initialized optimization runs to surpass.
+Consequently, this allows us to study the performance and mechanism of QAOA beyond p = 1 p=1 .
+
+ The first heuristic strategy, which we call INTERP, uses linear interpolation to choose initial parameters.
+Starting at level p p  = 1, we optimize, and linearly interpolate the curve formed by optimized parameters at level p p to extract a set of initial parameters for level p + 1 p+1 .
+
+ The second heuristic strategy, which we call FOURIER, uses a new parameterization of QAOA.
+Instead of using the 2 ​ p 2p parameters ( 𝜸 → , 𝜷 → ) ∈ ℝ 2 ​ p (\vec{\bm{\gamma}},\vec{\bm{\beta}})\in\mathds{R}^{2p} , we switch to 2 ​ q 2q parameters ( 𝒖 → , 𝒗 → ) ∈ ℝ 2 ​ q (\vec{\bm{u}},\vec{\bm{v}})\in\mathds{R}^{2q} , where the individual elements γ i \gamma_{i} and β i \beta_{i} are written as functions of ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) through the following transformation:
+
+ γ i = ∑ k = 1 q u k ​ sin ⁡ [ ( k − 1 2 ) ​ ( i − 1 2 ) ​ π p ] , β i = ∑ k = 1 q v k ​ cos ⁡ [ ( k − 1 2 ) ​ ( i − 1 2 ) ​ π p ] . \begin{split}\gamma_{i}&=\sum_{k=1}^{q}u_{k}\sin\left[\left(k-\frac{1}{2}\right)\left(i-\frac{1}{2}\right)\frac{\pi}{p}\right],\\
+\beta_{i}&=\sum_{k=1}^{q}v_{k}\cos\left[\left(k-\frac{1}{2}\right)\left(i-\frac{1}{2}\right)\frac{\pi}{p}\right].\ \end{split} 
+
+ (8) 
+
+ These transformations are known as Discrete Sine/Cosine Transform, where u k u_{k} and v k v_{k} can be interpreted as the amplitude of k k -th frequency component for 𝜸 → \vec{\bm{\gamma}} and 𝜷 → \vec{\bm{\beta}} , respectively.
+In this strategy, when optimizing level p + 1 p+1 , the initial parameters are generated by simply re-using the optimized amplitudes ( 𝒖 → ∗ , 𝒗 → ∗ ) (\vec{\bm{u}}^{*},\vec{\bm{v}}^{*}) from level p p .
+Note that when q ≥ p q\geq p , the ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) parametrization is capable of describing all possible QAOA protocols at level p p .
+However, the smoothness of the optimal parameters ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) implies that only the low-frequency components are important. Thus, we can also consider the case where q q is a fixed constant independent of p p , so the number of parameters is bounded even as the QAOA circuit depth increases.
+
+ While both heuristics work well, we have decided to focus on using the FOURIER heuristics in the main text, because we find that it gives a slight edge in performance for MaxCut problems. The INTERP heuristic is simpler and may work better on other problems.
+More details on the implementation of the heuristics and their comparison can be found in Appendix  B .
+
+ We stress that these heuristic strategies are developed to generate good initial points for optimization.
+These initial points can then be fed to standard optimization routines such as gradient descent, BFGS  [ 33 , *BFGS2 , *BFGS3 , *BFGS4 ] , Nelder-Mead  [ 39 ] , and Bayesian Optimization  [ 40 ] .
+This is in contrast to the standard strategy of random initialization (RI), where one picks a random set of parameters to begin optimization.
+In order to find the global optimum in a highly non-convex landscape,
+the number of RI runs needed generically scales exponentially with the number of parameters, which becomes intractable for large number of parameters.
+In the following section, we will compare our heuristics to the RI approach, and find that an exponential number of RI runs is needed to match the performance of our heuristics.
+
+ Figure 3: 
+(a) Comparison between our FOURIER heuristic and the random initialization (RI) approach for optimizing QAOA, on an example instance of 16-vertex w4R graph. The figure of merit 1 − r 1-r , where r r is the approximation ratio, is plotted as a function of QAOA level p p on a log-linear scale. The RI points are obtained by optimizing from 1000 randomly generated initial parameters, averaged over 10 such realizations.
+(b) The median number of randomly initialized optimization runs needed to obtain an approximation ratio as good as our FOURIER heuristic, for 40 instances of 16-vertex u3R and w3R graphs. A log-linear scale is used, and exponential curves are fitted to the results. Error bars are 5th and 95th percentiles.
+
+ IV Performance of heuristically optimized QAOA
+
+ IV.1 Comparison between our heuristics and randomly initialized (RI) optimizations 
+
+ Here, we compare the performance of our heuristic strategies to the standard strategy of random initialization (RI).
+In Fig.  3 (a), we show the result for an example instance of 16-vertex w4R graph.
+At low p p , our FOURIER heuristic strategies perform just as well as the best out of 1000 RI optimization runs—both are able to find the global optimum. The average performance of the
+RI
+strategy, on the other hand, is much worse than our heuristics.
+This indicates that the QAOA parameter landscape is highly non-convex and filled with low-quality, non-degenerate local optima.
+When p ≥ 5 p\geq 5 , our heuristic optimization outperforms the best RI run.
+To estimate the number of RI runs needed to find an optimum with the same or better approximation ratio as our FOURIER heuristics, we generate 40 instances of 16-vertex u3R and w3R graphs, and perform 40000 RI optimization for each instance at each level p p .
+In Fig.  3 (b), the median number of RI runs needed to match our heuristic is shown to scale exponentially with p p .
+Therefore, our heuristics offer a dramatic improvement in the resource required to find good parameters for QAOA.
+As we have verified with an excessive number of RI runs, the heuristics usually find the global optima.
+
+ We remark that although we mostly used a gradient-based optimization routine (BFGS) in our numerical simulations, non-gradient based routines, such as Nelder-Mead  [ 39 ] , work equally well with our heuristic strategies.
+The choice to use BFGS is mainly motivated by the simulation speed.
+Later in Sec.  VI , we account for the measurement costs in estimating the gradient using a finite-difference method, and perform a full Monte-Carlo simulation of the entire QAOA algorithm, including quantum fluctuations in the determination of F p F_{p} .
+
+ IV.2 Performance of QAOA on typical instances
+
+ Figure 4: Average performance of QAOA as measured by the fractional error 1 − r 1-r , plotted on log-linear scale.
+The results are obtained by applying our heuristic optimization strategies FOURIER to up to 100 random instances of (a) u3R graphs and (b) w3R graphs.
+Differently colored lines correspond to fitted lines to the average for different system size N N , where the model function is 1 − r ∝ e − p / p 0 1-r\propto e^{-p/p_{0}} for unweighted graphs and 1 − r ∝ e − p / p 0 1-r\propto e^{-\sqrt{p/p_{0}}} for weighted graphs.
+Insets show the dependence of the fit parameters p 0 p_{0} on the system size N N .
+
+ With our heuristic optimization strategies in hand, we study the performance of intermediate p p -level QAOA on many graph instances.
+We consider many randomly generated instances u3R and w3R graphs with vertex number 8 ≤ N ≤ 22 8\leq N\leq 22 , and use our FOURIER strategy to find optimal QAOA parameters for level p ≤ 20 p\leq 20 .
+In the following discussion, we use the fractional error 1 − r 1-r to assess the performance of QAOA.
+
+ We first examine the case of unweighted graphs, specifically u3R graphs.
+In Fig.  4 (a), we plot the fractional error 1 − r 1-r as a function of QAOA’s level p p .
+Here, we see that, on average, 1 − r ∝ e − p / p 0 1-r\propto e^{-p/p_{0}} appears to decay exponentially with p p .
+Note that since the instances studied are u3R graphs with system size N ≤ 22 N\leq 22 , where C max ≤ | E | ≤ 33 C_{\text{max}}\leq|E|\leq 33 , we have essentially prepared the MaxCut state whenever the fractional error goes below ∼ 10 − 2 \sim 10^{-2} .
+This good performance can be understood by interpreting QAOA as Trotterized quantum annealing, especially when the optimized parameters are of the pattern seen in Fig.  2 , where one initializes in the ground state of − H B -H_{B} and evolve with H B H_{B} (and H C H_{C} ) with smoothly decreasing (and increasing) durations.
+The equivalent total annealing time T T is approximately proportional to the level p p , since the individual parameters γ i , β i = O ⁡ ( 1 ) \gamma_{i},\beta_{i}=O(1) and correspond to the evolution times under H C H_{C} and H B H_{B} .
+If T T is much longer than 1 / Δ min 2 1/\Delta_{\min}^{2} , where Δ min \Delta_{\min} is the minimum spectral gap, quantum annealing will be able to find the exact solution to MaxCut (ground state of − H C -H_{C} ) by the adiabatic theorem  [ 17 ] ,
+and achieve exponentially small fractional error as predicted by Landau-Zener  [ 41 , *Zener1932 ] .
+Numerically, we find that the minimum gaps of these u3R instances when running quantum annealing are on the order of Δ min ≳ 0.2 \Delta_{\min}\gtrsim 0.2 .
+It is thus not surprising that QAOA achieves exponentially small fractional error on average, since it is able to prepare the ground state of − H C -H_{C} through the adiabatic mechanism for these large-gap instances.
+Nevertheless, as we will see in the following section, this exponential behavior breaks down for hard instances, where the gap is small.
+
+ Let us now turn to the case of w3R graphs.
+As shown in Fig.  4 (b), the fractional error appears to scale as 1 − r ∝ e − p / p 0 1-r\propto e^{-\sqrt{p/p_{0}}} .
+We note that the stretched-exponential scaling is true in the average sense, while individual instances have very different behavior.
+For easy instances whose corresponding minimum gaps Δ min \Delta_{\min} are large, exponential scaling of the fractional error is found.
+For more difficult instances whose minimum gaps are small, we find that their fractional errors reach plateaus at intermediate p p , before decreasing further when p p is increased.
+We analyze these hard instances in more depth in the following Section  V .
+Surprisingly, when we average over randomly generated instances, the fractional error is fitted remarkably well by a stretched-exponential function.
+
+ These results of average performance of QAOA are interesting despite considerations of finite-size effect.
+While the decay constant p 0 p_{0} does appear to depend on the system size N N as shown in the insets of Fig.  4 , our finite-size simulations cannot conclusively determine the exact scaling.
+Although it remains unknown whether the (stretched)-exponential scaling will start to break down at larger system sizes, if the trend continues to system size of N = 100 ∼ 1000 N=100\sim 1000 , then QAOA will be practically useful in solving interesting MaxCut instances, better or on par with other known algorithms, in a regime where finding the exact solution will be infeasible.
+Even if QAOA fails for the worst-case graphs, it can still be practically useful, if it performs well on a randomly chosen graph of large system size.
+
+ V Adiabatic mechanism, quantum annealing, and QAOA
+
+ In the previous section, we benchmark the performance of QAOA for MaxCut on random graph instances in terms of the approximation ratio r r . Although designed for approximate optimization, QAOA is often able to find the MaxCut configuration—the global optimum of the problem—with a high probability as level p p increases.
+In this section, we assess the efficiency of the algorithm to find the MaxCut configuration and compare it with quantum annealing.
+In particular, we find that QAOA is not necessarily limited by the minimum gap as in quantum annealing, and explain a mechanism at work that allows it to overcome the adiabatic limitations.
+
+ V.1 Comparing QAOA with quantum annealing
+
+ A predecessor of QAOA, quantum annealing (QA) has been widely studied for the purpose of solving combinatorial optimization problems [ 43 , 44 , 45 , 46 ] .
+To find the MaxCut configuration that maximizes ⟨ H C ⟩ \left<H_{C}\right> , we consider the following simple QA protocol:
+
+ H QA ​ ( s ) = − [ s ​ H C + ( 1 − s ) ​ H B ] , s = t / T , H_{\text{QA}}(s)=-[sH_{C}+(1-s)H_{B}],\qquad s=t/T, 
+
+ (9) 
+
+ where t ∈ [ 0 , T ] t\in[0,T] and T T is the total annealing time.
+The initial state is prepared to be the ground state of H QA ​ ( s = 0 ) H_{\text{QA}}(s=0) , i.e., | ψ ⁡ ( 0 ) ⟩ = | + ⟩ ⊗ N |\psi(0)\rangle=|+\rangle^{\otimes N} .
+The ground state of the final Hamiltonian, H QA ​ ( s = 1 ) H_{\text{QA}}(s=1) , corresponds to the solution of the MaxCut problem encoded in H C H_{C} 
+ 4 4 
+ 4 
+
+ To be consistent with the language of QA, here we use the terminology of ground state and low excited states of − H C -H_{C} instead of referring to them as highest excited states in the MaxCut language. .
+In adiabatic QA, the algorithm relies on the adiabatic theorem to remain in the instantaneous ground state along the annealing path, and solves the computational problem by finding the ground state at the end.
+To guarantee success, the necessary run time of the algorithm typically scales as T = O ⁡ ( 1 / Δ min 2 ) T=O(1/\Delta_{\min}^{2}) , where Δ min \Delta_{\min} is the minimum spectral gap  [ 17 ] .
+Consequently, adiabatic QA becomes inefficient for instances where Δ min \Delta_{\min} is extremely small. We refer to these graph instances as hard instances (for adiabatic QA).
+
+ Beyond the completely adiabatic regime, there is often a tradeoff between the success probability (ground state population p GS ​ ( T ) p_{\text{GS}}(T) ) and the run time (annealing time T T ): one can either run the algorithm with a long annealing time to obtain a high success probability or run it multiple times at a shorter time to find the solution at least once. A metric often used to determine the best balance is the time-to-solution (TTS) [ 17 ] :
+
+ TTS QA ​ ( T ) \displaystyle\text{TTS}_{\text{QA}}(T) 
+ = T ​ ln ⁡ ( 1 − p d ) ln ⁡ [ 1 − p GS ​ ( T ) ] \displaystyle=T\dfrac{\ln(1-p_{d})}{\ln[1-p_{\text{GS}}(T)]} 
+
+ (10) 
+
+ TTS QA opt \displaystyle\text{TTS}_{\text{QA}}^{\text{opt}} 
+ = min T > 0 ⁡ TTS QA ​ ( T ) . \displaystyle=\min_{T>0}\text{TTS}_{\text{QA}}(T). 
+
+ (11) 
+
+ TTS QA ​ ( T ) \text{TTS}_{\text{QA}}(T) measures the time required to find the ground state at least once with the target probability p d p_{d} (taken to be 99 % 99\% in this paper), neglecting non-algorithmic overheads such as state-preparation and measurement time.
+In the adiabatic regime where
+ ln ⁡ [ 1 − p GS ​ ( T ) ] ∝ T ​ Δ min 2 \ln[1-p_{\text{GS}}(T)]\propto T\Delta_{\min}^{2} 
+per Landau-Zener formula  [ 41 , *Zener1932 ] , we have TTS QA ∝ 1 / Δ min 2 \text{TTS}_{\text{QA}}\propto 1/\Delta_{\min}^{2} which is independent of T T .
+However, it has been observed in some cases that it can be better to run QA non-adiabatically to obtain a shorter TTS  [ 14 , 15 , 16 , 17 ] .
+By choosing the best annealing time T T , regardless of adiabaticity, we can determine TTS QA opt \text{TTS}_{\text{QA}}^{\text{opt}} as the minimum algorithmic run time of QA.
+For QAOA, a similar metric can be defined.
+The variational parameters γ i \gamma_{i} and β i \beta_{i} can be regarded as the time evolved under the Hamiltonians H C H_{C} and H B H_{B} , respectively.
+One can thus interpret the sum of the variational parameters to be the total “annealing” time, i.e., T p = ∑ i = 1 p ( | γ i ∗ | + | β i ∗ | ) T_{p}=\sum_{i=1}^{p}(|\gamma_{i}^{*}|+|\beta_{i}^{*}|) 5 5 
+ 5 
+
+ This could change with different normalizations of the Hamiltonians H C H_{C} and H B H_{B} , but our qualitative results remain the same. The physical limitation in the experiment is typically the interaction strength in H C H_{C} . , and define
+
+ TTS QAOA ​ ( p ) \displaystyle\text{TTS}_{\text{QAOA}}(p) 
+ = T p ​ ln ⁡ ( 1 − p d ) ln ⁡ [ 1 − p GS ​ ( p ) ] \displaystyle=T_{p}\dfrac{\ln(1-p_{d})}{\ln[1-p_{\text{GS}}(p)]} 
+
+ (12) 
+
+ TTS QAOA opt \displaystyle\text{TTS}_{\text{QAOA}}^{\text{opt}} 
+ = min p > 0 ⁡ TTS QAOA ​ ( p ) , \displaystyle=\min_{p>0}\text{TTS}_{\text{QAOA}}(p), 
+
+ (13) 
+
+ where p GS ​ ( p ) p_{\text{GS}}(p) is the ground state population after the optimal p p -level QAOA protocol.
+Note this quantity does not take into account of the overhead in finding the optimal parameters.
+We use TTS QAOA ​ ( p ) \text{TTS}_{\text{QAOA}}(p) here to benchmark the algorithm, and it should not be taken directly to be the actual experimental run time.
+
+ Figure 5: 
+(a) TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} versus the minimum spectral gap in QA , Δ min \Delta_{\min} , for many random w3R graph instances. 1000 random instances are generated for each graph vertex size N N . The maximum cutoff p p is taken to be p max = 50 , 50 , 40 , 35 , 30 p_{\max}=50,50,40,35,30 for N = 10 , 12 , 14 , 16 , 18 N=10,12,14,16,18 , respectively.
+Dashed line corresponds to adiabatic QA run time of 1 / Δ min 2 1/\Delta_{\min}^{2} predicted by Landau-Zener  [ 41 , *Zener1932 ] .
+(b) TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} versus TTS QA opt \text{TTS}_{\text{QA}}^{\text{opt}} for each random graph instance.
+Dashed line indicates when the two are equal. The (Pearson’s) correlation coefficient between QAOA TTS and QA TTS is ρ ⁡ ( ln ⁡ ( TTS QAOA opt ) , ln ⁡ ( TTS QA opt ) ) ≈ 0.91 \rho\left(\ln(\text{TTS}_{\text{QAOA}}^{\text{opt}}),\ln(\text{TTS}_{\text{QA}}^{\text{opt}})\right)\approx 0.91 . 
+
+ To compare the algorithms, we compute TTS QA opt \text{TTS}_{\text{QA}}^{\text{opt}} and TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} for many random graph instances.
+For each even vertex number from N = 10 N=10 to N = 18 N=18 , we randomly generate 1000 1000 instances of w3R graphs.
+In Fig.  5 (a), we plot the relationship between TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} and the minimum gap Δ min \Delta_{\min} in quantum annealing for each instance. Most of the random graphs have large gaps ( Δ min ≳ 10 − 2 \Delta_{\min}\gtrsim 10^{-2} ), and we observe that the optimal TTS follows the Landau-Zener prediction of 1 / Δ min 2 1/\Delta_{\min}^{2} for these graphs.
+This indicates that a quasi-adiabatic parametrization of QAOA is the best when Δ min \Delta_{\min} is reasonably large.
+Many graphs, however, exhibit very small gaps ( Δ min ≲ 10 − 3 \Delta_{\min}\lesssim 10^{-3} ), and thus require exceedingly long run time for adiabatic evolution.
+For some graphs, Δ min \Delta_{\min} is as small as 10 − 8 10^{-8} , which implies an adiabatic evolution requires a run time T ≳ 10 16 T\gtrsim 10^{16} .
+Nevertheless, we see that QAOA can find the solution for these hard instances faster than adiabatic QA.
+Remarkably, TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} appears to be independent of the gap for all graphs that have extremely small gaps, and beats the adiabatic TTS (Landau-Zener line) by many orders of magnitude.
+This suggests that an exponential improvement of TTS is possible with non-adiabatic mechanisms when adiabatic QA is limited by exponentially small gaps.
+
+ Similarly for QA, the optimal annealing time T T is often not in the adiabatic limit for small-gap graphs. In Fig.  5 (b), we observe a strong correlation between TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} and TTS QA opt \text{TTS}_{\text{QA}}^{\text{opt}} for each graph instance.
+This suggests that QAOA is making use of the optimal annealing schedule, regardless of whether a slow adiabatic evolution or a fast diabatic evolution is better.
+We believe that if we use an optimized schedule beyond the linear ramp in Eq. ( 9 ), QA should be able to match the performance of QAOA.
+In the following subsection, we take a representative example to explain our results observed in Fig.  5 and a mechanism of QAOA to go beyond the adiabatic paradigm.
+
+ V.2 Beyond the adiabatic mechanism: a case study
+
+ To understand the behavior of QAOA, we focus on graph instances that are hard for adiabatic QA in this subsection.
+In particular, we study a representative instance to explain how QAOA as well as diabatic QA can overcome the adiabatic limitations. As illustrated in Fig.  6 (a), we demonstrate that QAOA can learn to utilize diabatic transitions at anti-crossings to circumvent difficulties caused by very small gaps in QA.
+
+ Fig.  6 (b) shows a representative graph with N = 14 N=14 , whose minimum spectral gap Δ min < 10 − 3 \Delta_{\min}<10^{-3} . For this example hard instance, we first numerically simulate the quantum annealing process.
+Fig.  6 (c) shows populations in the ground state and low excited states at the end of the process for different annealing time T T .
+Since the minimum gap is very small, the adiabatic condition requires T ≳ 1 / Δ min 2 ≈ 10 6 T\gtrsim 1/\Delta_{\min}^{2}\approx 10^{6} .
+The Landau-Zener formula for the ground state population p GS = 1 − exp ⁡ ( − c ​ T ​ Δ min 2 ) p_{\text{GS}}=1-\exp\left(-cT\Delta_{\min}^{2}\right) fits well with our exact numerical simulation, where c c is a fitting parameter.
+However, we can clearly observe a “bump” in the ground state population at annealing time T ≈ 40 T\approx 40 .
+At such a time scale, the dynamics is clearly non-adiabatic; we call this phenomenon a diabatic bump .
+This phenomenon has been observed earlier in Ref.  [ 14 , 15 , 16 , 17 ] for other optimization problems.
+
+ Subsequently, we simulate QAOA on this hard instance.
+As mentioned earlier, although QAOA optimizes energy instead of ground state overlap, substantial ground state population can still be obtained even for many hard graphs.
+Using our FOURIER heuristic strategy, various low-energy state populations of the output state are shown for different levels p p in Fig.  6 (d).
+We observe that QAOA can achieve similar ground state population as the diabatic bump at small p p , and then substantially enhance it after p ≳ 24 p\gtrsim 24 .
+
+ Figure 6: 
+(a) A schematic of how QAOA and the interpolated annealing path can overcome the small minimum gap limitations via diabatic transitions (purple line). Naive adiabatic quantum annealing path leads to excited states passing through the anti-crossing point (green line).
+(b) An instance of weighted 3-regular graph that has a small minimum spectral gap along the quantum annealing path given by Eq. ( 9 ). The optimal MaxCut configuration is shown with two vertex colors, and the black (red) lines are the cut (uncut) edges.
+(c) Population in low excited states after the quantum annealing protocol with different total time T T . The black solid line follows the Landau-Zener formula for the ground state population, p GS = 1 − exp ⁡ ( − c ​ T ​ Δ min 2 ) p_{\text{GS}}=1-\exp\left(-cT\Delta_{\min}^{2}\right) , where c c is a fitting parameter.
+(d) Population in low excited states using QAOA at different level p p . The FOURIER heuristic strategy is used in the optimization.
+(e) Interpreting QAOA parameters (at p = 40 p=40 ) as a smooth quantum annealing path, via linear interpolation according to Eq. ( 14 ). The annealing time parameter s = t / T p s=t/T_{p} , where T p = ∑ i = 1 p ( | γ i ∗ | + | β i ∗ | ) T_{p}=\sum_{i=1}^{p}(|\gamma_{i}^{*}|+|\beta_{i}^{*}|) . The red dotted line labels the location of anti-crossing where the gap is at its minimum, at which point f ⁡ ( s ) ≈ 0.92 f(s)\approx 0.92 . Inset shows the original QAOA optimal parameters γ i ∗ \gamma^{*}_{i} and β i ∗ \beta^{*}_{i} for p = 40 p=40 .
+(f) Instantaneous eigenstate population under the annealing path given in (e). Note that the instantaneous ground state and first excited state swap at the anti-crossing point. 
+
+ To better understand the mechanism of QAOA and make a meaningful comparison with QA, we can interpret the QAOA parameters as a smooth annealing path.
+We again interpret the sum of the variational parameters to be the total annealing time, i.e., T p = ∑ i = 1 p ( | γ i | + | β i | ) T_{p}=\sum_{i=1}^{p}(|\gamma_{i}|+|\beta_{i}|) .
+A smooth annealing path can be constructed from QAOA optimal parameters as
+
+ H QAOA ​ ( t ) = − [ f ⁡ ( t ) ​ H C + ( 1 − f ⁡ ( t ) ) ​ H B ] , \displaystyle H_{\text{QAOA}}(t)=-[f(t)H_{C}+(1-f(t))H_{B}], 
+
+ (14) 
+
+ f ⁡ ( t i = ∑ j = 1 i ( | γ j ∗ | + | β j ∗ | ) − 1 2 ​ ( | γ i ∗ | + | β i ∗ | ) ) = γ i ∗ | γ i ∗ | + | β i ∗ | , \displaystyle f\left(t_{i}=\sum_{j=1}^{i}(|\gamma_{j}^{*}|+|\beta_{j}^{*}|)-\dfrac{1}{2}(|\gamma_{i}^{*}|+|\beta_{i}^{*}|)\right)=\dfrac{\gamma_{i}^{*}}{|\gamma_{i}^{*}|+|\beta_{i}^{*}|}, 
+
+ where t i t_{i} is chosen to be at the mid-point of each time interval ( γ i ∗ + β i ∗ ) (\gamma_{i}^{*}+\beta_{i}^{*}) .
+With the boundary conditions f ⁡ ( t = 0 ) = 0 f(t=0)=0 , f ⁡ ( t = T p ) = 1 f(t=T_{p})=1 and linear interpolation at other intermediate time t t , we can convert QAOA parameters to a well-defined annealing path.
+We apply this conversion to the QAOA optimal parameters at p = 40 p=40 [Fig.  6 (e)].
+With this annealing path, we can follow the instantaneous eigenstate population throughout the quantum annealing process [Fig.  6 (f)].
+In contrast to adiabatic QA, the state population leaks out of the ground state and accumulates in the first excited state before the anti-crossing point, where the gap is at its minimum.
+Using a diabatic transition at the anti-crossing, the two states swap populations, and a large ground state population is obtained in the end.
+We note that the final state population from the constructed annealing path differs slightly from those of QAOA, due to Trotterization and interpolation, but the underlying mechanism is the same, which is also responsible for the diabatic bump seen in Fig.  6 (c).
+In addition to the conversion used in Eq. ( 14 ), we have tested a few other prescriptions to construct an annealing path from QAOA parameters, and qualitative features do not seem to change.
+
+ Hence, our results indicate that QAOA is closely related to a cleverly optimized diabatic QA path that can overcome limitations set by the adiabatic theorem. Through optimization, QAOA can find a good annealing path and exploit diabatic transitions to enhance ground state population.
+This explains the observation in Fig.  5 (a) that TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} can be significantly shorter than the time required by the adiabatic algorithm.
+On the other hand, as seen in Fig.  5 (b), TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} is strongly correlated with TTS QA opt \text{TTS}_{\text{QA}}^{\text{opt}} : QAOA automatically finds a good annealing path, which could be adiabatic or not, depending on what is the best route for the specific problem instance.
+
+ The effective dynamics of QAOA for this specific instance, as we see in Fig.  6 (f), can be understood mostly by an effective two-level system (see Appendix  D for more discussions).
+In general, the energy spectrum can be more complex, and the dynamics may involve many excited states, which may not be explainable by the simple schematic in Fig.  6 (a).
+Nonetheless, QAOA can find a suitable path via our heuristic optimization strategies even in more complicated cases  [ 49 ] .
+
+ VI Considerations for experimental implementation
+
+ In this section, we discuss some important considerations for experimental realization. The framework of QAOA is general and can be applied to various experimental platforms to solve combinatorial optimization problems. Here, we again focus on the MaxCut problem as a paradigmatic example, although it can also be applied to solve other interesting problems [ 49 , 50 ] .
+
+ VI.1 Finite measurement samples
+
+ So far, we have focused on understanding the best theoretically possible performance of QAOA, and assumed perfect measurement precision of the objective function in our numerical simulations.
+However, due to quantum fluctuations (i.e., projection noise) in actual experiments, the precision is finite since it is obtained via averaging over finitely many measurement outcomes that can only take on discrete values.
+Hence, in practice, there is a trade-off between measurement cost and optimization quality: finding good optimum requires good precision at the cost of large number of measurements [ 51 ] .
+Additionally, large variance in the objective function value demands more measurements, but may help improve the chances of finding near-optimal MaxCut configurations.
+
+ Figure 7: 
+Full Monte-Carlo simulation of QAOA accounting for measurement projection noise, on the example 14-vertex instance studied in Fig.  6 (b).
+For various optimization strategies, we keep track of approximation ratio r i = | Cut i | / | MaxCut | r_{i}=|\text{Cut}_{i}|/|\text{MaxCut}| from the i i -th measurement, and plot minimum fractional error 1 − r i 1-r_{i} found after M M measurements, averaged over many Monte-Carlo realizations.
+The blue solid and red dashed lines correspond to QAOA optimized with the FOURIER strategy starting with an educated guess of ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) at p = 1 p=1 and p = 5 p=5 , respectively.
+The orange dash-dot line corresponds to QAOA optimized starting with random guesses at p = 1 p=1 .
+The three labelled dotted lines are results from QA with total time T = 10 , 10 2 , 10 3 T=10,10^{2},10^{3} .
+
+ Here, we study the effect of measurement projection noise with a full Monte-Carlo simulation of QAOA on some example graphs, where objective function is evaluated by repeated projective measurements until its error is below a threshold.
+More implementation details of this numerical simulation are discussed in Appendix  F .
+In Fig.  7 , we present the Monte-Carlo simulation result for the example instance studied earlier in Fig.  6 (b).
+Here, we simulate QAOA by starting at either level p p  = 1 or p p  = 5, and increasing to higher p p using our FOURIER heuristics. The initial parameters at p p  = 1 and p p  = 5, respectively, are chosen based on known optima found for smaller size instances.
+We see that QAOA can find the MaxCut solution in ∼ \sim 10– 10 2 10^{2} measurements, and starting our optimization at intermediate level ( p p  = 5) is better than starting at the lowest level ( p p  = 1).
+In comparison, random choices of initial parameters starting at p = 1 p=1 perform much worse, which fails to find the MaxCut solution until 10 3 10^{3} – 10 4 10^{4} measurements have been made.
+Moreover, when we compare QAOA to QA with various annealing time, it appears that the choice of annealing time T = 100 T=100 can perform just as well as QAOA on this instance.
+Nevertheless, running QAOA at level p = 5 p=5 is still more advantageous than QA at T = 100 T=100 , when coherence time is limited.
+
+ We remark that our simulation is only limited to small-size instances, and the good performance of QAOA and QA we observe is complicated by the small but significant ground state population from generic annealing schedules.
+Since it often takes 10 2 10^{2} measurements to obtain a sufficiently precise estimate of the objective function, a ground state probability of ≳ 10 − 2 \gtrsim 10^{-2} would mean that one can find the ground state without much parameter optimization.
+Nevertheless, as quantum computers with 10 2 10^{2}   ∼ \sim   10 3 10^{3} qubits begin to come online,
+it will be interesting to see how QAOA performs on much larger instances where the ground state probability from generic QAOA/QA protocol is expected to be exponentially small, whereas the number of measurements necessary for optimization grows only polynomially with problem size.
+The results here indicate that the parameter pattern and our heuristic strategies are practically useful guidelines in realistic implementation of QAOA.
+
+ VI.2 Implementation for large problem sizes
+
+ As experiments begin to test solving the MaxCut problems with quantum machines  [ 6 , 8 ] ,
+limited quantum coherence time and graph connectivity will be among the biggest challenges. In terms of coherence time, QAOA is highly advantageous: the hybrid nature of QAOA as well as its short- and intermediate-depth circuit parametrization makes it ideal for near-term quantum devices.
+In addition, we have demonstrated that QAOA is not generally limited by the small spectral gaps, which raises hopes to (approximately) solve interesting problems within the coherence time.
+
+ What would be the necessary problem size to explore a meaningful quantum advantage?
+We note that one of the leading exact classical solver, the BiqMac solver  [ 52 ] , is able to solve MaxCut exactly up to N ≲ 100 N\lesssim 100 , but takes a long time (more than an hour) for larger problem sizes.
+A fast heuristic algorithm, the breakout local search algorithm  [ 53 ] , can find the MaxCut solution with a high probability for problem size of a few hundreds, although the solution is not guaranteed.
+Hence, a MaxCut problem with a few hundred vertices will be an interesting regime to benchmark quantum algorithms.
+In terms of approximation, we have noted earlier that the polynomial-time Goemans-Willamson algorithm has an approximation ratio guarantee of r ∗ ≈ 0.878 r^{*}\approx 0.878 .
+It will be also interesting to find out if QAOA is able to achieve a better approximation ratio for some problem instances where the exact solution is not obtainable, in this regime of hundreds of vertices.
+
+ We now discuss a few considerations that put these large-size problems in the experimentally feasible regime on near-term quantum systems.
+
+ Figure 8: 
+(a) Vertex renumbering to reduce the graph bandwidth. Top panel: an example of vertex renumbering for a 5-vertex graph. Bottom panel: distribution of graph bandwidths for 1000 random 3-regular graphs with N = 400 N=400 each. The blue (orange) bars are the bandwidth before (after) vertex renumbering. Inset shows the sparsity pattern of the adjacency matrix before and after vertex renumbering for one particular graph.
+(b) A protocol to use Rydberg-blockade controlled gate to implement the interaction term exp ⁡ ( − i ​ γ ​ σ i z ​ σ j z ) \exp(-i\gamma\sigma_{i}^{z}\sigma_{j}^{z}) . By choosing a proper gate time for the second step ( t = 2 ​ π / Ω 2 + Δ 2 ) \left(t=2\pi/\sqrt{\Omega^{2}+\Delta^{2}}\right) , one does not accumulate population on the Rydberg level | r ⟩ |r\rangle . With tunable coupling strength Ω \Omega and detuning Δ \Delta , one can control the interaction time γ \gamma . 
+
+ VI.2.1 Reducing interaction range
+
+ In a quantum experiment, each vertex can be represented by a qubit.
+For a large problem size, a major challenge to encode general graphs will be the necessary range and versatility of the interaction patterns (between qubits).
+The embedding of a random graph into a physical implementation with a 1D or 2D geometry may require very long-range interactions.
+By relabelling the graph vertices, one can actually reduce the required range of interactions.
+This can be formulated as the graph bandwidth problem :
+Given a graph G = ( V , E ) G=(V,E) with N N vertices, a vertex numbering is a bijective map from vertices to distinct integers, f : V → { 1 , 2 , ⋯ , N } f:V\to\{1,2,\cdots\!,N\} . The bandwidth of a vertex numbering f f is B f ​ ( G ) = max ⁡ { | f ⁡ ( u ) − f ⁡ ( v ) | : ( u , v ) ∈ E ⁡ ( G ) } B_{f}(G)=\max\{|f(u)-f(v)|:(u,v)\in E(G)\} , which can be understood as the length of the longest edge (in 1D).
+The graph bandwidth problem is then to find the minimum bandwidth among all vertex numberings, i.e., B ⁡ ( G ) = min f ⁡ B f ​ ( G ) B(G)=\min_{f}B_{f}(G) ;
+namely, it is to minimize the length of the longest edge by vertex renumbering.
+
+ In general, finding the minimum graph bandwidth is NP-hard, but good heuristic algorithms have been developed to reduce the graph bandwidth.
+Fig.  8 (a) shows a simple example of bandwidth reduction. The top panel illustrates the vertex renumbering with a 5 5 -vertex graph. The bottom panel shows the histogram of graph bandwidths for 1000 random 3-regular graphs of N = 400 N=400 each.
+Using the Cuthill-McKee algorithm  [ 54 ] , the graph bandwidth can be reduced to around B ≈ 100 B\approx 100 .
+While this still requires quite a long interaction range in 1D, the bandwidth problem can also be generalized to higher dimensions.
+In 2D arrangements, we then expect the diameter of interaction to be B 2D ∼ 100 B_{\text{2D}}\sim\sqrt{100} for N = 400 N=400 3-regular graphs  [ 55 ] , which seems within reach for near-term quantum devices.
+A detailed study of the 2D bandwidth problem is beyond the scope of this work. Alternatively, one can make use of a general construction to encode any long-range interactions to local fields  [ 56 ] , although it requires additional physical qubits and gauge constraints. Apart from implementing arbitrary graphs in full generality, one can also restrict to special graphs that exhibit some geometric structures.
+For example, unit disk graphs are geometric graphs in the 2D plane, where vertices are connected by an edge only if they are within a unit distance.
+These graphs can be more naturally encoded into 2D physical implementations, and the MaxCut problem is still NP-hard on unit disk graphs  [ 57 ] .
+
+ VI.2.2 Example Implementation with Rydberg Atoms
+
+ The above discussion has been experimental-platform independent, and is applicable to any state-of-the-art platforms, such as neutral Rydberg atoms  [ 19 , 58 , 18 , 59 , 60 ] , trapped ions  [ 61 , 62 , 63 , 7 ] , and superconducting qubits  [ 64 , 5 , 6 , 65 ] .
+As an example, we briefly describe a feasible implementation of QAOA with neutral atoms interacting via Rydberg excitations,
+where high-fidelity entanglement has been recently demonstrated  [ 66 ] .
+We can use the hyperfine ground states in each atom to encode the qubit states | 0 ⟩ |0\rangle and | 1 ⟩ |1\rangle , and the | 1 ⟩ |1\rangle state can be excited to the Rydberg level | r ⟩ |r\rangle to induce interactions.
+The qubit rotating term, exp ( − i β ∑ j = 1 N σ j x ) \exp\left(-i\beta\sum_{j=1}^{N}\sigma_{j}^{x}\right) , can be implemented straightforwardly by a global driving beam with tunable durations.
+The interaction terms ∑ ⟨ i , j ⟩ σ i z ​ σ j z \sum_{\left<i,j\right>}\sigma_{i}^{z}\sigma_{j}^{z} can be implemented stroboscopically for general graphs;
+this can be realized by a Rydberg-blockade controlled gate  [ 19 ] , as illustrated in Fig.  8 (b).
+By controlling the coupling strength Ω \Omega , detuning Δ \Delta , and the gate time, together with single-qubit rotations, one can implement exp ⁡ ( − i ​ γ ​ σ i z ​ σ j z ) \exp(-i\gamma\sigma_{i}^{z}\sigma_{j}^{z}) , which can then be repeated for each interacting pair.
+An additional major advantage of the Rydberg-blockade mechanism is its ability to perform multi-qubit collective gates in parallel  [ 19 , 67 ] . This can reduce the number of two-qubit operation steps from the number of edges to the number of vertices, N N , which means a factor of N N reduction for dense graphs with ∼ \sim N 2 N^{2} edges. While the falloff of Rydberg interactions may limit the distance two qubits can interact, MaxCut problems of interesting sizes can still be implemented by vertex renumbering or focusing on unit disk graphs, as discussed above.
+
+ For generic problems of 400-vertex 3-regular graphs, we expect the necessary interaction range to be 5 5 atoms in 2D;
+assuming minimum inter-atom separation of 2  μ \mu m, this means an interaction radius of 10  μ \mu m, which is realizable with high Rydberg levels  [ 19 ] .
+Given realistic estimates of coupling strength Ω ∼ 2 ​ π × 10 \Omega\sim 2\pi\times 10 -100 MHz and single-qubit coherence time τ ∼ \tau\sim 200  μ \mu s (limited by Rydberg level lifetime), we expect with high-fidelity control, the error per two-qubit gate can be made roughly ( Ω ​ τ ) − 1 (\Omega\tau)^{-1}   ∼ \sim   10 − 3 10^{-3} - 10 − 4 10^{-4} .
+For 400-vertex 3-regular graphs, we can implement QAOA of level p ≃ Ω ​ τ / N ∼ 25 p\simeq\Omega\tau/N\sim 25 with a 2D array of neutral atoms.
+We note that these are conservative estimates since we do not consider advanced control techniques such as pulse-shaping, and require less than one error in the entire quantum circuit;
+it is possible that QAOA is not sensitive to some of the imperfections.
+Hence, we envision that soon, QAOA can be benchmarked against classical  [ 24 , 52 , 53 ] and semiclassical  [ 68 , 69 , 70 ] solvers on large problem sizes with near-term quantum devices.
+
+ VII Conclusion and Outlook
+
+ In summary, we have studied the performance, non-adiabatic mechanism, and practical implementation of QAOA applied to MaxCut problems.
+Our results provide important insights into the performance of QAOA, and suggest promising strategies for its practical realization on near term quantum devices.
+Based on the observed patterns in the QAOA optimal parameters,
+we developed heuristic strategies for initializing optimization so as to efficiently find quasi-optimal parameters in O ⁡ ( poly ⁡ ( p ) ) O(\poly(p)) time.
+In contrast, optimization with the standard random initialization strategy that explores the entire parameter space needs 2 O ⁡ ( p ) 2^{O(p)} runs to obtain an equally good solution.
+We benchmarked, using these heuristic optimization strategies, the performance of QAOA up to p ≤ 50 p\leq 50 .
+On average, the performance characterized by the approximation ratio was observed to improve exponentially (or stretched-exponentially) for random unweighted (or weighted) graphs.
+Focusing on hard graph instances where adiabatic QA fails due to extremely small spectral gaps, we found that QAOA could learn via optimization a diabatic path to achieve significantly higher success probabilities to find the MaxCut solution.
+A metric taking into account of both the success probability and the run time indicates QAOA may not be limited by small spectral gaps.
+Finally, we provided a detailed resource analysis for experimental implementation of QAOA on MaxCut and proposed a neutral-atom realization where problem sizes of a few hundred atoms are feasible in the near future.
+
+ As we have benchmarked via random MaxCut instances, our simple heuristic optimization strategies work very well.
+Nevertheless, more sophisticated methods could be developed to improve the performance and robustness.
+One possibility would be using machine learning techniques to automatically learn and make use of the optimal parameter patterns to develop even more efficient parametrization and strategies (see e.g.,  [ 71 ] ).
+Another important but unsettled problem is assessing a reliable system-size scaling for QAOA.
+On average, we observed (stretched) exponential improvement with level p p , up to N = 22 N=22 .
+It remains open whether the same scaling will persist for larger system size.
+For the hard instances we generated that have exceedingly small spectral gaps, QAOA is able to overcome the adiabatic limitations in all cases examined;
+it remains to be seen how this behavior could extrapolate to larger problems.
+An experimental implementation with near-term quantum devices will be able to push the limit of our understanding and serve as a litmus test for genuine quantum speedup in solving practical problems.
+
+ Besides MaxCut, another interesting optimization problem is the Maximum Independent Set (MIS) problem, which is also NP-hard and has many real-world applications  [ 72 , 73 ] .
+In a separate work  [ 49 ] , we show that the MIS problem can be naturally encoded into the ground state of neutral atoms interacting via Rydberg excitations, with minimal overhead on the hardware.
+The methodology we have developed here for QAOA on MaxCut can be directly adapted to the MIS problem, where we observe similar parameter patterns and non-adiabatic mechanisms of QAOA; this is discussed in more detail in Appendix  H .
+With such rapid development in near-term quantum computer, we will soon be able to witness experimental tests of the capability of quantum algorithms to solve practically interesting problems.
+
+ Acknowledgements.
+
+We thank Edward Farhi, Aram Harrow, Peter Zoller, Ignacio Cirac, Jeffrey Goldstone, Sam Gutmann, Wen Wei Ho, and Dries Sels for fruitful discussions. S.-T.W. in addition would like to thank Daniel Lidar, Matthias Troyer, and Johannes Otterbach for insightful discussions and suggestions during the Aspen Winter Conference on Advances in Quantum Algorithms and Computation. This work was supported through the National Science Foundation (NSF), the Center for Ultracold Atoms, the Air Force Office of Scientific Research via the MURI, the Vannevar Bush Faculty Fellowship, DOE, and Google Research Award. S.C. acknowledges support from the Miller Institute for Basic Research in Science. H.P. is supported by the NSF through a grant for the Institute for Theoretical Atomic, Molecular, and Optical Physics at Harvard University and the Smithsonian Astrophysical Observatory. Some of the computations in this paper were performed on the Odyssey cluster supported by the FAS Division of Science, Research Computing Group at Harvard University. 
+ Note added. —After the completion of this work, we became aware of a related work appearing in Ref.  [ 74 ] .
+In the preprint, they trained the QAOA variational parameters on a batch of graph instances and compared QAOA’s performance with the classical Goemans-Williamson algorithm on small-size MaxCut problems.
+Similar parameter shapes were found, but Ref.  [ 74 ] did not make use of any observed patterns to design optimization strategies. We, in addition, discovered non-adiabatic mechanisms of QAOA, which is not studied in Ref.  [ 74 ] .
+
+ References
+
+ [1] 
+ John Preskill, “Quantum
+Computing in the NISQ era and beyond,” Quantum 2 , 79
+(2018) . 
+
+ [2] 
+ Edward Farhi, Jeffrey Goldstone, and Sam Gutmann, “A quantum
+approximate optimization algorithm,” (2014a), arXiv:1411.4028 . 
+
+ [3] 
+ Alberto Peruzzo, Jarrod McClean, Peter Shadbolt, Man-Hong Yung, Xiao-Qi Zhou,
+Peter J. Love, Alán Aspuru-Guzik, and Jeremy L. O’Brien, “A variational eigenvalue
+solver on a photonic quantum processor,” Nature
+Communications 5 , 4213
+(2014) . 
+
+ [4] 
+ Nikolaj Moll, Panagiotis Barkoutsos, Lev S Bishop, Jerry M Chow,
+Andrew Cross, Daniel J Egger, Stefan Filipp, Andreas Fuhrer, Jay M Gambetta, Marc Ganzhorn, Abhinav Kandala, Antonio Mezzacapo, Peter Müller, Walter Riess, Gian Salis, John Smolin, Ivano Tavernelli, and Kristan Temme, “Quantum optimization using variational
+algorithms on near-term quantum devices,” Quantum Science and Technology 3 , 030503 (2018) . 
+
+ [5] 
+ Abhinav Kandala, Antonio Mezzacapo, Kristan Temme, Maika Takita,
+Markus Brink, Jerry M. Chow, and Jay M. Gambetta, “Hardware-efficient variational quantum
+eigensolver for small molecules and quantum magnets,” Nature 549 , 242 (2017) . 
+
+ [6] 
+ J. S. Otterbach, R. Manenti, N. Alidoust, A. Bestwick, M. Block,
+B. Bloom, S. Caldwell, N. Didier, E. Schuyler Fried, S. Hong, P. Karalekas, C. B. Osborn, A. Papageorge, E. C. Peterson, G. Prawiroatmodjo, N. Rubin, C. A. Ryan,
+D. Scarabelli, M. Scheer, E. A. Sete, P. Sivarajah, R. S. Smith, A. Staley, N. Tezak, W. J. Zeng, A. Hudson, B. R. Johnson, M. Reagor, M. P. da
+Silva, and C. Rigetti, “Unsupervised
+Machine Learning on a Hybrid Quantum Computer,” (2017), arXiv:1712.05771 . 
+
+ [7] 
+ C. Kokail, C. Maier,
+R. van Bijnen, T. Brydges, M. K. Joshi, P. Jurcevic, C. A. Muschik, P. Silvi, R. Blatt, C. F. Roos, and P. Zoller, “Self-Verifying Variational Quantum Simulation of the Lattice
+Schwinger Model,” (2018), arXiv:1810.03421 . 
+
+ [8] 
+ Xiaogang Qiang, Xiaoqi Zhou, Jianwei Wang, Callum M. Wilkes, Thomas Loke, Sean O’Gara, Laurent Kling,
+Graham D. Marshall,
+Raffaele Santagati,
+Timothy C. Ralph,
+Jingbo B. Wang, Jeremy L. O’Brien, Mark G. Thompson, and Jonathan C. F. Matthews, “Large-scale silicon quantum
+photonics implementing arbitrary two-qubit processing,” Nature
+Photonics 12 , 534–539
+(2018) . 
+
+ [9] 
+ Edward Farhi, Jeffrey Goldstone, and Sam Gutmann, “A Quantum
+Approximate Optimization Algorithm Applied to a Bounded Occurrence Constraint
+Problem,” (2014b) , arXiv:1412.6062 . 
+
+ [10] 
+ Edward Farhi and Aram W Harrow, “Quantum
+supremacy through the quantum approximate optimization algorithm,” (2016), arXiv:1602.07674 . 
+
+ [11] 
+ M. B. Hastings, “Classical
+and Quantum Bounded Depth Approximation Algorithms,” , arXiv:1905.07047 (2019), arXiv:1905.07047 . 
+
+ [12] 
+ Sergey Bravyi, Alexander Kliesch, Robert Koenig, and Eugene Tang, “Obstacles to state
+preparation and variational optimization from symmetry protection,” (2019), arXiv:1910.08980 . 
+
+ [13] 
+ Jarrod R. McClean, Sergio Boixo, Vadim N. Smelyanskiy, Ryan Babbush, and Hartmut Neven, “Barren plateaus in quantum neural network training landscapes,” Nature Communications 9 , 4812 (2018) . 
+
+ [14] 
+ Elizabeth Crosson, Edward Farhi, Cedric Yen-Yu Lin, Han-Hsuan Lin, and Peter Shor, “Different Strategies for Optimization Using the Quantum Adiabatic
+Algorithm,” (2014) , arXiv:1401.7320 
+. 
+
+ [15] 
+ Siddharth Muthukrishnan, Tameem Albash, and Daniel A. Lidar, “Tunneling and speedup in quantum optimization for permutation-symmetric
+problems,” Phys. Rev. X 6 , 031010 (2016) . 
+
+ [16] 
+ Layla Hormozi, Ethan W. Brown, Giuseppe Carleo, and Matthias Troyer, “Nonstoquastic
+hamiltonians and quantum annealing of an ising spin glass,” Phys. Rev. B 95 , 184416 (2017) . 
+
+ [17] 
+ Tameem Albash and Daniel A. Lidar, “Adiabatic quantum
+computation,” Rev. Mod. Phys. 90 , 015002 (2018) . 
+
+ [18] 
+ Hannes Bernien, Sylvain Schwartz, Alexander Keesling, Harry Levine, Ahmed Omran,
+Hannes Pichler, Soonwon Choi, Alexander S. Zibrov, Manuel Endres, Markus Greiner, Vladan Vuletić, and Mikhail D. Lukin, “Probing many-body dynamics on a 51-atom
+quantum simulator,” Nature 551 , 579 (2017) . 
+
+ [19] 
+ M. Saffman, T. G. Walker,
+ and K. Mølmer, “Quantum information with
+rydberg atoms,” Rev. Mod. Phys. 82 , 2313–2363 (2010) . 
+
+ [20] 
+ Christos H Papadimitriou and Kenneth Steiglitz, Combinatorial optimization: algorithms and complexity (Courier Corporation, 1998). 
+
+ [21] 
+ Bernhard Korte, Jens Vygen, B Korte, and J Vygen, Combinatorial optimization , Vol. 2 (Springer, 2012). 
+
+ [22] 
+ Johan Håstad, “Some
+optimal inapproximability results,” J. ACM 48 , 798–859 (2001) . 
+
+ [23] 
+ Piotr Berman and Marek Karpinski, “On Some
+Tighter Inapproximability Results (Extended Abstract),” (Springer, Berlin, Heidelberg, 1999) pp. 200–209. 
+
+ [24] 
+ Michel X. Goemans and David P. Williamson, “Improved approximation algorithms for maximum cut and satisfiability
+problems using semidefinite programming,” J. ACM 42 , 1115–1145 (1995) . 
+
+ [25] 
+ Eran Halperin, Dror Livnat,
+ and Uri Zwick, “MAX CUT in cubic
+graphs,” Journal of Algorithms 53 , 169–185 (2004) . 
+
+ [26] 
+ Zhihui Wang, Stuart Hadfield,
+Zhang Jiang, and Eleanor G. Rieffel, “Quantum approximate
+optimization algorithm for maxcut: A fermionic view,” Phys.
+Rev. A 97 , 022304
+(2018) . 
+
+ [27] 
+ Dave Wecker, Matthew B. Hastings, and Matthias Troyer, “Training a
+quantum optimizer,” Phys. Rev. A 94 , 022309 (2016) . 
+
+ [28] 
+ Zhi-Cheng Yang, Armin Rahmani, Alireza Shabani, Hartmut Neven, and Claudio Chamon, “Optimizing
+variational quantum algorithms using pontryagin’s minimum principle,” Phys. Rev. X 7 , 021027 (2017) . 
+
+ [29] 
+ W. W. Ho and T. H. Hsieh, “Efficient
+unitary preparation of non-trivial quantum states,” (2018), arXiv:1803.00026 . 
+
+ [30] 
+ Zhang Jiang, Eleanor G. Rieffel, and Zhihui Wang, “Near-optimal
+quantum circuit for grover’s unstructured search using a transverse field,” Phys. Rev. A 95 , 062317 (2017) . 
+
+ [31] 
+ E. R. Anschuetz, J. P. Olson, A. Aspuru-Guzik, and Y. Cao, “Variational
+Quantum Factoring,” (2018), arXiv:1808.08927 . 
+
+ [32] 
+ The approximation ratio r = ( 2 ​ p + 1 ) / ( 2 ​ p + 2 ) r=(2p+1)/(2p+2) is found for an
+infinite ring. For a finite ring with N N vertices, numerical calculations
+show that for p < ⌊ N / 2 ⌋ p<\left⌊N/2\right⌋ 
+one has r = ( 2 ​ p + 1 ) / ( 2 ​ p + 2 ) r=(2p+1)/(2p+2) for even N N and r = ( 2 ​ p + 1 ) ​ ( N + 1 ) ( 2 ​ p + 2 ) ​ N r=\frac{(2p+1)(N+1)}{(2p+2)N} for odd N N , and for p ≥ ⌊ N / 2 ⌋ p\geq\left⌊N/2\right⌋ one has r = 1 r=1 . 
+
+ [33] 
+ C. G. Broyden, “The convergence
+of a class of double-rank minimization algorithms 1. general
+considerations,” IMA Journal of Applied Mathematics 6 , 76–90 (1970) . 
+
+ [34] 
+ R. Fletcher, “A new approach
+to variable metric algorithms,” The Computer Journal 13 , 317–322 (1970) . 
+
+ [35] 
+ Donald Goldfarb, “A family of
+variable-metric methods derived by variational means,” Mathematics of Computation 24 , 23–23 (1970) . 
+
+ [36] 
+ D. F. Shanno, “Conditioning of
+quasi-Newton methods for function minimization,” Mathematics of Computation 24 , 647–647 (1970) . 
+
+ [37] 
+ The initial points β i 0 \beta^{0}_{i} are drawn uniformly from
+ [ − π 4 , π 4 ) [-\frac{\pi}{4},\frac{\pi}{4}) , and γ i 0 \gamma^{0}_{i} 
+are drawn uniformly [ − π 2 , π 2 ) [-\frac{\pi}{2},\frac{\pi}{2}) 
+for u3R graphs or [ − 2 π , 2 π ) [-2\pi,2\pi) for w3R graphs. Although γ i 0 \gamma_{i}^{0} 
+can meaningfully take values beyond the restricted range γ i 0 ∈ [ − 2 π , 2 π ) \gamma_{i}^{0}\in[-2\pi,2\pi) for w3R graph, we find that broadening the range does not
+improve performance. The ranges of the output parameters are not restricted
+in our unconstrained optimization routine.
+
+ [38] 
+ We denote the best of all local optima optimized from k k 
+random initial points (seeds) to be ( \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜸 B ⁡ [ k ] , \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜷 B ⁡ [ k ] ) (\mathaccentV{vec}17E{\bm{\gamma}}^{B[k]},\mathaccentV{vec}17E{\bm{\beta}}^{B[k]}) . When the same optimum ( \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜸 B ⁡ [ k ] , \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜷 B ⁡ [ k ] ) (\mathaccentV{vec}17E{\bm{\gamma}}^{B[k]},\mathaccentV{vec}17E{\bm{\beta}}^{B[k]}) is found from many different seeds and continues to yield the
+best F p ​ ( \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜸 B ⁡ [ k ] , \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜷 B ⁡ [ k ] ) F_{p}(\mathaccentV{vec}17E{\bm{\gamma}}^{B[k]},\mathaccentV{vec}17E{\bm{\beta}}^{B[k]}) as
+we increase the number of seeds k k , we then claim that it is a global
+optimum, i.e., ( \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜸 ∗ , \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜷 ∗ ) = l ​ i ​ m k → ∞ ⁡ ( \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜸 B ⁡ [ k ] , \mathaccentV ​ v ​ e ​ c ​ 17 ​ E ​ 𝜷 B ⁡ [ k ] ) (\mathaccentV{vec}17E{\bm{\gamma}}^{*},\mathaccentV{vec}17E{\bm{\beta}}^{*})=\mathop{lim}\displaylimits_{k\to\infty}(\mathaccentV{vec}17E{\bm{\gamma}}^{B[k]},\mathaccentV{vec}17E{\bm{\beta}}^{B[k]}) .
+
+ [39] 
+ J A Nelder and R Mead, “A Simplex Method for
+Function Minimization,” The Computer Journal 7 , 308–313 (1965). 
+
+ [40] 
+ Peter I. Frazier, “A
+Tutorial on Bayesian Optimization,” (2018), arXiv:1807.02811 
+. 
+
+ [41] 
+ Landau and L. D., “Zur Theorie der Energieubertragung II,” Z. Sowjetunion 2 , 46–51 (1932) . 
+
+ [42] 
+ C. Zener, “Non-Adiabatic
+Crossing of Energy Levels,” Proc. R. Soc. London, Ser. A 137 , 696–702 (1932) . 
+
+ [43] 
+ Tadashi Kadowaki and Hidetoshi Nishimori, “Quantum
+annealing in the transverse ising model,” Phys.
+Rev. E 58 , 5355–5363
+(1998) . 
+
+ [44] 
+ Edward Farhi, Jeffrey Goldstone, Sam Gutmann, Joshua Lapan,
+Andrew Lundgren, and Daniel Preda, “A quantum adiabatic evolution algorithm
+applied to random instances of an np-complete problem,” Science 292 , 472–475
+(2001) . 
+
+ [45] 
+ Sergio Boixo, Troels F. Rønnow, Sergei V. Isakov, Zhihui Wang,
+David Wecker, Daniel A. Lidar, John M. Martinis, and Matthias Troyer, “Evidence for quantum annealing with more than
+one hundred qubits,” Nature Physics 10 , 218 (2014) . 
+
+ [46] 
+ Troels F. Rønnow, Zhihui Wang, Joshua Job, Sergio Boixo,
+Sergei V. Isakov,
+David Wecker, John M. Martinis, Daniel A. Lidar, and Matthias Troyer, “Defining and detecting quantum
+speedup,” Science 345 , 420–424 (2014) . 
+
+ [47] 
+ To be consistent with the language of QA, here we use the
+terminology of ground state and low excited states of − H C -H_{C} instead of
+referring to them as highest excited states in the MaxCut
+language.
+
+ [48] 
+ This could change with different normalizations of the
+Hamiltonians H C H_{C} and H B H_{B} , but our qualitative results remain the
+same. The physical limitation in the experiment is typically the interaction
+strength in H C H_{C} .
+
+ [49] 
+ H. Pichler, S.-T. Wang, L. Zhou,
+S. Choi, and M. D. Lukin, “Quantum Optimization for Maximum
+Independent Set Using Rydberg Atom Arrays,” (2018a), arXiv:1808.10816 . 
+
+ [50] 
+ H. Pichler, S.-T. Wang, L. Zhou,
+S. Choi, and M. D. Lukin, “Computational complexity of the Rydberg
+blockade in two dimensions,” (2018b), arXiv:1809.04954 . 
+
+ [51] 
+ G. Giacomo Guerreschi and M. Smelyanskiy, “Practical optimization for hybrid quantum-classical algorithms,” (2017), arXiv:1701.01450 . 
+
+ [52] 
+ Franz Rendl, Giovanni Rinaldi, and Angelika Wiegele, “Solving max-cut
+to optimality by intersecting semidefinite and polyhedral relaxations,” Mathematical Programming 121 , 307 (2008) . 
+
+ [53] 
+ Una Benlic and Jin-Kao Hao, “Breakout local
+search for the max-cutproblem,” Engineering Applications of Artificial Intelligence 26 , 1162 – 1173 (2013) . 
+
+ [54] 
+ E. Cuthill and J. McKee, “Reducing the
+bandwidth of sparse symmetric matrices,” in Proceedings of the 1969
+24th National Conference , ACM ’69 (ACM, New York, NY, USA, 1969) pp. 157–172. 
+
+ [55] 
+ Lan Lin and Yixun Lin, “Square-root rule of
+two-dimensional bandwidth problem,” RAIRO - Theoretical Informatics
+and Applications 45 , 399–411 (2011) . 
+
+ [56] 
+ Wolfgang Lechner, Philipp Hauke, and Peter Zoller, “A
+quantum annealing architecture with all-to-all connectivity from local
+interactions,” Science Advances 1 (2015) . 
+
+ [57] 
+ Josep Díaz and Marcin Kamiński, “Max-cut
+and max-bisection are np-hard on unit disk graphs,” Theoretical Computer Science 377 , 271 – 276 (2007) . 
+
+ [58] 
+ Henning Labuhn, Daniel Barredo, Sylvain Ravets, Sylvain de Léséleuc, Tommaso Macrì, Thierry Lahaye, and Antoine Browaeys, “Tunable two-dimensional arrays of single rydberg atoms for realizing quantum
+ising models,” Nature 534 , 667 (2016) . 
+
+ [59] 
+ A. Keesling, A. Omran,
+H. Levine, H. Bernien, H. Pichler, S. Choi, R. Samajdar, S. Schwartz, P. Silvi, S. Sachdev, P. Zoller, M. Endres, M. Greiner, V. Vuletic, and M. D. Lukin, “Probing quantum critical dynamics on a programmable Rydberg
+simulator,” (2018), arXiv:1809.05540 . 
+
+ [60] 
+ Aishwarya Kumar, Tsung-Yao Wu, Felipe Giraldo, and David S. Weiss, “Sorting ultracold
+atoms in a three-dimensional optical lattice in a realization of maxwell’s
+demon,” Nature 561 , 83–87 (2018) . 
+
+ [61] 
+ H. Häffner, C.F. Roos, and R. Blatt, “Quantum computing with
+trapped ions,” Physics Reports 469 , 155 – 203 (2008) . 
+
+ [62] 
+ S. Debnath, N. M. Linke,
+C. Figgatt, K. A. Landsman, K. Wright, and C. Monroe, “Demonstration of a small programmable quantum computer
+with atomic qubits,” Nature 536 , 63 (2016) . 
+
+ [63] 
+ J. Zhang, G. Pagano,
+P. W. Hess, A. Kyprianidis, P. Becker, H. Kaplan, A. V. Gorshkov, Z. X. Gong, and C. Monroe, “Observation of a many-body dynamical phase transition with a 53-qubit
+quantum simulator,” Nature 551 , 601 (2017) . 
+
+ [64] 
+ R. Barends, A. Shabani,
+L. Lamata, J. Kelly, A. Mezzacapo, U. Las Heras, R. Babbush, A. G. Fowler, B. Campbell, Yu Chen, Z. Chen, B. Chiaro,
+A. Dunsworth, E. Jeffrey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley, C. Neill,
+P. J. J. O’Malley,
+C. Quintana, P. Roushan, D. Sank, A. Vainsencher, J. Wenner, T. C. White, E. Solano, H. Neven, and John M. Martinis, “Digitized adiabatic quantum
+computing with a superconducting circuit,” Nature 534 , 222 (2016) . 
+
+ [65] 
+ C. Neill, P. Roushan,
+K. Kechedzhi, S. Boixo, S. V. Isakov, V. Smelyanskiy, A. Megrant, B. Chiaro, A. Dunsworth, K. Arya, R. Barends, B. Burkett,
+Y. Chen, Z. Chen, A. Fowler, B. Foxen, M. Giustina, R. Graff, E. Jeffrey, T. Huang, J. Kelly, P. Klimov, E. Lucero, J. Mutus, M. Neeley, C. Quintana, D. Sank, A. Vainsencher, J. Wenner,
+T. C. White, H. Neven, and J. M. Martinis, “A blueprint for demonstrating quantum supremacy
+with superconducting qubits,” Science 360 , 195–199 (2018) . 
+
+ [66] 
+ Harry Levine, Alexander Keesling, Ahmed Omran,
+Hannes Bernien, Sylvain Schwartz, Alexander S. Zibrov, Manuel Endres, Markus Greiner, Vladan Vuletić, and Mikhail D. Lukin, “High-fidelity control and entanglement of rydberg-atom qubits,” Phys. Rev. Lett. 121 , 123603 (2018) . 
+
+ [67] 
+ L. Isenhower, M. Saffman,
+ and K. Mølmer, “Multibit C k NOT quantum
+gates via Rydberg blockade,” Quantum Information Processing 10 , 755–770 (2011) . 
+
+ [68] 
+ Takahiro Inagaki, Yoshitaka Haribara, Koji Igarashi, Tomohiro Sonobe, Shuhei Tamate, Toshimori Honjo, Alireza Marandi, Peter L. McMahon, Takeshi Umeki, Koji Enbutsu, Osamu Tadanaga, Hirokazu Takenouchi, Kazuyuki Aihara, Ken-ichi Kawarabayashi, Kyo Inoue, Shoko Utsunomiya, and Hiroki Takesue, “A coherent
+ising machine for 2000-node optimization problems,” Science (2016) . 
+
+ [69] 
+ Peter L. McMahon, Alireza Marandi, Yoshitaka Haribara, Ryan Hamerly, Carsten Langrock, Shuhei Tamate, Takahiro Inagaki, Hiroki Takesue, Shoko Utsunomiya, Kazuyuki Aihara, Robert L. Byer, M. M. Fejer, Hideo Mabuchi,
+ and Yoshihisa Yamamoto, “A
+fully-programmable 100-spin coherent ising machine with all-to-all
+connections,” Science (2016) . 
+
+ [70] 
+ Ryan Hamerly, Takahiro Inagaki, Peter L. McMahon, Davide Venturelli, Alireza Marandi, Tatsuhiro Onodera, Edwin Ng,
+Carsten Langrock,
+Kensuke Inaba, Toshimori Honjo, Koji Enbutsu, Takeshi Umeki, Ryoichi Kasahara, Shoko Utsunomiya, Satoshi Kako, Ken-ichi Kawarabayashi, Robert L. Byer, Martin M. Fejer, Hideo Mabuchi, Dirk Englund, Eleanor Rieffel, Hiroki Takesue, and Yoshihisa Yamamoto, “Experimental investigation of performance
+differences between Coherent Ising Machines and a quantum annealer,” (2018), arXiv:1805.05217 . 
+
+ [71] 
+ Marin Bukov, Alexandre G. R. Day, Dries Sels,
+Phillip Weinberg,
+Anatoli Polkovnikov, and Pankaj Mehta, “Reinforcement learning in
+different phases of quantum control,” Phys.
+Rev. X 8 , 031086
+(2018) . 
+
+ [72] 
+ Alireza Vahdatpour, Foad Dabiri, Maryam Moazeni, and Majid Sarrafzadeh, “Theoretical Bound and Practical Analysis of Connected Dominating Set in Ad
+Hoc and Sensor Networks,” in Distributed Computing (Springer, Berlin,
+Heidelberg, Berlin, Heidelberg, 2008) pp. 481–495. 
+
+ [73] 
+ Pankaj K Agarwal, Marc van Kreveld, and Subhash Suri, “Label placement by maximum independent set in rectangles,” Computational
+Geometry 11 , 209–218
+(1998). 
+
+ [74] 
+ G. E. Crooks, “Performance
+of the Quantum Approximate Optimization Algorithm on the Maximum Cut
+Problem,” (2018), arXiv:1811.08419 . 
+
+ [75] 
+ C. Moler and C. Van Loan, “Nineteen
+dubious ways to compute the exponential of a matrix, twenty-five years
+later,” SIAM Review 45 , 3–49 (2003) . 
+
+ [76] 
+ Roger B. Sidje, “Expokit: A software package for computing matrix exponentials,” ACM Trans. Math. Softw. 24 , 130–156 (1998) . 
+
+ [77] 
+ Awad H Al-Mohy and Nicholas J Higham, “Computing the
+Action of the Matrix Exponential, with an Application to Exponential
+Integrators,” SIAM Journal on Scientific Computing 33 , 488–511 (2011). 
+
+ [78] 
+ Navin Khaneja, Timo Reiss,
+Cindie Kehlet, Thomas Schulte-Herbrüggen, and Steffen J. Glaser, “Optimal control of coupled
+spin dynamics: design of nmr pulse sequences by gradient ascent
+algorithms,” Journal of Magnetic Resonance 172 , 296 – 305 (2005) . 
+
+ Figure 9: Optimal QAOA parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) for 40 instances of 16-vertex (a) weighted 3-regular (w3R) graphs and (b) weighted complete graphs, for 3 ≤ p ≤ 5 3\leq p\leq 5 . Each dashed line connects parameters for one particular graph instance. For each instance and each p p , the BFGS routine is used to optimize from 10 4 10^{4} random initial points, and the best parameters are kept as ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) . 
+
+ Appendix A Optimal parameter pattern for weighed graphs
+
+ Here, we illustrate the pattern of optimal QAOA parameters for both weighted 3-regular (w3R) graphs and weighted complete graphs.
+The weight of each edge is randomly drawn from uniform distribution on the interval [ 0 , 1 ] [0,1] .
+In Fig.  9 , we illustrate the pattern by simultaneously plotting the optimal parameters for 40 instances.
+In both cases, we see a pattern analogous to what was found for unweighted 3-regular (u3R) graphs in Fig.  2 (b), where γ i ∗ \gamma_{i}^{*} tend to increase smoothly and β i ∗ \beta_{i}^{*} tend to decrease smoothly with i = 1 , 2 , … , p i=1,2,\ldots,p .
+The optimal parameter of graphs from the same class also appears to cluster together in the same range.
+
+ We observe that the spread of 𝜸 → ∗ \vec{\bm{\gamma}}^{*} for w3R graphs in Fig.  9 (a) is wider than that for u3R graphs in Fig.  2 (b).
+This is because the random weights effectively increase the number of subgraph types.
+Moreover, the larger value for 𝜸 → ∗ \vec{\bm{\gamma}}^{*} for w3R compared to u3R graphs can be understood via the effective mean-field strength that each qubit experiences.
+
+ For complete graphs in Fig.  9 (b), we observe that 𝜸 → ∗ \vec{\bm{\gamma}}^{*} for different weighted graphs have a narrower spread as well as smaller value compared to both u3R and w3R graphs. This is because there is only one type of subgraph that every edge sees. The non-zero spread is attributed to the fact that there are random weights on the edges. We also expect this spread to vanish as problem size N N increases, when for a typical instance, the distribution of weights on the N − 1 N-1 edges incident to each qubits converges.
+The smaller value of 𝜸 → ∗ \vec{\bm{\gamma}}^{*} can also be understood via the effective mean-field strength picture, as each qubit interacts with all N − 1 N-1 other qubits.
+
+ Appendix B Details of heuristic optimization strategies
+
+ In the main text, we have proposed two classes of heuristic strategies called INTERP and FOURIER for generating initial points in optimizing QAOA parameters.
+Both INTERP and FOURIER strategies work well for all the instances we have examined.
+We have chosen to use FOURIER for the results in the main text due to the slight edge in its performance in finding better optima when random perturbations are introduced.
+We now explain how these strategies work in details, and compare their performances.
+
+ B.1 Interpolation-based strategy
+
+ In the optimization strategy that we call INTERP, we use linear interpolation to produce a good initial point for optimizing QAOA as one iteratively increases the level p p .
+This is based on the observation that the shape of parameters ( 𝜸 → ( p + 1 ) ∗ , 𝜷 → ( p + 1 ) ∗ ) (\vec{\bm{\gamma}}^{*}_{(p+1)},\vec{\bm{\beta}}^{*}_{(p+1)}) closely resembles that of ( 𝜸 → ( p ) ∗ , 𝜷 → ( p ) ∗ ) (\vec{\bm{\gamma}}^{*}_{(p)},\vec{\bm{\beta}}^{*}_{(p)}) .
+
+ The strategy works as follows: For a given instance, we iteratively optimize QAOA starting from p = 1 p=1 , and increment p p after obtaining a local optimum ( 𝜸 → ( p ) L , 𝜷 → ( p ) L ) (\vec{\bm{\gamma}}_{(p)}^{L},\vec{\bm{\beta}}_{(p)}^{L}) . In order to optimize parameters for level p + 1 p+1 , we take the optimized parameters from level p p and produce initial points ( 𝜸 → ( p + 1 ) 0 , 𝜷 → ( p + 1 ) 0 ) (\vec{\bm{\gamma}}^{0}_{(p+1)},\vec{\bm{\beta}}^{0}_{(p+1)}) according to:
+
+ [ 𝜸 → ( p + 1 ) 0 ] i \displaystyle\left[\vec{\bm{\gamma}}^{0}_{(p+1)}\right]_{i} 
+ = i − 1 p ​ [ 𝜸 → ( p ) L ] i − 1 + p − i + 1 p ​ [ 𝜸 → ( p ) L ] i \displaystyle=\tfrac{i-1}{p}\left[\vec{\bm{\gamma}}^{L}_{(p)}\right]_{i-1}+\tfrac{p-i+1}{p}\left[\vec{\bm{\gamma}}^{L}_{(p)}\right]_{i} 
+
+ (15) 
+
+ for i = 1 , 2 , … , p + 1 i=1,2,\ldots,p+1 .
+Here, we denote [ 𝜸 → ] i ≡ γ i [\vec{\bm{\gamma}}]_{i}\equiv\gamma_{i} as the i i -th element of the parameter vector 𝜸 → \vec{\bm{\gamma}} , and [ 𝜸 → ( p ) L ] 0 ≡ [ 𝜸 → ( p ) L ] p + 1 ≡ 0 [\vec{\bm{\gamma}}_{(p)}^{L}]_{0}\equiv[\vec{\bm{\gamma}}_{(p)}^{L}]_{p+1}\equiv 0 .
+The expression for 𝜷 → ( p + 1 ) 0 \vec{\bm{\beta}}^{0}_{(p+1)} is the same as above after replacing γ → β \gamma\rightarrow\beta .
+Starting from ( 𝜸 → ( p + 1 ) 0 , 𝜷 → ( p + 1 ) 0 ) (\vec{\bm{\gamma}}^{0}_{(p+1)},\vec{\bm{\beta}}^{0}_{(p+1)}) , we then optimize (e.g., using the BFGS routine) to obtain a local optimum ( 𝜸 → ( p + 1 ) L , 𝜷 → ( p + 1 ) L ) (\vec{\bm{\gamma}}_{(p+1)}^{L},\vec{\bm{\beta}}_{(p+1)}^{L}) for the ( p + 1 ) (p+1) -level QAOA.
+Finally, we increment p p by one and repeat the same process until a target level is reached.
+
+ B.2 Details of FOURIER[ q , R q,R ] strategy
+
+ We now provide the details of our second heuristic strategy for optimizing QAOA that we call FOURIER.
+As described in the Sec.  III.2 main text, here we use a new representation of the p p -level QAOA parameters as ( 𝒖 → , 𝒗 → ) ∈ ℝ 2 ​ q (\vec{\bm{u}},\vec{\bm{v}})\in\mathds{R}^{2q} where
+
+ γ i = ∑ k = 1 q u k ​ sin ⁡ [ ( k − 1 2 ) ​ ( i − 1 2 ) ​ π p ] , β i = ∑ k = 1 q v k ​ cos ⁡ [ ( k − 1 2 ) ​ ( i − 1 2 ) ​ π p ] . \begin{split}\gamma_{i}&=\sum_{k=1}^{q}u_{k}\sin\left[\left(k-\frac{1}{2}\right)\left(i-\frac{1}{2}\right)\frac{\pi}{p}\right],\\
+\beta_{i}&=\sum_{k=1}^{q}v_{k}\cos\left[\left(k-\frac{1}{2}\right)\left(i-\frac{1}{2}\right)\frac{\pi}{p}\right].\ \end{split} 
+
+ (16) 
+
+ Roughly speaking, the FOURIER strategy works by starting with level p = 1 p=1 , optimize, and then reuse the optimum at level p p in ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) -representation to generate a good initial point for level p + 1 p+1 .
+
+ In fact, we propose several variants of the FOURIER strategy for optimizing p p -level QAOA: they are called FOURIER[ q , R q,R ], characterized by two integer parameters q q and R R .
+The first integer q q labels the maximum frequency component we allow in the amplitude parameters ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) .
+When we set q = p q=p , the full power of p p -level QAOA can be utilized,
+in which case we simply denote the strategy as FOURIER[ ∞ , R \infty,R ], since q q grows unbounded with p p .
+Nevertheless, the smoothness of the optimal parameters ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) implies that only the low-frequency components are important. Thus, we can also consider the case where q q is a fixed constant independent of p p , so the number of parameters is bounded even as the QAOA circuit depth increases.
+The second integer R R is the number of random perturbations we add to the parameters so that we can sometimes escape a local optimum towards a better one.
+For the results shown in the main text, we use the FOURIER[ ∞ , 10 \infty,10 ] strategy, meaning we set q = p q=p and R = 10 R=10 , unless otherwise stated.
+
+ In the basic FOURIER[ ∞ , 0 \infty,0 ] variant of this strategy, we generate a good initial point for level p + 1 p+1 by adding a higher frequency component, initialized at zero amplitude, to the optimum at level p p .
+More concretely, we take parameters from a local optimum ( 𝒖 → ( p ) L , 𝒗 → ( p ) L ) ∈ ℝ 2 ​ p (\vec{\bm{u}}^{L}_{(p)},\vec{\bm{v}}^{L}_{(p)})\in\mathds{R}^{2p} at level p p , and generate a initial point ( 𝒖 → ( p + 1 ) 0 , 𝒗 → ( p + 1 ) 0 ) ∈ ℝ 2 ​ ( p + 1 ) (\vec{\bm{u}}^{0}_{(p+1)},\vec{\bm{v}}^{0}_{(p+1)})\in\mathds{R}^{2(p+1)} according to
+
+ 𝒖 → ( p + 1 ) 0 = ( 𝒖 → ( p ) L , 0 ) , 𝒗 → ( p + 1 ) 0 = ( 𝒗 → ( p ) L , 0 ) . \displaystyle\vec{\bm{u}}^{0}_{(p+1)}=(\vec{\bm{u}}^{L}_{(p)},0),\quad\vec{\bm{v}}^{0}_{(p+1)}=(\vec{\bm{v}}^{L}_{(p)},0). 
+
+ (17) 
+
+ Using ( 𝒖 → ( p + 1 ) 0 , 𝒗 → ( p + 1 ) 0 ) (\vec{\bm{u}}^{0}_{(p+1)},\vec{\bm{v}}^{0}_{(p+1)}) as a initial point, we perform BFGS optimization routine to obtain a local optimum ( 𝒖 → ( p + 1 ) L , 𝒗 → ( p + 1 ) L ) (\vec{\bm{u}}^{L}_{(p+1)},\vec{\bm{v}}^{L}_{(p+1)}) for the level p + 1 p+1 .
+
+ Figure 10: 
+Schematics of the two variants of FOURIER[ q , R q,R ] heuristic strategy for optimizing QAOA, when R = 0 R=0 and R > 0 R>0 .
+Optimized parameters (green) at level p − 1 p-1 are used to generate good initial points (blue) for optimizing at level p p ;
+the same process is repeated to optimize for p + 1 p+1 .
+When generating initial points, black dashed arrows indicate appending a higher frequency component [Eq. ( 17 )], and pink dashed arrows correspond to adding random perturbations [Eq. ( 18 )].
+In the R > 0 R>0 variant, two local optima (green) are kept in parallel at each level p p for generating good initial points: ( 𝒖 → ( p ) L , 𝒗 → ( p ) L ) (\vec{\bm{u}}_{(p)}^{L},\vec{\bm{v}}_{(p)}^{L}) is the same optimum obtained from FOURIER[ q , 0 q,0 ] strategy, and
+ ( 𝒖 → ( p ) B , 𝒗 → ( p ) B ) (\vec{\bm{u}}_{(p)}^{B},\vec{\bm{v}}_{(p)}^{B}) is the best of R + 2 R+2 local optima, R R of which are obtained from perturbed initial points.
+We find that keeping the ( 𝒖 → ( p ) L , 𝒗 → ( p ) L ) (\vec{\bm{u}}_{(p)}^{L},\vec{\bm{v}}_{(p)}^{L}) optimum improves the stability of the heuristic, as random perturbations can sometimes lead to erratic and non-smooth optimal parameters.
+
+ We also consider an improved variant of the strategy, FOURIER[ ∞ , R > 0 \infty,R>0 ], which is sketched alongside the R = 0 R=0 variant in Fig.  10 .
+This is motivated by our observation that the basic FOURIER[ ∞ , 0 \infty,0 ] strategy can sometimes get stuck at a sub-optimal local optimum, whereas perturbing its initial point can improve the performance of QAOA.
+Here, in addition to optimizing according to the basic strategy, we optimize ( p + 1 ) (p+1) -level QAOA from R + 1 R+1 extra initial points, R R of which are generated by adding random perturbations to the best of all local optima ( 𝒖 → ( p ) B , 𝒗 → ( p ) B ) (\vec{\bm{u}}^{B}_{(p)},\vec{\bm{v}}^{B}_{(p)}) found at level p p .
+Specifically, for each instance at ( p + 1 ) (p+1) -level QAOA, and for r = 0 , 1 , … , R r=0,1,\ldots,R , we optimize starting from
+
+ 𝒖 → ( p + 1 ) 0 , r = { ( 𝒖 → ( p ) B , 0 ) , r = 0 ( 𝒖 → ( p ) B + α ​ 𝒖 → ( p ) P , r , 0 ) , 1 ≤ r ≤ R 𝒗 → ( p + 1 ) 0 , r = { ( 𝒗 → ( p ) B , 0 ) , r = 0 ( 𝒗 → ( p ) B + α ​ 𝒗 → ( p ) P , r , 0 ) , 1 ≤ r ≤ R \displaystyle\begin{split}\vec{\bm{u}}^{0,r}_{(p+1)}&=\begin{cases}(\vec{\bm{u}}^{B}_{(p)},0),&r=0\\
+(\vec{\bm{u}}^{B}_{(p)}+\alpha\vec{\bm{u}}^{P,r}_{(p)},0),&1\leq r\leq R\end{cases}\\
+\vec{\bm{v}}^{0,r}_{(p+1)}&=\begin{cases}(\vec{\bm{v}}^{B}_{(p)},0),&r=0\\
+(\vec{\bm{v}}^{B}_{(p)}+\alpha\vec{\bm{v}}^{P,r}_{(p)},0),&1\leq r\leq R\end{cases}\end{split} 
+
+ (18) 
+
+ where 𝒖 → ( p ) P , r \vec{\bm{u}}^{P,r}_{(p)} and 𝒗 → ( p ) P , r \vec{\bm{v}}^{P,r}_{(p)} contain random numbers drawn from normal distributions with mean 0 and variance given by 𝒖 → ( p ) B \vec{\bm{u}}^{B}_{(p)} and 𝒗 → ( p ) B \vec{\bm{v}}^{B}_{(p)} :
+
+ [ 𝒖 → ( p ) P , r ] k ∼ Normal ​ ( 0 , [ 𝒖 → ( p ) B ] k 2 ) , [ 𝒗 → ( p ) P , r ] k ∼ Normal ​ ( 0 , [ 𝒗 → ( p ) B ] k 2 ) . \displaystyle\begin{split}\left[\vec{\bm{u}}^{P,r}_{(p)}\right]_{k}\sim\text{Normal}\left(0,\left[\vec{\bm{u}}^{B}_{(p)}\right]_{k}^{2}\right),\\
+\left[\vec{\bm{v}}^{P,r}_{(p)}\right]_{k}\sim\text{Normal}\left(0,\left[\vec{\bm{v}}^{B}_{(p)}\right]_{k}^{2}\right).\end{split} 
+
+ (19) 
+
+ There is a free parameter α \alpha corresponding to the strength of the perturbation.
+Based on our experience from trial and error, setting α = 0.6 \alpha=0.6 has consistently yielded good results. This choice of α \alpha is assumed for the results in this paper.
+
+ We remark that while the INTERP strategy can also get stuck in a local optimum, we find that adding perturbations to INTERP does not work as well as to FOURIER.
+We attribute this to the fact that the optimal parameters are smooth, and adding perturbations in the ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) -space modify ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) in a correlated way, which could enable the optimization to escape local optima more easily.
+Hence, we consider here FOURIER with perturbations, but not INTERP.
+
+ Finally, we also consider variants of the FOURIER strategy where the number of frequency components q q is fixed.
+These variants are the same as aforementioned strategies where q = p q=p , except we truncated each of the 𝒖 → \vec{\bm{u}} and 𝒗 → \vec{\bm{v}} parameters to keep only the first q q components.
+For example, when optimizing QAOA at level p ≥ q p\geq q with the FOURIER[ q , 0 q,0 ] strategy, we stop adding higher frequency components and use the initial point 𝒖 → ( p + 1 ) 0 = 𝒖 → ( p ) L ∈ ℝ q \vec{\bm{u}}^{0}_{(p+1)}=\vec{\bm{u}}^{L}_{(p)}\in\mathds{R}^{q} .
+
+ B.3 Comparison between heuristics
+
+ We now examine the difference in the performance among the various heuristic strategies we proposed.
+For our example instance in Fig.  11 , we note that INTERP and FOURIER[ ∞ , 0 \infty,0 ] strategies have essentially identical performance (except for small variations barely visible at large p p ).
+This is expected since both strategies generate initial points for optimizing level p + 1 p+1 based on smooth deformation of the optimum at level p p .
+In any case, the FOURIER[ ∞ , 10 \infty,10 ] strategy outperforms INTERP and FOURIER[ ∞ , 0 \infty,0 ] beginning at level p ≳ 20 p\gtrsim 20 .
+Interestingly, even when restricting the number of QAOA parameters to 2 ​ q = 10 2q=10 , the FOURIER[5,10] strategy closely matches the performance of other heuristics at low p p and beats the R = 0 R=0 heuristic at large p p .
+This suggests that the optimal QAOA parameters may in fact live in a small-dimensional manifold.
+Therefore, optimization for intermediate p p -level QAOA can be dramatically simplified by using our new parameterization ( 𝒖 → , 𝒗 → CLOSE (\vec{\bm{u}},\vec{\bm{v}} ).
+
+ Figure 11: The fractional error achieved by optimizing using our various heuristics on an example instance of 14-vertex w3R graph. This is the same instance shown in Fig.  6 (b). 
+
+ Appendix C Time-to-solution (TTS) for example graph instance
+
+ Figure 12: (a) Energy spectrum of low excited states (measured from the ground state energy E GS E_{\text{GS}} ) along the annealing path for the graph instance given in Fig.  6 (b). Only states that can couple to the ground state are shown, i.e., states that are invariant under the parity operator 𝒫 = ∏ i = 1 N σ i x \mathcal{P}=\prod_{i=1}^{N}\sigma_{i}^{x} . The inset shows the energy gap from the ground state in logarithmic scale.
+(b) Time-to-solution for the linear-ramp quantum annealing protocol, TTS QA \text{TTS}_{\text{QA}} , for the same graph instance. TTS in the long time limit follows a line predicted by the Landau-Zener formula, which is independent of the annealing time T T .
+(c) TTS for QAOA at each iteration depth p p . 
+
+ In Sec.  V.2 , we focused on a representative graph instance where the adiabatic minimum gap is small [Fig.  6 (b)]. The low energy spectrum for the graph along the QA path can be seen in Fig.  12 (a).
+We remark that only eigenstates that are invariant under the parity operator 𝒫 = ∏ i = 1 N σ i x \mathcal{P}=\prod_{i=1}^{N}\sigma_{i}^{x} are shown, since the Hamiltonian H QA ​ ( s ) H_{\text{QA}}(s) commutes with 𝒫 \mathcal{P} and the initial state is 𝒫 \mathcal{P} -invariant: 𝒫 ​ | ψ ⁡ ( 0 ) ⟩ = | ψ ⁡ ( 0 ) ⟩ \mathcal{P}|\psi(0)\rangle=|\psi(0)\rangle .
+
+ Fig.  12 (b) and Fig.  12 (c) illustrate TTS QA \text{TTS}_{\text{QA}} and TTS QAOA \text{TTS}_{\text{QAOA}} for the same graph.
+For QA, one can see that non-adiabatic evolution with T ≈ 20 T\approx 20 yields orders of magnitude shorter TTS than the adiabatic evolution.
+We also see that TTS in the adiabatic limit is independent of the annealing time T T , following the Landau-Zener formula p GS = 1 − exp ⁡ ( − c ​ T ​ Δ min 2 ) p_{\text{GS}}=1-\exp\left(-cT\Delta_{\min}^{2}\right) .
+For QAOA, we use our FOURIER[ ∞ , 10 \infty,10 ] heuristic strategy to perform the numerical simulation up to p max = 50 p_{\max}=50 ,
+and compute TTS QAOA ​ ( p ) \text{TTS}_{\text{QAOA}}(p) and TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} (up to p ≤ p max p\leq p_{\max} ).
+For this particular graph, we note that although TTS QAOA opt \text{TTS}_{\text{QAOA}}^{\text{opt}} occurs at p = 49 p=49 , in practice it may be better to run QAOA at p = 4 p=4 or p = 5 p=5 due to optimization overhead and error accumulation at deeper circuit depths.
+The apparent discontinuous jump in TTS QAOA \text{TTS}_{\text{QAOA}} is due to the corresponding jump in p GS ​ ( p ) p_{\text{GS}}(p) , which can be explained by two reasons:
+first, our heuristic strategy is not guaranteed to find the global optimum, and random perturbations may help the algorithm escape a local optimum, resulting in a jump in ground state population;
+second, even when the global optimum is found for all level p p , there can still be discontinuities in p GS p_{\text{GS}} , since the objective function of QAOA is energy instead of ground state population.
+
+ Appendix D Effective few-level understanding of the diabatic bump
+
+ Figure 13: (a) Instantaneous eigenstate populations along the linear-ramp quantum annealing path given by Eq. ( 9 ) for the example graph in Fig.  6 (b). The annealing time is chosen to be T = T ∗ = 40 T=T^{*}=40 , which corresponds to the time where the diabatic bump occurs in Fig.  6 (c). (b) Coupling between the instantaneous ground states and the first few excited states. The plotted quantities measure the degree of adiabaticity [as explained in Eq. ( 35 )]. 
+
+ Figure 14: 
+Comparison of three different optimization routines applied to 10 instances of 14-vertex w3R graphs. The initial point of optimization is generated with either our heuristics (FOURIER or INTERP) or random initialization (RI).
+We plot the fractional error, 1 − r 1-r , averaged over instances, for each optimization routine and each initialization strategy at each p p .
+The error bars are sample standard deviations from the 10 instances.
+For our heuristic strategy, the optimization starts with a single initial point generated using our FOURIER[ ∞ , 0 \infty,0 ] or INTERP heuristics as described in Appendix  B .
+For the RI strategy, we generate 50 random initial points uniformly in the parameter space, and optimize from each initial point; both the best and the average of 50 RI runs are plotted.
+
+ In this Appendix, we elucidate the mechanism of the diabatic bump observed in Fig.  6 (c) via an effective few-level dynamics. To study the intermediate dynamics during quantum annealing, we can work in the basis of instantaneous eigenstates | ϵ l ​ ( t ) ⟩ |\epsilon_{l}(t)\rangle , where
+
+ H QA ​ ( t ) ​ | ϵ l ​ ( t ) ⟩ = ϵ l ​ ( t ) ​ | ϵ l ​ ( t ) ⟩ . H_{\text{QA}}(t)|\epsilon_{l}(t)\rangle=\epsilon_{l}(t)|\epsilon_{l}(t)\rangle. 
+
+ (20) 
+
+ Expanding the time-evolved state in this basis as | ψ ⁡ ( t ) ⟩ = ∑ l a l ​ ( t ) ​ | ϵ l ​ ( t ) ⟩ |\psi(t)\rangle=\sum_{l}a_{l}(t)|\epsilon_{l}(t)\rangle , the Schrodinger equation can be written as
+
+ i ​ ∑ l ( a ˙ l ​ | ϵ l ⟩ + a l ​ | ϵ ˙ l ⟩ ) = ∑ l ϵ l ​ a l ​ | ϵ l ⟩ , i\sum_{l}\left(\dot{a}_{l}|\epsilon_{l}\rangle+a_{l}|\dot{\epsilon}_{l}\rangle\right)=\sum_{l}\epsilon_{l}a_{l}|\epsilon_{l}\rangle, 
+
+ (21) 
+
+ where ℏ = 1 \hbar=1 and the time dependence in the notations is dropped for convenience. Multiplying the equation by ⟨ ϵ k | \langle\epsilon_{k}| , the Schrodinger equation becomes
+
+ i ​ a ˙ k = ϵ k ​ a k − i ​ ∑ l ≠ k a l ​ ⟨ ϵ k | ϵ ˙ l ⟩ , i\dot{a}_{k}=\epsilon_{k}a_{k}-i\sum_{l\neq k}a_{l}\langle\epsilon_{k}|\dot{\epsilon}_{l}\rangle, 
+
+ (22) 
+
+ where ⟨ ϵ k | ϵ ˙ k ⟩ = 0 \langle\epsilon_{k}|\dot{\epsilon}_{k}\rangle=0 is taken by absorbing the phase into the eigenvector | ϵ k ⟩ |\epsilon_{k}\rangle . Written in a matrix form, we have
+
+ i ⁡ ( a ˙ 0 a ˙ 1 a ˙ 2 ⋮ ) = ( 0 − i ⁡ ⟨ ϵ 0 | ϵ ˙ 1 ⟩ − i ⁡ ⟨ ϵ 0 | ϵ ˙ 2 ⟩ ⋯ − i ⁡ ⟨ ϵ 1 | ϵ ˙ 0 ⟩ Δ 10 − i ⁡ ⟨ ϵ 1 | ϵ ˙ 2 ⟩ ⋯ − i ⁡ ⟨ ϵ 2 | ϵ ˙ 0 ⟩ − i ⁡ ⟨ ϵ 2 | ϵ ˙ 1 ⟩ Δ 20 ⋯ ⋮ ⋮ ⋮ ⋱ ) ​ ( a 0 a 1 a 2 ⋮ ) , \displaystyle i\left(\begin{array}[]{c}\dot{a}_{0}\\
+\dot{a}_{1}\\
+\dot{a}_{2}\\
+\vdots\end{array}\right)\!=\!\left(\!\!\begin{array}[]{cccc}0&-i\langle\epsilon_{0}|\dot{\epsilon}_{1}\rangle&-i\langle\epsilon_{0}|\dot{\epsilon}_{2}\rangle&\!\!\cdots\\
+-i\langle\epsilon_{1}|\dot{\epsilon}_{0}\rangle&\Delta_{10}&-i\langle\epsilon_{1}|\dot{\epsilon}_{2}\rangle&\!\!\cdots\\
+-i\langle\epsilon_{2}|\dot{\epsilon}_{0}\rangle&-i\langle\epsilon_{2}|\dot{\epsilon}_{1}\rangle&\Delta_{20}&\!\!\cdots\\
+\vdots&\vdots&\vdots&\!\!\ddots\end{array}\!\right)\!\!\left(\begin{array}[]{c}a_{0}\\
+a_{1}\\
+a_{2}\\
+\vdots\end{array}\right), 
+
+ where we take the ground state energy ϵ 0 = 0 \epsilon_{0}=0 (by absorbing it into the phase of the coefficients) and Δ i ​ 0 = ϵ i − ϵ 0 \Delta_{i0}=\epsilon_{i}-\epsilon_{0} is the instantaneous energy gap from the i i th excited state to the ground state. The time evolution starts from the initial ground state with a 0 = 1 a_{0}=1 and a i = 0 a_{i}=0 for i ≠ 0 i\neq 0 , and the adiabatic condition to prevent coupling to excited states is
+
+ | ⟨ ϵ 0 | ϵ ˙ i ⟩ | Δ i ​ 0 = | ⟨ ϵ 0 | d ​ H QA d ​ t | ϵ i ⟩ | Δ i ​ 0 2 = | ⟨ ϵ 0 | d ​ H QA d ​ s | ϵ i ⟩ | Δ i ​ 0 2 ​ T ≪ 1 . \dfrac{\left|\langle\epsilon_{0}|\dot{\epsilon}_{i}\rangle\right|}{\Delta_{i0}}=\dfrac{\left|\langle\epsilon_{0}|\frac{dH_{\text{QA}}}{dt}|\epsilon_{i}\rangle\right|}{\Delta_{i0}^{2}}=\dfrac{\left|\langle\epsilon_{0}|\frac{dH_{\text{QA}}}{ds}|\epsilon_{i}\rangle\right|}{\Delta_{i0}^{2}T}\ll 1. 
+
+ (35) 
+
+ The first equality can be derived from Eq. ( 20 ). This produces the standard adiabatic condition T = O ⁡ ( 1 / Δ min 2 ) T=O(1/\Delta_{\min}^{2}) . As we discussed in section V.2 , the minimum gap for some graphs can be exceedingly small, so the adiabatic limit is not practical. However, it may be possible to choose an appropriate run time T T , which breaks adiabaticity, but is long enough such that only few excited states are effectively involved in the dynamics. This is the regime where the diabatic bump operates and one can understand the dynamics by truncating Eq. ( D ) to the first few basis states.
+
+ As an example, we plot in Fig.  13 (a) the instantaneous eigenstate populations of the first few states. It is simulated with the full Hilbert space, but effectively the same dynamics will be generated if the simulation is restricted to the first few basis states in Eq. ( D ). Fig.  13 (b) shows the strength of the couplings between the instantaneous ground state and the low excited states. By comparing Fig.  13 (a) and Fig.  13 (b), one can see that T = T ∗ = 40 T=T^{*}=40 allows the time evolution to break the adiabatic condition before the anticrossing: population leaks to the first excited state, which becomes the ground state after the anticrossing. Thus, the time scale of T ∗ T^{*} for the diabatic bump represents a delicate balance between allowing population to leak out of the ground state and suppressing excessive population leakage, which explains why it happens at a certain range of time scale.
+
+ Appendix E Comparing different classical optimization routines 
+
+ In this appendix, we compare three different classical routines that can be used to optimize QAOA parameters: Bayesian Optimization  [ 40 ] , Nelder-Mead  [ 39 ] , and BFGS  [ 33 , *BFGS2 , *BFGS3 , *BFGS4 ] .
+This comparison is done by a numerical experiment where we apply these optimization routines to 10 instances of 14-vertex weighted 3-regular (w3R) graphs.
+To compare them on equal footing, we terminate each optimization run after a budget of 20 ​ p 20p objective function evaluations is used.
+In the gradient-based routine, BFGS, we include the cost of gradient estimation via the finite-difference method into the budget of 20 ​ p 20p objective function evaluations.
+For each routine, we start at p = 1 p=1 and gradually increment p p , and perform optimization where the initial point is generated using either our heuristic strategies (FOURIER and INTERP) or the standard strategy of random initialization (RI).
+We use the versions of these optimization routines implemented in MATLAB R2017b as bayesopt , fminsearch , and fminunc , respectively.
+The objective function at each set of parameter is evaluated to floating point precision.
+The tolerance in both objective function value and step size in parameter space, as well as the finite-difference-gradient step size, are chosen to be 0.01.
+
+ The result of our numerical experiment is plotted in Fig.  14 .
+Similar to Fig.  3 (a), we see that the average quality of local optimum found from 50 RI runs is much worse than the best, indicating the difficulty of optimizing in the QAOA parameter landscape without a good initial point.
+We also see, regardless of the classical routines chosen, one run of optimization from an initial point generated from our heuristic strategies is generally better than the best out of 50 runs from randomly generated initial points.
+This indicates that our heuristic strategies work much better than RI and can be integrated with a variety of classical optimization routines.
+Moreover, we find that Bayesian Optimization typically does not do as well as Nelder-Mead or BFGS for larger p p , which is consistent with the folklore that this routine is better suited for low-dimensional parameter space  [ 40 ] .
+On the other hand, it seems both Nelder-Mead and BFGS have comparable performance, even when the cost of gradient evaluation is taken into account. The slight difference we observe between the two in Fig.  14 is inconclusive and can be attributed to sub-optimal choices of tolerance and step size parameters and the deliberately limited budget of objective function evaluations.
+
+ Appendix F Details of Simulation with Measurement Projection Noise
+
+ When running QAOA on actual quantum devices, the objective function is evaluated by averaging over many measurement outcomes, and consequently its precision is limited by the so-called measurement projection noise from quantum fluctuations.
+We account for this effect by performing full Monte-Carlo simulations of actual measurements, where the simulated quantum processor only outputs approximate values of the objective function obtained by averaging M M measurements:
+
+ F ¯ p , M = 1 M ​ ∑ i = 1 M C ⁡ ( 𝒛 p , i ) , \bar{F}_{p,M}=\frac{1}{M}\sum_{i=1}^{M}C(\bm{z}_{p,i}), 
+
+ (36) 
+
+ where 𝒛 p , i \bm{z}_{p,i} is a random variable corresponding to the i i th measurement outcome obtained by measuring | ψ p ​ ( 𝜸 → , 𝜷 → ) ⟩ |\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle in the computational basis, and C ⁡ ( 𝒛 ) C(\bm{z}) is the classical objective function.
+Note when M → ∞ M\to\infty , we obtain F ¯ p , M → F p = ⟨ ψ p ​ ( 𝜸 → , 𝜷 → ) | H C | ψ p ​ ( 𝜸 → , 𝜷 → ) ⟩ \bar{F}_{p,M}\to F_{p}=\langle\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})|H_{C}|\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle .
+In the simulation, we achieve finite precision | F ¯ p , M − F p | ≲ ξ |\bar{F}_{p,M}-F_{p}|\lesssim\xi by sampling measurements until the cumulative standard error of the mean falls below the target precision level ξ \xi .
+In other words, for each evaluation of F p F_{p} requested by the classical optimizer, the number of measurements M M performed is set by the following criterion:
+
+ 1 M ⁡ ( M − 1 ) ​ ∑ i = 1 M [ C ⁡ ( 𝒛 p , i ) − F ¯ p , M ] 2 ≤ ξ . \sqrt{\frac{1}{M(M-1)}\sum_{i=1}^{M}[C(\bm{z}_{p,i})-\bar{F}_{p,M}]^{2}}\leq\xi. 
+
+ (37) 
+
+ Roughly, we expect M ≈ Var ⁡ ( F p ) / ξ 2 M\approx\Var(F_{p})/\xi^{2} .
+To address issues with finite sample sizes, we also require that at least 10 measurements be performed ( M ≥ 10 M\geq 10 ) for each objective function evaluation.
+
+ We now provide some details on the classical optimization algorithm used to optimize QAOA parameters.
+Generally, classical optimization algorithms iteratively uses information from some given parameter point ( 𝜸 → , 𝜷 → ) (\vec{\bm{\gamma}},\vec{\bm{\beta}}) to find a new parameter point ( 𝜸 → ′ , 𝜷 → ′ ) (\vec{\bm{\gamma}}^{\prime},\vec{\bm{\beta}}^{\prime}) that hopefully produces a larger value of the objective function F p ​ ( 𝜸 → ′ , 𝜷 → ′ ) ≥ F p ​ ( 𝜸 → , 𝜷 → ) F_{p}(\vec{\bm{\gamma}}^{\prime},\vec{\bm{\beta}}^{\prime})\geq F_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}}) .
+In order for the algorithm to terminate, we need to set some stopping criteria.
+Here, we specify two: First, we set an objective function tolerance ϵ \epsilon , such that if the change in objective function | F ¯ p , M ′ ​ ( 𝜸 → ′ , 𝜷 → ′ ) − F ¯ p , M ​ ( 𝜸 → , 𝜷 → ) | ≤ ϵ |\bar{F}_{p,M^{\prime}}(\vec{\bm{\gamma}}^{\prime},\vec{\bm{\beta}}^{\prime})-\bar{F}_{p,M}(\vec{\bm{\gamma}},\vec{\bm{\beta}})|\leq\epsilon , the algorithm terminates.
+We also set a step-tolerance δ \delta , so that the algorithm terminates if the new parameter point is very close to the previous one | 𝜸 → ′ − 𝜸 → | 2 + | 𝜷 → ′ − 𝜷 → | 2 ≤ δ 2 |\vec{\bm{\gamma}}^{\prime}-\vec{\bm{\gamma}}|^{2}+|\vec{\bm{\beta}}^{\prime}-\vec{\bm{\beta}}|^{2}\leq\delta^{2} .
+For gradient-based optimization algorithms such as BFGS, we also use δ \delta as the increment size for estimating gradients via the finite-difference method: ∂ F p / ∂ γ i ≃ [ F ¯ p , M ′ ​ ( γ i + δ ) − F ¯ p , M ​ ( γ i ) ] / δ \partial F_{p}/\partial\gamma_{i}\simeq[\bar{F}_{p,M^{\prime}}(\gamma_{i}+\delta)-\bar{F}_{p,M}(\gamma_{i})]/\delta .
+In our simulations, we use the BFGS algorithm implemented as fminunc in the standard library of MATLAB R2017b.
+
+ Using the approach described above, we simulate experiments of optimizing QAOA with measurement projection noise for a few example instances, with various choices of precision parameters ( ϵ , ξ , δ ) (\epsilon,\xi,\delta) and initial points.
+For the representative instance studied in Fig.  7 , we set ϵ = 0.1 \epsilon=0.1 , ξ = 0.05 \xi=0.05 , and δ = 0.01 \delta=0.01 .
+In each run of the simulated experiment, we start with QAOA of level either p = 1 p=1 or p = 5 p=5 , and optimize increasing levels of QAOA using our FOURIER[ ∞ , 0 \infty,0 ] heuristic strategy.
+The initial point of QAOA optimization is either randomly selected (when starting at p = 1 p=1 ) or chosen based on an educated guess using optimal parameters from small-sized instances (at p = 1 p=1 and p = 5 p=5 ).
+Specifically, the educated guess for the initial points we use are ( 𝒖 → 0 , 𝒗 → 0 ) = ( 1.4849 , 0.5409 ) (\vec{\bm{u}}^{0},\vec{\bm{v}}^{0})=(1.4849,0.5409) at level p = 1 p=1 , and
+
+ 𝒖 → 0 \displaystyle\vec{\bm{u}}^{0} 
+ = ( 1.9212 , 0.2891 , 0.1601 , 0.0564 , 0.0292 ) , \displaystyle=(1.9212,0.2891,0.1601,0.0564,0.0292), 
+
+ (38) 
+
+ 𝒗 → 0 \displaystyle\vec{\bm{v}}^{0} 
+ = ( 0.6055 , − 0.0178 , 0.0431 , − 0.0061 , 0.0141 ) \displaystyle=(0.6055,-0.0178,0.0431,-0.0061,0.0141) 
+
+ (39) 
+
+ at level p = 5 p=5 .
+For each such run, we keep track of the history of all the measurements, so that the largest cut Cut i \text{Cut}_{i} found after the i i -th measurement can be calculated.
+We repeat each experiment for 500 times with different pseudo-random number generation seeds, and average over their histories.
+
+ Appendix G Techniques to speed up numerical simulation
+
+ In this Appendix, we discuss a number of techniques we exploited to speed up the numerical simulation for both QAOA and QA.
+
+ First, we make use of the symmetries present in the Hamiltonian. For general graphs, the only symmetry operator that commutes with both H C H_{C} and H B H_{B} is the parity operator 𝒫 = ∏ i = 1 N σ i x \mathcal{P}=\prod_{i=1}^{N}\sigma_{i}^{x} : [ H C , 𝒫 ] = 0 , [ H B , 𝒫 ] = 0 [H_{C},\mathcal{P}]=0,[H_{B},\mathcal{P}]=0 , and so does [ H QA ​ ( s ) , 𝒫 ] = 0 [H_{\text{QA}}(s),\mathcal{P}]=0 , where H QA ​ ( s ) H_{\text{QA}}(s) is the quantum annealing Hamiltonian in Eq. ( 9 ). The parity operator has two eigenvalues, + 1 +1 and − 1 -1 , each with half of the entire Hilbert space. The initial state for both QAOA and QA is in the positive sector, i.e., 𝒫 ​ | + ⟩ ⊗ N = | + ⟩ ⊗ N \mathcal{P}|+\rangle^{\otimes N}=|+\rangle^{\otimes N} . Thus, any dynamics remain in the positive parity sector. We can rewrite H C H_{C} and H B H_{B} in the basis of the eigenvectors of 𝒫 \mathcal{P} , and reduce the Hilbert space from 2 N 2^{N} to 2 N − 1 2^{N-1} by working in the positive parity sector.
+
+ For QA, dynamics involving the time-dependent Hamiltonian can be simulated by dividing the total simulation time T T into sufficiently small discrete time τ \tau and implement each time step sequentially. At each small step, one can evolve the state without forming the full evolution operator  [ 75 ] , either using Krylov subspace projection method [ 76 ] or a truncated Taylor series approximation [ 77 ] . In our simulation, we used a scaling and squaring method with a truncated Taylor series approximation [ 77 ] as it appears to run slightly faster than the Krylov subspace method for small time steps.
+
+ For QAOA, the dynamics can be implemented in a more efficient way due to the special form of the operators H C H_{C} and H B H_{B} . We work in the standard σ z \sigma_{z} basis. Thus, H C = ∑ ⟨ i , j ⟩ w i ​ j 2 ​ ( 𝟙 − σ i z ​ σ j z ) H_{C}=\sum_{\left<i,j\right>}\frac{w_{ij}}{2}(\mathds{1}-\sigma_{i}^{z}\sigma_{j}^{z}) can be written as a diagonal matrix and the action of e − i ​ γ ​ H C e^{-i\gamma H_{C}} can be implemented as vector operations. For H B H_{B} , the time evolution operator can be simplified as
+
+ e − i ​ β ​ H B = ∏ j = 1 N e − i ​ β ​ σ j x = ∏ j = 1 N ( 𝟙 ​ cos ⁡ β − i ​ σ j x ​ sin ⁡ β ) . e^{-i\beta H_{B}}=\prod_{j=1}^{N}e^{-i\beta\sigma_{j}^{x}}=\prod_{j=1}^{N}\left(\mathds{1}\cos\beta-i\sigma_{j}^{x}\sin\beta\right). 
+
+ (40) 
+
+ Therefore, the action of e − i ​ β ​ H B e^{-i\beta H_{B}} can also be implemented as N N sequential vector operations without explicitly forming the sparse matrix H B H_{B} , which both improves simulation speed and saves memory. In addition, in the optimization of variational parameters, we calculated the gradient analytically, instead of using finite-difference methods. Techniques similar to the gradient ascent pulse engineering (GRAPE) method [ 78 ] were used, which reduces the cost of computing the gradient from O ⁡ ( p 2 ) O(p^{2}) to O ⁡ ( p ) O(p) , for a p p -level QAOA. Lastly, in our FOURIER strategy, we need to calculate the gradient of the objective function with respect to the new parameters ( 𝒖 → , 𝒗 → ) (\vec{\bm{u}},\vec{\bm{v}}) . Since 𝜸 → = A S ​ 𝒖 → \vec{\bm{\gamma}}=A_{S}\vec{\bm{u}} and 𝜷 → = A C ​ 𝒗 → \vec{\bm{\beta}}=A_{C}\vec{\bm{v}} for some matrices A S A_{S} and A C A_{C} , their gradients are also related via ∇ 𝒖 → = A S ​ ∇ 𝜸 → \nabla_{\vec{\bm{u}}}=A_{S}\nabla_{\vec{\bm{\gamma}}} and ∇ 𝒗 → = A S ​ ∇ 𝜷 → \nabla_{\vec{\bm{v}}}=A_{S}\nabla_{\vec{\bm{\beta}}} .
+
+ Figure 15: (a) Pattern in the optimal QAOA parameters at level p = 3 p=3 for 20 random instances of Maximum Independent Set (MIS). Each dashed line connects parameters for one particular graph instance.
+(b) The energy difference relative to the ground state in the quantum annealing protocol of Eq. ( 46 ) for an example 32-vertex MIS instance. The annealing protocol progresses as the parameter ξ \xi increases from 0 to 1. The minimum spectral gap between the ground state (GS) and the first excited state (1E) is Δ min = 0.0012 \Delta_{\min}=0.0012 at ξ = 0.6666 \xi=0.6666 .
+(c) Comparing performance of quantum annealing and QAOA on the example instance, in terms the ground state population at the end of the quantum evolution. The equivalent evolution time for QAOA is calculated via T QAOA = ∑ i = 1 p − 1 | γ i | + ∑ i = 1 p | β i | T_{\text{QAOA}}=\sum_{i=1}^{p-1}|\gamma_{i}|+\sum_{i=1}^{p}|\beta_{i}| .
+(d) The effective annealing schedule converted from optimized 25-level QAOA parameters for the example MIS instance.
+(e) The population of the system in the instantaneous eigenstates, during the effective annealing schedule that approximates the dynamics under 25-level QAOA. Here, we observe that the algorithm attempts to transport the system to the fifth excited state, keeping it there before it undergoes a series of anti-crossings towards the ground state.
+
+ Appendix H QAOA for Maximum Independent Set
+
+ In this Appendix, we briefly illustrate the generality of our results by applying QAOA to another class of combinatorial optimization problems called Maximum Independent Set (MIS).
+Given a graph G = ( V , E ) G=(V,E) , the MIS problem concerns finding the largest independent set—a subset of vertices where no two of which share an edge.
+In other words, the problem Hamiltonian is
+
+ H P = 𝒫 IS ​ ( ∑ i n ^ i ) ​ 𝒫 IS H_{P}=\mathcal{P}_{\rm IS}\left(\sum_{i}\hat{n}_{i}\right)\mathcal{P}_{\rm IS} 
+
+ (41) 
+
+ where n ^ = | 1 ⟩ ​ ⟨ 1 | = ( 𝟙 − σ z ) / 2 \hat{n}=|1\rangle\langle 1|=(\mathds{1}-\sigma^{z})/2 , and 𝒫 IS \mathcal{P}_{\rm IS} is the projection (or restriction) onto the subspace of independent set states span ​ { | ψ ⟩ : n ^ i ​ n ^ j ​ | ψ ⟩ = 0 ​ ∀ ( i , j ) ∈ E } \text{span}\{|\psi\rangle:\hat{n}_{i}\hat{n}_{j}|\psi\rangle=0~\forall(i,j)\in E\} .
+The p p -level QAOA for MIS, first suggested by [ 2 ] , involves the preparation of the following variational wavefunction
+
+ | ψ p ​ ( 𝜸 → , 𝜷 → ) ⟩ = e − i ​ β p ​ H Q ​ ∏ k = 1 p − 1 e − i ​ γ k ​ H P ​ e − i ​ β k ​ H Q ​ | 0 ⟩ ⊗ N , \vskip-5.0pt|\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle=e^{-i\beta_{p}H_{Q}}\prod_{k=1}^{p-1}e^{-i\gamma_{k}H_{P}}e^{-i\beta_{k}H_{Q}}|0\rangle^{\otimes N}, 
+
+ (42) 
+
+ where
+
+ H Q = 𝒫 IS ​ ( ∑ i σ i x ) ​ 𝒫 IS . H_{Q}=\mathcal{P}_{\rm IS}\left(\sum_{i}\sigma_{i}^{x}\right)\mathcal{P}_{\rm IS}. 
+
+ (43) 
+
+ Similar to the case of MaxCut, here QAOA works by repeatedly measuring the system in the computational basis to obtain an estimate of G p ​ ( 𝜸 → , 𝜷 → ) = ⟨ ψ p ​ ( 𝜸 → , 𝜷 → ) | H P | ψ p ​ ( 𝜸 → , 𝜷 → ) ⟩ G_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})=\langle\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})|H_{P}|\psi_{p}(\vec{\bm{\gamma}},\vec{\bm{\beta}})\rangle ,
+and using a classical computer to search for the best variational parameters ( 𝜸 → ∗ , 𝜷 → ∗ ) (\vec{\bm{\gamma}}^{*},\vec{\bm{\beta}}^{*}) so as to maximize G p G_{p} .
+We note the evolution can be implemented using the following physical Hamiltonian
+
+ H physical MIS ​ ( t ) = ∑ i [ Δ ⁡ ( t ) ​ n ^ i + Ω ⁡ ( t ) ​ σ i x ] + ∑ ⟨ i , j ⟩ U ​ n ^ i ​ n ^ j . H^{\rm MIS}_{\rm physical}(t)=\sum_{i}[\Delta(t)\hat{n}_{i}+\Omega(t)\sigma_{i}^{x}]+\sum_{\left<i,j\right>}U\hat{n}_{i}\hat{n}_{j}. 
+
+ (44) 
+
+ In the U ≫ | Δ | , | Ω | U\gg|\Delta|,|\Omega| limit, the system is constraint to the manifold where n ^ i ​ n ^ j = 0 \hat{n}_{i}\hat{n}_{j}=0 for all edges ⟨ i , j ⟩ \left<i,j\right> (since the initial state is | 0 ⟩ ⊗ N |0\rangle^{\otimes N} ), and the QAOA circuit can be performed by setting appropriate waveforms of Δ ⁡ ( t ) \Delta(t) and Ω ⁡ ( t ) \Omega(t) . See Ref.  [ 49 ] for an implementation scheme of MIS with a platform of neutral atoms interacting via Rydberg excitations.
+
+ After performing exhaustive search of QAOA parameters using randomly initialized optimization for many instances of MIS, we discover a similar pattern.
+This is illustrated in Fig.  15 (a), where we see that the optimal parameters at p = 3 p=3 tend to cluster in two visually distinct groups.
+For one of the groups, the smooth curve underlying the parameters exhibit resemblance to a quantum annealing protocol, using a time-dependent Hamiltonian:
+
+ H QA MIS ​ ( t ) = f P ​ ( t ) ​ H P + f Q ​ ( t ) ​ H Q . H_{\rm QA}^{\rm MIS}(t)=f_{P}(t)H_{P}+f_{Q}(t)H_{Q}. 
+
+ (45) 
+
+ For example, if we choose ( f P , f Q ) (f_{P},f_{Q}) such that f P ​ ( 0 ) > 0 f_{P}(0)>0 and f P ​ ( T ) < 0 f_{P}(T)<0 , and f Q ​ ( 0 ) = f Q ​ ( T ) = 0 f_{Q}(0)=f_{Q}(T)=0 ,
+then we can initialize the system in | 0 ⟩ ⊗ N |0\rangle^{\otimes N} , which is the ground state of H QA MIS ​ ( t = 0 ) H_{\rm QA}^{\rm MIS}(t=0) , and evolve adiabatically to reach the ground state of H QA MIS ​ ( t = T ) ∝ − H P H_{\rm QA}^{\rm MIS}(t=T)\propto-H_{P} (i.e. state encoding the MIS solution).
+The Hamiltonian H Q H_{Q} , which is turned on in the middle of the time evolution, induces couplings between different independent-set basis states and opens a spectral gap between the ground state and excited states.
+For concreteness of discussion, we focus on the following choice of annealing schedule:
+
+ f P c ​ ( ξ ) = 6 ​ ( 1 − 2 ​ ξ ) , f Q c ​ ( ξ ) = sin 2 ⁡ ( π ​ ξ ) , ξ ⁡ ( t ) = t / T . f_{P}^{c}(\xi)=6(1-2\xi),~f_{Q}^{c}(\xi)=\sin^{2}(\pi\xi),~\xi(t)=t/T. 
+
+ (46) 
+
+ We further analyze the performance and mechanism of QAOA for MIS by focusing on example instances that are difficult for adiabatic quantum annealing due to small spectral gaps.
+In Fig.  15 (b), we show the level-crossing structure for such an example instance, where the minimum spectral gap is Δ min = 0.0012 \Delta_{\min}=0.0012 .
+The same instance is studied in Ref.  [ 49 ] .
+To study the performance of QAOA in deeper-depth circuits, we use the interpolation-based heuristic strategy outlined in Appendix  B.1 to optimize QAOA parameters for this example instance starting at level p = 3 p=3 .
+The performance of QAOA and quantum annealing are then compared in Fig.  15 (c), where we see that QAOA is able to obtain a much larger ground state population in much shorter time compared to the adiabatic time scale of 1 / Δ min 2 ≈ 10 6 1/\Delta_{\min}^{2}\approx 10^{6} .
+We then study the mechanism of QAOA by converting its parameters at level p = 25 p=25 to a smooth annealing path ( f P QAOA , f Q QAOA ) (f_{P}^{\rm QAOA},f_{Q}^{\rm QAOA}) in a similar procedure as in Sec.  V.2 .
+This annealing path is visualized in Fig.  15 (d), where we plot the effective ξ eff ​ ( t ) \xi_{\text{eff}}(t) defined by f P c ​ ( ξ eff ​ ( t ) ) / f Q c ​ ( ξ eff ​ ( t ) ) = f P QAOA ​ ( t ) / f Q QAOA ​ ( t ) f_{P}^{c}(\xi_{\text{eff}}(t))/f_{Q}^{c}(\xi_{\text{eff}}(t))=f_{P}^{\rm QAOA}(t)/f_{Q}^{\rm QAOA}(t) for the QAOA-like schedule.
+We then monitor populations in the instantaneous eigenstates during the evolution to gain insights into the mechanism of QAOA.
+As shown in Fig.  15 (e), QAOA is able to learn to navigate a very complicated level-crossing structure by a combination of adiabatic and non-adiabatic operations: the system diabatically couples to the excited states, lingers to maximize population in the fifth excited state, and then exploits a series of anti-crossings to return to the ground state.
+Our results here demonstrate that the non-adiabatic mechanisms observed in QAOA for MaxCut can play a significant role in more general problems, such as difficult MIS instances.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+

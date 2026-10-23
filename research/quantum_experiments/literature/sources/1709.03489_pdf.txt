@@ -1,0 +1,2588 @@
+=== PDF PAGE 1 ===
+From the Quantum Approximate
+Optimization Algorithm to a
+Quantum Alternating Operator Ansatz
+Stuart Hadﬁeld1,2,3,∗, Zhihui Wang1,2, Bryan O’Gorman1,4,5, Eleanor G. Rieﬀel1, Davide
+Venturelli 1,2 and Rupak Biswas1
+1 Quantum Artiﬁcial Intelligence Laboratory (QuAIL), NASA Ames Research Center, Moﬀett Field, CA
+2 USRA Research Institute for Advanced Computer Science (RIACS), Mountain View, CA 94043, USA
+3 Department of Computer Science, Columbia University, New York, NY 10027, USA
+4 Stinger Ghaﬀarian Technologies, Inc., Greenbelt, MD 20770, USA
+5 Berkeley Quantum Information and Computation Center and Departments of Chemistry and Computer
+Science, University of California, Berkeley, CA 94720, USA
+∗ Correspondence: stuart.hadﬁeld@nasa.gov
+March 1, 2019
+The next few years will be exciting as prototype universal quantum pro-
+cessors emerge, enabling the implementation of a wider variety of algorithms.
+Of particular interest are quantum heuristics, which require experimentation
+on quantum hardware for their evaluation and which have the potential to sig-
+niﬁcantly expand the breadth of applications for which quantum computers
+have an established advantage. A leading candidate is Farhi et al.’s quan-
+tum approximate optimization algorithm, which alternates between applying a
+cost function based Hamiltonian and a mixing Hamiltonian. Here, we extend
+this framework to allow alternation between more general families of opera-
+tors. The essence of this extension, the quantum alternating operator ansatz,
+is the consideration of general parameterized families of unitaries rather than
+only those corresponding to the time evolution under a ﬁxed local Hamiltonian
+for a time speciﬁed by the parameter. This ansatz supports the representation
+of a larger, and potentially more useful, set of states than the original formu-
+lation, with potential long-term impact on a broad array of application areas.
+For cases that call for mixing only within a desired subspace, refocusing on
+unitaries rather than Hamiltonians enables more eﬃciently implementable mix-
+ers than was possible in the original framework. Such mixers are particularly
+useful for optimization problems with hard constraints that must always be
+satisﬁed, deﬁning a feasible subspace, and soft constraints whose violation we
+wish to minimize. More eﬃcient implementation enables earlier experimental
+exploration of an alternating operator approach, in the spirit of the quantum
+approximate optimization algorithm, to a wide variety of approximate optimiza-
+tion, exact optimization, and sampling problems. In addition to introducing
+the quantum alternating operator ansatz, we lay out design criteria for mixing
+operators, detail mappings for eight problems, and provide a compendium with
+brief descriptions of mappings for a diverse array of problems.
+1
+arXiv:1709.03489v2  [quant-ph]  28 Feb 2019
+
+=== PDF PAGE 2 ===
+1 Introduction
+Today, challenging computational problems arising in the practical world are frequently
+tackled by heuristic algorithms. These algorithms are empirically shown to be eﬀective,
+but they have not been analytically proven to be the best approach, or even to outperform
+the best approach of the previous year. Until recently, empirical investigation of quantum
+algorithms has been limited to tiny problems, given the typically exponential overhead of
+simulating quantum algorithms on classical processors. As prototype quantum hardware
+emerges which enables experimentation beyond what is reachable by even the world’s
+largest supercomputers, we come into a new era for quantum heuristic algorithms.
+A key question is: “What are good quantum heuristic algorithms to try?” A lead-
+ing candidate is Farhi et al.’s quantum approximate optimization algorithm, a quantum
+gate-model meta-heuristic which alternates between applying unitaries drawn from two
+families, a cost function based unitary familyUP(γ) =e−iγHf and a family of mixing uni-
+tariesUM(β) =e−iβHB, for some ﬁxed cost function based HamiltonianHf and some ﬁxed
+mixing HamiltonianHB. Here, we formally describe aquantum alternating operator ansatz
+(QAOA), extending the approach of Farhi et al. [1] to allow alternation between more gen-
+eral families of operators. This ansatz supports the representation of a much more varied,
+and potentially more useful, set of states than the original formulation. Our extension
+is particularly useful for situations in which the feasible subspace is smaller than the full
+space, such as when the optimization is over solutions that must satisfy hard constraints.
+Intuitively, mixing operators that restrict the search to the feasible subspace should re-
+sult in better-performing algorithms. Our expansion includes families of mixing operators
+UM(β) that cannot be expressed, as a family, ase−iβHB for a ﬁxed mixing HamiltonianHB.
+As we shall see, expanding the design space of families of one-parameter mixing operators
+allowed enables the ansatz to support more eﬃciently implementable mixers than was pos-
+sible in the original framework. More eﬃcient implementation enables earlier experimental
+exploration of an alternating operator approach, in the spirit of the quantum approximate
+optimization algorithm, to a wide variety of approximate optimization, exact optimization,
+and sampling problems.
+Wecarefullyconstructaframeworkforthisansatz, layingoutdesigncriteria for families
+of mixing operators. We detail QAOA mappings of several optimization problems, and
+provide a compendium of mappings for a diverse array of problems. These mapping range
+from the relatively simple, which could be implemented on near-term devices, to complex
+mappings with signiﬁcant resource requirements. This paper is meant as a starting point
+for a research program. Improved mappings and compilations, especially for some of the
+more complex problems, are a promising area for future work. Architectural codesign
+could be used to enable experimentation of QAOA approaches to some problems earlier
+than would be possible otherwise.
+We reworked the original acronym so that “QAOA” continues to apply to both prior
+work and future work to be done in this more general framework. More generally, the
+reworked acronym refers to a set of states representable in a certain form, and so can
+be used without confusion in contexts other than approximate optimization, e.g., exact
+optimization and sampling. (Incidentally, this reworking also removes the redundancy
+from the now commonly-used phrase “QAOA algorithm”.)
+After describing the framework for the ansatz, we show explicit mappings to quantum
+circuits and resource estimates for a diverse set of problems, designing phase separation and
+mixing operators appropriate for each problem. The resulting mappings and techniques
+employed are nontrivial and serve as prototypes for a much wider variety of problems
+2
+
+=== PDF PAGE 3 ===
+and applications; we include brief summaries of mappings for many other well-known
+optimization problems as an appendix.
+We comment here on the relation between these mappings and those for non-gate-
+model quantum computing, such as quantum annealing (QA). Because current quantum
+annealers have a ﬁxed driver (the mixing Hamiltonian in the QA setting), all problem
+dependence must be captured in the cost Hamiltonian on such devices. The general strat-
+egy is to incorporate the hard constraints as penalty terms in the cost function and then
+convert the cost function to a cost Hamiltonian [2–5]. However, this approach means that
+the algorithm must search a much larger space than if the evolution were conﬁned to fea-
+sible conﬁgurations, making the search less eﬃcient than if it were possible to constrain
+the evolution. This issue, and other drawbacks, led Hen and Spedalieri [6] and Hen and
+Sarandy [7] to suggest a diﬀerent approach for adiabatic quantum optimization (AQO), in
+which the standard driver is replaced by an alternative driver that conﬁnes the evolution
+to the feasible subspace. Their approach resembles a restricted class, H-QAOA (deﬁned
+below), of QAOA algorithms. While some of our mapppings, e.g., H-QAOA mappings of
+graph coloring, graph partitioning, and not-all-equal 3-SAT, are close to those in Refer-
+ences [6, 7], other mappings we describe, including for these problems, are quite diﬀerent
+and take advantage of the more general families of mixers supported by this ansatz. In-
+deed, while QAOA mappings are diﬀerent from quantum annealing mappings, with most
+of the design eﬀort going into the mixing operator rather than the cost function based
+phase separator, QAOA algorithms, like QA and AQO, but unlike most other quantum
+algorithms, are relatively easy for people familiar with classical computer science but not
+quantum computing to design, as we illustrate in this paper.
+In the following section, we overview the relevant background results. In Section 3, we
+construct a framework for this ansatz, laying out design criteria for families of mixing oper-
+ators. Sections 4 and 5 detail QAOA mappings and compilations for several optimization
+problems, illustrating design techniques and a variety of mixers. Section 4 considers four
+problems in which the configuration space of interest is strings: MaxIndependentSet, Max-k-
+ColorableSubgraph, Max-k-ColorableInducedSubgraph, and MinGraphColoring. Section 5
+considers four problems in which the configuration space of interest is orderings (or permu-
+tations): The traveling salesperson, and three versions of single machine scheduling (SMS),
+also called job sequencing. Section 6 concludes with a discussion of many open questions and
+directions for future work. We provide a compendium of mappings and compilations for a
+diverse array of problems in Appendix A and provide resource estimates for their implemen-
+tation. For the benefit of the reader, we include a glossary of important terminology used
+in the paper, and a review of some useful elementary quantum operations as Appendices B
+and C, respectively.
+2 Background
+Over the last few decades, researchers have discovered several stunning instances of quan-
+tumalgorithmsthatprovablyoutperformthebestexistingclassicalalgorithmsand, insome
+cases, the best possible classical algorithm [8]. For most problems, however, it is currently
+unknown whether quantum computing can provide an advantage, and if so, how to design
+quantum algorithms that realize such advantages. Today, challenging computational prob-
+lems arising in the practical world are frequently tackled by heuristic algorithms, which
+by deﬁnition have not been analytically proven to be the best approach, or even proven
+analytically to outperform the best approach of the previous year.
+For several years now, special-purpose quantum hardware has been used to explore
+3
+
+=== PDF PAGE 4 ===
+one quantum heuristic algorithm, quantum annealing. Emerging gate-model processors
+will enable investigation of a much broader array of quantum heuristics beyond quantum
+annealing. Within the last year, IBM has made available publicly through the cloud a
+gate-model chip with 5 and 16 superconducting qubits [9], and it recently announced an
+upgrade to a20-qubit chip. Likewise, Google [10] and Rigetti Computing [11] anticipate
+to provide processors with 40–100 superconducting qubits within a year [12]. Many aca-
+demic groups, including at TU Delft and at UC Berkeley, have made similar eﬀorts. In
+addition to superconducting architectures, ion [13] and neutral atom based [14] devices
+are also reaching the scale at which intermediate-size experiments would be feasible [12].
+Gate-model quantum computing expands the empirical evaluation of quantum heuristics
+applications beyond optimization of classical functions, as well as enabling a broader array
+of approaches to optimization [15].
+While limited exploration of quantum heuristics beyond quantum annealing has been
+possible through small-scale classical simulation, the exponential overhead in such sim-
+ulations has limited their usefulness. The next decade will see a blossoming of quan-
+tum heuristics as a broader and more ﬂexible array of quantum computational hardware
+becomes available. The immediate question is: What experiments should we prioritize
+that will give us insight into quantum heuristics? One leading candidate is the quantum
+approximate optimization algorithm (QAOA), for which a number of tantalizing related
+results have been obtained [16–22] since Farhi et al.’s initial paper [1]. In QAOA, a phase-
+separation operator, usually the problem Hamiltonian that encodes the cost function of
+the optimization problem, and a mixing Hamiltonian are applied in alternation. The class
+QAOAp consists of level-p QAOA circuits, in which there arep iterations of applying a
+classical Hamiltonian (derived from the cost function) and a mixing Hamiltonian. The2p
+parameters of the algorithm specify the durations for which each of these two Hamiltonians
+are applied.
+Prior work suggests the power and flexibility of QAOA circuits. Farhi et al. [16] exhibited
+a QAOA1 algorithm that beat the existing best approximation bound for efficient classical
+algorithms for the problem E3Lin2, only to inspire a better classical algorithm [23]. Jiang et
+al. [19] demonstrated that the class of QAOA circuits is powerful enough to obtain theΘ(
+√
+2n)
+query complexity on Grover’s problem and also provided the first algorithm within the QAOA
+framework to show a quantum advantage for a finite number of iterations greater than two.
+Farhi and Harrow [17] proved that, under reasonable complexity assumptions, the output
+distribution of evenQAOA1 circuits cannot be efficiently sampled classically. Yang et al. [18]
+proved that for evolution under a Hamiltonian that is the weighted sum of Hamiltonian terms,
+with the weights allowed to vary in time, the optimal control is (essentially always) bang-bang,
+i.e., constant magnitude, of either the maximum or minimum allowed weight, for each of the
+terms in the Hamiltonian at any given time. Their work implies that QAOA circuits with the
+right parameters are optimal among Hamiltonians of the formH(s) =
+(
+1−f(s)
+)
+HB +f(s)HC,
+wheref(s) is a real function in the range[0, 1]. It remains an open question whether QAOA
+provides a quantum advantage over classical algorithms for approximate optimization, either
+in terms of the quality of approximate solution returned, or the speed of achieving such an
+approximation.
+This paper generalizes our initial results on quantum approximate optimization for
+problems with hard and soft constraints [24]. Since the preprint of these two papers, the
+approach we proposed to deal with constrained optimization problems has been applied
+to a benchmarking study on graph-coloring problems (in preparation) and a protein fold-
+ing optimization problem [25]. QAOA also provides a viable platform to study quantum
+circuit compilation to realistic architectures [22, 26, 27]. Applications and extensions of
+4
+
+=== PDF PAGE 5 ===
+QAOA beyond optimization include state preparation [28] and machine learning [29, 30].
+A diﬀerent approach in the setting of quantum walks to QAOA for constrained problems
+has recently been proposed [31], and very recently, Lloyd showed that the QAOA frame-
+work with a carefully constructed cost Hamiltonian can be made universal for quantum
+computation [32].
+2.1 The Original Quantum Approximate Optimization Algorithm
+We now give an overview of the original quantum approximation optimization algorithm
+proposed in Reference [1].
+Consider an unconstrained optimization problem onn-bit strings we seek to approxi-
+mate. Given a problem instance, the algorithm is speciﬁed by two HamiltoniansHP and
+HM, and 2p real parametersγ1,...,γ p,β 1,...,β p. The main details are the following:
+• The phase Hamiltonian HP encodes the cost functionf to be optimized, i.e., acts
+diagonally onn-qubit computational basis states as:
+HP|y⟩ =f(y)|y⟩.
+• The mixing Hamiltonian HM is the transverse ﬁeld Hamiltonian:
+HM =
+n∑
+j=1
+Xj,
+where Xj is the PauliX operator acting on thejth qubit. (The PauliX operator
+acts as a bit ﬂip, i.e.,X|0⟩ =|1⟩ and X|1⟩ =|0⟩.)
+• The initial state is selected to be the equal superposition state of all possible solutions:
+|s⟩ = 1√2n∑x |x⟩ ,
+which is also the ground-state of−HM and is used similarly in AQO [1].
+• A parameterized quantum state is created by alternately applying HamiltoniansHP
+and HM for p rounds, where the duration in roundj is speciﬁed by the parameters
+γj and βj, respectively:
+|β,γ⟩ =e−iβpHMe−iγpHP...e −iβ2HMe−iγ2HPe−iβ1HMe−iγ1HP|s⟩.
+• A computational basis measurement is performed on the state, which returns a candi-
+date solution y with probability|⟨ y||β,γ⟩| 2. Repeating the above state preparation
+and measurement, the expected value of the cost function over the returned solution
+samples is given by:
+⟨f⟩ =⟨β,γ|HP|β,γ⟩,
+which can be statistically estimated from the samples produced. (For a constraint
+satisfaction problem withm constraints, fom Chebyshev’s inequality it follows that
+an outcome achieving at least⟨f⟩−1will be obtainedwith probabilityat least1−1/m
+after O(m2) repetitions.)
+• The above steps may then be repeated altogether, with updated sets of time pa-
+rameters, as part of a classical optimization loop (such as gradient descent or other
+approaches) used to optimize the algorithm parameters with respect to an objective
+such as⟨f⟩.
+5
+
+=== PDF PAGE 6 ===
+• The best problem solution found overall is returned.
+A key to success for the algorithm is the selection or discovery of good values for the pa-
+rameters γ1,...,γ p,β 1,...,β p, which result in good approximate solutions. In some cases,
+where the analysis is tractable, such angles may be found analytically [19, 21]. Parameter
+setting strategies for QAOA and for the general class of variational quantum algorithms
+remains an active area of research [33, 34].
+We now turn to our generalized QAOA framework, which is the main subject of the
+paper.
+3 The Quantum Alternating Operator Ansatz (QAOA)
+Here, we formally describe the quantum alternating operator ansatz, extending the ap-
+proach of Farhi et al. [1]. QAOA, in our sense, encompasses a more general class of
+quantum states that may be algorithmically accessible and useful. We focus here on the
+application of QAOA to approximate optimization, though it may also be used in exact
+optimization [19, 20] and sampling [17].
+An instance of anoptimization problem is a pair(F,f ), whereF is the domain (set
+of feasible points) andf :F→ R is theobjective function to be optimized (minimized or
+maximized). LetF be the Hilbert space of dimension|F|, whose standard basis we take
+to be{|x⟩ : x∈F}. Generalizing Reference [1], a QAOA circuit is characterized by two
+parameterized families of operators onF:
+• A family ofphase-separation operatorsUP(γ) that depends on theobjective function
+f, and;
+• A family ofmixing operators UM(β) that depends on the domain and its structure,
+whereβ andγ are real parameters. Speciﬁcally, aQAOAp circuit consists ofp alternating
+applications of operators from these two families:
+Qp(β,γ) =UM(βp)UP(γp)··· UM(β1)UP(γ1). (1)
+This quantum alternating operator ansatz (QAOA) consists of the states representable
+as the application of such a circuit to a suitably simple initial state|s⟩:
+|β,γ⟩ =Qp(β,γ)|s⟩. (2)
+We show an overall quantum circuit schematic for a QAOA mapping in Figure 1 below.
+For a given optimization problem, aQAOA mapping of a problem consists of a family of
+phase-separation operators, a family of mixing operators, and a starting state. The circuits
+fortheoriginalquantumapproximateoptimizationalgorithmﬁtwithinthisparadigm, with
+unitaries of the forme−iγHP ande−iβHM, with parametersγ andβ indicating the time for
+which a ﬁxed Hamiltonian is applied.
+6
+
+=== PDF PAGE 7 ===
+Figure 1: The quantum alternating operator ansatz (QAOAp) quantum circuit schematic. Here, an
+encoding to qubits for a given problem domain is assumed. The box shows an example decomposition
+of a QAOA mixing operator familyUM(β) into a sequence of partial mixersUM,α(β). In this ansatz,
+a one-parameter family of mixing operators does not in general correspond to time evolution under
+a ﬁxed mixing HamiltonianHM. The construction of this paper includes diﬀerent orderings of the
+partial mixers, resulting in a variety of inequivalent mixing operators with diﬀerent implementation
+costs. Though not shown in the ﬁgure, phase and mixing operators will often include ancilla qubits to
+facilitate computation and simple compilation to one- and two-qubit gates. The circuit shown indicates
+measurement at the end of the algorithm; in general, a quantum alternating operator ansatz circuit may
+be instead embedded as part of a larger quantum algorithm. Likewise, diﬀerent initial states may be
+used which may be constructed by design or the output of another quantum subroutine.
+The domain will usually be expressed as the feasible subset of a largerconﬁguration
+space, speciﬁed by a set of problemconstraints. For implementation on expected near-term
+quantum hardware, each conﬁguration space will need to beencoded into a subspace of a
+Hilbert space of a multiqubit system, with the domain corresponding to afeasible subspace
+of the conﬁguration space. For each domain, there are many possible mixing operators. As
+we will see, using more general one-parameter families of unitaries enables more eﬃciently
+implementable mixers that preserve the feasible subspace. Given a domain, an encoding of
+its conﬁguration space, a phase separator, and a mixer, there are a variety ofcompilations
+of the phase separator and mixer to circuits that act on qubits.
+For any function f, not just an objective (cost) function, we deﬁne Hf to be the
+quantum Hamiltonian that acts asf on basis states as:
+Hf|x⟩ =f(x)|x⟩. (3)
+In prior work, the domainF was the set of alln-bit strings, UP(γ) = e−iγHf, and
+UM(β) = e−iβHB. Furthermore, with just one exception, the mixing Hamiltonian was
+HB = ∑nj=1Xj. We used the notationXj, Yj, Zj to indicate the Pauli matricesX, Y,
+andZ acting on thejth qubit. The corresponding parameterized unitaries are denoted by
+Xj(θ) =e−iθXj and similarly forYj andZj. The one exception is Section VIII of Reference
+[1], which discusses a variant for the maximum independent set problem, in whichF is
+the set of bitstrings corresponding to the independent sets of a graph, the phase separator
+depends on the cost function as above, and the mixing operator isUM(β) =e−iβHB, where
+7
+
+=== PDF PAGE 8 ===
+HB is such that:
+⟨x|HB|y⟩ =
+{
+1, x, y∈F and Ham(x, y) = 1,
+0, otherwise, (4)
+which connects feasible qubit computational basis states with unit Hamming distance
+(Ham). Section VIII of Reference [1] does not discuss the implementability of UM(β).
+A closely related generalization of QAOA for problems with hard constraints based on
+quantum walks has recently been proposed [31]. However, row-computable feasibility or-
+acles are required to enable mixing between feasible states, which are likely to be more
+expensive to implement in practice than the approach of this paper.
+We extended and formalized the approach of Section VIII of Reference [1] with an
+eye to implementability, both in the short and long term. We also built on a theory
+developed for adiabatic quantum optimization (AQO) by Hen and Spedalieri [6] and Hen
+and Sarandy [7], though the gate-model setting of QAOA leads to diﬀerent implementation
+considerations than those for AQO. For example, Hen et al. identiﬁed driver Hamiltonians
+of the formHM =∑j,kHj,k, whereHj,k =XjXk +YjYk, as useful in the AQO setting for
+a variety of optimization problems with hard and soft constraints; such mixers restrict the
+mixing to the feasible subspace deﬁned by the hard constraints. Analogously, the unitary
+UM =e−iβHM meets our criteria, discussed in Section 3.1, for good mixing for a variety of
+optimization problems, including those considered in References [6, 7]. SinceHj,k andHi,l
+do not commute when|{j,k}\{ i,l}| = 1, compilingUM to two-qubit gates is nontrivial.
+One could Trotterize, but it may be more eﬃcient and just as eﬀective to use an alternative
+mixing operator, such asUM =e−iβHSr··· e−iβHS2e−iβHS1, where the pairs of qubits have
+been partitioned intor subsets{Si}i containing only disjoint pairs, motivating in part our
+more general ansatz.
+We deﬁne as “Hamiltonian-based QAOA” (H-QAOA) the class of QAOA circuits in
+which both the phase separator familyUP(γ) = e−iγHP and the mixing operator fam-
+ily UM(β) = e−iβHM correspond to time evolution under some Hamiltonians HP and
+HM, respectively. (In the example mappings to follow, we consider only phase separators
+UP(γ) =∑xe−iγg(x)|x⟩⟨x| that correspond to classical functions and thus also correspond
+to time evolution under some (potentially nonlocal) Hamiltonians, though more general
+types of phase separators may be considered). We further deﬁne “local Hamiltonian-based
+QAOA” (LH-QAOA) as the subclass of H-QAOA in which the HamiltonianHM is a sum
+of (polynomially many) local terms.
+Before discussing design criteria, we brieﬂy mention that there are obvious generaliza-
+tions in whichUP and UM are taken from families parameterized by more than a single
+parameter. For example, in Reference [26], a diﬀerent parameter for every term in the
+Hamiltonian is considered. In this paper, we only consider the case of one-dimensional
+families, given that it is a suﬃciently rich area of study, with the task of ﬁnding good
+parameters γ1,...,γ p, and β1,...,β p already challenging enough due to the curse of di-
+mensionality [21]. A larger parameter space may support more eﬀective circuits but in-
+creases the diﬃculty of ﬁnding such circuits by opening up the design space and making
+the parameter setting more diﬃcult.
+Weremarkthatthequantumgate-modelsettingoﬀersseveraladvantagesoverHamiltonian-
+based algorithms such as AQO and quantum annealing. Higher order (k-local) interactions
+may be compiled down to two-local gates, and compilations using SWAP gates [22, 35] en-
+able the implementation of quantum operations between qubits that are non-neighboring
+in the physical hardware; indeed, locality and connectivity are both well-known bottle-
+necks for physical quantum annealing devices. In the longer term, once mature quantum
+8
+
+=== PDF PAGE 9 ===
+hardware has been built, quantum error correction can be applied to robustly implement
+QAOA.
+3.1 Design Criteria
+Here, we brieﬂy specify design criteria for the three components of a QAOA mapping of
+a problem. We expect that as exploration of QAOA proceeds, these design criteria will
+be strengthened and will depend on the context in which the ansatz is used. For example,
+when the aim is a polynomial-time quantum circuit, the components should have more
+stringent bounds on their complexity; without such bounds, the ansatz is not useful as
+a model for a strict subset of states producible via polynomially-sized quantum circuits.
+On the other hand, when the computation is expected to grow exponentially, a simple
+polynomial bound on the depth of these operators might be reasonable. One example
+might be for exact optimization of the problems considered here; for these problems, the
+worst case algorithmic complexity is exponential, but it is worth exploring whether QAOA
+might outperform classical heuristics in expanding the tractable range for some problems.
+Initial state. We require that the initial state|s⟩ be trivial to implement, by which we
+meanthatitcanbecreatedbyaconstant-depth(inthesizeoftheproblem)quantumcircuit
+from the|0... 0⟩ state. Here, we often take as our initial state a single feasible solution,
+usually implementable by a depth-1 circuit consisting of single-qubit bit-ﬂip operationsX.
+Because in such a case the initial phase operator only applies a global phase, we may want
+to consider the algorithm as starting with a single-mixing operatorUM(β0) to the initial
+state as a ﬁrst step. In the quantum approximate optimization algorithm, the standard
+starting state|+··· +⟩ is obtained by a depth-1 circuit that applies a HadamardH gate
+to each of the qubits in the|0... 0⟩ state.
+This criterion could be relaxed to logarithmic depth if needed. It should not be relaxed
+too much: Relaxing the criterion to polynomial depth would obviate the usefulness of the
+ansatz as a model for a strict subset of states producible via polynomially-sized quantum
+circuits. Algorithms with more complex initial states should be considered hybrid algo-
+rithms, with an initialization part and a QAOA part. Such algorithms are of interest in
+cases when one expects the computation to grow exponentially, such as is the case for exact
+optimization for many of the problems here, but might still outperform classical heuristics
+in expanding the tractable range.
+Phase-separation unitaries. We require the family of phase-separation operators to
+be diagonal in the computational basis. In almost all cases, we takeUP(γ) =e−iγHf, where
+f is the objective function.
+Mixing unitaries (or “mixers”). We require the family of mixing operatorsUM(β)
+to:
+• Preservethefeasiblesubspace: Forallvaluesoftheparameter β, theresultingunitary
+takes feasible states to feasible states, and;
+• Provide transitions between all pairs of states corresponding to feasible points. More
+concretely, for any pair of feasible computational-basis statesx, y∈F, there is some
+parameter valueβ∗ and some positive integerr such that the corresponding mixer
+connects those two states:|⟨x|UrM(β∗)| y⟩|> 0.
+In some cases, we may want to relax some of these criteria. For example, if a QAOA
+circuit is being used as a subroutine within a hybrid quantum-classical algorithm, or in
+9
+
+=== PDF PAGE 10 ===
+a broader quantum algorithm, we may use starting states informed by previous runs and
+thus allow mixing operators that mix less.
+Thisframeworkcanbeusedinmanydifferentcontexts. Dependingonthecontext,different
+measures of success are appropriate. As indicated by the name, the original motivation for
+Farhi et al.’s work was to develop a quantum approximation algorithm, one for which rigorous
+bounds on the approximation ratio can be proven [1, 16]. The same style of algorithm was
+then applied to exact optimization [20] and sampling [17], which have different measures of
+success. In certain cases, rigorous performance guarantees can be provided in these contexts,
+e.g., for the Grover problem in Reference [19]. Alternatively, it can be applied as a heuristic
+approach for any of exact optimization, approximate optimization, or sampling. In these cases,
+the measure of success is not in terms of rigorous analytical bounds, but rather empirical
+typical time-to-solution or approximation ratio or sample quality within a given time. Our
+approach facilitates low-resource constructions that support empirical evaluation of QAOA as
+a heuristic for a variety of combinatorial optimization problems, and is agnostic as to which
+success criterion is being used for evaluation.
+4 QAOA Mappings: Strings
+This section describes mappings to QAOA for four problems in which the underlying configura-
+tionspaceisstringswithletterstakenfromsomealphabet. Weintroducesomebasicfamiliesof
+mixers and discuss compilations thereof, illustrating their use with MaxColorableSubgraph as
+anexample. Wethenbuildonthesebasicmixerstodesignfamiliesofmorecomplicatedmixers,
+such as controlled versions of these mixers, and illustrate their use in mappings and circuits for
+the problems MaxIndependentSet, MaxColorableInducedSubgraph, and MinGraphColoring as
+examples. The mixers we develop in this section, and close variants, are applicable to a wide
+variety of problems, as we see in Appendix A.
+4.1 Example: Max- κ-ColorableSubgraph
+Problem. Given a graph G = (V,E ) with n vertices and m edges, and κ colors,
+maximize the size (number of edges) of a properly vertex-κ-colorable subgraph.
+The domainF is the set of coloringsx of G, an assignment of a color to each vertex.
+(Note that here and throughout, the term “colorings” includesimproper colorings.) The do-
+main F can be represented as the set of lengthn strings over an alphabet ofκ characters,
+x =x1x2...x n, wherexi∈ [κ]. The objective functionf : [κ]n→ N counts the number of
+properly colored edges in a coloring:
+f(x) =
+∑
+{u,v}∈E
+NEQ(xu,xv). (5)
+We then built up machinery to deﬁne mixing operators for a QAOA approach to this
+problem. Since some mixing operators are more naturally expressed in one encoding rather
+than another, we found it useful to describe diﬀerent mixing operators in diﬀerent encod-
+ings, though we emphasize that doing so is merely for convenience; all mixing operators
+are encoding-independent, so the descriptions may be translated from one encoding to an-
+other. The domainF is naturally expressed as strings ofd-dits, ad-valued generalization
+of bits. For the present problem,d = κ. In addition to discussing colorings as strings of
+dits, we used a “one-hot” encoding intonκ bits, withxi,c indicating whether or not vertex
+i is assigned colorc.
+Figure2belowshowsamappingtoqubitsintheone-hotencodingforMax- κ-ColorableSubgraph.
+We explain this and other possible mappings generally over the remainder of the section.
+10
+
+=== PDF PAGE 11 ===
+Figure 2: Example: Quantum alternating operator ansatz mapping for Max-κ-ColorableSubgraph with
+κ = 3 in the one-hot encoding. The4-node graph on the left is mapped to12 qubits on the right, one
+vertical layer for each color. The solid lines show pairs of qubits acted on by the phase operator, which
+checks if adjacent vertices have the same color. The dashed lines show the qubits acted on by the
+mixing operator, which mixes the possible colors of each vertex independently.
+4.1.1 Single Qudit Mixing Operators
+We focused initially on designingpartial mixers, component operators that will be used to
+construct full mixing operators. For this mapping of the maxColorableSubgraph problem,
+the partial mixers are operators acting on a qudit with dimensiond =κ that mix between
+the colors associated to a single vertexv. As we see in subsequent sections, this is a
+particularly simple case of partial mixers which are often more complicated multiqubit-
+controlled operators. Once we have deﬁned these single-qudit partial mixing operators, we
+put them together to create a full mixer for the problem.
+Webeganbyconsideringthefollowingfamilyofsingle-quditmixingoperatorsexpressed
+in terms of qudits, and qudit operators, and then considered encodings and compilations
+to qubit-based architectures, which inspired us to consider other families of single-qubit
+mixing operators. See Appendix C.2 and References [36, 37] for a review of qudit operators,
+including the generalized Pauli operators˘X and ˘Z.
+r-nearby-values single-qudit mixer. Let Ur-NV(β) = e−iβHr-NV, where Hr-NV =∑r
+i=1
+(
+˘Xi + ( ˘X†)i), which acts on a single qudit, with˘X =∑d−1a=0|a + 1⟩⟨a|. We identiﬁed
+two special cases by name: The “single-qudit ring mixer” forr = 1, Hring = H1-NV and
+the “fully-connected” mixer forr =d− 1, HFC = H(d−1)-NV. Whenever we introduced a
+Hamiltonian, we also implicitly introduced its corresponding family of unitaries, as with
+Hr-NV and Ur-NV(β).
+The single-qudit ring mixer is a cornerstone of many of the mixing constructions that
+we discuss. We concentrated on qubit encodings thereof, given the various projections of
+hardware with at least40 qubits that will be available in the next year or two [11, 12],
+though it could alternatively be implemented directly using a qudit-based architecture.
+We explored two natural encodings of a qudit into qubits: (1) The one-hot encoding
+using d qubits, in which each qudit basis state|a⟩, a = 0, 1,...,d − 1, is encoded as
+|0⟩⊗a⊗| 1⟩⊗| 0⟩⊗d−1−a; and (2) thebinary encoding using⌈log2d⌉ qubits, in which each
+qudit state|a⟩ is encoded as the qubit computational basis state labeled by the binary
+representation of the integer a. The one-hot encoding uses more qubits but supports
+a simpler compilation of the single-qudit ring mixer for generald, both in the sense of
+it being much easier to write down a compilation, and in the sense that it uses many
+fewer two-qubit gates; in the one-hot encoding,2-local mixing interactions suﬃce, whereas
+binary encoding requires⌈log2d⌉-local Hamiltonian terms, with the corresponding unitary
+requiring further compilation to two-qubit gates.
+11
+
+=== PDF PAGE 12 ===
+In the one-hot encoding, the single-qudit ring mixer is encoded as a qubit unitaryU (enc)ring
+corresponding to the qubit Hamiltonian:
+H(enc)ring =
+d−1∑
+a=0
+(XaXa+1 +YaYa+1), (6)
+which acts on the qubit Hilbert space in a way that preserves the Hamming weight of
+computational basis states and acts asUring on the encoded subspace spanned by unit
+Hamming weight computational basis states.
+Although H(enc)ring is 2-local, its terms do not mutually commute. There are several im-
+plementation options. First, hardware that natively implements the multiqubit gateU (enc)ring
+directly may be plausible (much as quantum annealers already support the simultaneous
+application of a Hamiltonian to a large set of qubits), but most proposals for universal
+quantum processors are based on two-qubit gates, so a compilation to such gates is de-
+sirable both for applicability to hardware likely to be available in the near term and for
+error-correction and fault tolerance in the longer term. Second, we could use constructions
+used in quantum many-body physics to compileU (enc)ring into a circuit of 2-local gates [38].
+Third, the multiqubit gateU (enc)ring could be implemented approximately via Trotterization
+or other Hamiltonian simulation algorithms. A diﬀerent approach, and the alternative we
+explore most extensively here, is to implement a diﬀerent unitary rather thanUr-NV, one
+related toUr-NV, and sharing its desirable mixing properties, as encapsulated in the design
+criteria of Section 3.1, which is easier to implement. The form of the circuit obtained by
+Trotterization is suggestive. We considered sequentially applying unitaries corresponding
+to subsets of terms in the Hamiltonian, each subset chosen in such a way that the corre-
+sponding unitary is readily implementable. This reasoning mirrors the relation of H-QAOA
+circuits to Trotterized AQO. We give a few examples of mixers obtained in this way.
+Parity single-qudit ring mixer. Still in the one-hot encoding, we partitioned thed
+terms e−iβ(XaXa+1+YaYa+1) by the parity of their indices. Let:
+Uparity(β) =Ulast(β)Ueven(β)Uodd(β), (7)
+where:
+Uodd(β) =
+∏
+a odd, a⁄=n
+e−iβ(XaXa+1+YaYa+1), U even(β) = ∏
+a even
+e−iβ(XaXa+1+YaYa+1), (8)
+Ulast(β) =
+{
+e−iβ(XdX1+YdY1), d odd,
+I, d even. (9)
+Such “XY” gates are natively implemented on certain superconducting processors [39].
+It is easy to see that the parity single-qudit ring mixer preserves the Hamming weight
+and hence meets the ﬁrst criterion of keeping the evolution within the feasible single-qudit
+subspace. To see that it also meets the second, providing transitions between all feasible
+computational basis states, it is useful to consider the quantum swap gate, which behaves
+in exactly the same way as the XY gate on the subspace spanned by{|0i1j⟩,|1i0j⟩}. The
+swap gateSWAPi,j = 12(I +XiXj +YiYj +ZiZj) is both unitary and Hermitian, and thus:
+eiθSWAPi,j = cos(θ)I +i sin(θ)SWAPi,j. (10)
+For 0<β <π/ 2, each term in the parity single-qudit ring mixer is a superposition of a
+swap gate and the identity. A single application ofUparity(β) will have nonzero transition
+12
+
+=== PDF PAGE 13 ===
+amplitudes only between pairs of colors with indices no more than two apart. Nevertheless,
+this mixer meets the second criteria because all possible orderings ofd swap gates appear in
+⌈d2⌉ repeats of the parity operator for any0<β <π/ 2, thus providing nonzero amplitude
+transitions between all feasible computational basis states for a single-vertex graph.
+Whendis an integer power of two, there is also a straightforward, though moreresource-
+intensive, compilation of the parity single-qudit ring mixer using the binary encoding.
+ApplyingaPauli X gatetotheleast-signiﬁcantqubitactsas Heven ontheencodedsubspace.
+Incrementing the register by one, applying the Pauli gate to the least-signiﬁcant qubit,
+and ﬁnally decrementing the register by one overall acts as Hodd. Therefore, we can
+implement Uparity by incrementing the register by one, applying anX(β) = e−iβX to
+the least-signiﬁcant qubit, decrementing the register by one, and then again applying an
+X(β) gate to the least-signiﬁcant qubit. For an l-bit register, each incrementing and
+decrementing operation can be written as a series ofl multiply-controlled X gates, with
+the numbers of control ranging from0 to l− 1.
+Repeated parity single-qudit ring mixers. As we mentioned above, a single appli-
+cation ofUparity(β) will have nonzero transition amplitudes only between pairs of colors
+with indices no more than two apart, which suggests that it may be useful to repeat the
+parity mixer within one mixing step.
+Partition single-qudit ring mixers. We now generalize the above construction for
+the parity single-qudit ring mixer to more general partition mixers. For a given ordered
+partitionP = (P1,...,P p) of the terms ofHr-NV such that all pairs of terms within aPi
+act on disjoint states of the qudit, let:
+UP-r-NV(β) =UPp-XY(β)··· UP1-XY(β), (11)
+where:
+UP -XY(β) =
+∏
+{a,b}∈P
+e−iβ(|a⟩⟨b|+|b⟩⟨a|). (12)
+By construction, in the one-hot encoding, the terms ofUP -XY commute (because they
+act on disjoint pairs of qubits), and so the ordering does not matter; all can be implemented
+in parallel. We callUP-r-NV the “partitionP” r-nearby-values single-qudit ring mixer, and
+Ur-NV the “simultaneous”r-nearby-values single-qudit ring mixer to distinguish the latter
+from the former. The latter is member of H-QAOA, while the former is not.
+Even more generally, for a set of single-qudit ring mixers{Hα} indexed by someα and
+an ordered partitionP = (P1,...,P p) thereof, in which the single-qudit mixers within each
+part mutually commute, we deﬁned a simultaneous version,e−iβ
+∑
+αHα and aP-partitioned
+version, Pi=1[α∈Pie−iβHα], where the order of the product over the elements of each
+part does not matter because they commute, and the order of the product over the parts
+of the partition is given by their ordering within the ordered partitionP.
+Binary single-qudit mixer ford = 2l. We now return brieﬂy to the binary encoding,
+and describe a diﬀerent single-qudit mixer. An alternative to ther-nearby values single-
+qudit mixer, which is easily implementable using the binary encoding whend = 2l is a
+power of two, is the “simple binary” single-qudit mixer:
+H(enc)binary =
+l∑
+i=1
+Xi, (13)
+13
+
+=== PDF PAGE 14 ===
+where Xi acts on theith qubit in the binary encoding of the qudit. Since the ordering of
+the colors was arbitrary to begin with, it does not much matter whether the Hamiltonian
+mixes nearby values in the ordering or mixes the colors in a diﬀerent way, in this case to
+colors with indices whose binary representations have Hamming distance1.
+Whend is not a power of2, a straightforward generalization of the binary single-qudit
+mixer experiences diﬃculty in meeting the ﬁrst of the design criteria, since swapping one
+of the bit values in the binary representation may take the evolution out of the feasible
+subspace. While requiringd to be a power of2 restricts its general applicability, the binary
+single-qudit mixer could be useful in some interesting cases, such as4-coloring. For 2-
+coloring (a problem equivalent to MaxCut), the full binary single-qudit mixer is simply
+the standard mixerX. We use this encoding in Section 5.2 to handle slack variables in a
+single-machine scheduling problem, a case in which there is ﬂexibility in the upper range
+of the integer to be encoded, allowing us to round up to the nearest power of two when
+needed.
+4.1.2 Full QAOA Mapping
+Having introduced several partial mixers for single qudits, we now show a complete QAOA
+circuit for MaxColorableSubgraph with n vertices, m edges, and κ colors, compiled to
+2-local gates on qubits. Using the one-hot encoding, we requirenκ qubits.
+Mixing operator. We used as the full mixer a parity ring mixer made up of parity
+single-qudit ring mixers, one for each of the qudits corresponding to each vertex:
+UM =
+n∏
+v=1
+U (enc)v,parity. (14)
+The single qubit mixers act on diﬀerent qubits and can be applied in parallel. The
+overall parity mixing operator required a depth-2 or depth-3 circuit (for even and oddκ,
+respectively) ofnκ gates. Other single-qudit mixers we deﬁned above, includingr repeats
+of the parity ring mixer, other partitioned mixers, or the binary mixer, could be used in
+place of the parity single-qudit mixer in this construction. All of these unitary mixers
+by construction meet our ﬁrst criterion for a mixer: Keeping the evolution in the feasible
+subspace. Further, each of these mixers, after at most ⌈κ2⌉ repeats, provides nonzero
+amplitude transitions between all colors at a given vertex, with the product providing
+transitions between any two feasible states.
+Phase-separation operator. The objective function can be written in classical one-hot
+encoding as:
+m−
+∑
+{u,v}∈E
+k∑
+a=1
+xu,axv,a, (15)
+where xv,a = 1, indicating that vertexv has been assigned colora. To obtain a phase-
+separation Hamiltonian, we substituted(I−Z)/2 for each binary variable to obtain:
+H′P = 4−κ4 mI + 14 ∑{u,v}∈E κ∑a=1 (Zu,a +Zv,a−Zu,aZv,a). (16)
+Theconstanttermaﬀectsonlyaphysically-irrelevantglobalphase, andsinceweareonly
+concerned about the feasible subspace, we can disregard each sum∑κa=1Zu,a of allκ single
+Z operators corresponding to a single qudit, since they multiply each of thed Hamming
+14
+
+=== PDF PAGE 15 ===
+weight 1 elements corresponding to thedsingle qudit values by the same constant, resulting
+in a global phase. Removing those terms and rescaling, the phase separator now has the
+simpler form:
+H(enc)P = ∑
+{u,v}∈E
+κ∑
+a=1
+Zu,aZv,a, (17)
+where Zv,a acts on theath qubit in the one-hot encoding of thevth qudit, corresponding
+to coloring vertexv with colora. The phase separator requires a circuit containingmκ
+two-qubit gates with depth at mostDG + 1, whereDG is the maximum degree over all
+vertices in the instance graphG.
+Translated back to acting on qudits, Equation(17) acts as HP = Hg (as deﬁned in
+Equation (3)), where g(x) = κm− 4f(x). We refer to this function g as the “phase
+function”, which will typically be an aﬃne transformation of the objective function, which
+corresponds simply to a physically irrelevant global phase and a rescaling of the parameter.
+Deﬁning HP using such a phase function allows us to write a simpler encoded version
+H(enc)P that corresponds exactly toHP, without qualiﬁcation, on the encoded subspace.
+Initial state. Any encoded coloring can be generated by a depth-1 circuit of at most
+n single-qubit X gates. A reasonable initial state is one in which all vertices are assigned
+the same color. Alternatively, we could start with any other feasible state, or the initial
+state could be obtained by applying one or more rounds of the mixer to a single feasible
+state, so that the algorithm begins with a superposition of feasible states.
+The circuit depth and gate count for the full algorithm will increase when compiling to
+realistic near-term hardware with architectures that have nearest neighbor topological con-
+straints limiting between which pairs of physical qubits two-qubit gates can be applied. See
+Reference [22] for one approach for compiling to realistic hardware with such constraints.
+Further investigation is needed to understand which mixers and initial states, for a
+given resource budget, result in more or less eﬀective algorithms, and whether some have
+an advantage with respect to ﬁnding good parametersγ1,...,γ p, andβ1,...,β p or being
+robust to error.
+4.2 Example: MaxIndependentSet
+Problem. Given a graphG = (V,E ), with|V| =n and|E| =m, ﬁnd the largest subset
+V′⊂V of mutually non-adjacent vertices.
+This problem was discussed in Section VII of Reference [1] as a “variant” of the quan-
+tum approximate optimization algorithm introduced in that paper. To handle this problem,
+Farhi et al. suggested restricting the evolution to what we are calling the feasible subspace
+of the overall Hilbert space, the subspace spanned by computational basis elements cor-
+responding to independent sets, through modiﬁcation of what we are calling the mixing
+operator. We made the construction of the H-QAOA mixer Farhi et al. deﬁned more ex-
+plicit, and introduced partitioned mixers that have implementation advantages over the
+H-QAOA, or simultaneous, mixer deﬁned in Farhi et al.
+The conﬁguration space is the set ofn-bit strings, representing subsets V′ ⊂ V of
+vertices, wherei∈ V′ if and only ifxi = 1. The domain F is represented by the subset
+of all n-bit strings corresponding to independent sets ofG. In contrast to the domain
+for MaxColorableSubgraph, this domain is dependent on the problem instance, not just
+on the size of the problem. Because the conﬁguration is already bit-based, some aspects
+of mapping this problem to QAOA are simpler, but the partitioned mixing operators are
+more complicated in that they require controlled operation.
+15
+
+=== PDF PAGE 16 ===
+To support the discussion of controlled operators, we used the notationΛy(Q) to indi-
+cate a unitarytarget operator Q applied to a set of target qubits controlled by the statey
+of a set of control qubits:
+Λy(Q) =
+∑
+y′⁄=y
+|y′⟩⟨ y′|⊗ I +|y⟩⟨ y|⊗ Q. (18)
+More generally, we usedΛχ(Q) when the operation was controlled on a predicateχ:
+Λχ(Q) =
+∑
+y:¬χ(y)
+|y⟩⟨ y|⊗ I +
+∑
+y:χ(y)
+|y⟩⟨ y|⊗ Q. (19)
+Whether the subscript ofΛ is a string or predicate will be clear from context. For a
+Hamiltonian HQ such thatQ =e−iHQ, we can write the controlled unitary Equation(19)
+as:
+Λχ(Q) =e−iHχ⊗HQ. (20)
+We refer toHχ⊗HQ as thecontrolled Hamiltonian, χ-controlled-HQ. Note that the
+Hamiltonian Hχ that acts as the predicateχ on computational basis states, in the sense
+of Equation (3), is precisely the projectorHχ = ∑x:χ(x)=1|x⟩⟨x| that projects onto the
+subspace on which the predicate is 1. We used this relation to connect corresponding
+controlled Hamiltonians and controlled unitaries. In particular, when we want to apply a
+phase only on the part of the Hilbert space picked out by a predicateχ, we can write:
+Λχ
+(
+e−iθ
+)
+=e−iθHχ, (21)
+where we have adapted the control notation of Equation(20) to mean applying the oper-
+ator Q = e−iθ to zero target qubits. We often compile controlled unitaries (both phase
+separators and mixers) by using ancilla qubits to intermediate the control, e.g., for a single
+ancilla qubit (initialized at|0⟩ and returned thereto):
+(Λχ (Q))(comp) = Λχ (Xanc) Λxanc (Q) Λχ (Xanc). (22)
+We explore in detail the construction of such controlled Hamiltonians and unitaries in
+Reference [5].
+4.2.1 Partial Mixing Operator at Each Vertex
+Given an independentsetV′, we can adda vertexw /∈V′ toV′ while maintainingfeasibility
+only if none of its neighboring verticesnbhd(w) are already inV′. On the other hand,
+we can always remove any vertexw∈ V′ without aﬀecting feasibility. Hence, a bit-ﬂip
+operationatavertex, controlledbyitsneighbors(adjacentvertices), suﬃcesbothtoremove
+and add vertices while maintaining the independence property. These classical moves
+inspire the controlled-bit-ﬂip partial mixing operators.
+In general, for a stringy and a set of indicesV, let yV = (yvi)|V|i=1 be the substring of
+y in lexicographical order of the indices. In particular, letxnbhd(v) = (xw)w∈nbhd(v). (The
+ordering of the characters within the substring is arbitrary, because we only use this as
+the argument to predicates that are symmetric under permutation of the arguments.) For
+each vertex, we deﬁned the partial mixer as a multiply-controlledX operator:
+HCX,v =XvHNOR(xnbhd(v))
+= 2−DvXv ∏
+w∈nbhd(v)
+(I +Zw), (23)
+16
+
+=== PDF PAGE 17 ===
+with corresponding partial mixing unitary, a multiply-controlled-X(β) single-qubit rota-
+tion:
+UCX,v(β) =e−iβHCX,v
+= ΛNOR(xnbhd(v))
+(
+e−iβXv
+)
+= ΛNOR(xnbhd(v)) (Xv(β)),
+(24)
+whereXv(β) is the single-qubit operatorXv(β) =e−iβXv. SinceXv is both Hermitian and
+unitary,e−iβXv is a linear combination of the identity andXv for 0<β <π/ 2.
+4.2.2 Full QAOA Mapping
+Mixing operators. Let HCX =∑ni=1HCX,vi. We deﬁned two distinct types of mixers:
+• The simultaneous controlled-X mixer, Usim-CX(β) =e−iβHCX, and;
+• A class ofpartitioned controlled-X(β) mixers, UP-CX(β) =|P|i=1v∈PiUCX,v,
+whereP is an ordered partition of the partial mixers, in which each part contains mutu-
+ally commuting partial mixers. Since the partial mixers often do not commute, diﬀerent
+ordered partitions often result in diﬀerent mixers. By design, both the simultaneous and
+partitioned mixers restrict evolution to the feasible subspace. With respect to the second
+design criterion, there is nonzero transition amplitude from the|0⟩⊗n state corresponding
+to the empty set to all other independent sets; for0 < β < π/2, we got terms corre-
+sponding to products of the individual control-bit-ﬂip operators for all subsets of vertices,
+including those corresponding to independent sets. (For those subsetsS not corresponding
+to independent sets, the product will result in a independent setV′∈ S that does not
+include vertices inS which have neighbors whose controlled-bit-ﬂip preceded them in the
+partition order; thus, diﬀerent ordered partition aﬀects the amount of nonzero amplitude
+in the states corresponding to independent sets.) Two applications of any such partitioned
+mixer result in nonzero amplitude between any two feasible states. An interesting question
+is how diﬀerent ordered partitions aﬀect the ease with which good parameters can be found
+and the quality of the solutions obtained.
+Partitioned mixers are generally easier to compile than the simultaneous mixer, since
+the partitioned mixer is a product of multiqubit-controlled-n o t operators (generalized
+Toﬀoli gates) on at mostDG + 1 qubits. Altogether, this construction uses n partial
+mixers, which can then be compiled into single- and two-qubit gates. For many graphs,
+partitions in which each set contains multiple commuting partial mixers exist, reducing
+the depth.
+Phase-separation operator. The objective function is the size of the independent
+set, orf(x) =∑ni=1xi, which we could translate into a phase-separating Hamiltonian via
+substitution of(I−Z)/2 for each binary variable. Instead, we used aﬃne transformation of
+the objective functiong(x) =n− 2f(x), which, when translated, yields a phase separation
+operator of a simpler form:
+UP(γ) =e−iγHg =
+n∏
+i=1
+e−iγZi, (25)
+which is simply a depth-1 circuit ofn single-qubit Z-rotations.
+Initial state. A reasonable initial state is the trivial state|s⟩ =|0⟩⊗n corresponding to
+the empty set.
+17
+
+=== PDF PAGE 18 ===
+4.3 Example: MaxColorableInducedSubgraph
+Problem. Given κ colors, and a graphG = (V,E ) with n vertices andm edges, ﬁnd
+the largest induced subgraph that can be properlyκ-colored.
+The induced subgraph of a graphG = (V,E ) for a subset of verticesW ⊂ V is the
+graph H = (W,EW ), whereEW ={{v,w}∈ E : v,w ∈ W}. The conﬁguration space is
+the set [κ + 1]n of (κ + 1)-dit strings of lengthn, corresponding to partialκ-colorings of
+the graph: xv = 0 indicates that vertexv is uncolored andxv =c >0 indicates that the
+vertex has colorc. The induced subgraph is deﬁned by the colored vertices. The domain is
+the set ofproper partial colorings, those in which two colored vertices that are adjacent in
+G have diﬀerent colors. The objective functionf : [κ + 1]n→ N is the number of vertices
+that are colored:
+f(x) =
+∑
+v
+NEQ(xv, 0). (26)
+4.3.1 Controlled Null-Swap Mixer at a Vertex
+The controlled null-swap partial mixer we deﬁned has elements of the mixers we saw for
+the previous two problems, combining the control by vertex neighbors from MaxIndepen-
+dentSet and the color swap from MaxColorableSubgraph. Here, however, we made sub-
+stantial use of the uncolored state, and at each vertex only considered swapping a color
+with uncolored status. An uncolored vertex can be assigned colorc, maintaining feasibility,
+as long as none of its neighbors are coloredc, whereas uncoloring a vertex always preserves
+feasibility. This suggests a mixer may be obtained by swaps between each color and the
+uncolored state, controlled for each vertex by the colors of its neighboring vertices to en-
+sure feasibility. This reasoning in terms of classical moves inspires, for problems containing
+NEQ constraints, the controlled null-swap partial mixing Hamiltonian:
+HNS,v,a = (|a⟩⟨ 0|v +|0⟩⟨a|v)HNONE(xnbhd(v),a)
+= (|a⟩⟨ 0|v +|0⟩⟨a|v)
+∏
+w∈nbhd(v)
+(Iw−|a⟩⟨a|w), (27)
+with corresponding controlled null-swap-rotation mixing unitary:
+UNS,v,a(β) = ΛNONE(xnbhd(v),a)
+
+e−iβ(|a⟩⟨0|v+|0⟩⟨a|v) + ∑
+b/∈{0,a}
+|b⟩⟨b|v
+(
+(, (28)
+where:
+NONE(y,A ) =
+⋀
+y∈y
+a∈A
+NEQ(y,a ) =
+⋀
+a∈A
+|y|⋀
+i=1
+NEQ(y,a ) =
+⋀
+a∈A
+⋀
+i∈[|y|]
+NEQ(y,a ) (29)
+is shorthand for none of the variables iny having value any of the values inA; when
+A ={a} is a singleton set, we write simplyNONE(y,a ) = NONE(y,{a}).
+4.3.2 Full QAOA Mapping
+Mixing operators. Deﬁne:
+HNS =
+n∑
+i=1
+κ∑
+a=1
+HNS,i,a. (30)
+We deﬁned two distinct types of mixers:
+18
+
+=== PDF PAGE 19 ===
+• The simultaneous controlled null-swap mixer,Usim-NS(β) =e−iβHNS, and;
+• Afamilyof partitionedcontrollednull-swapmixers, UP-NS(β) =κa=1|P|i=1v∈PiUNS,v,a.
+Again, we have a variety of partitioned mixers, each speciﬁed by an ordered partition
+P of the vertices such that for each color the terms corresponding to the vertices in the
+partition commute. We segregated the colors into separate stages, but other orderings are
+possible.
+We used the one-hot encoding of Section 4.1, but with additional variablesxv,0 for
+the uncolored states: The binary variables for each vertexv are xv,0,xv,1,...,x v,k. This
+encoding usesn(κ + 1) computational qubits. In this encoding, a single partial mixer has
+the form:
+U (comp)NS,v,a (β) = ΛNOR(¯xnbhd(v),a)(e−iβ(Xv,0Xv,a+Yv,aYv,0)), (31)
+where ¯xnbhd(v),a = (xw,a)w∈nbhd(v). Reasoning similar to that we used for the mixers
+discussedfortheMaxIndependentSetandMaxColorableSubgraphproblemsshowsthatthis
+mixer has nonzero transition amplitude between any feasible computational-basis state and
+the trivial state corresponding to the empty set as the induced subgraph. Two applications
+of this mixer give nonzero transition amplitudes between any two feasible computational-
+basis states.
+To ease compilation, each partial mixer can be implemented as:
+U (comp)NS,v,a (β) = ΛNOR(¯xnbhd(v),a) (Xanc) Λxanc
+(
+e−iβ(Xv,0Xv,a+Yv,aYv,0)
+)
+ΛNOR(¯xnbhd(v),a) (Xanc),
+(32)
+where the control is intermediated by an ancilla qubit, which is initialized and returns to
+the zero state. Altogether, this construction usesκn partial mixers, which can then be
+compiled into single- and two-qubit gates. For many graphs, partitions in which each set
+contains multiple commuting partial mixers exist, reducing the depth.
+Phase-separation operator. We can translate the objective function to a Hamiltonian
+as usual, or translate a linear modiﬁcation of the objective function to obtain a simpler
+form. The phase separator functiong(x) = n− 2f(x) yields the simple phase separator
+Hamiltonian:
+H(comp)P =∑
+v
+Zv,0, (33)
+for which the corresponding unitary operator can be implemented using a depth-1 circuit
+of n single-qubit Z-rotations.
+Initial state. A reasonable initial state is|s⟩ =
+(
+|1⟩⊗| 0⟩⊗κ)⊗n, corresponding to all
+vertices uncolored.
+4.4 Example: MinGraphColoring
+Problem. Given a graphG = (V,E ), ﬁnd the minimal number of colorsk∗ required to
+properly color it.
+Agraphthatcanbe κ-coloredbutnot (κ−1)-coloredissaidtohave chromatic numberκ.
+We took as our conﬁguration space the set ofκ-dit strings of lengthn, whereκ =DG + 2.
+The domainF is the set ofproper colorings, many of which will use fewer thanκ colors.
+With DG + 2 colors, as we explain next, it is possible to get from any proper coloring to
+any other by local moves while staying in the feasible subspace, a property we made use
+19
+
+=== PDF PAGE 20 ===
+of in designing mixing operators. We comment that it may be advantageous to take use
+a larger number of colors since that may promote mixing, but the tradeoﬀs there would
+need to be determined in a future investigation.
+It is easy to see that any graph can be colored with DG + 1 colors. To see that
+κ =DG + 2 suﬃces to get between any twoDG + 1 colorings, ﬁrst recognize that given a
+DG + 2 coloring, one can always obtain aDG + 1 coloring by simply choosing a color and
+recoloring each vertex currently colored in that color with one of the other colors, since
+at least one of those colors will not be used by its neighbors. This move is local, in that
+it depends only on the neighborhood of the vertex. Now, given twoDG + 1 colorings C
+andC′, we iterated through colorsc to tranform between the two colorings via local moves
+while staying in the feasible space. LetS′⊂V be the set of vertices coloredc in C′, and
+let S⊂S′ be the set of vertices inS′ that are not coloredc in C. Consider all neighbors
+of vertices inS. For any neighbor coloredc, color it with the unused color. We are now
+free to color all vertices inS with colorc. Iterating through theκ colors provides a means
+of getting from oneDG + 1 coloring to another by local moves that remain in the feasible
+space.
+4.4.1 Partial Mixer at a Vertex
+We used a controlled version of the mixer in Section 4.1 that allows a vertex to change colors
+only when doing so would not result in an improper coloring; we may swap colorsa andb
+at vertexv only if none of its neighbors are coloreda orb. The partial mixer we deﬁned has
+a similar form to the controlled null-swap partial mixer deﬁned in Equations (27) and (28)
+but supports color changes between any two colors at a vertex, rather than only between
+colored and uncolored. Deﬁne the controlled-swap partial mixing Hamiltonian:
+HCS,v,{a,b} = (|a⟩⟨b|v +|b⟩⟨a|v)HNONE(xnbhd(v),{a,b})
+= (|a⟩⟨b|v +|b⟩⟨a|v)
+∏
+w∈nbhd(v)
+(Iw−|a⟩⟨a|w−|b⟩⟨b|w), (34)
+with corresponding controled-swap-rotation mixing unitary:
+UCS,v,{a,b} = ΛNONE(xnbhd(v),{a,b})
+
+e−iβ(|a⟩⟨b|v+|b⟩⟨a|v) + ∑
+c/∈{a,b}
+|c⟩⟨c|v
+(
+(, (35)
+where NONE(x,A ) was deﬁned in Equation (29). These mixers are controlled versions
+of the single qudit fully-connected mixer of Section 4.1, rather than the single qudit ring
+mixer, which makes sure that every possible state is reachable.
+4.4.2 Full QAOA Mapping
+Mixing Operator. Let:
+HCS =
+∑
+v
+∑
+a,b
+HCS,v,{a,b}. (36)
+We deﬁned two types of mixers:
+• The simultaneous controlled-swap mixer:
+Usim-NS(β) =e−iβHCS, and; (37)
+20
+
+=== PDF PAGE 21 ===
+• A family ofpartitioned controlled-swap mixers:
+UP-NS(β) =
+∏
+a,b
+|P|∏
+i=1
+∏
+v∈Pi
+UCS,v,{a,b}(β). (38)
+As before, each partitioned mixer is speciﬁed by an ordered partitionP of the vertices
+such that, for each color, the partial mixers for vertices in one set of the partition all
+commute with each other. Altogether, this construction uses(κ− 1)κn/2 partial mixers,
+For many graphs, partitions in which each set contains multiple commuting partial mixers
+exist, allowing diﬀerent partial mixers to be carried out in parallel, reducing the depth.
+Phase-separation operator. The objective function,f : [κ]n→ Z+, is:
+f(x) =
+κ∑
+a=1
+OR(EQ(x1,a ),..., EQ(xn,a )), (39)
+which counts the numbers of colors used. Letg(x) =κ−f(x) be the phase operator that
+counts the number of colorsnot used. LetHNONE(x,a) be the projector onto the subspace of
+H spanned by the states corresponding to strings in[κ]n that do not contain the character
+a. We haveHg =∑aHNONE(x,a), so:
+UP(γ) =e−iγHg =
+κ∏
+a=1
+e−iγHNONE(x,a). (40)
+Initial state. For the initial state, we used an easily foundDG + 1(orDG + 2) coloring.
+4.4.3 Compilation in One-Hot Encoding
+We now give partial compilations of the elements of the mapping to qubits using the one-
+hot encoding.
+Mixer. In the one-hot encoding, the controlled-swap mixing Hamiltonian can be written
+as:
+H(comp)CS,v,{a,b} = (Xv,aXv,b +Yv,aYv,b)HNOR(xnbhd(v),{a,b})
+= 2−Dv−1 (Xv,aXv,b +Yv,aYv,b) ∏
+w∈nbhd(v)
+∏
+c∈{a,b}
+(Iw,c +Zw,c) (41)
+with the corresponding unitary written as:
+U (comp)CS,v,{a,b}(β) = ΛNOR(xnbhd(v),{a,b})(e−iβ(Xv,aXv,b+Yv,aYv,b)), (42)
+where, for a string doubly indexedy = (yi,j)i,j, yA,B =
+(
+(yi,j)i∈A
+)
+j∈B
+denotes the substring
+consisting the charactersyi,j for whichi∈A andj∈B, in lexicographical ordering of the two
+indices. In particular,xnbhd(v),{a,b} indicates the bits corresponding to coloring the neighbors
+of v either colora or colorb. The ΛNOR(xnbhd(v),{a,b}) dictates that none of the neighbors of
+v take valuea or b for the swap to be performed. EachU(comp)CS,v,{a,b} is a controlled gate with
+2Dv control qubits and two target qubits. Altogether, the full mixing Hamiltonian can be
+implemented usingκ(κ− 1)n/2 controlled gates on no more thanDG + 2qubits.
+21
+
+=== PDF PAGE 22 ===
+Phase separator. Let UP,a(γ) = e−iγHNONE(x,a), so that the phase separator Equa-
+tion (40) can be written as UP(γ) = κa=1UP,a(γ). Each partial phase separator can
+alternatively be written as:
+UP,a = ΛNONE(x,a)
+(
+e−iγ
+)
+. (43)
+Initial state. Any coloring can be prepared in depth1 using n single-qubit X gates:
+|x⟩ =
+( n∏
+i=1
+Xi,xi
+(
+|0⟩⊗nκ. (44)
+5 QAOA Mappings: Orderings and Schedules
+Many challenging computational problems have a conﬁguration space that is fundamentally
+the set of orderings, permutations, or schedules of some number of items. Here, we intro-
+duce the machinery for mapping such problems to QAOA, using the traveling salesperson
+and several single-machine scheduling problems as illustrative examples.
+5.1 Example: Traveling Salesperson Problem (TSP)
+Problem. Given a set ofn cities, and distancesd : [n]2→ R+, ﬁnd an ordering of the
+cities that minimizes the total distance traveled for the corresponding tour. Atour visits
+each city exactly once and returns from the last city to the ﬁrst. Note that we deﬁned
+[n] ={1, 2,...,n } and [0,n ] ={0, 1,...,n }.
+While for expository purposes, we call these numbers distances, the mapping works for
+any cost function on pairs of cities, whether or not it forms a metric or not; the distances
+are not required to be symmetric, or to satisfy the triangle inequality.
+5.1.1 Mapping
+The conﬁguration space here is the set of all orderings of the cities. Labeling the cities by
+[n], the orderingι = (ι1,ι 2,...,ι n−1,ιn) indicates traveling from cityι1 to cityι2, then
+on to cityι3 and so on until ﬁnally returning from cityιn back to cityι1. The conﬁg-
+uration space includes some degeneracy in solutions with respect to cyclic permutations;
+speciﬁcally, for any orderingι, the conﬁguration space includes both(ι1,ι 2,...,ι n−1,ιn)
+and (ι2,ι 3,...,ι n,ι 1), even though they are essentially the same solution to the TSP. We
+leave in this degeneracy in the constructions of this section in order to preserve symmetries
+which make it simpler to construct and present our mixers. Note that, in practice, this
+degeneracy may be removed by ﬁxing a particular city as the starting point, resulting in
+ann− 1 city problem wit slightly simpler cost functions that yields the same solutions, for
+which it is straightforward to adapt the constructions below.
+As there are no problem constraints, the domain is the same as the conﬁguration space.
+The objective function is:
+f(ι) =
+n∑
+j=1
+dιj,ιj+1, (45)
+where we again and throughout employed the conventionιn+1 :=ι1.
+Ordering swap partial mixing Hamiltonians. Our mixers for orderings will be
+built from partial mixer Hamiltonians we call “value-selective ordering swap mixing Hamil-
+tonians.” Consider {ιi,ιj} ={u,v}, indicating that cityu (resp. v) is visited at theith
+(resp. jth) stop on the tour, or vice versa. There are
+(n
+2
+)2 value-selective ordering swap
+22
+
+=== PDF PAGE 23 ===
+mixing Hamiltonians,HPS,{i,j},{u,v}, which swap theith andjth elements in the ordering
+if and only if those elements are the citiesu and v:
+HPS,{i,j},{u,v}
+=
+∑
+ι:{ιi,ιj}={u,v}
+|(ι1,...,ι i−1,v,...ι j−1,u,...ι n)⟩⟨(ι1,...,ι i−1,u,...ι j−1,v,...ι n)| . (46)
+We made extensive use of a special case, theadjacent ordering swap mixing Hamilto-
+nians:
+HPS,i,{u,v} =HPS,{i,i+1},{u,v}. (47)
+To swap theith andjth elements of the ordering regardless of which cities those are,
+we used the value-independent ordering swap partial mixing Hamiltonian:
+HPS,{i,j} =
+∑
+{u,v}∈([n]2 )
+HPS,{i,j},{u,v}. (48)
+Of these
+(n
+2
+)
+partial mixing Hamiltonians,n are adjacent value-independent ordering
+swap partial mixing Hamiltonians:
+HPS,i =
+∑
+ι
+|(ι1,...ι i−1,ιi+1,ιi,ιi+2,...,ι n)⟩⟨ (ι1,...,ι n)|, (49)
+which swap theith element with the subsequent one regardless of which cities those are.
+These partial mixers can be combined in several ways to form full mixers, of which we
+explore two types.
+Simultaneous ordering swap mixer. Deﬁning HPS = ∑ni=1HPS,i, we have the
+“simultaneous ordering swap mixer”:
+Usim-PS(β) =e−iβHPS. (50)
+Diﬀerent subsets and partitions of the partial mixersUPS,{i,j},{u,v} = e−iHPS,{i,j},{u,v}
+and diﬀerent orderings of a partition yield diﬀerent partitioned ordering swap mixers. The
+color parity mixers we now deﬁned use the adjacent partial mixer. Other mixers, using
+more of the
+(n
+2
+)2 partial mixers, are possible, as are repeated versions of the following
+color-parity ordering swap mixer.
+Color-parity ordering swap mixer. Simultaneous ordering swap mixer. To deﬁne
+the ordered partition, we ﬁrst deﬁned an ordered partition on the set of adjacent partial
+mixers UPS,i,{u,v} for a ﬁxed tour positioni, where the parts of this partition contains
+mutually commuting partial mixers. We then partitioned thei to obtain a full ordered
+partition. Two partial mixers UPS,i,{u,v} and UPS,i,{u′,v′} commute as long as{u,v}\
+{u′,v′} =∅. Partitioning the(n2) pairs of cities intoκ parts such that each part contains
+only mutually disjoint pairs is equivalent to considering aκ-edge-coloring of the complete
+graph Kn and assigning an ordering to the colors. For oddn, κ = n suﬃces, and for
+even n, κ = n− 1 suﬃces [40]. (Using the geometrical construction based on regular
+polygons, we can deﬁne the canonical partition by placing the vertices at the vertices of
+the polygon in order, with the last one in the center for evenn; the parts of the partition
+are then ordered by their lowest element under the lexicographical ordering of the pairs
+of cities{u,v}.) LetPcol = (P1,...,P c,...,P κ) be the resulting ordered partition, which
+we call a “color partition” of the pairs of cities. For example, forn = 4, the partition
+23
+
+=== PDF PAGE 24 ===
+isPcol = ({{1, 2},{3, 4}},{{1, 3},{2, 4}},{{1, 4},{2, 3}}). For diﬀerent tour positionsi,
+two partial unitariesUPS,i,{u,v} and UPS,i′,{u′,v′} commute ifi and i′ are not consecutive
+(|i−i′ mod n|> 1). Thus, for partitioning the positions, we may use the parity partition
+Ppar, as deﬁned in Section 4.1. We can thus deﬁne the “color-parity” ordered partition
+PCP =Pcol×P par, with the induced lexicographical ordering of the parts. The partPc,odd
+contains allUPS,i,{u,v} such thati is odd and edge{u,v} is coloredc, i.e., inPc, and deﬁnes
+the unitary:
+Uc,odd(β) =
+∏
+(i,{u,v})∈Pc,odd
+UPS,i,{u,v}(β), (51)
+where the ordering of the products does not matter because each term commutes. It is a
+similar case forPc,even andUc,even, andPc,last andUc,last. Thus, we have the full color-parity
+mixer:
+UCP(β) =UPCP-PS(β) =
+∏
+Pc,π∈PCP
+Uc,π, (52)
+where the unitaries{Uc,π} are applied in the order they appear inPCP. The color-parity
+partition is optimal with respect to the number of parts in the partition (exactly so for even
+n and up to an additive factor of 2 for oddn). By construction, application of this mixer to
+any feasible state results in a feasible state, thus satisfying the ﬁrst design criterion. With
+regard to the second criterion, while a single application of this mixer will have nonzero
+transitions only between orderings that swap cities in tour positions no more than two
+apart, repeating the mixer suﬃciently many times results in nonzero transitions between
+any two states representing orderings. More precisely, since any ordering can be obtained
+from any other with no more thann(n−1)2 adjacent swaps, alternating between odd and
+even swaps,n(n−1)2 repeats suﬃce for any0<β <π/ 2.
+5.1.2 Compilation
+Encoding orderings. We encoded orderings in two stages: First into strings, and then
+into bits making use of the encodings from Section 4. Here, we focus on a “direct encoding”
+as opposed to the “absolute encoding” that is introduced in Section 5.3. Other encodings
+of orderings are possible, such as the Lehmer code and inversion tables. In direct encoding,
+an orderingι = (ι1,...,ι n) is encoded directly as a string[n]n of integers. Once in the
+form of strings, any of the string encodings introduced in Section 4 can be applied. We
+applied the one-hot encoding withn2 binary variables; the binary variablexj,u indicates
+whether or notιj =u in the ordering, in other words, whether cityu is visited at thej-th
+stop of the tour.
+Phase separator. We used the phase functiong(ι) = 4f(ι)−(n−2)∑nu=1∑nv=1d(u,v ),
+which translates to a phase separator encoded as:
+H(enc)P =
+n∑
+i=1
+n∑
+u=1
+n∑
+v=1
+d(u,v )Zu,iZv,i+1. (53)
+The phase separating unitary corresponding to Equation(53) imparts a phase determined
+by the sum of the distances between successive cities to a state corresponding to a tour.
+This unitary can be implemented usingn2(n−1) two-qubit gates, which mutually commute.
+Using the same color-parity partition of the terms as for the color-parity ordering swap
+mixer, this can be done in depth2κ≤ 2n.
+24
+
+=== PDF PAGE 25 ===
+Mixer. The individual value-selective ordering swap partial mixer, which swaps cities
+u, v between tour positionsi and j, is expressed in the one-hot encoding as:
+U (enc)PS,{i,j},{u,v}(β) =e−iβHPS,{i,j},{u,v} , (54)
+H(enc)PS,{i,j},{u,v} =S+u,iS+v,jS−u,jS−v,i +S−u,iS−v,jS+u,jS+v,i, (55)
+where:
+S+ =X +iY =|1⟩⟨ 0|, (56)
+S− =X−iY =|0⟩⟨ 1|. (57)
+Theith adjacent value-selective swap partial mixer (Equation(47)) is the special case:
+H(enc)PS,i,{u,v} =S+u,iS+v,i+1S−u,i+1S−v,i +S−u,iS−v,i+1S+u,i+1S+v,i . (58)
+Each of the two terms of the formS+S+S−S− in Equation (58), can be written as a
+sum of eight terms, each a product of4 Pauli operators (e.g.,XXYY ). The color-parity
+partitioned ordering swap mixer of Equation(52) can be implemented using(n− 1)
+(n
+2
+)
+of
+these 4-qubit gates, implementable in depth2κ≤ 2n in these gates. The two-qubit gate
+circuit depth is at most2κ times the depth of a compilation for such4-qubit gates.
+Initial state. The initial state, an arbitrary ordering, can be prepared from the zero
+state|00... 0⟩ using at mostn single-qubit X gates.
+5.2 Example: Single Machine Scheduling (SMS), Minimizing Total Squared Tardiness
+Problem. (1|dj|∑wjT 2j ). Given a set ofn jobs with processing timesp, deadlines d,
+and weightsw, ﬁnd a schedule minimizing the total weighted squared tardiness∑nj=1wjT 2j .
+The tardiness of jobj with completion timeCj is deﬁned asTj = max{0,Cj−dj}. Here,
+we took all quantities to be integers.
+The conﬁguration space and domain are the set of all orderings of the jobs. Given an
+orderingι of the jobs in which jobi is theσi-th job to start, the corresponding schedule
+s(ι) is that in which each job starts as soon as the earlier jobs ﬁnish:sj(ι) =∑σj−1i=1 pιi.
+For a jobi starting at timesi, consider the expression:
+min
+yi∈[0,di−pi]
+(si +pi−di +yi)2 =
+{
+(si +pi−di)2, s i +pi>d i,
+0, otherwise. (59)
+When the “slack” variableyi∈ [0,di−pi] is minimized, this expression is equal to the
+square of the tardiness of jobi. Therefore, we recast SMS as the minimization of:
+f(ι, y) =
+n∑
+i=1
+wi(si(ι) +pi−di +yi)2 (60)
+over the conﬁguration space of orderingsι and slack variablesy.
+Using the direct one-hot encoding deﬁned in Section 5.1.2, in whichxj,α indicates that
+job j is theα-th to start, this is equivalent to :
+f(x, y) =
+n∑
+i=1
+wi(si(x) +pi−di +yi)2, (61)
+25
+
+=== PDF PAGE 26 ===
+where:
+si(x) =
+n∑
+α=2
+xi,α
+∑
+j⁄=i
+pj
+α−1∑
+β=1
+xj,β. (62)
+NoteEquation (61)mayseemtobequartic; however, theencodingconstraints ∑ixi,α =∑
+αxi,α = 1 that come with the direct one-hot encoding imply that the quartic terms disap-
+pear in the full expansion. The objective function is thus a cubic pseudo-Boolean function,
+which corresponds to a 3-local diagonal Hamiltonian for the phase separator.
+Mixer and initial state. We used the same initial state preparation, and the same
+mixer as in TSP for mixing the ordering, in addition to any of the single-qudit mixers from
+Section 4.1.1 for each of the slack variables. Because the ordering and slack mixers act on
+separate sets of qubits (x and y), they can be implemented in parallel. Note that the only
+requirement for the upper bound of the range of the slack variableyi is that it beat least
+di−pi +1. In particular, it could be2⌈log2(di−pi+1)⌉, allowing us to use the binary encoding
+without modiﬁcation.
+5.3 SMS, Minimizing Total Tardiness
+Problem. (1|dj|∑wjTj). Given a set of jobs with integer processing timesp, deadlines
+d, and weightsw, ﬁnd a schedule minimizing the total weighted tardiness∑nj=1wjTj.
+5.3.1 Encoding and Mixer
+The conﬁguration space is the set of orderings of the jobs; the domain is the same.
+Absolute and positional encodings. In the “absolute” encoding of the ordering
+ι = (ι1,...,ι n), we assigned each itemi a valuesi∈ [0,h ], where the “horizon”h is a
+parameter of the encodings, such that for alli < j, sιi < sιj. In certain cases, there will
+be an item-speciﬁc horizonhi such thatsi∈ [0,hi]. Note that in general, the relationship
+between encoded states and the orderings they encode is not injective, but it will be in the
+domains to which we apply it. Once the orderingι is encoded as a strings(ι)∈× ni=1[0,hi],
+the resulting string can be encoded using any of the string encodings previously introduced.
+We call the special case of the “absolute” encoding withh = n the “positional” encoding;
+using the one-hot encoding of the resulting strings, the “direct” and “positional” encodings
+are the same.
+Time-swap mixer. We now introduce a mixer that is speciﬁc to the absolute encoding
+in which there is a single horizonh and each jobi has a processing timepi. Let the horizon
+be h =∑ni=1pi. Each job can start between time0 andhi =h−pi. (Other optimizations
+may be made on an instance-speciﬁc basis, though we neglect elaborating on these for
+ease of exposition.) We used a “time-swap” partial mixer that acts on absolutely encoded
+orderings:
+HTS,t,{i,j} =|t +pj,t⟩⟨t,t +pi|i,j +|t,t +pi⟩⟨t +pj,t|i,j, (63)
+which swaps jobsi andj when they are scheduled immediately after one another, with the
+earlier one starting at timet. To swap them regardless of the time at which the earlier one
+starts, we used:
+HTS,{i,j} =
+h−pi−pj∑
+t=0
+HTS,t,{i,j}. (64)
+26
+
+=== PDF PAGE 27 ===
+The simultaneous time-swap mixer is constructed as usual:
+UP-TS(β) =e−iβHTS, (65)
+where HTS =∑{i,j}∈([n]2 )HTS,{i,j}. Note that while the simultaneous versions of the total
+time-swap and adjacent permutation mixers are exactly the same, and in particular:
+HTS,{i,i′} =
+n−1∑
+j=1
+HPS,j,{i,i′}, (66)
+the individual partial mixerHTS,t,{i,j} has no equivalent that acts on the unencoded order-
+ing, because it acts depending on the total processing times of the preceding jobs rather
+than their number.
+Now consider the “time–color” ordered partitionPTC = [0,h ]× [κ], where, as in Sec-
+tion 5.1.1, we used a particularκ-edge-coloring of the complete graph. (Again, further
+optimizations may be made on an instance-speciﬁc basis.) The partition Pt,c contains
+the partial time-swap mixersUTS,t,{i,j} for which the edge{i,j} is colored c. The full
+“time–color” mixer is:
+UTS(β) =
+h∏
+t=0
+κ∏
+c=1
+U(t,c)-TS(β), (67)
+where U(t,c)-TS is the product of the (mutually commuting) partial mixers in the partPt,c.
+5.3.2 Mapping and Compilation
+We used absolute one-hot encoding, in which the ordering is encoded as a string using ab-
+solute encoding and then the string is further encoded using one-hot encoding. Speciﬁcally,
+we encoded an orderingι intoi(hi− 1)≤nh qubits, where qubit(i,t ) indicates if jobi
+starts at timet:
+|ι⟩↦→
+n⨂
+i=1
+[
+|0⟩⊗(si−1)|1⟩| 0⟩⊗(hi−si)]. (68)
+Phase separator. The objective function is the weighted total tardiness:
+f(ι) =
+n∑
+i=1
+wi max{0,di−si(ι)−pi}. (69)
+This yields the encoded phase Hamiltonian:
+H(enc)P =
+n∑
+i=1
+wi
+hi∑
+t=di−pi+1
+(t +pi−di)Zi,t. (70)
+Mixer. The partial time-swap mixer:
+HTS,t,{i,j} =|t +pj,t⟩⟨t,t +pi|i,j +|t,t +pi⟩⟨t +pj,t|i,j (71)
+in absolute one-hot encoding is equivalent to:
+H(enc)TS,t,{i,j} =S+i,t+pjS+j,tS−i,tS−j,t+pi +S+i,tS+j,t+piS−i,t+pjS−j,t. (72)
+Using the time–color partitioned time-swap mixer, this corresponds to a circuit ofh
+(n
+2
+)
+4-qubit gates in depthhκ.
+Initial state. We used an arbitrary ordering of the jobs as the initial state.
+27
+
+=== PDF PAGE 28 ===
+5.4 SMS, with Release Dates
+Problem. (1|dj,rj|∗). Given a set of jobs with integer processing timesp, deadlines d,
+release times r, and weightsw, ﬁnd a schedule that minimizes some function of the tardi-
+ness, such that each job starts no earlier than its release time.
+We considered SMS problems with release timesrj. We do not specify the objective
+function here, as any of those used in previous sections are still applicable. Our focus in
+this section is to introduce a modiﬁcation of the time-swap mixer that preserves feasibility
+with release times.
+Let the horizon h be some upper bound on the maximum completion time, e.g.,
+maxjdj +∑jpj. Let bj = h +∑j−1i=1pi be a special “buﬀer” time for jobj. Let Wj =
+[rj,h−pj] be the window of times in which jobj can start.
+Consider the conﬁguration space×nj=1 [Wj∪{bj}], i.e., schedules{s} in which a job is
+scheduled either between its release time and the horizon or at its buﬀer time slot. The
+domain is the subset of the conﬁguration space that satisﬁes the problem constraint that
+no two jobs overlap.
+5.4.1 Partial Mixer: Controlled Null-Swap Mixer
+We now introduce a mixer, speciﬁcally a controlled null-swap mixer as used for graph
+coloring in Section 4.3, that preserves feasibility and avoids getting “stuck”:
+HNS,i,t = (|bi⟩⟨t|i +|t⟩|bi⟩)
+∏
+j⁄=i
+
+Ij− ∑
+t′∈nbhdi,t(j)
+⏐⏐t′⟩⟨t′⏐⏐j
+(
+(, (73)
+which corresponds to the unitary:
+UNS,i,t(β) = Λ¯snbhdi,t(j)
+
+e−iβ(|bi⟩⟨t|i+|t⟩⟨bi|) + ∑
+t′∈Wi\{t}
+⏐⏐t′⟩⟨t′⏐⏐
+(
+( (74)
+where:
+nbhdi,t(j) = [max{t−pj + 1,rj},t +pi− 1] (75)
+is the temporal “neighborhood” of jobi at timet with respect to jobj, i.e., the set of times
+at which starting jobj would conﬂict with jobi, andsnbhdi,t =
+((
+sj,t′
+)
+t′∈nbhdi,t(j)
+)
+j⁄=i
+. The
+role of the buﬀer site is similar to the “uncolored” option in ﬁnding the maximal colorable
+induced subgraph in Section 4.3. Such mixing terms enables jobs to move freely in and
+out [0,T 0] without inducing job overlap, hence enabling exploration of the whole feasible
+subspace. Recall the controlled unitary notation Λy(Q) is deﬁned in Equation (18) in
+Section 4.2.
+5.4.2 Encoding and Compilation
+Given the∑ni=1|Wi| partial mixers, one for each jobi and time t∈ Wi, we can deﬁne
+simultaneous and sequential mixers as above. Using one-hot encoding, the partial mixer
+Hamiltonian is:
+H(enc)NS,i,t =
+
+∏
+j⁄=i
+∏
+t′∈nbhdi,t(j)
+I +Zj,t′
+2
+(
+( (Xi,tXi,bi +Yi,tYi,bi) . (76)
+The controlled null-swap can be further compiled using ancilla qubits, as in Section 4.2.
+While the cost of compilation could be bounded based on the degree of the graph, the
+28
+
+=== PDF PAGE 29 ===
+overlap of the various partial mixers may be more complicated (with respect to partitioning
+into disjoint sets) and expensive (with respect to number of gates and ancilla qubits)
+depending on the SMS instance.
+Objectivefunction. Asanexampleobjectivefunction, weagainconsideredminimizing
+the weighted total tardiness, Equation(69). The one-hot encoded phase Hamiltonian takes
+the form of Equation(70), withbj included in the summation range oft:
+H(enc)P =
+n∑
+i=1
+wi
+)
+(bi−di)Zi,bi +
+hi∑
+t=di−pi+1
+(t +pi−di)Zi,t,
+
+ (77)
+and the corresponding unitary can be implemented with∑j(hj−dj + 1) single qubit
+Z-rotation gates.
+Initial state. Any feasible schedule can be used as the initial state. In particular, we
+used a greedy earliest-release-date schedule. Assume without loss of generality that the
+jobs are ordered by their release times, i.e.,r1≤ r2≤···≤ rn. Then set s1 = r1 and
+recursively setsi = max{ri,si−1 +pi−1}, which is feasible though likely suboptimal.
+5.4.3 Mapping Variants
+In the construction above, each jobj is assigned a “buﬀer” timebj, and a phasebj−dj
+applied whenever that job is scheduled at its buﬀer time. The factorbj−dj is arbitrary.
+Rather than considering schedules in which some jobs are at their buﬀer time, one could
+consider “partial schedules”, in which a job is either scheduled at a time between0 and h
+or is in its buﬀer. The phase applied when a job is in its buﬀer need not bebj−dj but
+in fact can be arbitrary, e.g., some common “buﬀer phase factor”B. In this case, we must
+deﬁne a scheme for associating each partial schedule with a canonical complete schedule,
+e.g., greedily starting the buﬀered jobs after those that are already scheduled. In this way,
+the states corresponding to partial schedules can still be considered as part of the domain.
+6 Conclusions
+We introduced a quantum alternating operator ansatz (QAOA), an extension of Farhi et
+al.’s quantum approximate optimization algorithm, and showed how to apply the ansatz to
+a diverse set of optimization problems with hard constraints. The essence of this extension
+is the consideration of general parameterized families of unitaries rather than only those
+corresponding to the time evolution of a local Hamiltonian, which allows it to represent a
+larger, and potentially more useful, set of states than the original formulation. In particu-
+lar, refocusing on unitaries rather than Hamiltonians in the speciﬁcation allows for more
+eﬃciently implementable mixing operators.
+The original algorithm is already a leading candidate quantum heuristic for exploration
+on near-term hardware; our extension makes early testing on emerging gate-model quan-
+tum processors possible for a wider array of problems at an earlier stage. After formally
+introducingtheansatz, andprovidingdesigncriteriaforitscomponents, weworkedthrough
+a number of examples in detail, illustrating design techniques and exhibiting a variety of
+mixing operators. In the appendix, we provide a compendium of QAOA mappings for over
+20 problems, organized by type of mixer.
+While the approach of designing mixing operators to keep the evolution within the
+feasible subspace appears quite general, as illustrated by the wide variety of examples we
+29
+
+=== PDF PAGE 30 ===
+have worked out, it is not universally applicable. Many of the problems in Zuckerman [41]
+have the form of optimizing a quantity within a feasible subspace consisting of the solu-
+tions to an NP-complete problem. Not only is an initial starting state (corresponding to
+one or more feasible solutions) hard to ﬁnd, designing the mixing operator is also prob-
+lematic. Even given a set of feasible solutions to an NP-complete problem, it is typically
+computationally diﬃcult to ﬁnd another [42], making it diﬃcult to design a mixer that
+fully explores the feasible subspace. The situation here is somewhat subtle, with it being
+easy to show in the case of SAT that ﬁnding a second solution when given a ﬁrst remains
+NP-complete, but for a Hamiltonian cycle on cubic graphs, given a ﬁrst solution, a second
+is easy to ﬁnd (but not a third). See References [43, 44] for results on the complexity
+of “another solution problems” (ASPs). This diﬃculty in mapping Zuckerman’s problems
+to QAOA further illustrates reasons for the diﬃculty of these approximate optimization
+problems.
+While we have given basic design criteria for initial states, mixing operators, and phase-
+separation operators, we have barely scratched the surface in terms of which possibilities
+perform better than others. For most of the example problems, we discussed multiple
+mixers, coming from diﬀerent partitions and orderings of partial mixers, diﬀerent choices
+related to connectivity, or diﬀerent numbers of repeats of operators. Analytic, numerical,
+and ultimately experimental work is required to understand which of these mixers are most
+eﬀective, and also to determine potential trade-oﬀs with respect to robustness to noise or
+control error, eﬃciency of implementation, eﬀectiveness of the mixing, and diﬃculty in
+optimizing the parameters. Similar questions arise with respect to choosing an initial
+state. An important future research direction is to explore the trade-oﬀs between diﬀerent
+mixing operator designs, in particular how a mixer’s connectivity relates to its eﬀectiveness
+in diﬀerent settings. Of particular interest is whether or not allocating resources to more
+complicated mixing operators at the expense of overall QAOA circuit depth results in
+enhanced performance. Similarly, whetherk-local mixers can be suﬃciently advantageous
+to warrant their increased gate complexity remains to be explored. How the eﬃciency of
+diﬀerent mixers depends on the underlying mixing graph (e.g., ring vs. fully-connected
+mixers) is studied for graph coloring problems in a forthcoming paper.
+Eﬀective parameter setting remains a critical, but mostly open, area of research. While
+for ﬁxedp, brute-force search of parameter search space was proposed [1], it is practical only
+for small values ofp; asp increases, the parameter optimization becomes ineﬃcient due to
+the curse of dimensionality, Guerreschi et al. [33] providing a detailed analysis. In certain
+simple [21] or highly symmetric [19] cases, some insight into parameter setting forp> 1 has
+been obtained, but even in the simplest cases, understanding good choices of parameters
+seems nontrivial [21]. Improved parameter setting protocols may come from adapting
+techniques from existing control theory and parameter optimization methods, and through
+using insights gained from classical simulation of quantum circuits and experimentation
+on quantum hardware as it becomes available. In particular, classical simulation of the
+quantum circuits can take advantage of the local structure of the objective function (when
+it is indeed local) and the feasibility of classically simulating the measurement oflog(n)-
+qubits in a QAOA circuit by adapting results for IQP circuits [45].
+To run on near-term quantum hardware, further compilation will be required. In many
+cases, we have left the compilation at the level of multiqubit operators that need to be
+further compiled to the gate set natively available on the hardware, most likely certain
+one- and two-qubit gates. Clearly, issues such as connectivity will be critical to the im-
+plementability and success of QAOA circuits. Furthermore, near-term hardware will have
+additionalrestrictions, includingwhichqubitseachgatecanbeappliedto, thedurationand
+30
+
+=== PDF PAGE 31 ===
+ﬁdelity of the gates, and cross-talk, among others. This necessitates additional compilation,
+especially to optimize success probability on pre-fault-tolerant devices. Other architectures,
+e.g., ones based on higher-dimensional qudits, may prompt other sorts of compilations as
+well. Recently, approaches for compiling quantum circuits, including QAOA circuits, to
+realistic hardware have been explored [22, 35, 46], but that research direction remains open
+to innovation. An interesting research direction is to explore the power of quantum alter-
+nating operator ansatz states built from natively available gates and directly incorporating
+the connectivity of the underlying hardware.
+The robustness of these circuits to realistic error requires further exploration. In the
+near term, the question is how robust QAOA circuits are to realistic noise and how best to
+incorporate resource-efficient techniques to improve the robustness. In the longer term, the
+question becomes how to best incorporate the full spectrum of error correction techniques
+into this framework.
+We expect some cross-fertilization between research on QAOA and research on AQO
+and quantum annealing, especially in thep≫ 0 regime. A particularly fruitful area of
+further study would be to build on the results of Yang et al. [18]. They used Pontryagin’s
+minimization principle to show that a bang–bang schedule is (essentially) always optimal,
+providing support for QAOA, and gate-based approaches, generally. However, the argu-
+ment does not provide an eﬃcient means to ﬁnd such a schedule. Thus, how to ﬁnd eﬀective
+schedules remains open in the AQO realm, with it currently being completely open as to
+whether allowing non-bang–bang schedules makes the ﬁnding of good schedule parameters
+easier. Similarly, exploiting certain structural commonalities with VQE is likely to be
+fruitful. In the smallp regime, we expect further cross-fertilization between QAOA and
+other models being considered for early quantum supremacy experiments, such as random
+circuits, boson sampling, and IQP circuits. Results for IQP circuits, whose close structural
+similarities with QAOA circuits have already provided insights [17], and whose advanced
+status with respect to error analysis and fault tolerance [47, 48] are likely to prove especially
+useful.
+A number of extensions are possible. We brieﬂy mentioned two classes. The ﬁrst is
+hybrid methods. As one example, some other algorithm, either classical or quantum, could
+berunﬁrst inordertoprovideagoodinitialstate, andQAOAthenusedtoimproveuponit;
+this could be repeated several times with diﬀerent initial states when the other algorithm
+is stochastic. Another example of a hybrid method is a parameter-setting protocol, in
+which a classical algorithm uses the results of measurements during and after runs of
+a QAOA circuit to iteratively improve the parameters. A second class of extensions is
+versions of QAOA with many parameters. For example, we introduced mixing operators
+that are repeated applications of some basic mixer; each application could use a diﬀerent
+parameter. The same could be done with mixers consisting of many partial mixers. Until
+we have a better grasp of parameter setting in the single parameter per mixing operator
+case, and for the eﬀectiveness of the diﬀerent mixers, it makes sense to restrict to the
+simple case. The one exception is to take advantage of the speciﬁc gates natively available,
+and to use essentially a VQE approach, as suggested in Reference [26]. That approach
+makes excellent use of the capabilities of near-term hardware but may be more limited
+than single-parameter-per-phase QAOA in what it can tell us about parameter setting and
+the design of scalable quantum heuristics.
+The biggest open question is the eﬀectiveness of this approach as a quantum heuris-
+tic, and its potential impact in broadening the array of established applications of quan-
+tum computing. In particular, whether or not this approach—or quantum algorithms
+generally—can provide advantages for approximate optimization in terms of either approx-
+31
+
+=== PDF PAGE 32 ===
+imability or computational eﬃciency remains a fundamental yet tantalizing open problem.
+While obtaining further analytic results may be possible in some cases, in general, we will
+have to try it out and see. Improved simulation techniques for quantum circuits, includ-
+ing potentially approaches tailored to QAOA circuits, can provide some insight, but the
+ultimate test will be experimentation on quantum hardware itself.
+7 Acknowledgements
+The authors would like to thank the other members of NASA’s QuAIL group for useful
+discussions about QAOA-related topics, particularly Salvatore Mandrà and Zhang Jiang.
+S.H. was supported by NASA under award NNX12AK33A. He thanks Al Aho for addi-
+tional support and guidance, and the Universities Space Research Association (USRA) and
+the NASA Ames Research Center for the opportunity to participate in the USRA Feynman
+Quantum Computing Academy program that enabled this research. Z.W. and D.V. were
+supported by NASA Academic Mission Services, contract number NNA16BD14C. B.O.
+was supported by a NASA Space Technology Research Fellowship. The authors would like
+to acknowledge support from the NASA Advanced Exploration Systems program and the
+NASA Ames Research Center. The views and conclusions contained herein are those of the
+authors and should not be interpreted as necessarily representing the oﬃcial policies or en-
+dorsements, either expressed or implied, of the U.S. Government. The U.S. Government is
+authorized to reproduce and distribute reprints for Governmental purpose notwithstanding
+any copyright annotation thereon.
+A Compendium of Mappings and Compilations
+We summarize QAOA mappings for a variety of problems. All problems considered are in
+NPO [49, 50]. Problem names are compact versions of the names in Ausiello et al. [50]
+unless a diﬀerent reference is given. Most of the mappings are new to this paper; for the
+exceptions, a reference is given, though in all such cases only H-QAOA mappings have been
+considered previously. Approximability results are taken from Ausiello et al. [50] unless
+otherwise mentioned.
+We specify partial mixing Hamiltonians for each problem, which can then be used
+to deﬁne two types of full mixers, simultaneous mixers in H-QAOA that correspond to
+time evolution under the sum of the partial mixing Hamiltonians, and partitioned mixers
+(which in general are not in H-QAOA) that correspond to products of unitary operators
+deﬁned by all the partial mixers in an order speciﬁed by an ordered partition, possibly
+repeated. We will not specify the full mixers, since they are straightforward to derive
+from the partial mixers. For each problem, we provide a compilation with resource counts
+for at least one mixer or a class of mixers. In most cases, we mention only one partial
+mixer and compilation, though as we have seen, there are many possibilities for partial
+mixers, and for compilations of the operators. For the phase operators, we employed
+aﬃne transformations of the objective functions where possible to eliminate constants and
+identitied terms as described in the main text. A rigorous approach to constructing phase
+operators is given in Reference [5].
+The resource counts given are upper bounds. We have not worked to ﬁnd optimal
+compilations. For the simpler problems that have the potential for implementation in the
+nearterm, wegiveexactresourceboundswhenwehavesuchresults, ratherthanonlygiving
+the complexity. We give bounds for the number of computational qubits required, and also
+for the number of ancilla qubits, when used. We give resource counts for the number of
+32
+
+=== PDF PAGE 33 ===
+arbitrary two-qubit gates required to implement a given operator, merging single qubit
+operations into two-qubit gates before or after when possible. We computed the depth
+for such circuits, which gives a lower bound on the circuit depth on near-term hardware,
+which will generally be higher due to connectivity and other constraints. In many cases,
+we did not compile all the way down to two-qubit gates, but instead speciﬁed the resource
+count in terms of multiqubit operators which would then yield a two-qubit gate count
+and depth given compilations of those multiqubit mixers. Throughout, the initial state is
+always obtained by applying a constant-depth circuit to the state|0⟩⊗∗.
+An algorithmA achieves an approximation ratio r ≤ 1 if for all instances x of a
+maximization problem it satisﬁesA(x)/OPT(x)≥r, whereOPT(x) is the optimal solution
+of the given instance. Both cases in whichr is constant and in whichr is a function of the
+problem parameters were considered. For minimization problems, the approximation ratio
+is similarly deﬁned withr≥ 1 andA(x)/OPT(x)≤r. Unfortunately, there are multiple
+conventions in the literature, with the approximation ratio given as1/r for minimization,
+maximization, or both. Fortunately, there is no ambiguity for a given value ofr to which
+convention is being used. Here, instead of being internally consistent, we simply took the
+ratio as stated in the reference cited so as to facilitate easy comparison with the literature.
+All approximation results below concern eﬃcient classical algorithms. Quantifying the
+performance of QAOA for these problems remains an important future research direction.
+For all problems on a graphG = (V,E ), let|V| =n,|E| =m, andDG be the maximum
+vertex degree.
+A.1 Bit-Flip ( X) Mixers
+In this section, we consider problems where all states of the conﬁguration space are feasible,
+and hence the original QAOA construction may be used. Speciﬁcally, for all problems we
+can use the following:
+Variables: n binary variables.
+Initial state:|0⟩⊗n or|+⟩⊗n.
+Mixer: The standard mixerUHM (β) =e−iβB,
+where B =∑mj=1Xj, which can be implemented with depth1. (Since all terms commute
+and act on separate qubits, we do not need to consider partitioned variants of the standard
+mixer.)
+Phase separator:UP(γ) = exp[−iγHP], where we specifyHP for each problem.
+All problems in this section can be trivially extended to their weighted version by multi-
+plying the terms of the phase Hamiltonian by the corresponding weights.
+A.1.1 Maximum Cut
+Problem: Given a graphG = (V,E ), ﬁnd a subsetS⊂V such that the number of edges
+betweenS and V\S is the largest.
+Prior QAOA work:Numerical [1] and analytical [21] results obtained forp = 1.
+Approximability: APX-complete[51,52]. NP-hardtoapproximatebetterthan 16/17[53].
+Semideﬁnite programming achieves0.8785 [54], which is optimal under the unique games
+conjecture [55]. On bounded degree graphs withDG≥ 3, it can be approximated to within
+0.8785 +O(DG) [56], in particular to0.921 for DG = 3, but remains APX-complete [51].
+Conﬁguration space, Domain, and Encoding:{0, 1}n, indicating whether each ver-
+tex is inS or not.
+Objective: max|{{u,v}∈ E :u∈S,v /∈S}|.
+Phase separator: HP =∑{u,v}∈EZuZv.
+33
+
+=== PDF PAGE 34 ===
+Resource count for phase separator:m gates with depth at mostDG + 1.
+Variant: Directed-MaxCut (Max-Directed-Cut), where we seek to maximize the number
+of thedirected edges leavingS. The phase separator is replaced byHP =∑(u,v)∈E(Zu−
+Zv +ZuZv).
+A.1.2 Max- 𝓁-SAT
+Problem: Given m disjunctive clauses overn Boolean variables x, where each clause
+contains at most𝓁≥ 2 literals, ﬁnd a variable assignment that maximizes the number of
+satisﬁed clauses. Let xα be the variables involved in clauseα and Cα(xα) = 1 (0) if the
+state of xα (resp., does not) satisﬁes the clause.
+Prior QAOA work:Considered in Reference [20].
+Approximability: APX-complete [51]. The best classical approximation ratio for Max-
+2-Sat is 0.940 [57], which cannot be improved beyond 0.943 under the unique games
+conjecture [55], or beyond 0.954 unless P = NP [53]. For Max-3-Sat, an eﬃcient 7/8-
+approximation [58] is known, which is optimal unless P = NP [53]. Remains APX-
+complete when any literal appears in at most3 clauses [50].
+Objective: max∑mj=αCα(xα).
+Phase separator:HP =∑mα=1HCα(xα).
+Resource count for phase separator: Can be implemented with
+(𝓁
+k
+)
+many k-local
+ZZ··· Z gates, fork = 1,...,𝓁 , overall requiring at mostO(m2𝓁) two-qubit gates.
+A.1.3 Min- 𝓁-SAT
+Problem: The same as Max-𝓁-SAT, except with minimization instead of maximization of
+the number of satisﬁed clauses.
+Approximability: APX-complete [59]. Unless P = NP, no classical algorithm can do
+better than 1.3606 for MinSAT [60], or, for Min-𝓁-SAT, better than 15/14≃ 1.0714 for
+k = 2 or 7/6≃ 1.1667 for arbitrary𝓁 [61]. On the other hand, constructive algorithms are
+known which achieve approximation ratios of1.1037, 1.2136, and 1− 21−𝓁 for Min-2-SAT,
+Min-3-SAT, and Min-𝓁-SAT, respectively [61, 62].
+Mapping: The same as Max-𝓁-SAT.
+A.1.4 Max-Not-All-Equal- 𝓁-SAT (NAE-𝓁-SAT)
+Problem: The same as in Max-𝓁-SAT, except that in NAE-𝓁-SAT, each clause is satisﬁed
+only if all𝓁≥ 3 variables do not all have the same value.
+Approximability: APX-complete[51]. Aclassical 1.38-approximationalgorithmisknown[63].
+For𝓁 = 3 approximable to 1.138 but no better than1.090 [50, 64].
+Mapping: Same as Max-𝓁-SAT but with a slight modiﬁcation of the phase operator; see,
+e.g., [5].
+Variant: Similar considerations apply to Max-1-in-𝓁-Sat, in which a clause is satisﬁed
+when exactly one of its variables is true.
+A.1.5 Set Splitting
+Problem: Given a setS and a collection of subsets{Sj}mj=1, seek a partitionS =S1∪
+(S\S 1) that maximizes the number of split sets, i.e., subsetsSj with elements in bothS1
+andS\S 1.
+Approximability: APX-complete [65]. Can be approximated to 0.7499 [66]. Remains
+APX-complete if eachSj is restricted to having at most or exactlyk≥ 2 elements [67].
+34
+
+=== PDF PAGE 35 ===
+For eachSj having exactlyk≥ 4 elements, unlessP =NP, there is no eﬃcient classical
+algorithm that does essentially better than a random partition [53, 68]. The generalization
+MaxHypergraphCut, in which each subset is given a weight and we seek to maximize the
+total weight of the split sets, can be approximated to0.7499 [66].
+Reduction to Not-All-Equal-𝓁-SAT: This problem is a special case of NAE-𝓁-SAT,
+where none of the variables are negated.
+A.1.6 E3Lin2
+Problem: Given a set ofm three-variable equationsA ={Aj}, overn binary variables
+x∈{ 0, 1}n, where each equationAj is of the formxa1,j +xa2,j +xa3,j =bj mod 2 where
+a1,j, a2,j, a3,j∈ [n] and bj∈{ 0, 1}, ﬁnd an assignmentx∈{ 0, 1}n that maximizes the
+number of satisﬁed equations.
+Prior QAOA work:Considered in Reference [16].
+Approximability: No eﬃcient 1 +ϵ classical approximation algorithm unlessP = NP
+[53]. For the case where each variable appears in at mostD equations, an eﬃcient classical
+algorithm satisﬁes a 1/2 + Ω(D−1/2) fraction of the equations [23]. Shown in Reference
+[16] that QAOA withp = 1 achieves the same result up to a factor logarithmic inD for
+this case.
+Objective: Maximize the number of satisﬁed equations.
+Phase Separator: HP =∑mj=1Hj where Hj = (−1)bjZa1,jZa2,jZa3,j .
+Resource count for phase separator:Can be implemented withm many 3-qubit gates.
+A.2 Controlled-Bit-Flip ( Λf(X)) Mixers
+All problems in this section are graph or subset problems with QAOA mappings that
+use controlled-bit-ﬂip mixers on bit strings. (See Section 4.2.) Note that MaxSetPacking
+(Section A.2.4) reduces to MaxIndependentSet (Section A.2.1) on the constraint graph;
+MinVertexCover (Section A.2.3) is a special case of MinSetCover (Section A.2.5), in which
+the universe is the set of edges, and each subset in the collection corresponds to the edges
+adjacent to a single vertex; and MaxClique (Section A.2.2) is simply MaxIndependentSet
+on the complement graph.
+Conﬁguration space:The conﬁguration space of each problem is the subsetsV′ of some
+setV (resp.,S′⊂S), represented by bitstringsx∈{ 0, 1}n, withxv = 1 indicatingv∈V′.
+Constraint graph: An instance of each problem is either speciﬁed by a graph or has
+a natural corresponding constraint graph whose vertices correspond to the variables and
+with respect to which each variablev is graph-adjacent tonbhd(v).
+Domain: Elements of the conﬁguration space that satisfy some CNF formula (whose
+clauses correspond to the edges of the problem or the constraint graph, except for MinSet-
+Cover) that speciﬁes a required property.
+Objective: Maximize or minimize the subset cardinality.
+Mixing rule:Swap an elementv in or out ofV′ if some predicateχ(xnbhd(v)) is satisﬁed
+by the partial state of its neighbors. (The predicateχ will depend on the problem.)
+Partial mixing Hamiltonian: HCX,v = XvHPv, which can be used to deﬁne both a
+simultaneous controlled bit-ﬂip mixer and a class of partitioned controlled bit-ﬂip mix-
+ers. (See Section 4.2.)
+A.2.1 MaxIndependentSet [Section 4.2]
+Problem: Given G = (V,E ), maximize the size of a subsetV′⊂ V of mutually non-
+adjacent vertices.
+35
+
+=== PDF PAGE 36 ===
+Prior QAOA work:[1]. See Section 4.2 for a detailed discussion of the mapping and
+generalization.
+Approximability: Poly-APX-complete [69], and has no constant factor approximation
+unlessP =NP. On bounded degree graphs with maximum degreeDG≥ 3 can be approx-
+imated to (DG + 2)/3 [69], but remains APX-complete [51].
+Domain: Independent sets,
+{
+x :{u,v}∈E ¯xu∨ ¯xv}.
+Objective: max|V′| =∑v∈V xv.
+Mixing rule: Swapv in or out ofV′ if none of its neighbors are inV′.
+Partial mixing Hamiltonian:HCX,v =XvHNOR(xnbhd(v)).
+Phase separator:UP(γ) = exp(−iγ∑u∈V Zu).
+Initial state:|s⟩ =|0⟩⊗n, i.e.,V′ =∅.
+Resource count:
+• Controlled-bit-ﬂipmixers: nmultiqubit-controlled-X(β)gates, eachwithatmost
+DG controls (exactlyDv controls for each vertex). Depth at mostn but will be much
+less for sparsely connected graphs.
+• Phase separator:n single-qubit Z-rotations. Depth 1.
+Variants: Extends easily to weighted-MaxIndependentSet with objective functionf =∑n
+i=1wixi.
+A.2.2 MaxClique
+Problem: Given G = (V,E ), maximize the size of a clique inG (a subsetV′⊂ V that
+induces a subgraph in which all pairs of vertices are adjacent).
+Approximability: AO(n/ log2n)-approximation is known [70], but cannot be eﬃciently
+approximated classically better thanO(n1−ϵ) for anyϵ> 0 unless P =NP [71].
+Domain: Cliques,
+{
+x :{u,v}∈E(G) ¯xu∨ ¯xv}.
+Objective: max|V′| =∑v∈V xv.
+Reduction to MaxIndependentSet:Every clique onG = (V,E ) gives on independent
+set on the complement graphG = (V,E (G)) whereE(G) =
+(V
+2
+)
+\E. Therefore, a mapping
+for MaxClique is given by the mapping for MaxIndependentSet applied to the complement
+graph G.
+Resource count: The same resources as for MaxIndependentSet, except that the con-
+trolled bit-ﬂip mixers are now multiqubit-controlled-X gates with at mostn−DG− 1
+controls (exactlyn−Dv− 1 controls for each vertexv).
+A.2.3 MinVertexCover
+Problem: GivenG = (V,E ), minimize the size of a subsetV′⊂V that coversV, i.e., for
+every (u,v )∈E, u∈V′ or v∈V′.
+Prior QAOA work: A quantum walk generalization of QAOA is proposed for this
+problem in Reference [31].
+Approximability: APX-complete [51]. Has a(2− Θ(1/√logn))-approximation [72] but
+cannot be approximated better than1.3606 unless P =NP [73].
+Domain: Vertex covers,
+{
+x :{u,v}∈E(G)xu∨xv}.
+Objective: min|V′|.
+Initial state:|s⟩ =|1⟩⊗n, i.e.,V′ =V.
+Mixing rule: Swap v in or out ofV′ if all of the edges incident tov are covered by
+V′\ nbhd(v).
+Phase Separator:UP(γ) = exp(−iγ∑u∈V Zu).
+36
+
+=== PDF PAGE 37 ===
+Reduction to MaxIndependentSet:A subsetV′⊂V is a vertex cover if and only if
+V\V′ is an independent set, so the problem of ﬁnding a minimum vertex cover is equivalent
+to that of ﬁnding a maximum independent set. While as approximation problems they are
+not equivalent [49], we can use the same mapping as for MaxIndependentSet with each¯xv
+replaced byxv. The resource counts are the same as for MaxIndependentSet.
+Reduction to MinSat:Maranthe et al. [74] give an approximation-preserving reduction
+to Min-DG-SAT enabling us to use the QAOA constuction given above for MinSat. The
+resource counts are the same as for MinSat withm variables andn clauses.
+A.2.4 MaxSetPacking
+Problem: Given a universe[n] and m subsetsS = (Sj)mj=1, Sj⊂ [n], ﬁnd the maximum
+cardinality subcollectionS′⊂S of pairwise disjoint subsets.
+Approximability: As diﬃcult as MaxClique [50]. Cannot be eﬃciently approximated
+within any constant factor unlessP =NP [75]. The best known algorithm gives anO(√n)-
+approximation [76]. APX-complete with the restriction|Sj|≤ k (Max-k-Set-Packing).
+Constraint graph: Vertices V = [m] corresponding to elements ofS, edges E corre-
+sponding to pairs of intersecting subsets.
+Domain: Subcollections containing mutually disjoint subsets,
+{
+x :{i,j}∈E ¯xi∨ ¯xj}.
+Objective: max|S′| =∑mj=1xj
+Initial state:|s⟩ =|0⟩⊗m, i.e.,S′ =∅.
+Mixing rule: Swap Sj in or out ofS′ if Sj is disjoint from the other subsets inS′, i.e.,
+xnbhd(j) = 0.
+Partial mixing Hamiltonian:HCX,j = 2−DjXji∈nbhd(j)(I +Zi) =XjHNOR(xnbhd(j)).
+Phase separator:UP(γ) = exp(−iγ∑mj=1Zj).
+Resource count:
+• Controlled-bit-ﬂipmixers: Eachpartialmixer HCX,j isimplementedasacontrolled-
+RX gate withDj control qubits. Partial mixer depth at mostm.
+• Phase separator:m single-qubit Z-rotations. Depth 1.
+• Initial state: Depth 0.
+Variants: Also called MaxHypergraphMatching. Equivalent to MaxClique under a PTAS-
+reduction [50].
+A.2.5 MinSetCover
+Problem: Given a universe[n] and m subsetsS = (Sj)nj=1, Sj⊂ [n], ﬁnd the minimum
+cardinality subcollectionS′⊂S of theSj such that their union recovers[n].
+Approximability: There exists a1 + lnn algorithm [77]. Cannot be eﬃciently approxi-
+mated to (1−o(1)) lnn unless P =NP [78]. APX-complete with the restriction|Sj|≤ k
+(Max-k-Set-Cover) [50].
+Constraint graph:Vertices [m] corresponding to subcollections inS; two vertices{i,j}
+are adjacent if and only if their corresponding sets intersect,Si\Sj⁄=∅.
+Domain: Set covers,
+{
+x :j∈[m]:xj=1Sj = [n]}.
+Objective: min|S′| =∑mj=1xj.
+Initial state:|s⟩ =|1⟩⊗m, i.e.,S′ =S.
+Mixing rule: Swap setSj in or out ofS′ ifS′\Sj covers [n].
+37
+
+=== PDF PAGE 38 ===
+Partial mixing Hamiltonian:
+HCX,j =
+
+
+n∏
+i=1
+
+I− ∏
+𝓁∈[m]:𝓁⁄=j,i∈S𝓁
+I +Zl
+2
+(
+(
+(
+(Xj =XjHχMSC,j, (78)
+where χMSC,j(xnbhd(j)) =i∈Sj⋁𝓁∈nbhd(j):i∈S𝓁x𝓁.
+Phase separator:UP(γ) = exp(−iγ∑mj=1Zj).
+Resource count:
+• Controlled-bit-ﬂip mixers: For eachHCX,j, use|Sj| ancilla qubits. Use each
+ancilla qubiti to compute⋁𝓁∈nbhd(j):i∈S𝓁x𝓁 using a controlled NOT gate with|{𝓁∈
+nbhd(j) : i∈ S𝓁}|≤| nbhd(j)| = Dj control qubits. Then implementHCX,j using
+a controlled X gate on qubitj with the|Sj| ancilla qubits as the control. Finally,
+uncompute the ancilla qubits using the same|Sj| controlled NOT gates as in the ﬁrst
+step. Depth at most2Dj + 1 per partial mixer.
+• Phase separator:m single-qubit Z-rotations. Depth 1.
+• Initial state: Depth 0.
+Variants: Equivalent to minimum hitting set [50] and underL-reductions equivalent to
+minimum dominating set (which is a special case of minimum set cover).
+A.3 XY Mixers
+In this section, we consider problems where the domain is strings ofd-dits, d≥ 3, with
+QAOA mappings that use XY mixers.
+A.3.1 Max- κ-ColorableSubgraph [Section 4.1]
+Problem: Given a graphGandκcolors, maximize the size (number of edges) of a properly
+colored subgraph.
+Approximability: A random coloring properly colors a fraction 1− 1/κ of edges in
+expectation. Equivalent to MaxCut forκ = 2. Forκ> 2, semideﬁnite programming gives
+a (1− 1/κ + (2 +o(κ)) lnκκ2 )−approximation [79], which is optimal up to theo(κ) factor
+under the unique games conjecture [55]. APX-complete forκ≥ 2 [51] and no PTAS exists
+unless P =NP [65].
+Conﬁguration space and domain: The set of all colorings with at most κ colors,
+x∈ [κ]n.
+Objective: max∑{u,v}∈E NEQ(xu,xv).
+Initial state: All vertices colored with color1,|1⟩n.
+Partial Mixing Hamiltonian:Hr-NV =∑ra=1( ˘Xa + ( ˘X†)a).
+Encoding: One-hot.
+• Phase Separator:UP(γ) ={u,v}∈Eκj=1 exp (−iγZv,jZv,j)
+• Resource count:
+– Number of qubits:nκ.
+– Parity ring mixer:nκ two-qubit (XY ) gates, with depth at most2 (κ even)
+or 3 (κ odd).
+– Phase separator:nκ two-qubit (ZZ) gates. Depth at mostDG + 1.
+– Initial state:n single-qubit X gates. Depth 1.
+Alternative encoding (forκ = 2l): Binary
+• Phase separator:UP(γ) ={u,v}∈E ΛEQxu,v(e−iγ)
+38
+
+=== PDF PAGE 39 ===
+• Mixer: UM(β) =ni=1e−iβXi,0ADDi(1)†e−iβXi,0ADDi(1). where ADDi(z) addsz to
+the registeri encoding an integer in binary.
+• Resource count:
+– Parity ring mixer:2n ADDs, 2n single-qubit rotations; completely paralleliz-
+able.
+– Phase separator:m controlled-phase gates with2l controls; depthO(DG).
+– Initial state:n single-qubit X gates in depth1.
+Variants: Also known as Max-κ-Cut [55, 79], sometimes with weighted edges. For the
+weighted case, the same approximability results apply.
+A.3.2 Graph Partitioning (Minimum Bisection)
+Problem: Given a graphG such thatn is even, ﬁnd a subsetV0⊂V satisfying|V0| =n/2
+such that the number of edges betweenV0 and V\V0 is minimized.
+Prior AQO work:Studied in the context of AQO for constrained optimization [6].
+Approximability: An eﬃcientO(log1.5n)-approximate algorithm is known [80].
+Conﬁguration space, domain, and encoding:Bit strings x of Hamming weightn/2.
+Objective: min∑{uv}∈E NEQ(xu,xv).
+Initial state: Any x of Hamming weightn/2.
+Phase separator: UP(γ) = exp(−iγ∑{uv}∈EZuZv).
+PartialmixingHamiltonian: QubitringXYmixer H(enc)ring =∑nu=1 (XuXu+1 +YuYu+1).
+Resource count:
+• Number of qubits:n.
+• Parity ring mixer:n two-qubit (XX+YY) gates, with depth at most 2 (n even)
+or 3 (n odd).
+• Phase separator:m two-qubit (ZZ) gates. Depth at mostDG + 1.
+• Initial state:n/2 single-qubit X gates. Depth 1.
+A.3.3 Maximum Bisection
+Problem: Given a graphG such thatn is even, and edge weightswj, ﬁnd a subsetV0⊂V
+satisfying|V0| =n/2 such that the total weight of edges crossing betweenV0 andV\V0 is
+maximized.
+Approximability: A random bisection gives an 0.5-approximation in expectation, im-
+proved to0.65 [79].
+Mapping: Same as graph partitioning (Section A.3.2) with weights included in the phase
+separator.
+A.3.4 Maximum Vertex κ-Cover
+Problem: Variant of vertex cover optimization problem. Given a graphG and an integer
+κ≤n, ﬁnd a subsetV0⊂V of size|V0| =κ such that the number of edges covered byV0
+is maximized.
+Approximability: It is NP-hard to decide whether or not a fraction(1−ϵ) of the edges
+can beκ-covered [65].
+Mapping: Same as graph partitioning (Section A.3.2) with the Hamming weightn/2
+replaced byκ.
+39
+
+=== PDF PAGE 40 ===
+A.4 Controlled- XY Mixers
+In this section, we consider problems with QAOA mappings that use controlled-XY mixers.
+A.4.1 Max- κ-ColorableInducedSubgraph [Section 4.3]
+Problem: Given a graphG andκ colors, maximize the size of a subset of verticesV′⊂V
+whose induced subgraph isκ-colorable.
+Approximability: Equivalent to MaxIndependentSet fork = 1. Both as easy and as
+hard to approximate as MaxIndependentSet fork≥ 1 [50, 81]. On bounded degree graphs,
+can be approximated to(DG/k + 1)/2, but remains APX-complete [82].
+Conﬁguration space: [κ + 1]n. (0-th color is “uncolored” and representsv /∈V′.)
+Domain: κ-colorableinducedsubgraphs,
+{
+x :{i,j}∈E (EQ(xi, 0)∨ EQ(xj, 0)∨ NEQ(xi,xj))}.
+Objective: min∑ni=1 NEQ(xi, 0).
+Initial state: All vertices uncolored,|10... 0⟩⊗n.
+Mixing rule:A vertex can switch between being uncolored and coloredj only if none of
+its neighbours are coloredj.
+Partial mixing Hamiltonian:Controlled null-swap mixer at a vertex.
+Encoding: One-hot.
+Phase separator:UP(γ) = exp(i2γ∑u∈V ∑κj=1Zu,j).
+Resource count:
+• Partitioned controlled null-swap mixers:nκ partial mixers, each acting on at
+mostDG + 1 qubits. Depth at mostnκ but will be much less for sparsely connected
+graphs.
+• Phase separator:n single-qubit Z-rotations. Depth 1.
+• Initial state:|s⟩ =
+(
+|1⟩⊗| 0⟩⊗κ)⊗n, implemented in depth1 with n Xgates.
+A.4.2 MinGraphColoring [Section 4.4]
+Problem: Given a graphG, minimize the number of colors required to properly color it.
+Approximability: Thebestclassicalalgorithm[83]achievesapproximationratio O(n (log logn)2log3n ),
+and we cannot do better thann1−ϵ for anyϵ> 0 unless P =NP [71]. For edge-colorings
+of multigraphs, there is a (1.1 + 0.8/κ∗)-approximate algorithm [84].
+Conﬁguration space: [κ]n, κ =DG + 2.
+Domain: Properκ-coloringsof G(manyofwhichusefewerthan κcolors),
+{
+x :{i,j}∈E NEQ(xi,xj)}.
+Objective: Minimize number of used colors:∑κa=1 OR(EQ(x1,a ),..., EQ(xn,a )).
+Mixing rule: The color of vertexu may be swapped between colorsc and c′ if none of
+its neighbours are already coloredc or c′.
+Partial mixing Hamiltonian:Controlled-swap partial mixing Hamiltonian.
+Encoding: One-hot.
+Phase separator:κa=1 ΛOR(x[n],a)(e−iγ).
+Resource count:
+• Partitioned controlled-swap mixers:κ(κ− 1)n/2 controlled gates on no more
+than DG + 2 qubits.
+• Phase separator: κ partial phase separators acting onn + 1 qubits, one target
+qubit andn control qubits. Depth2 in partial phase separators, or depth1 with the
+addition ofκ ancilla qubits.
+40
+
+=== PDF PAGE 41 ===
+• Initial state: Any validκ coloring (can be eﬃciently computed classically). Can
+be implemented in depth1 using n single-qubit X gates.
+Reduction from MinEdgeColoring:In MinEdgeColoring, the objective is to minimize
+the number of colors needed to color the edges so that no two adjacent edges have the
+same color. This is equivalent to MinGraphColoring on the line graph.
+A.4.3 MinCliqueCover
+Problem: Given a graphG, we seek the smallest collection of cliquesS1,...,S k⊂ V,
+such that every vertex belongs to at least one clique.
+Approximability: If MaxClique is approximable withinf(n) for a given instance, then
+MinCliqueCover approximable toO(f(n)) [50]. Not approximable withinnϵ for anyϵ >
+0 [85].
+Reduction to MinGraphColoring:A partition of the vertices ofG is ak-clique cover
+if and only if it is a properk-coloring of the complement graphG′ = (V,E c), and moreover,
+the smallest clique cover corresponds to the chromatic number of the complement graph.
+Thus the previous construction suﬃces.
+A.5 Permutation Mixers
+Inthissection, weconsiderproblemswithQAOAmappingsthatusethemixersofSection 5
+for domains consisting of ordering, permutations, or schedules. In the SMS problems below,
+for simplicity, we take all time parameters to be nonnegative integers.
+A.5.1 TravelingSalespersonProblem (TSP) [Section 5.1]
+Problem: Given a set ofn cities and distancesd : [n]2→ R+, ﬁnd an ordering of the
+cities that minimizes the total distance traveled on the corresponding tour.
+Approximability: NPO-complete [86]. MetricTSP is APX-complete [87] and has a3/2-
+approximation [88]. The corresponding MaxTSP problem is approximable within7/5 for
+symmetric distance, and63/38 if asymmetric.
+Conﬁguration space and domain: Orderings of the cities{ι}.
+Objective: min f(ι) =∑nj=1dιj,ιj+1.
+Partial mixer:Partial permutation swap mixer.
+Encoding: Direct one-hot.
+Compilation:
+• Phase separator:H(enc)P =∑ni=1∑nu=1∑nv=1d(u,v )Zu,iZv,i+1.
+• Partial mixer:U (enc)PS,{i,j},{u,v}(β) =e−iβHPS,{i,j},{u,v}, whereH(enc)PS,{i,j},{u,v} is given in
+Equation (55).
+Initial state: Arbitrary ordering.
+Resource count:
+• Color-parity permutation swap mixer (Section 5.1):At most (n− 1)
+(n
+2
+)
+4-
+qubit partial mixers, in depth at most2n.
+• Phase separator:n2(n− 1) mutually commuting two-qubit gates. Depth no more
+than DG + 1.
+• Initial state:n single-qubit X gates. Depth 1.
+41
+
+=== PDF PAGE 42 ===
+A.5.2 SMS, Minimizing Total Weighted Squared Tardiness [Section 5.2]
+Problem: (1|dj|∑wjT 2j ). Given a set of jobs with processing times p, deadlines d∈
+Z+, and weights w, ﬁnd a schedule that minimizes the total weighted squared tardiness∑n
+j=1wjT 2j .
+Approximability: Considered in Reference [89].
+Conﬁguration space and domain: Orderings of the jobs{i}, and an integer slack
+variableyj∈ [0,dj−pj] for each job.
+Objective: min f(ι, y) =∑nj=1wj(sj(ι) +pj−dj +yj)2.
+Partial mixer: Partial permutation swap mixer for computational qubits; binary mixer
+mixer for the slack qubits.
+Encoding: Direct one-hot for the ordering variables; binary for the slack variables.
+Compilation:
+• Phase separator:The encoded phase separator is a 3-local Hamiltonian containing
+– all 1-local terms;
+– all 2-local terms of two computational qubits corresponding to diﬀerent jobs
+at diﬀerent places in the ordering, all 2-local terms of two ancilla qubits cor-
+responding to the same job, and all 2-local terms of one computational qubit
+and one ancilla qubit except when they correspond to diﬀerent jobs and the
+computational qubit corresponds to that job being last in the ordering;
+– all 3-local terms of three computational qubits corresponding to diﬀerent jobs
+at diﬀerent places in the ordering and all 3-local terms containing two computa-
+tional qubits corresponding to diﬀerent jobs at diﬀerent places in the ordering
+and one ancilla qubit corresponding to the later job.
+• Partial mixer: H(enc)PS,{i,j},{u,v} =S+u,iS+v,jS−u,jS−v,i +S−u,iS−v,jS+u,jS+v,i.
+• Initial stateArbitrary ordering.
+Resource count:
+• Color-parity permutation swap mixer (Section 5.1):At most (n− 1)
+(n
+2
+)
+4-
+qubit partial mixers, in depth at most2n. Single-qubit X mixer for slack binary
+variables can be done in parallel with the permutation swap mixer.
+• Phase separator: Let µi =⌈log2(di−pi + 1)⌉ be the number of bits needed for
+the slack variableyi, andµ =∑ni=1µi.
+– Number of 1-local gates:n2 +µ.
+– Number of 2-local gates:2
+(n
+2
+)2 +∑ni=1(µi2) +µ(n2−n + 1).
+– Number of 3-local gates:6
+(n
+3
+)2 + 2µ(n2)2.
+• Initial state:n single-qubit X gates. Depth 1.
+A.5.3 SMS, Minimizing Total Weighted Tardiness [Section 5.3]
+Problem: (1|dj|∑wjTj). Given a set ofn jobs with processing timesp, deadlinesd∈ Z+,
+and weights w, ﬁnd a schedule that minimizes the total weighted tardiness∑nj=1wjTj.
+Approximability: There exists an (n− 1)-approximation [90]. The decision version is
+strongly NP-hard [91].
+Conﬁguration space and domain:Orderings of the jobs{i}.
+Objective: f(ι) =∑ni=1wi max{0,di−si(ι)−pi}.
+Encoding: Absolute one-hot.
+Mixing rule: Swap two jobs only if they are scheduled in consecutive order.
+42
+
+=== PDF PAGE 43 ===
+Partial mixer:Partial time-swap mixer (speciﬁc to the absolute encoding).
+Initial state: Arbitrary ordering.
+Compilation:
+• Phase separator:H(enc)P =∑ni=1wi∑hit=di−pi+1(t +pi−di)Zi,t.
+• Partial mixer: H(enc)TS,t,{i,j} =S+i,t+pjS+j,tS−i,tS−j,t+pi +S−i,t+pjS−j,t.S+i,tS+j,t+pi.
+Resource count:
+• Color–time partitioned time-swap mixer:h
+(n
+2
+)
+4-qubit gates in depthhκ.
+• Phase separator: At mostnh single-qubit gates, depth 1.
+• Initial state:n single-qubit X gates, depth 1.
+A.5.4 SMS, with Release Dates [Section 5.4]
+Problem: (1|dj,rj|f). Given a set of jobs with processing timesp, deadlines d, release
+times r∈ Z+ and weightsw, ﬁnd a schedule that minimizes some (given) functionf of the
+schedule, e.g., weighted total tardiness such that each job starts no earlier than its release
+time.
+Approximability: For all deadlines being zero, the minimal weighted total tardiness
+(completion times in this special case) is1.685-approximable [92].
+Conﬁguration space:{s} =×nj=1 [Wj∪{bj}], whereWj = [rj,h−pj] is the window of
+times in which jobj can start andbj is the job’s “buﬀer” slot.
+Domain: Schedules in the conﬁguration space such that no two jobs overlap.
+Objective: Maximize (or minimize) a given cost functionf(s), e.g., weighted total tardi-
+ness f(s) =∑nj=1wjTj, whereTj = max{0,di−si−pi} is the tardiness of jobj.
+Mixing rule:Swap a job between timet∈h and its buﬀer slot if no other job is running
+at timet.
+Partial mixer:Controlled null-swap mixer; see Section 5.4.
+Initial state: Greedy earliest-release-date schedule.
+Encoding: One-hot encoding.
+Compilation:
+• Partial mixer:H(enc)NS,i,t =(j⁄=it′∈nbhdi,t(j) 12(I +Zj,t′)) (Xi,tXi,bi +Yi,tYi,bi).
+• Phase separator (for min weighted total tardiness):See Equation (77).
+Resource count:
+• Controlled null-swap mixer: SMS-instance dependent, see discussion in Sec-
+tion 5.4.
+• Phase separator (for min weighted total tardiness):At most∑j(h−dj + 1)
+single-qubit Z gates. Depth 1.
+• Initial state:n single-qubit X gates. Depth 1.
+B Glossary of Mapping Terms
+Here, we provide a summary the mapping terminology that appears throughout the paper.
+B.1 Mixers
+We list partial mixers by mixing mechanism in Appendix B.1.1, and by diﬀerent ways to
+partition, used for partitioned mixers, in Appendix B.1.2
+43
+
+=== PDF PAGE 44 ===
+B.1.1 Partial Mixing Hamiltonians
+For strings and subsets thereof, we focus on mixing operators that are composed of opera-
+tors acting independently on each of the variables. Speciﬁcally, we consider the following
+single-qudit mixing operators in the absence of constraints:
+• r-nearby-values mixer:Hr-NV =∑ra=1( ˘Xa + ( ˘X†)a). The special cases ofr = 1 and
+r =d− 1 are called the “ring mixer” and “fully-connected mixer”, respectively.
+• simple binary mixer: Whend = 2l is a power of two:H(enc)binary =∑li=1Xi.
+• null-swap mixer: For cases when one of thed values corresponds to a “null” value
+(e.g., black or uncolored in graph coloring),HNS =∑d−1a=1 (|0⟩⟨a| +|a⟩⟨ 0|).
+For problems in the ordering/schedules family, we considered swapping-based mixers.
+• Value-selective permutation swap mixer: Swaps the ith and jth elements in the
+ordering if those elements areu and v, see Equation(46) in Section 5.1.
+• Value-independent permutation swap mixer: Swaps theith andjth elements of the
+ordering regardless of which items those are, see Equation(48) in Section 5.1.
+When there are constraints, we considered modiﬁcations of the above mixers that are
+controlled on not violating the constraints. A few examples:
+• Controlled null-swap mixer:
+– Section 4.3 for MaxColorableInducedSubgraph, Equation(27).
+– Section 5.4 for SMS with release dates, Equation(73).
+• Controlled-SWAP mixer: Section 4.4 for MinGraphColoring, Equation(34).
+B.1.2 Partitions
+The two elementary partitions we use for generating the family of partitioned mixing
+unitaries are:
+• Parity-mixer: For Hamiltonian terms of type∑uAuBu+1, whereu∈ [n] andAu and
+Bu+1 are operators acting on qubitu andu + 1, respectively. Partition the index set
+{u} into even and odd subsets. See Section 4.1 for details.
+• Color-mixer: For index pairs (u,v )∈
+([n]
+2
+)
+, letPcol = (P1,...,P κ) be an ordered
+partition of the indices
+([n]
+2
+)
+intoκ parts such that each part contains only mutually
+disjoint pairs of indices from[n]. This is equivalent to considering aκ-edge-coloring
+of the complete graphKn, and assigning an ordering to the colors, so we callPcol the
+“color partition”. For evenn,κ =n−1 suﬃces, and for oddn,κ =n. See Section 5.1
+for its use.
+For mixing Hamiltonians of diﬀerent coupling connectivity, these partitions can be
+combined and tailored as desired. For example, the color-parity permutation swap mixer
+for TSP in Section 5.1 and the time–color partition for SMS(1|dj|∑wjTj) in Section 5.3.
+44
+
+=== PDF PAGE 45 ===
+B.2 Encodings
+We considered two types of encodings of strings into qubit space. One-hot encoding enables
+more concise circuits at the expense of requiring more qubits, whereas binary encoding
+makes the opposite trade-oﬀ.
+• One-hot encoding: The qudit basis states|a⟩, a = 0,...,d − 1, are encoded as the
+d-qubit states|0⟩⊗a⊗| 1⟩⊗| 1⟩⊗d−1−a. See Section 4.1.1
+• Binary encoding: Each qudit basis state|a⟩ is encoded as the𝓁-qubit basis state|a2⟩,
+where a2 denotes the binary representation ofa, and𝓁 =⌈log2d⌉. See Section 4.1.1.
+A generalization of the binary encoding is radix encoding, which representsa in base-
+r, with positive integerr. While the binary encoding is convenient for qubits, and is
+hence appealing in terms of implementability, it is plausible that for some problems,
+a more general radix encoding could be a natural choice.
+For problems in the ordering/scheduling family, the encoding is composed of two-steps:
+First encoding into strings, and then applying the above encodings into qubit space. The
+following encodings are considered for step one:
+• Direct encoding: An orderingι = (ι1,...,ι n) is encoded directly as a string[n]n of
+integers. It is demonstrated for TSP and SMS(1|dj|∑jwjT 2j ) in Sections 5.1 and 5.2,
+respectively.
+• Absolute encoding: To encode the orderingι = (ι1,...,ι n), we assigned each itemi
+a valuesi∈ [0,h ], where the “horizon”h is a parameter of the encodings, such that
+for alli<j , sιi <s ιj. It is demonstrated for SMS(1|dj|∑jwjTj) in Section 5.3.
+The name of the overall encoding indicates both steps. For example:
+• Direct one-hot encoding, see Section 5.1.
+• Absolute one-hot encoding, see Section 5.3.
+C Elementary Operators
+Here, we elaborate on some of the basic quantum operators used in the text and their
+properties. Appendix C.1 explains the relationship between theSWAPgate and the XY-
+model Hamiltonian, which were each used as building blocks for encoded mixers in many
+mappings. Appendix C.2 contains a brief review of generalized Pauli operators for qudits
+of arbitrary dimension.
+C.1 SWAP and XY Opertors
+We examined the relationship between the quantum SWAP operatorSWAPi,j, which swaps
+the state of qubiti andj, and the XY operator,12(XiXj +YiYj). In many of our mapping
+constructions, these operators can be used interchangeably; an exception is given in the
+last item below.
+Recall Equation (10) and the discussion of SWAP preceeding it. The XY operator
+acting on qubitsi,j can be similarly expressed as:
+XYi,j := 12(XiXj +YiYj) =|1i0j⟩⟨0i1j| +|0i1j⟩⟨1i0j|. (79)
+We observed the following connections between the two operators:
+45
+
+=== PDF PAGE 46 ===
+• In the subspace spanned by{|01⟩,|10⟩}, XYi,j and SWAPi,j behave identically.
+• In the subspace{|11⟩,|00⟩}, XYi,j acts as null whileSWAPi,j acts as an identity.
+• The operatorsXYi,j and SWAPi,j are both Hermitian. SWAPi,j is unitary.
+• Applied to a multiqubit system, Hamiltonians of the formHSWAP =∑i,j SWAPi,j
+or HXY = ∑i,jXYi,j, where either sum may be taken over arbitrary subsets of
+indices, each preserve the Hamming weight of computational basis states; hence, so
+do the corresponding unitariesexp[−iβHXY] and exp[−iβHSWAP]. Although the two
+operators do not behave identically on the full Hilbert space, they can both serve as
+mixers in situations in which Hamming weight is the relevant constraint.
+• To enforce simultaneous swaps of multiple qubit pairs, in Hamiltonians such asH =
+{i,j} SWAPi,j, each SWAPi,j cannot in general be directly replaced byXYi,j due
+to the second item above. See the TSP problem in Section 5.1 as an example.
+C.2 Generalized Pauli Gates for Qudits
+Consider d-dimensional qudits. Letω =e2πi/d. Deﬁne the operators:
+˘Z =
+d−1∑
+a=0
+ωad|a⟩⟨a|, ˘X =
+d−1∑
+a=0
+|a + 1⟩⟨a|, (80)
+where all arithmetic is modulod. As in the main text, we used operator notations “˘Z” and
+“ ˘X” for qudits of arbitrary dimension, and reserved “X” and “Z” speciﬁcally for the qubit
+case. Ford = 2, they are the same. Note that ford >2, the generalized Pauli operators,
+while unitary, are not Hermitian. In many cases, we used the sum of a generalized Pauli
+operator and its conjugate to generalize its qubit analog, e.g.,˘X + ˘X† to generalizeX.
+Because ˘Xr = ∑d−1a=0|a +r⟩⟨a|, it and its Hermitian conjugate ˘Xr + ( ˘X†)r together
+generate transitions between|a⟩ and|a +r⟩ for anya. Section 4.1.1 uses this operator in
+the coloring of a single vertex.
+References
+[1] E. Farhi, J. Goldstone, and S. Gutmann, “A Quantum Approximate Optimization
+Algorithm,” arXiv:1411.4028, Nov. 2014.
+[2] R. Biswas, Z. Jiang, K. Kechezhi, S. Knysh, S. Mandrà, B. O’Gorman, A. Perdomo-
+Ortiz, A. Petukhov, J. Realpe-Gómez, E. Rieﬀel et al., “A NASA perspective on
+quantum computing: Opportunities and challenges,”Parallel Computing, vol. 64, pp.
+81–98, 2017.
+[3] E. G. Rieﬀel, D. Venturelli, B. O’Gorman, M. B. Do, E. M. Prystay, and V. N.
+Smelyanskiy, “A case study in programming a quantum annealer for hard operational
+planning problems,” Quantum Information Processing, vol. 14, no. 1, pp. 1–36, 2015.
+[4] A. Lucas, “Ising formulations of many NP problems,”FrontiersinPhysics, vol. 2, no. 5,
+pp. 1–15, 2014.
+[5] S. Hadﬁeld, “On the representation of Boolean and real functions as Hamiltonians for
+quantum computing,”arXiv:1804.09130, 2018.
+[6] I. Hen and F. M. Spedalieri, “Quantum Annealing for Constrained Optimization,”
+Physical Review Applied, vol. 5, no. 3, p. 034007, 2016.
+46
+
+=== PDF PAGE 47 ===
+[7] I. Hen and M. S. Sarandy, “Driver Hamiltonians for constrained optimization in quan-
+tum annealing,” Physical Review A, vol. 93, no. 6, p. 062312, 2016.
+[8] E. G. Rieﬀel and W. Polak, Quantum Computing: A Gentle Introduction. Cam-
+bridge, MA: MIT Press, 2011.
+[9] IBM, “IBM Q and Quantum Computing,” https://www.research.ibm.com/ibm-q/,
+2017, accessed: 2017-09-01.
+[10] S. Boixo, V. N. Smelyanskiy, A. Shabani, S. V. Isakov, M. Dykman, V. S. Denchev,
+M. H. Amin, A. Y. Smirnov, M. Mohseni, and H. Neven, “Computational multiqubit
+tunnelling in programmable quantum annealers,”Nature Communications, vol. 7, 01
+2016.
+[11] E. A. Sete, W. J. Zeng, and C. T. Rigetti, “A func-
+tional architecture for scalable quantum computing,” in
+2016 IEEE International Conference on Rebooting Computing (ICRC), Oct 2016,
+pp. 1–6.
+[12] M. Mohseni, P. Read, H. Neven, S. Boixo, V. Denchev, R. Babbush, A. Fowler,
+V. Smelyanskiy, and J. Martinis, “Commercialize Quantum Technologies in Five
+Years,” Nature, vol. 543, pp. 171–174, 2017.
+[13] S. Debnath, N. Linke, C. Figgatt, K. Landsman, K. Wright, and C. Monroe, “Demon-
+stration of a small programmable quantum computer with atomic qubits,”Nature, vol.
+536, no. 7614, pp. 63–66, 2016.
+[14] M. Saﬀman, “Quantum computing with atomic qubits and rydberg interactions:
+progressandchallenges,” JournalofPhysicsB:Atomic,MolecularandOpticalPhysics,
+vol. 49, no. 20, p. 202001, 2016.
+[15] E. Zahedinejad and A. Zaribaﬁyan, “Combinatorial optimization on gate model quan-
+tum computers: A survey,”arXiv:1708.05294, 2017.
+[16] E. Farhi, J. Goldstone, and S. Gutmann, “A Quantum Approximate Optimization
+Algorithm Applied to a Bounded Occurrence Constraint Problem,”arXiv:1412.6062,
+Dec. 2014.
+[17] E. Farhi and A. W. Harrow, “Quantum supremacy through the Quantum Approximate
+Optimization Algorithm,” arXiv:1602.07674, Feb. 2016.
+[18] Z.-C. Yang, A. Rahmani, A. Shabani, H. Neven, and C. Chamon, “Optimizing varia-
+tional quantum algorithms using Pontryagin’s minimum principle,”Physical Review
+X, vol. 7, no. 2, p. 021027, 2017.
+[19] Z. Jiang, E. G. Rieﬀel, and Z. Wang, “Near-optimal quantum circuit for Grover’s
+unstructured search using a transverse ﬁeld,”Physical Review A, vol. 95, no. 6, p.
+062317, 2017.
+[20] D. Wecker, M. B. Hastings, and M. Troyer, “Training a quantum optimizer,”Physical
+Review A, vol. 94, no. 2, p. 022309, 2016.
+[21] Z. Wang, S. Hadﬁeld, Z. Jiang, and E. G. Rieﬀel, “Quantum approximate optimization
+algorithm for MaxCut: A fermionic view,”PhysicalReviewA, vol. 97, no. 2, p. 022304,
+2018.
+[22] D. Venturelli, M. Do, E. Rieﬀel, and J. Frank, “Compiling quantum circuits to realistic
+hardware architectures using temporal planners,”Quantum Science and Technology,
+vol. 3, no. 2, p. 025004, 2018.
+[23] B.Barak, A.Moitra, R.O’Donnell, P.Raghavendra, O.Regev, D.Steurer, L.Trevisan,
+A. Vijayaraghavan, D. Witmer, and J. Wright, “Beating the random assignment on
+constraint satisfaction problems of bounded degree,”arXiv:1505.03424, 2015.
+[24] S. Hadﬁeld, Z. Wang, E. G. Rieﬀel, B. O’Gorman, D. Venturelli, and R. Biswas,
+“Quantum approximate optimization with hard and soft constraints,” inProceedings
+47
+
+=== PDF PAGE 48 ===
+of the Second International Workshop on Post Moores Era Supercomputing. ACM,
+2017, pp. 15–21.
+[25] M. Fingerhuth, T. Babejet al., “A quantum alternating operator ansatz with hard and
+soft constraints for lattice protein folding,”arXiv preprint arXiv:1810.13411, 2018.
+[26] E. Farhi, J. Goldstone, S. Gutmann, and H. Neven, “Quantum algorithms for ﬁxed
+qubit architectures,”arXiv:1703.06199, 2017.
+[27] W. Lechner, “Quantum approximate optimization with parallelizable gates,”arXiv
+preprint arXiv:1802.01157, 2018.
+[28] W. W. Ho and T. H. Hsieh, “Eﬃcient preparation of non-trivial quantum states using
+the quantum approximate optimization algorithm,”arXiv preprint arXiv:1803.00026,
+2018.
+[29] G. Verdon, M. Broughton, and J. Biamonte, “A quantum algorithm to train neural
+networks using low-depth circuits,”arXiv preprint arXiv:1712.05304, 2017.
+[30] J. Otterbach, R. Manenti, N. Alidoust, A. Bestwick, M. Block, B. Bloom, S. Caldwell,
+N. Didier, E. S. Fried, S. Honget al., “Unsupervised machine learning on a hybrid
+quantum computer,”arXiv preprint arXiv:1712.05771, 2017.
+[31] S. Marsh and J. Wang, “A quantum walk-assisted approximate algorithm for bounded
+np optimisation problems,” Quantum Information Processing, vol. 18, no. 3, p. 61,
+2019.
+[32] S. Lloyd, “Quantum approximate optimization is computationally universal,”arXiv
+preprint arXiv:1812.11075, 2018.
+[33] G. G. Guerreschi and M. Smelyanskiy, “Practical optimization for hybrid quantum-
+classical algorithms,” arXiv:1701.01450, 2017.
+[34] J. R. McClean, S. Boixo, V. N. Smelyanskiy, R. Babbush, and H. Neven, “Bar-
+ren plateaus in quantum neural network training landscapes,” arXiv preprint
+arXiv:1803.11173, 2018.
+[35] K. E. C. Booth, M. Do, J. C. Beck, E. Rieﬀel, D. Venturelli, and J. Frank, “Comparing
+andIntegratingConstraintProgrammingandTemporalPlanningforQuantumCircuit
+Compilation,” arXiv:1803.06775, Mar. 2018.
+[36] D. Gottesman, A. Kitaev, and J. Preskill, “Encoding a qubit in an oscillator,”Physical
+Review A, vol. 64, no. 1, p. 012310, 2001.
+[37] S. D. Bartlett, H. de Guise, and B. C. Sanders, “Quantum encodings in spin systems
+and harmonic oscillators,”Physical Review A, vol. 65, no. 5, p. 052316, 2002.
+[38] F. Verstraete, J. I. Cirac, and J. I. Latorre, “Quantum circuits for strongly correlated
+quantum systems,”Physical Review A, vol. 79, no. 3, p. 032316, 2009.
+[39] J. M. Chow, Quantum information processing with superconducting qubits. Yale
+University, 2010.
+[40] A. Soifer,The mathematical coloring book: Mathematics of coloring and the colorful
+life of its creators. Springer Science & Business Media, 2008.
+[41] D. Zuckerman, “On unapproximable versions of NP-complete problems,” SIAM
+Journal on Computing, vol. 25, no. 6, pp. 1293–1304, 1996.
+[42] C. H. Papadimitriou, “Computational Complexity,” 1994.
+[43] T. Yato and T. Seta, “Complexity and completeness of ﬁnding another solution
+and its application to puzzles,” IEICE transactions on fundamentals of electronics,
+communications and computer sciences, vol. 86, no. 5, pp. 1052–1060, 2003.
+[44] N. Ueda and T. Nagao, “NP-completeness Results for NONOGRAM via Parsimonious
+Reductions,” Tokyo Institute of Technology, Tech. Rep., 1996.
+[45] M. J. Bremner, R. Jozsa, and D. J. Shepherd, “Classical simulation of com-
+muting quantum computations implies collapse of the polynomial hierarchy,” in
+48
+
+=== PDF PAGE 49 ===
+Proceedings of the Royal Society of London A: Mathematical, Physical and Engineering Sciences.
+The Royal Society, 2010, p. rspa20100301.
+[46] G. Li, Y. Ding, and Y. Xie, “Tackling the qubit mapping problem for nisq-era quantum
+devices,” arXiv:1809.02573, 2018.
+[47] M. J. Bremner, A. Montanaro, and D. J. Shepherd, “Average-case complexity ver-
+sus approximate simulation of commuting quantum computations,”Physical review
+letters, vol. 117, no. 8, p. 080501, 2016.
+[48] ——, “Achieving quantum supremacy with sparse and noisy commuting quantum
+computations,” Quantum, vol. 1, p. 8, 2017.
+[49] L. Trevisan, “Inapproximability of combinatorial optimization problems,”Paradigms
+of Combinatorial Optimization, 2nd Edition, pp. 381–434, 2014.
+[50] G. Ausiello, P. Crescenzi, G. Gambosi, V. Kann, A. Marchetti-Spaccamela, and
+M.Protasi, Complexity and approximation: Combinatorial optimization problems and their approximability properties.
+Springer Science & Business Media, 2012.
+[51] C. Papadimitriou and M. Yannakakis, “Optimization, approximation, and complexity
+classes,” Journal of Computer and System Sciences, vol. 43, pp. 425–440, 1991.
+[52] S. Khanna, R. Motwani, M. Sudan, and U. Vazirani, “On syntactic versus compu-
+tational views of approximability,”SIAM Journal on Computing, vol. 28, no. 1, pp.
+164–191, 1998.
+[53] J. Håstad, “Some optimal inapproximability results,”J. ACM, vol. 48, no. 4, pp. 798–
+859, Jul. 2001.
+[54] M. X. Goemans and D. P. Williamson, “Improved approximation algorithms for max-
+imum cut and satisﬁability problems using semideﬁnite programming,”Journal of the
+ACM (JACM), vol. 42, no. 6, pp. 1115–1145, 1995.
+[55] S. Khot, G. Kindler, E. Mossel, and R. O’Donnell, “Optimal inapproximability results
+for MAX-CUT and other 2-variable CSPs?” SIAM Journal on Computing, vol. 37,
+no. 1, pp. 319–357, 2007.
+[56] U. Feige, M. Karpinski, and M. Langberg, “Improved approximation of max-cut on
+graphs of bounded degree,”Journal of Algorithms, vol. 43, no. 2, pp. 201–219, 2002.
+[57] M. Lewin, D. Livnat, and U. Zwick, “Improved rounding tech-
+niques for the MAX 2-SAT and MAX DI-CUT problems,” in
+International Conference on Integer Programming and Combinatorial Optimization.
+Springer, 2002, pp. 67–82.
+[58] H. Karloﬀ and U. Zwick, “A 7/8-approximation algorithm for MAX 3SAT?” in
+Foundations of Computer Science, 1997. Proceedings., 38th Annual Symposium on.
+IEEE, 1997, pp. 406–415.
+[59] R. Kohli, R. Krishnamurti, and P. Mirchandani, “The minimum satisﬁability problem,”
+SIAM Journal on Discrete Mathematics, vol. 7, no. 2, pp. 275–283, 1994.
+[60] I. Dinur and S. Safra, “The importance of being biased,” in Proceedings of the
+thiry-fourth annual ACM symposium on Theory of computing. ACM, 2002, pp.
+33–42.
+[61] A. Avidor and U. Zwick, “Approximating MIN 2-SAT and MIN 3-SAT,”Theory of
+Computing Systems, vol. 38, no. 3, pp. 329–345, 2005.
+[62] D. Bertsimas, C. Teo, and R. Vohra, “On dependent randomized rounding algorithms,”
+Operations Research Letters, vol. 24, no. 3, pp. 105–114, 1999.
+[63] G. Andersson and L. Engebretsen, “Better approximation algorithms for Set splitting
+and Not-All-Equal SAT,”Information Processing Letters, vol. 65, no. 6, pp. 305–311,
+1998.
+49
+
+=== PDF PAGE 50 ===
+[64] U. Zwick, “Approximation algorithms for constraint satisfaction problems involving at
+most three variables per constraint.” inSODA, vol. 98, 1998, pp. 201–210.
+[65] E. Petrank, “The hardness of approximation: Gap location,” Computational
+Complexity, vol. 4, no. 2, pp. 133–157, 1994.
+[66] J. Zhang, Y. Ye, and Q. Han, “Improved approximations for max set splitting and
+max NAE SAT,”Discrete Applied Mathematics, vol. 142, no. 1, pp. 133–149, 2004.
+[67] L. Lovász, “Coverings and colorings of hypergraphs,” in Proc. 4th Southeastern
+Conference on Combinatorics, Graph Theory,and Computing. Utilitas Mathematica
+Publishing, Winnipeg, 1973, pp. 3–12.
+[68] V. Guruswami, “Inapproximability results for set splitting and satisﬁability problems
+with no mixed clauses,”Algorithmica, vol. 38, no. 3, pp. 451–469, 2004.
+[69] C. Bazgan, B. Escoﬃer, and V. T. Paschos, “Completeness in standard and diﬀeren-
+tial approximation classes: Poly-(D) APX-and (D) PTAS-completeness,”Theoretical
+Computer Science, vol. 339, no. 2-3, pp. 272–292, 2005.
+[70] R. Boppana and M. M. Halldórsson, “Approximating maximum independent sets by
+excluding subgraphs,”BIT Numerical Mathematics, vol. 32, no. 2, pp. 180–196, 1992.
+[71] D. Zuckerman, “Linear degree extractors and the inap-
+proximability of max clique and chromatic number,” in
+Proceedings of the thirty-eighth annual ACM symposium on Theory of computing.
+ACM, 2006, pp. 681–690.
+[72] G. Karakostas, “A better approximation ratio for the vertex cover problem,”ACM
+Transactions on Algorithms (TALG), vol. 5, no. 4, p. 41, 2009.
+[73] I. Dinur and S. Safra, “On the hardness of approximating minimum vertex cover,”
+Annals of mathematics, pp. 439–485, 2005.
+[74] M. V. Marathe and S. Ravi, “On approximation algorithms for the minimum satisﬁa-
+bility problem,”Information Processing Letters, vol. 58, no. 1, pp. 23–29, 1996.
+[75] E. Hazan, S. Safra, and O. Schwartz, “On the complexity of approximating k-set
+packing,” computational complexity, vol. 15, no. 1, pp. 20–39, 2006.
+[76] M. M. Halldórsson, J. Kratochvıl, and J. A. Telle, “Independent sets with domination
+constraints,” Discrete Applied Mathematics, vol. 99, no. 1, pp. 39–54, 2000.
+[77] D. S. Johnson, “Approximation algorithms for combinatorial problems,” in
+Proceedings of the ﬁfth annual ACM symposium on Theory of computing. ACM,
+1973, pp. 38–49.
+[78] I. Dinur and D. Steurer, “Analytical approach to parallel repetition,” in
+Proceedings of the forty-sixth annual ACM symposium on Theory of computing.
+ACM, 2014, pp. 624–633.
+[79] A. Frieze and M. Jerrum, “Improved approximation algorithms for MAXk-CUT and
+MAX BISECTION,” Algorithmica, vol. 18, no. 1, pp. 67–81, 1997.
+[80] R. Krauthgamer and U. Feige, “A polylogarithmic approximation of the minimum
+bisection,” SIAM review, vol. 48, no. 1, pp. 99–130, 2006.
+[81] A. Panconesi and D. Ranjan, “Quantiﬁers and approximation,” in
+Proceedings of the twenty-second annual ACM symposium on Theory of computing.
+ACM, 1990, pp. 446–456.
+[82] M. M. Halldórsson, “Approximating discrete collections via local improvements.” in
+SODA, vol. 95, 1995, pp. 160–169.
+[83] ——, “A still better performance guarantee for approximate graph coloring,”
+Information Processing Letters, vol. 45, no. 1, pp. 19–23, 1993.
+[84] T. Nishizeki and K. Kashiwagi, “On the 1.1 edge-coloring of multigraphs,” SIAM
+Journal on Discrete Mathematics, vol. 3, no. 3, pp. 391–410, 1990.
+50
+
+=== PDF PAGE 51 ===
+[85] C. Lund and M. Yannakakis, “On the hardness of approximating minimization prob-
+lems,” Journal of the ACM (JACM), vol. 41, no. 5, pp. 960–981, 1994.
+[86] P. Orponen and H. Mannila, “On approximation preserving reductions: Complete
+problems and robust measures (revised version),”Department of Computer Science,
+University of Helsinki, 1990.
+[87] C. H. Papadimitriou and M. Yannakakis, “The traveling salesman problem with dis-
+tances one and two,”Mathematics of Operations Research, vol. 18, no. 1, pp. 1–11,
+1993.
+[88] N. Christoﬁdes, “Worst-case analysis of a new heuristic for the travelling salesman
+problem,” Carnegie-MellonUnivPittsburghPaManagementSciencesResearchGroup,
+Tech. Rep., 1976.
+[89] J. Schaller and J. M. Valente, “Minimizing the weighted sum of squared tardiness on a
+single machine,”Computers & Operations Research, vol. 39, no. 5, pp. 919–928, 2012.
+[90] T. E. Cheng, C. Ng, J. Yuan, and Z. Liu, “Single machine scheduling to minimize
+total weighted tardiness,”European Journal of Operational Research, vol. 165, no. 2,
+pp. 423–443, 2005.
+[91] J. K. Lenstra, A. R. Kan, and P. Brucker, “Complexity of machine scheduling prob-
+lems,” Annals of discrete mathematics, vol. 1, pp. 343–362, 1977.
+[92] M. X. Goemans, M. Queyranne, A. S. Schulz, M. Skutella, and Y. Wang, “Single ma-
+chine scheduling with release dates,”SIAM Journal on Discrete Mathematics, vol. 15,
+no. 2, pp. 165–192, 2002.
+51

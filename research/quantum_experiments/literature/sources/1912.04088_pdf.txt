@@ -1,0 +1,1186 @@
+=== PDF PAGE 1 ===
+Grover Adaptive Search for Constrained Polynomial Binary
+Optimization
+Austin Gilliam1, Stefan Woerner2, and Constantin Gonciulea1
+1JPMorgan Chase
+2IBM Quantum, IBM Research – Zurich
+In this paper we discuss Grover Adaptive
+Search (GAS) for Constrained Polynomial Bi-
+nary Optimization (CPBO) problems, and in
+particular, Quadratic Unconstrained Binary
+Optimization (QUBO) problems, as a special
+case. GAS can provide a quadratic speed-up
+for combinatorial optimization problems com-
+pared to brute force search. However, this re-
+quires the development of eﬃcient oracles to
+represent problems and ﬂag states that satisfy
+certain search criteria. In general, this can
+be achieved using quantum arithmetic, how-
+ever, this is expensive in terms of Toﬀoli gates
+as well as required ancilla qubits, which can
+be prohibitive in the near-term. Within this
+work, we develop a way to construct eﬃcient
+oracles to solve CPBO problems using GAS al-
+gorithms. We demonstrate this approach and
+the potential speed-up for the portfolio opti-
+mization problem, i.e. a QUBO, using simula-
+tion and experimental results obtained on real
+quantum hardware. However, our approach
+applies to higher-degree polynomial objective
+functions as well as constrained optimization
+problems.
+1 Introduction
+Using the laws of quantum mechanics, quantum
+computers oﬀer novel solutions for resource-intensive
+problems. Quantum computers are theoretically
+proven to solve certain problems faster than a classi-
+cal device [1–3] and are well-equipped to handle tasks
+such as factoring [2], linear systems of equations [4, 5],
+Monte-Carlo simulations [6–9], as well as combinato-
+rial optimization problems [10–14].
+A commonly-studied class of combinatorial opti-
+mization problems are Quantum Unconstrained Bi-
+nary Optimization (QUBO) problems, with applica-
+tions in resource allocation, ﬁnance, machine learn-
+ing, and partitioning. There are multiple approaches
+to solve QUBO problems on a quantum computer,
+discussed in the following paragraphs.
+First, quantum annealing [15, 16] is a meta-
+heuristic for adiabatic quantum computers. Similar
+to simulate annealing, it can be used to approximate
+optimal solutions of QUBO problems.
+Further, there exist variational quantum optimiza-
+tion heuristics, such as Variational Quantum Eigen-
+solver (VQE) and Quantum Approximate Optimiza-
+tion Algorithm (QAOA) [10–13]. VQE and QAOA
+are heuristics designed for near-term, noisy quantum
+computers without performance guarantees. How-
+ever, for QAOA, it is known that in the inﬁnite depth
+limit, the algorithm recovers adiabatic evolution and
+would converge to the optimal solution.
+Last, there are Grover-based [1] optimization algo-
+rithms, such as Grover Adaptive Search (GAS) [17–
+19]. GAS iteratively applies Grover Search to ﬁnd
+the optimum value of an objective function, by us-
+ing the best-known value as a threshold to ﬂag all
+values smaller than the threshold in order to ﬁnd a
+better solution. The algorithmic framework comes
+with a quadratic speed-up, however it likely requires
+an error-corrected fault-tolerant quantum computer
+due to the depth of the resulting circuits. One of the
+challenges inherent in GAS is the creation of eﬃcient
+oracles.
+In this paper, we provide a framework for auto-
+matically generating eﬃcient oracles for solvingCon-
+strained Polynomial Binary Optimization (CPBO)—
+a generalization of QUBO—with GAS. The objective
+function and constraints need to be eﬃciently en-
+coded, for which we use aQuantum Dictionary [20],
+a pattern for representing key-value pairs as entan-
+gled quantum registers, that turns out to be eﬃcient
+for polynomial functions – in particular for quadrat-
+ics representing QUBO problems. The approach re-
+lies on the addition of classical numbers to a quan-
+tumregisterinsuperposition, conditionedonthestate
+of another quantum register. It is similar to the
+method used in Quantum Fourier Transform (QFT)
+adders [21]. Given a boolean polynomial, the coeﬃ-
+cient of each monomial is added to the value register
+conditioned on the qubits in the key register corre-
+sponding to the variables present in the monomial.
+We test our algorithm on the portfolio optimiza-
+tion problem [22, 23]. Multiple variants of this prob-
+lem have been studied in the quantum optimization
+literature, ranging from convex continuous formula-
+tions [24] to QUBOs [13, 25, 26]. Here we investi-
+gate a QUBO formulation as well as a formulation
+with an inequality budget constraint, the latter not
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 1
+arXiv:1912.04088v3  [quant-ph]  6 Apr 2021
+=== PDF PAGE 2 ===
+being compatible with other approaches like quan-
+tum annealing, VQE, or QAOA—as those approaches
+can only handle linear equality constraints through
+quadratic penalty terms.
+The remainder of this paper is organized as follows.
+Sec. 2 introduces GAS in general. Sec. 3 introduces
+QUBO problems, and shows how we can eﬃciently
+generate oracles to solve them using GAS algorithms,
+as well as how this approach extends to more gen-
+eral CPBO problems. In Sec. 4, we apply the devel-
+oped technique to a concrete test case – portfolio op-
+timization – and demonstrate it via simulation using
+Qiskit [27]. Sec. 5 concludes this paper and discusses
+possible directions of future research.
+2 Grover Adaptive Search
+Optimization problems are often solved by sequential
+approximation methods. In many cases, such meth-
+odsaretheonlychoice, buttheymaybecomputation-
+ally more eﬃcient even when a solution to a problem
+can be expressed in a closed form. GAS works in a
+similar way, as it repeatedly uses Grover Search to
+randomly sample from all solutions better than the
+current one.
+Grover Search is often described as a search algo-
+rithm, because it was initially formulated in the con-
+text of ﬁnding a single state of interest in a superpo-
+sition ofn-qubit quantum states. The algorithm has
+been generalized to the case of multiple states of inter-
+est, in which case it is better interpreted as a sampling
+algorithm. It ampliﬁes the amplitudes of the states of
+interest within a larger search space, thus, increasing
+the probability of measuring one of the target states.
+Grover Search – the core element of GAS – needs
+three ingredients:
+1. A state preparation operatorA to construct a su-
+perposition of all states in the search space. In
+this manuscript,A is implemented by Hadamard
+gates H⊗n, i.e. it constructs the equal superpo-
+sition state:
+H⊗n|0⟩n = 1√2n
+2n−1∑
+i=0
+|i⟩n. (1)
+2. An oracle operatorO, that recognizes the states
+of interest and multiplies their amplitudes by -1.
+For instance, supposeI⊂{ 0,..., 2n−1} denotes
+the set of target states andA =H⊗n, then
+OA|0⟩n = 1√2n∑i/∈I|i⟩n− 1√2n∑i∈I|i⟩n. (2)
+3. The Grover diﬀusion operatorD, that multiplies
+the amplitude of the|0⟩n state (or, equivalently,
+all states except|0⟩n) by -1.
+Algorithm 1: Grover Adaptive Search
+Input: f :X→ R, λ> 1
+1 Uniformly sample x1∈X and set y1 =f(x1);
+2 Set k = 1 and i = 1;
+3 repeat
+4 Randomly select the rotation count ri from
+the set{0, 1,...,⌈k− 1⌉};
+5 Apply Grover Search with ri iterations,
+using oracles Ayi and Oyi . We denote the
+outputs x and y respectively;
+6 if y <yi then
+7 xi+1 =x, yi+1 =y, and k = 1
+8 else
+9 xi+1 =xi, yi+1 =yi, and k =λk
+10 i =i + 1;
+11 until a termination condition is met;
+The diﬀusion operator has the net eﬀect of invert-
+ing all amplitudes in the quantum state about their
+mean. This causes all the amplitudes of the states of
+interest to be magniﬁed, while the amplitudes of all
+other states are decreased. More precisely, applying
+the Grover operatorG = ADA†O the right number
+of times to stateA|0⟩n – i.e. evaluatingGrA|0⟩n for
+an integerr≥ 0 – will maximally amplify the ampli-
+tudes of the states of interest. The optimal number
+of applicationsr depends on the numberN = 2n of
+all states and the numbers of states of interest, and
+is equal to⌊π4
+∑
+N
+s⌋. This implies a probability of
+sampling a target state of at least1/2, which corre-
+sponds to a quadratic speed-up compared to classical
+search. Since s is in general unknown, we can either
+use Quantum Counting algorithms [28–31] to ﬁnds,
+or apply a randomized strategy.
+The latter is the essence of [32], where an algo-
+rithm for applying Grover Search for unknowns is
+presented. This was then used to create a minimum-
+ﬁnding algorithm [17], which we refer to as GAS. In
+the following we outline GAS, which is formally given
+in Alg. 1.
+Consider a function f : X → R for n binary
+variables, where for ease of presentation assume
+X ={0, 1}n, for which we are interested in ﬁnding
+minx∈Xf(x). The main idea of GAS is to construct
+Ay and Oy for a given threshold y such that they
+ﬂag all statesx∈ X satisfying f(x) < y, such that
+we can use Grover Search to ﬁnd a solution˜x with a
+function value better thany. Then we sety = f(˜x)
+and repeat until some formal termination criteria is
+met, e.g. based on the number of iterations, time, or
+progress iny.
+While implementations of GAS vary around the
+speciﬁc use case [19, 33], the general framework still
+loosely follows the steps described in [17]. In the fol-
+lowing, we will show how operatorA and oracleO can
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 2
+=== PDF PAGE 3 ===
+be eﬃciently constructed for QUBO as well as CPBO
+problems.
+3 QUBO and CPBO Oracles
+A QUBO problem withn binary variables is speciﬁed
+by a quadratic operator represented by a matrixQ∈
+Rn×n, vectorb∈ Rn, and constantc∈ R, deﬁned as
+min
+x∈{0,1}n
+
+
+n∑
+i,j=1
+Qijxixj +
+n∑
+i=1
+bixi +c
+
+(, (3)
+or more compactly asminx∈{0,1}n(xTQx +bTx +c),
+i.e. f(x) =xTQx +bTx +c.
+In the following, we show how to eﬃciently con-
+struct GAS oracles for QUBO problems. We will con-
+structAy such that it prepares an-qubit input regis-
+ter to represent the equal superposition of all|x⟩n and
+a m-qubit output register to (approximately) repre-
+sent the corresponding|f(x)−y⟩m. Then, the oracle
+Oy should ﬂag the states with a negative value in the
+output register. Note that in the implementation dis-
+cussed, the oracle operator is actually independent of
+y, but this is not a requirement. For clarity, we will
+refer to the oracle asO when the oracle is indepen-
+dent ofy. More formally, we show how to construct
+the oracles such that
+Ay|0⟩n|0⟩m = 1√2n
+2n−1∑
+x=0
+|x⟩n|f(x)−y⟩m, and (4)
+O|x⟩n|z⟩m = sign(z)|x⟩n|z⟩m (5)
+where|x⟩ is the binary encoding of the integerx. Fur-
+thermore, we will show how the developed technique
+can be used to extend GAS to higher-degree polyno-
+mials of binary variables, as well as to constrained
+optimization.
+3.1 Construction of operator A
+To constructA, we will use a Quantum Dictionary, as
+introduced in [20], and summarize the construction in
+the following subsections.
+3.1.1 Encoding a Single Integer Value
+Given anm-qubit register and an angleθ∈ [−π,π ),
+wewishtoprepareaquantumstatewhosestatevector
+represents a "periodic signal" equivalent to a geomet-
+ric sequence of length2m. This can be implemented
+using a unitary operator deﬁned by Fig. 1.
+The simplest implementation of UG(θ) uses the
+phase gateR(θ) that, when applied to a qubit, rotates
+the phase of the amplitudes of the states having 1 in
+the position corresponding to that qubit. In Qiskit,
+this gate is theU1(θ) operator [27]. The circuit for
+UG(θ) is shown in Fig. 2, and consists of applying the
+H⊗m|0⟩m UG(θ) = 1√2m∑2m−1k=0 eikθ|k⟩m
+Figure 1: Deﬁnition of unitary operator UG(θ), where
+θ∈ [−π,π ), applied to anm-qubit register in equal superpo-
+sition. The result is a quantum state vector that represents
+a geometric sequence of length2m.
+gate R(2iθ) to the qubit m− 1−i in the m-qubit
+register prepared in the state of equal superposition
+in equation (1).
+0 R(2m−1θ)
+... ...
+m− 1−i R (2iθ)
+... ...
+m− 1 R(θ)
+Figure 2: A circuit for unitary operator UG(θ), whereθ∈
+[−π,π ), applied to anm-qubit register.R denotes the phase
+gate, which rotates the amplitudes of states having 1 in the
+position corresponding to the qubit it was applied to.
+In [20] an alternative way to implementUG was in-
+troduced by applying controlledRy rotations to an
+ancillary register containing the encoding of an eigen-
+state ofRy, as explained in Appendix A.
+Note that QFT applied to a register containing the
+binary encoding of a non-negative integer also creates
+a geometric sequence of amplitudes in that register.
+UG can be seen as a shortcut for the QFT when the
+encoded numbers are known classically, as we avoid
+multi-qubit interactions.
+Given an integer−2m−1≤ k <2m−1, if we apply
+UG( 2π2mk), followed by the inverse QFT to anm-qubit
+register prepared in the state of equal superposition
+in equation (1), we end up withk (mod 2m) being
+encoded in the register, as shown in Fig. 3.
+H⊗m|0⟩m UG( 2π2mk) QFT† =|k (mod 2m)⟩m
+Figure 3: The geometric sequence encoding of an integer
+−2m−1≤ k < 2m−1, applied to a register ofm qubits in
+equal superposition.
+This representation is called the binary Two’s Com-
+plement ofk, which just adds2m to negative values
+k, similar to the way we can represent negative an-
+gles with their complement, e.g. equating−π/4 with
+7π/4. The reason this representation occurs naturally
+in this context is due to the fact that rotation com-
+position behaves like modular arithmetic. The same
+method can be used to encode non-integers, as dis-
+cussed in Appendix B.
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 3
+=== PDF PAGE 4 ===
+|x0⟩
+|x1⟩ •
+|x2⟩
+|x3⟩ •
+|z⟩m UG( 2π2ma13)
+Figure 4: An example ofC{1,3}(U) with n = 4 input qubits
+and m output qubits.
+3.1.2 Encoding a Superposition of Polynomial Values
+Next we will discuss the application of UG(θ) to a
+register |z⟩m representing the values of a function,
+controlled on a register|x⟩n representing the inputs
+of the same function. In general, the application
+of a unitary operatorU to|z⟩m controlled by a set
+J⊆{ 0,...,n − 1} of qubits of|x⟩n can be expressed
+as
+CJ(U)|x⟩|z⟩ =|x⟩U
+
+j∈J
+xj
+|z⟩, (6)
+and an example is shown in Fig. 4.
+The general form of a polynomial ofn variables is:
+P (x) =
+∑
+J⊆{0,...,n−1}
+aJ
+∏
+j∈J
+xj. (7)
+Each subsetJ⊆{ 0,...,n − 1} has a corresponding
+monomial 
+j∈J
+xj. The free term is represented bya∅.
+3.1.3 Construction of Operator A
+Now we are ready to deﬁne the operatorA, as shown
+in Fig. 5. It consists of applying a controlled ge-
+ometric sequence transformation CJ(UG( 2π2maJ)) for
+each subsetJ⊆{ 0,...,n − 1} with a non-zero coeﬃ-
+cientaJ, followed by a single application of the inverse
+QFT.
+|x⟩n H • • •
+|z⟩m H . . . UG( 2π2maJ) . . . QFT†
+Figure 5: The circuit for state preparation operatorA, ap-
+plied to input register|x⟩n and output register|z⟩m. Start-
+ing in a state of equal superposition, the operator employs
+several controlled applications of the unitary operatorUG,
+whose angle parameter corresponds to a non-zero coeﬃcient
+aJ, where J is a subset of{0,...,n − 1}. The single ap-
+plication of the inverse Quantum Fourier Transform (QFT†)
+at the end of the circuit decodes the periodic signal encoded
+byUG, resulting in a superposition of key-value pairs.
+Note that QUBO polynomials have only monomials
+of degree less than or equal to2, i.e.|J|≤ 2, so we
+only need to control on single and pairs of qubits. An
+example of encoding a single monomial is shown in
+Fig. 6.
+|x0⟩
+|x1⟩ • • •
+|x2⟩
+|x3⟩ • • •
+|z0⟩ R(2π)
+|z1⟩ R(π)
+|z2⟩ R(π/2)
+Figure 6: An example of encoding the monomial2x1x3, with
+input register|x⟩4 and output register|z⟩3. R denotes the
+phase gate, which rotates the amplitudes of states having 1
+in the position corresponding to the qubit it was applied to.
+Gate Count
+H m
+R m
+1-controlledR m·n
+2-controlledR m·n(n− 1)/2
+InverseQFT on m qubits 1
+Table 1: Number of required gates to realizeA in terms of
+number of input qubitsn and output qubitsm assuming a
+QUBO with denseQ andb and non-zero oﬀsetc. The depth
+scales as 1/m-times the number of gates since they can be
+mostly applied in parallel. Note that aQFT on m qubits
+can be implemented usingO(mlog(m)) gates and thus will
+not dominate the overall circuit complexity [34]
+The operator A prepares a state where the |x⟩n
+register holds all2n inputs in equal superposition, en-
+tangled with the corresponding valuesP (x) encoded
+in the|z⟩m register:
+A|0⟩n|0⟩m = 1√2n
+2n−1∑
+x=0
+|x⟩n|P (x)⟩m, (8)
+where we are assuming that an appropriate sizem for
+the value register is known.
+The desiredAy operator is obtained by adding the
+−y constant to the free term of the original polyno-
+mial. This construction works for polynomials of ar-
+bitrary degree.
+Adetailedsummaryofthenumberofgatesrequired
+to construct A for a QUBO is given in Table 1. In
+general, the number of gates scales as the number
+of monomials in the polynomial to be loaded. This
+matches the scaling of the description of the problem
+under the assumption that the input weights and out-
+put are represented using roughly the same number
+of bits, thus, the asymptotic scaling of our approach
+is optimal.
+An alternative approach to constructA would be to
+use quantum arithmetic. However, even uncontrolled
+in-place addition of a classically givenm-bit number
+to am-bit quantum register requires2m qubits and
+2m− 1 Toﬀoli gates [35–37]. This then would have to
+bedone O(n2)timesina2-controlledway, whichleads
+to signiﬁcantly larger circuits andm more qubits than
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 4
+=== PDF PAGE 5 ===
+|x⟩n
+f(x) +y <0 (f(x) +y <0)† C(x)< 0 (C(x)< 0)†|0⟩m−1
+|0⟩ • •
+|0⟩ •
+|0⟩ •
+|0⟩
+Figure 7: A constrained optimization circuit, which encodes the functions corresponding to a given set of constraints into
+an m-qubit register, and ﬂips a related indicator qubit for each condition that is satisﬁed. In this example, given a function
+f : X→ R of n binary variables, the global indicator qubit (shown at the bottom of the circuit) is set to|1⟩ if and only if
+f(x) +y—where y is the threshold parameter from GAS—and the cost of the input (denotedC(x)) are both less than0.
+Note that the encoding method is the same as described in Sec. 3.1, meaning that the binary representation of the values is
+in Two’s Complement, and thus we only need to control on a single qubit (the most signiﬁcant bit) to determine if a value is
+negative. There is a trade-oﬀ between reusing them qubits and reversing the computation (shown here), or adding additional
+value qubits for each constraint, allowing one to skip the uncompute. In either case, we can replace the oracle that ﬂags "good
+states" by a multi-controlledZ gate, with a number of controls equal to one more than the number of constraints. Here, we
+add one qubit and use a Toﬀoli gate to get back to the setting introduced before.
+required by our approach, and also requires explicit
+encoding of negative integers.
+3.2 Construction of oracle O
+At each step of the algorithm, we are adding a con-
+stant to the polynomial, and searching for remaining
+negative values. This means the oracle just needs to
+recognize negative integers. Since values are repre-
+sented in Two’s Complement, where the most signiﬁ-
+cant (left-most) bit designates the sign of the number,
+a single qubit in the value register can be used to rec-
+ognize negative integers. The typical oracle that mul-
+tiplies target amplitudes by−1 can be applied. Note
+that the oracle stays unchanged between iterations,
+because we add a constant to the polynomial, which
+may lead to overﬂow in the value register. In order
+to avoid that, we may need to increase the number of
+qubits in the value register by 1.
+Alternatively, threshold-based oracles (which are
+potentially more expensive) can be used, that will re-
+duce the search space by ﬁltering the numbers above
+a given threshold.
+3.3 Constrained Optimization
+It is common for optimization problems to impose ad-
+ditional constraints—e.g. the total number or cost of
+assets in a portfolio may be subjected to an upper
+bound. Such constraints translate into further reduc-
+tions of the search space based on the key register.
+For example, the number of assets in a portfolio cor-
+responds to the number of1s in the binary represen-
+tation of the input of the objective function, called
+the Hamming weight.
+It is straightforward to use the GAS oracles intro-
+duced in Sec. 3.1 and 3.2 to take into account poly-
+nomial equality and inequality constraints on the key
+register. Therefore, we can add additional registers
+to evaluate other polynomials. Whether an inequal-
+ity constraint is satisﬁed or not can again be mapped
+to the sign qubit by applying an appropriate shift to
+the polynomial. Equality constraints are a bit more
+expensive, as they require the detection of a particu-
+lar state, which essentially has the same complexity
+as the Grover diﬀusion operatorD.
+This leads to a set of qubits ﬂagging target states:
+one qubit identifying the states that correspond to
+objective values below the current threshold, and one
+qubit for each constraint. Applying a logical AND-
+operation to all of them essentially acts as an inter-
+section of the individually ﬂagged states and allows
+to construct oracles for CPBO. An example is shown
+in Fig. 7, which we demonstrate in Sec. 4.1.
+4 Test Cases
+In the remainder of this paper we demonstrate the
+proposed technique on the portfolio optimization
+problem, and then show a simple example on quan-
+tum hardware.
+4.1 Portfolio Optimization
+Suppose an investment universe consisting ofn assets,
+denoted byi = 1,...,n , their corresponding expected
+returns µ ∈ Rn and covariance matrix Σ ∈ Rn×n.
+Furthermore, we consider a given risk factorq≥ 0,
+which determines the considered risk appetite. The
+resulting objective function is
+min
+x∈{0,1}n
+(
+qxT Σx−µTx). (9)
+In other words, we want to minimize the weighted
+variance minus the expected portfolio return. Setting
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 5
+=== PDF PAGE 6 ===
+q = 0 implies a risk neutral investor, while increasing
+q increases its risk averseness.
+In the presented form, portfolio optimization is a
+QUBO problem. We can extend it by imposing a
+budget constraint of the form
+n∑
+i=1
+xi =B, (10)
+whereB∈{ 0,...,n } denotes the number of assets to
+be chosen.
+In general, equality constraints can be recast as
+penalty terms
+λ
+( n∑
+i=1
+xi−B
+(2
+, (11)
+and added to the objective (since we minimize), where
+λ >0 is a large number to enforce the constraint to
+be satisﬁed. This results in a quadratic term that will
+again lead to a QUBO problem.
+However, with the methodology introduced in
+Sec. 3.3, we can also model more complex constraints,
+e.g. a budget inequality constraint of the form
+n∑
+i=1
+cixi≤B, (12)
+whereci∈ R denote the asset prices, which does usu-
+ally make more sense in practice than (10). In the
+following we consider two examples, one with an ob-
+jection function that we want to minimize, and then
+the same problem with added constraints.
+4.1.1 Finding a Minimum Value
+Consider a portfolio ofn = 3 assets, risk factorq =
+0.5, and returns described by:
+µ =
+( 1
+−2
+3
+(
+and Σ =
+( 2 0 −4
+0 4 −2
+−4 −2 10
+(
+(13)
+which leads to the formulation
+min
+x∈{0,1}3
+(−2x1x3−x2x3− 1x1 + 2x2− 3x3).(14)
+The objective function with added constant −y
+(where y is the current threshold) has an associated
+Ay operator and the oracleO recognizes negative val-
+ues, as introduced in Sec. 3. To perform the experi-
+ment we need7 qubits split into two registers,n = 3
+input qubits and4 output qubits. While we only need
+3 qubits in the output register, we add1 extra to ac-
+commodate for the threshold shift. We set the initial
+threshold y1 = 0, and stop searching if an improve-
+ment has not been found in three consecutive itera-
+tions of the algorithm.
+For each iteration of GAS, we determine the num-
+ber of applications of the Grover iterate as deﬁned in
+Alg. 1. We applyAy for the current threshold, and
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities0.125 0.125 0.125 0.125 0.125 0.125 0.125 0.125
+Iteration 0 (y = 0, r = 0)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities
+0.000 0.000 0.000 0.000 0.000
+0.500
+0.000
+0.500
+Iteration 1 (y = 4, r = 1)
+0 0
+ 1 -3
+ 2 2
+ 3 -2
+ 4 -1
+ 5 -6
+ 6 1
+ 7 -5
+Outcomes
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities
+0.031 0.031 0.031 0.031 0.031
+0.781
+0.031 0.031
+Iteration 2 (y = 5, r = 1)
+Figure8: TheoutputprobabilitiesofGASforthreeiterations,
+searching for a minimum value of a function (Eq. 14), each
+with thresholdsy and r applications of the Grover operator.
+then apply the Grover iterateGy =AyDA†yO for the
+predetermined number of applications. If the mea-
+sured value is less thany, we update the threshold.
+This process repeats until we have seen no improve-
+ment for three consecutive iterations.
+Classically, we can determine the original minimum
+value by keeping track of the total shift, or by calcu-
+lating the value of the objective function for the min-
+imum key. The results of this simulated experiment
+are shown in Fig. 8.
+4.1.2 Additional Constraints
+We can impose a budget inequality constraint of the
+form discussed in Eq. 12 to the previous problem,
+where B < 2 and the price of each asset is 1. As
+shown in Sec. 3.3, we can implement this constraint
+by adding an additional register to the existing quan-
+tum circuit, and then encode the Hamming weight of
+the binary representation of the keys in that register.
+Note that we only need to control on the most signif-
+icant qubit of the constraint register to determine if
+B < 2. Otherwise, the procedure for applying GAS
+is the same as in the original problem. The results of
+this simulated experiment are shown in Fig. 9.
+4.2 Trials on Real Hardware
+The experiments discussed in this section were run
+on the IBM ibmq_toronto device, with Quantum
+Volume 32 [38]. The conﬁguration details for
+ibmq_toronto at the time of our experiments is given
+in Appendix C. Readout error-mitigation techniques
+were applied to the results of each circuit [27, 39].
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 6
+=== PDF PAGE 7 ===
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities0.125 0.125 0.125 0.125 0.125 0.125 0.125 0.125
+Iteration 0 (y = 0, r = 0)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities
+0.000
+0.500
+0.000 0.000
+0.500
+0.000 0.000 0.000
+Iteration 1 (y = 0, r = 1)
+0 0
+ 1 -3
+ 2 2
+ 3 -2
+ 4 -1
+ 5 -6
+ 6 1
+ 7 -5
+Outcomes
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Probabilities
+0.031
+0.781
+0.031 0.031 0.031 0.031 0.031 0.031
+Iteration 2 (y = 1, r = 1)
+Figure 9: The output probabilities of three iterations of GAS,
+with respective thresholdsy andr applications of the Grover
+operator. We want to ﬁnd a minimum value of Eq. 14, with
+the additional constraint that the binary representation of the
+corresponding key has a Hamming weight less than2.
+Let us consider a simple example of a polynomial
+minimization which can be run on current quantum
+hardware:
+min
+x∈{0,1}2
+(−2 +x1 +x2). (15)
+As in the previous subsection, we set the initial
+threshold y1 = 0, and stop searching after three it-
+erations with no improvement. Note that due to the
+probabilistic nature of the algorithm there is a non-
+zero probability that an invalid key-value pair will
+be measured. In addition, the noise inherent in the
+present era of quantum hardware further impacts the
+results and increases the probability of wrong results.
+We repeat the computation several times, and take
+the outcome with the maximum probability as the
+measured result. As long as the noise is not too
+strong, this still achieves a good key-value pair.
+The results of the experiment are shown in Fig. 10.
+Note that in this example, the valid measurement out-
+comes are 0→− 2, 1→− 1, 2→− 1, and 3→ 0.
+In the ﬁrst iteration the four outcomes are shown in
+an approximately-equal superposition, and sampled
+randomly (we do not apply the Grover iterate). We
+measure 1→− 1, and thus we update the threshold
+to y2 =−1 and the number of iterations tor = 1.
+In the second iteration of Grover Adaptive Search the
+results of the ampliﬁcation are shown, where0→− 2
+(the minimum) has the highest probability.
+0.0
+0.1
+0.2
+0.3
+0.4Probabilities
+0.05
+0.01 0.01
+0.18
+0.01
+0.05
+0.21
+0.02
+0.15
+0.01
+0.04
+0.01
+0.17
+0.05
+0.02 0.01
+Iteration 0 (y = 0, r = 0)
+0 
+ -1
+0 
+ 1
+0 
+ 0
+0 
+ -2
+1 
+ 1
+1 
+ -2
+1 
+ -1
+1 
+ 0
+2 
+ -1
+2 
+ 0
+2 
+ -2
+2 
+ 1
+3 
+ 0
+3 
+ 1
+3 
+ -1
+3 
+ -2
+Outcomes
+0.0
+0.1
+0.2
+0.3
+0.4Probabilities
+0.08
+0.01 0.02
+0.31
+0.03 0.04
+0.09
+0.00
+0.14
+0.04 0.06 0.06 0.04 0.03 0.02 0.03
+Iteration 1 (y = 1, r = 1)
+Figure 10: The output probabilities of GAS for two itera-
+tions run on real quantum hardware, with respective thresh-
+olds y and r applications of the Grover operator. The valid
+measurement outcomes are shown in blue, while the invalid
+measurement outcomes are shown in grey.
+5 Conclusion
+In this paper we introduced an eﬃcient way to im-
+plement the oracles required for solvingConstrained
+Polynomial Binary Optimization problems using
+Grover Adaptive Search . This problem class is very
+general and contains for instance QUBO problems.
+Our approach signiﬁcantly reduces the number of
+gates required compared to standard quantum arith-
+metic approaches, i.e. it lowers the requirements to
+apply GAS on real quantum hardware for practically
+relevant problems. We demonstrated our algorithm
+on the portfolio optimization problem, i.e. a QUBO,
+where we could reliably ﬁnd the optimal solution, and
+on real quantum hardware. Within this manuscript
+we focused mainly on problems with integer coeﬃ-
+cients. The handling of non-integers is discussed in
+Appendix B.
+Code Availability
+All code associated with this publication can be
+found in the IBM Qiskit Optimization module, cur-
+rently hosted at https://github.com/Qiskit/qiskit-
+optimization.
+Acknowledgments
+This material is for informational purposes only and
+is not the product of JPMorgan Chase & Co.’s Re-
+search Department. This material is not intended as
+research, a recommendation, advice, oﬀer or solicita-
+tion for the purchase or sale of any ﬁnancial product
+or service, and is not a research report and is not in-
+tended as such. This material is not intended to rep-
+resent any position or opinion of JPMorgan Chase &
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 7
+=== PDF PAGE 8 ===
+Figure 11: An example of an integer encoding (left), accompanied by two examples of a non-integer encoding (middle and
+right). Notethatintheintegercaseonlyoneoutcomeispossible, whereastheencodingofanon-integerleadstoasuperposition
+of approximations.
+Co. JPMorgan Chase & Co. disclaims any responsi-
+bility or liability whatsoever for the quality, accuracy
+or completeness of the information herein, and for any
+reliance on, or use of this material in any way.©2021
+JPMorgan Chase & Co.
+IBM, the IBM logo, and ibm.com are trademarks of
+International Business Machines Corp., registered in
+many jurisdictions worldwide. Other product and ser-
+vice names might be trademarks of IBM or other com-
+panies. The current list of IBM trademarks is avail-
+able at https://www.ibm.com/legal/copytrade.
+A Quantum Dictionary
+The Quantum Dictionary was introduced in [20] as a
+quantum computing pattern for encoding functions,
+in particular polynomials, into a quantum state using
+geometric sequences. The paper shows how quantum
+algorithms like search and counting applied to a quan-
+tum dictionary allow to solve combinatorial optimiza-
+tion and QUBO problems more eﬃciently than using
+classical methods.
+|key⟩ H • • •
+|val⟩ H • • • QFT†
+|anc⟩ E(Ry) . . . Ry(θ) . . . E(Ry)†
+Figure 12: Quantum Dictionary circuit.
+Encoding a geometric sequence can be done using
+the phase gate as we explained earlier, but it is worth
+mentioning an alternative method described in [20],
+which uses theRy family of gates.
+|0⟩ Rx(π/2) Z X = E(Ry)
+Figure 13: Eigenstate preparation forRy.
+TheRy gate is applied to an ancillary register con-
+taining one of its eigenstates prepared by an operator
+E(Ry), conditioned on both the key and value reg-
+isters. The rotation angle θ is diﬀerent for each ap-
+plication, representing a number that contributes to
+the values corresponding to keys that have the condi-
+tioned key as a subset. In particular, when encoding
+a polynomial, a rotation will be applied for each of its
+coeﬃcients.
+In [20] we used theRy operator, with the eigenstate
+1/
+√
+2(i|0⟩ +|1⟩), independent of the rotation angle.
+This state can be prepared by the circuit in Fig. 13.
+The corresponding eigenvalue ofRy(2θ) is eiθ.
+B Handling Non-Integers
+When handling non-integers, we have two choices.
+The ﬁrst is to approximate them with fractions with
+a common denominator and encode the numerator
+into quantum registers before performing computa-
+tions, cf. Appendix B.1. The second, cf. Appendix
+B.2, is to phase-encode real numbers and let the in-
+verse QFT convert the result of the computation into
+a superposition of approximations.
+B.1 Approximating Real Coeﬃcients by Frac-
+tions
+If we relax the assumption that all coeﬃcients are in-
+tegers, we can approximate non-integers by dividing
+all values inµ and Σ by the largest (scaling the range
+of the coeﬃcients to[−1, 1)), and approximating each
+value k by a fraction k2m with−2m−1≤ k < 2m−1,
+where m is the number of value qubits. As an exam-
+ple, supposen = 3, m = 5, q = 0.5, and
+µ =
+
+
+−3.77 × 10−3
+1.09 × 10−3
+2.41 × 10−3
+
+(. (16)
+Scaling the coeﬃcients ofµ leads to
+µ =
+
+
+−1.0
+0.29
+0.64
+
+(, (17)
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 8
+=== PDF PAGE 9 ===
+and approximating them by fractions leads to
+µ =
+
+
+−16/32
+5/32
+10/32
+
+(. (18)
+As the approximated function coeﬃcients have a com-
+mon denominator, we can ignore the denominator and
+treat the values as integers
+µ =
+
+
+−16
+5
+10
+
+(, (19)
+which results in the optimization problem
+min
+x∈{0,1}3
+−(−16x1 + 5x2 + 10x3). (20)
+B.2 Encoding Real Coeﬃcients as Fejér Distri-
+butions
+Recall the unitary operatorUG(θ) from Fig. 1, where
+θ∈ [−π,π ). As discussed in Sec. 3.1, the process for
+encoding an integer−2m−1≤ k <2m−1 is to apply
+UG( 2π2mk) to an m-qubit register in equal superposi-
+tion, followed by a single application of the inverse
+Quantum Fourier Transform.
+H⊗m|0⟩m UG(θ) QFT† = UFejér(θ)|0⟩m
+Figure 14:UG(θ) followed by inverseQFT .
+For the general case of a real number, shown in
+Fig. 14, where angleθ∈ [−π,π ). The application of
+the same sequence of gates from the integer case re-
+sults in a quantum state whose state vector consists of
+the inner product betweenG(θ) and the Fourier bases
+G( 2π2mj), representing a similarity measure betweenθ
+and 2π2mj, for 0≤ j ≤ 2m− 1, where G(θ) denotes
+the geometric sequence vector (1,eiθ,...,e i(2m−1)θ).
+We will call the operator preparing this stateUFejér
+because the outcome probability distribution is the
+Fejér distribution [40]:
+UFejér(θ)|0⟩m = 1√2m
+2m−1∑
+j=0
+⟨G(θ),G ( 2π2mj)⟩|j⟩(21)
+If θ = 2π2ma, for a real number−2m−1≤a< 2m−1,
+then UFejér(θ)|0⟩m prepares a state whose two most
+likely measurement outcomes are the closest two inte-
+gers toa. The probability of measuring one of them
+is at least 81% [41]. Fig. 11 shows the probability
+distribution of the outcomes for multiple values ofa
+where m = 4.
+C Hardware Speciﬁcations
+The error map for ibmq_toronto in Fig. 15 was gen-
+erated on the day of experimentation using Qiskit’s
+visualization library [27].
+Figure 15: The error map for ibmq_toronto.
+References
+[1] Lov K. Grover. A fast quantum mechanical al-
+gorithm for database search. In Proceedings of
+the Twenty-eighth Annual ACM Symposium on
+Theory of Computing, STOC ’96, pages 212–219,
+New York, NY, USA, 1996. ACM. ISBN 0-89791-
+785-5. DOI: 10.1145/237814.237866.
+[2] Peter W. Shor. Polynomial-time algorithms for
+prime factorization and discrete logarithms on a
+quantum computer. SIAM Journal on Comput-
+ing, 26(5):1484–1509, Oct 1997. ISSN 1095-7111.
+DOI: 10.1137/s0097539795293172.
+[3] B. P. Lanyon, J. D. Whitﬁeld, G. G. Gillett,
+M. E. Goggin, M. P. Almeida, I. Kassal, J. D.
+Biamonte, M. Mohseni, B. J. Powell, M. Bar-
+bieri, and et al. Towards quantum chemistry
+on a quantum computer. Nature Chemistry, 2
+(2):106–111, Jan 2010. ISSN 1755-4349. DOI:
+10.1038/nchem.483.
+[4] Aram W. Harrow, Avinatan Hassidim, and Seth
+Lloyd. Quantum algorithm for linear systems
+of equations. Physical Review Letters , 103(15),
+Oct 2009. ISSN 1079-7114. DOI: 10.1103/phys-
+revlett.103.150502.
+[5] Carlos Bravo-Prieto, Ryan LaRose, M. Cerezo,
+YigitSubasi, LukaszCincio, andPatrickJ.Coles.
+Variational quantum linear solver, 2020. URL
+https://arxiv.org/abs/1909.05820.
+[6] Patrick Rebentrost, Brajesh Gupt, and
+Thomas R. Bromley. Quantum computa-
+tional ﬁnance: Monte carlo pricing of ﬁnancial
+derivatives. Phys. Rev. A , 98:022321, Aug 2018.
+DOI: 10.1103/PhysRevA.98.022321.
+[7] Stefan Woerner and Daniel J. Egger. Quantum
+risk analysis. npj Quantum Information , 5:15,
+2019. DOI: 10.1038/s41534-019-0130-6.
+[8] D. J. Egger, R. Garcia Gutierrez, J. Cahue
+Mestre, and S. Woerner. Credit risk analy-
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 9
+=== PDF PAGE 10 ===
+sis using quantum computers. IEEE Transac-
+tions on Computers , pages 1–1, 2020. DOI:
+10.1109/TC.2020.3038063.
+[9] Nikitas Stamatopoulos, Daniel J. Egger, Yue
+Sun, Christa Zoufal, Raban Iten, Ning Shen, and
+Stefan Woerner. Option pricing using quantum
+computers. Quantum, 4:291, Jul 2020. ISSN
+2521-327X. DOI: 10.22331/q-2020-07-06-291.
+[10] Edward Farhi, Jeﬀrey Goldstone, and Sam Gut-
+mann. A Quantum Approximate Optimization
+Algorithm, 2014. URL https://arxiv.org/
+abs/1411.4028.
+[11] Alberto Peruzzo, Jarrod McClean, Peter Shad-
+bolt, Man Hong Yung, Xiao Qi Zhou, Pe-
+ter J. Love, Alán Aspuru-Guzik, and Jeremy L.
+O’Brien. A variational eigenvalue solver on a
+photonic quantum processor. Nature Commu-
+nications, 5:4213, 2014. ISSN 20411723. DOI:
+10.1038/ncomms5213.
+[12] Giacomo Nannicini. Performance of hybrid
+quantum-classical variational heuristics for com-
+binatorial optimization. Physical Review E ,
+99:013304, Jan 2019. DOI: 10.1103/Phys-
+RevE.99.013304.
+[13] Panagiotis Kl. Barkoutsos, Giacomo Nannicini,
+Anton Robert, Ivano Tavernelli, and Stefan Wo-
+erner. Improving variational quantum optimiza-
+tion using cvar.Quantum, 4:256, Apr 2020. ISSN
+2521-327X. DOI: 10.22331/q-2020-04-20-256.
+[14] L. Braine, D. J. Egger, J. Glick, and S. Wo-
+erner. Quantum algorithms for mixed binary
+optimization applied to transaction settlement.
+IEEE Transactions on Quantum Engineering , 2:
+1–8, 2021. DOI: 10.1109/TQE.2021.3063635.
+[15] Andrew M Childs, Edward Farhi, and John
+Preskill. Robustness of adiabatic quantum com-
+putation. Physical Review A, 65(1):012322, 2001.
+DOI: 10.1103/PhysRevA.65.012322.
+[16] Mark W Johnson, Mohammad HS Amin,
+Suzanne Gildert, Trevor Lanting, Firas Hamze,
+Neil Dickson, Richard Harris, Andrew J Berkley,
+Jan Johansson, Paul Bunyk, et al. Quan-
+tum annealing with manufactured spins. Na-
+ture, 473(7346):194–198, 2011. DOI: 10.1038/na-
+ture10012.
+[17] Christoph Dürr and Peter Høyer. A quantum
+algorithm for ﬁnding the minimum, 1996. URL
+https://arxiv.org/abs/quant-ph/9607014.
+[18] D. Bulger, W. P. Baritompa, and G. R.
+Wood. Implementing pure adaptive search
+with grover’s quantum algorithm. Journal of
+Optimization Theory and Applications , 116(3):
+517–529, Mar 2003. ISSN 1573-2878. DOI:
+10.1023/A:1023061218864.
+[19] W. P. Baritompa, D. W. Bulger, and G. R.
+Wood. Grover’s quantum algorithm applied to
+global optimization. SIAM J. on Optimization ,
+15(4):1170–1184, April 2005. ISSN 1052-6234.
+DOI: 10.1137/040605072.
+[20] Austin Gilliam, Charlene Venci, Sreraman Mu-
+ralidharan, Vitaliy Dorum, Eric May, Rajesh
+Narasimhan, and Constantin Gonciulea. Foun-
+dational patterns for eﬃcient quantum comput-
+ing, 2019. URLhttps://arxiv.org/abs/1907.
+11513.
+[21] Thomas G. Draper. Addition on a quantum
+computer, 2000. URLhttps://arxiv.org/abs/
+quant-ph/0008033.
+[22] Román Orús, Samuel Mugel, and Enrique
+Lizaso. Quantum computing for ﬁnance:
+Overview and prospects. Reviews in Physics ,
+4:100028, Nov 2019. ISSN 2405-4283. DOI:
+10.1016/j.revip.2019.100028.
+[23] Daniel J. Egger, Claudio Gambella, Jakub
+Marecek, Scott McFaddin, Martin Mevissen,
+Rudy Raymond, Andrea Simonetto, Stefan Wo-
+erner, and Elena Yndurain. Quantum com-
+puting for ﬁnance: State-of-the-art and future
+prospects. IEEE Transactions on Quantum En-
+gineering, 1:1–24, 2020. ISSN 2689-1808. DOI:
+10.1109/tqe.2020.3030314.
+[24] Patrick Rebentrost and Seth Lloyd. Quantum
+computational ﬁnance: quantum algorithm for
+portfolio optimization, 2018. URL https://
+arxiv.org/abs/1811.03975.
+[25] Davide Venturelli and Alexei Kondratyev. Re-
+verse Quantum Annealing Approach to Portfo-
+lio Optimization Problems. Quantum Machine
+Intelligence, 1, 2019. DOI: 10.1007/s42484-019-
+00001-w.
+[26] Daniel J. Egger, Jakub Marecek, and Stefan
+Woerner. Warm-starting quantum optimiza-
+tion, 2020. URL https://arxiv.org/abs/
+2009.10095.
+[27] Héctor Abraham et. al. Qiskit: An open-source
+framework for quantum computing. 2019. DOI:
+10.5281/zenodo.2562110.
+[28] Michele Mosca. Quantum searching, count-
+ing and amplitude ampliﬁcation by eigenvec-
+tor analysis. In In Proceedings of Randomized
+Algorithms, Workshop of Mathematical Foun-
+dations of Computer Science , pages 90–100,
+1998. URL http://141.89.225.3/resources/
+pdf/moscafi.pdf.
+[29] Gilles Brassard, Peter Hoyer, Michele Mosca,
+and Alain Tapp. Quantum Amplitude Ampli-
+ﬁcation and Estimation. Contemporary Mathe-
+matics, 305, 2002. DOI: 10.1090/conm/305.
+[30] Yohichi Suzuki, Shumpei Uno, Rudy Raymond,
+TomokiTanaka, Tamiya Onodera, and NaokiYa-
+mamoto. Amplitude estimation without phase
+estimation. Quantum Information Processing ,
+19(2), Jan 2020. ISSN 1573-1332. DOI:
+10.1007/s11128-019-2565-2.
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 10
+=== PDF PAGE 11 ===
+[31] Scott Aaronson and Patrick Rall. Quantum ap-
+proximate counting, simpliﬁed. Symposium on
+Simplicity in Algorithms , page 24–32, Jan 2020.
+DOI: 10.1137/1.9781611976014.5.
+[32] Michel Boyer, Gilles Brassard, Peter
+Høyer, and Alain Tapp. Tight bounds
+on quantum searching. Fortschritte der
+Physik, 46(4-5):493–505, Jun 1998. ISSN
+1521-3978. DOI: 10.1002/(SICI)1521-
+3978(199806)46:4/5<493::AID-
+PROP493>3.0.CO;2-P.
+[33] Benjamín Barán and Marcos Villagra. Multi-
+objective Optimization Grover Adaptive Search ,
+pages 191–211. Springer International Publish-
+ing, Cham, 2019. ISBN 978-3-319-99648-6. DOI:
+10.1007/978-3-319-99648-6_11.
+[34] Yunseong Nam, Yuan Su, and Dmitri Maslov.
+Approximate quantum fourier transform with
+o(n log(n)) t gates. npj Quantum Informa-
+tion, 6(1), Mar 2020. ISSN 2056-6387. DOI:
+10.1038/s41534-020-0257-5.
+[35] Steven A. Cuccaro, Thomas G. Draper,
+Samuel A. Kutin, and David Petrie Moul-
+ton. A new quantum ripple-carry addition
+circuit, 2004. URL https://arxiv.org/abs/
+quant-ph/0410184.
+[36] Thomas G. Draper, Samuel A. Kutin, Eric M.
+Rains, andKrystaM.Svore. Alogarithmic-depth
+quantum carry-lookahead adder.Quantum Info.
+Comput., 6(4):351–369, July 2006. ISSN 1533-
+7146. DOI: 10.26421/QIC6.4-5-4.
+[37] Craig Gidney. Halving the cost of quantum addi-
+tion. Quantum, 2:74, Jun 2018. ISSN 2521-327X.
+DOI: 10.22331/q-2018-06-18-74.
+[38] Andrew W. Cross, Lev S. Bishop, Sarah Shel-
+don, Paul D. Nation, and Jay M. Gambetta.
+Validating quantum computers using random-
+ized model circuits. Physical Review A , 100(3),
+Sep 2019. ISSN 2469-9934. DOI: 10.1103/phys-
+reva.100.032328.
+[39] A. Dewes, F. R. Ong, V. Schmitt, R. Lauro,
+N. Boulant, P. Bertet, D. Vion, and D. Es-
+teve. Characterization of a two-transmon pro-
+cessor with individual single-shot qubit readout.
+Phys. Rev. Lett. , 108:057002, Feb 2012. DOI:
+10.1103/PhysRevLett.108.057002.
+[40] Svante Janson. Moments of gamma type and
+the brownian supremum process area. Probab.
+Surveys, 7:1–52, 2010. DOI: 10.1214/10-PS160.
+[41] Michael A. Nielsen and Isaac L. Chuang.Quan-
+tum Computation and Quantum Information:
+10th Anniversary Edition . Cambridge Univer-
+sity Press, New York, NY, USA, 10th edition,
+2011. ISBN 1107002176, 9781107002173. DOI:
+10.1017/CBO9780511976667.
+Accepted in Quantum 2021-04-05, click title to verify. Published under CC-BY 4.0. 11

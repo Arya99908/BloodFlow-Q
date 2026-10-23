@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, CheckCircle2, CircleDot, Siren, TriangleAlert } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
+import HoldButton from '../components/HoldButton';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { calculateObjectiveUpperBound, countScenarioQubits, estimateCandidateStates } from '../utils/scenarioBounds';
 
@@ -26,6 +27,8 @@ export default function EmergencySimulation() {
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [formStep, setFormStep] = useState(0);
+  const formRef = useRef(null);
 
   const entities = kind === 'inventory_reduction' ? scenario?.blood_banks || [] : scenario?.hospitals || [];
   const selectedEntity = entities.find((item) => item.id === entity);
@@ -55,7 +58,9 @@ export default function EmergencySimulation() {
   }, [isQaoaDisabled, method]);
 
   const submit = async (event) => {
-    event.preventDefault(); setSubmitError(''); setResult(null); setSubmitting(true);
+    event.preventDefault();
+    if (formStep !== 2 || !canSubmit) return;
+    setSubmitError(''); setResult(null); setSubmitting(true);
     let emergencyEvent;
     if (kind === 'demand_spike') {
       emergencyEvent = { kind, hospital_id: entity, blood_group: bloodGroup, new_demand: Number(quantity) };
@@ -88,6 +93,28 @@ export default function EmergencySimulation() {
     && !(kind === 'demand_spike' && (quantity === '' || Number(quantity) < 0 || (urgency !== 'keep' && !priorityWeight)))
     && !(kind === 'inventory_reduction' && (quantity === '' || Number(quantity) < 0 || isOverReduction));
 
+  const focusInvalid = (id, message) => {
+    setSubmitError(message);
+    requestAnimationFrame(() => document.getElementById(id)?.focus());
+  };
+  const nextFormStep = () => {
+    setSubmitError('');
+    if (formStep === 0) {
+      if (kind !== 'route_disruption' && !entity) return focusInvalid('event-entity', 'Choose a hospital or blood bank for this event.');
+      if (kind !== 'route_disruption' && !bloodGroup) return focusInvalid('event-group', 'Choose the blood group affected by this event.');
+      if ((kind === 'demand_spike' || kind === 'inventory_reduction') && (quantity === '' || Number(quantity) < 0 || !Number.isFinite(Number(quantity)))) return focusInvalid(kind === 'inventory_reduction' ? 'reduction' : 'new-demand', 'Enter a non-negative unit quantity.');
+      if (kind === 'inventory_reduction' && isOverReduction) return focusInvalid('reduction', `Cannot remove more than the available ${availableInventory} units.`);
+      if (kind === 'demand_spike' && urgency !== 'keep' && (!priorityWeight || Number(priorityWeight) <= 0)) return focusInvalid('demand-priority-weight', 'Enter a positive priority weight for the updated urgency.');
+      if (kind === 'hospital_priority_change' && (!priorityWeight || Number(priorityWeight) <= 0)) return focusInvalid('priority-weight', 'Enter a positive priority weight.');
+      if (kind === 'route_disruption' && !selectedRoute) return focusInvalid('route-choice', 'Choose a route to disrupt.');
+    }
+    if (formStep === 1) {
+      if (method === 'exact' && isExactDisabled) return focusInvalid('emergency-method', 'Exact is unavailable for this scenario. Choose another solver.');
+      if (method === 'qaoa' && (isQaoaDisabled || !inventoryPenalty || !demandPenalty || Number(inventoryPenalty) <= objectiveBound || Number(demandPenalty) <= objectiveBound)) return focusInvalid('emergency-inventory-penalty', `Both QUBO penalties must exceed the objective bound (${objectiveBound}).`);
+    }
+    setFormStep(step => Math.min(2, step + 1));
+  };
+
   return <>
     <PageHeader eyebrow="SCENARIO CHANGE" title="Emergency simulation" description="Change a synthetic scenario, re-optimize it, then inspect the returned before and after results." />
     {loading && <LoadingState label="Loading scenario for simulation…" />}
@@ -95,9 +122,11 @@ export default function EmergencySimulation() {
     {!loading && !error && scenario?.synthetic === true && <>
       <WorkflowState stage={result ? 'complete' : submitting ? 'running' : 'ready'} />
       <div className="emergency-layout">
-        <form className="panel form-panel" onSubmit={submit}>
+        <form ref={formRef} id="emergency-simulation-form" className="panel form-panel" onSubmit={submit}>
           <div className="panel-heading"><div><h2>Configure an emergency event</h2><p>The backend applies this event to a copy of the active scenario.</p></div><Siren size={19} className="red-icon" /></div>
+          <div className="emergency-form-progress" aria-label="Simulation configuration steps">{['Event details', 'Solver setup', 'Review & run'].map((label, index) => <div key={label} className={index === formStep ? 'is-active' : index < formStep ? 'is-complete' : ''}><span>{index < formStep ? '✓' : index + 1}</span>{label}</div>)}</div>
           <div className="form-stack">
+            {formStep === 0 && <div className="emergency-form-step">
             <label className="field-label" htmlFor="event-kind">Event type</label>
             <select id="event-kind" className="field-control" value={kind} onChange={(event) => { setKind(event.target.value); setResult(null); }}>
               <option value="demand_spike">Demand change</option><option value="inventory_reduction">Inventory reduction</option><option value="route_disruption">Route disruption</option><option value="hospital_priority_change">Hospital priority change</option>
@@ -136,6 +165,8 @@ export default function EmergencySimulation() {
             </>}
             {kind === 'hospital_priority_change' && <><label className="field-label" htmlFor="priority">New urgency label</label><select id="priority" className="field-control" value={urgency === 'keep' ? 'critical' : urgency} onChange={(event) => setUrgency(event.target.value)}>{Object.entries(urgencyLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><label className="field-label" htmlFor="priority-weight">Priority weight (scenario value)</label><input id="priority-weight" type="number" min="0.0001" step="any" required className="field-control" value={priorityWeight} onChange={(event) => setPriorityWeight(event.target.value)} /></>}
             {kind === 'route_disruption' && <><label className="field-label" htmlFor="route-choice">Route to disrupt</label><select id="route-choice" className="field-control" value={routeKey || (routes[0] ? `${routes[0].source}|${routes[0].destination}` : '')} onChange={(event) => setRouteKey(event.target.value)}>{routes.map((route) => <option key={`${route.source}-${route.destination}`} value={`${route.source}|${route.destination}`}>{scenario.blood_banks.find((item) => item.id === route.source)?.name || route.source} → {scenario.hospitals.find((item) => item.id === route.destination)?.name || route.destination} · {titleCase(route.status)}</option>)}</select><div className="notice notice-info"><TriangleAlert size={16} /><span>Route values and status come from the active scenario.</span></div></>}
+            </div>}
+            {formStep === 1 && <div className="emergency-form-step">
             <label className="field-label" htmlFor="emergency-method">Re-optimization method</label>
             <select id="emergency-method" className="field-control" value={method} onChange={(event) => setMethod(event.target.value)}>
               <option value="greedy">Greedy baseline</option>
@@ -163,7 +194,21 @@ export default function EmergencySimulation() {
               <label className="field-label" htmlFor="emergency-demand-penalty">Demand penalty weight (min &gt; {objectiveBound != null ? objectiveBound : '—'})</label>
               <input id="emergency-demand-penalty" className="field-control" type="number" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step="any" required value={demandPenalty} onChange={(event) => setDemandPenalty(event.target.value)} />
             </div>}
-            <button className="button button-danger button-wide emergency-run-button" type="submit" disabled={!canSubmit}><Siren size={16} />{submitting ? 'RE-OPTIMIZING…' : 'SIMULATE EMERGENCY'}</button>
+            </div>}
+            {formStep === 2 && <div className="emergency-review-card"><span className="eyebrow">CHECK BEFORE RUNNING</span><h3>Review this synthetic event</h3><dl>
+              <div><dt>Event</dt><dd>{titleCase(kind)}</dd></div>
+              {kind === 'route_disruption' ? <div><dt>Route</dt><dd>{selectedRoute?.source} → {selectedRoute?.destination}</dd></div> : <><div><dt>{kind === 'inventory_reduction' ? 'Blood bank' : 'Hospital'}</dt><dd>{selectedEntity?.name || 'Not selected'}</dd></div><div><dt>Group</dt><dd>{bloodGroup || 'Not selected'}</dd></div></>}
+              {kind === 'demand_spike' && <><div><dt>New demand</dt><dd>{quantity} units</dd></div><div><dt>Urgency</dt><dd>{urgency === 'keep' ? 'Keep current' : urgencyLabels[urgency]}</dd></div></>}
+              {kind === 'inventory_reduction' && <div><dt>Inventory reduction</dt><dd>{quantity} units</dd></div>}
+              {kind === 'hospital_priority_change' && <div><dt>New urgency</dt><dd>{urgencyLabels[urgency === 'keep' ? 'critical' : urgency]}</dd></div>}
+              <div><dt>Solver</dt><dd>{method === 'milp' ? 'MILP · HiGHS' : titleCase(method)}</dd></div>
+              {method === 'qaoa' && <><div><dt>Inventory penalty</dt><dd>{inventoryPenalty}</dd></div><div><dt>Demand penalty</dt><dd>{demandPenalty}</dd></div></>}
+            </dl><p>The API will apply this event to a scenario copy and return the actual re-optimization report.</p></div>}
+            <div className="emergency-form-actions">
+              {formStep > 0 && <button type="button" className="button button-secondary" disabled={submitting} onClick={() => { setSubmitError(''); setFormStep(step => step - 1); }}>Back</button>}
+              {formStep < 2 && <button type="button" className="button button-primary" onClick={nextFormStep}>Next</button>}
+              {formStep === 2 && <div className="emergency-hold-control"><HoldButton className="emergency-hold-button" holdTime={1100} resetAfter={900} backgroundColor="var(--primary-hover)" fillColor="var(--primary)" textColor="#fff" fillTextColor="#fff" radius={12} size="lg" disabled={!canSubmit} onHold={() => formRef.current?.requestSubmit()} doneLabel="Request sent">{submitting ? 'RE-OPTIMIZING…' : 'Hold to simulate emergency'}</HoldButton><small>Press and hold for 1.1 seconds. Releasing early cancels the request.</small></div>}
+            </div>
           </div>
           {submitError && <div className="inline-error" role="alert">{submitError}</div>}
         </form>

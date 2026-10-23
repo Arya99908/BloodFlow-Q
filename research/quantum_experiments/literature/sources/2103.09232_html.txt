@@ -1,0 +1,1349 @@
+ 
+
+ Simultaneous Perturbation Stochastic Approximation of the Quantum Fisher Information 
+
+ Skip to main content 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Contents 
+
+ Reading mode 
+
+ Colour theme 
+
+ Abstract 
+
+ 1 Introduction 
+
+ 2 SPSA 
+
+ 3 SPSA of the QFIM 
+
+ 3.1 Quantum Natural Gradient 
+
+ 3.2 Quantum Boltzmann Machines 
+
+ 4 Numerical Results 
+
+ 4.1 Diagonal Hamiltonians 
+
+ 4.1.1 Speed of convergence 
+
+ 4.1.2 Region of convergence 
+
+ 4.2 Molecular Hamiltonian 
+
+ 4.3 Quantum Boltzmann Machines 
+
+ 5 Conclusion 
+
+ 6 Acknowledgements 
+
+ References 
+
+ A Variational Quantum Imaginary Time Evolution 
+
+ B Minimization-formulation of Vanilla and Natural Gradient Descent 
+
+ C Comparison of the QFIM Formulas 
+
+ D Influence of QFIM Regularization 
+
+ E Convergence efficiency of natural gradients 
+
+ License: CC BY 4.0
+
+arXiv:2103.09232v2 [quant-ph] 13 Oct 2021
+
+ Simultaneous Perturbation Stochastic Approximation of the Quantum Fisher Information
+
+ Julien Gacon
+
+ Affiliation: IBM Quantum, IBM Research – Zurich, CH-8803 Rüschlikon, Switzerland
+
+ Affiliation: Institute of Physics, École Polytechnique Fédérale de Lausanne (EPFL), CH-1015 Lausanne, Switzerland
+
+ Christa Zoufal
+
+ Affiliation: IBM Quantum, IBM Research – Zurich, CH-8803 Rüschlikon, Switzerland
+
+ Affiliation: Institute for Theoretical Physics, ETH Zurich, CH-8092 Zürich, Switzerland
+
+ Giuseppe Carleo
+
+ Affiliation: Institute of Physics, École Polytechnique Fédérale de Lausanne (EPFL), CH-1015 Lausanne, Switzerland
+
+ Stefan Woerner
+
+ Email: wor@zurich.ibm.com 
+
+ Affiliation: IBM Quantum, IBM Research – Zurich, CH-8803 Rüschlikon, Switzerland
+
+ Abstract
+
+ The Quantum Fisher Information matrix (QFIM) is a central metric in promising algorithms, such as Quantum Natural Gradient Descent and Variational Quantum Imaginary Time Evolution.
+Computing the full QFIM for a model with d d parameters, however, is computationally expensive and generally requires 𝒪 ⁡ ( d 2 ) \mathcal{O}(d^{2}) function evaluations.
+To remedy these increasing costs in high-dimensional parameter spaces, we propose using simultaneous perturbation stochastic approximation techniques to approximate the QFIM at a constant cost.
+We present the resulting algorithm and successfully apply it to prepare Hamiltonian ground states and train Variational Quantum Boltzmann Machines.
+
+ 1 Introduction
+
+ Quantum computing promises potential advances in many fields, such as quantum chemistry and physics [ 1 , 2 , 3 ] , biology [ 4 , 5 , 6 ] , optimization [ 7 , 8 , 9 , 10 ] , finance [ 11 ] , and machine learning [ 12 , 13 , 14 ] .
+While fault-tolerant quantum computers are not yet in reach, a computational paradigm particularly suitable for near-term, noisy quantum devices is that of variational quantum algorithms.
+These consist of a feedback loop between a classical and a quantum computer, where the objective function, usually based on a parameterized
+quantum circuit, is evaluated on the quantum computer and a classical counterpart updates the parameters to find their optimal value
+ [ 15 ] .
+
+ In this context, Variational Quantum Imaginary Time Evolution (VarQITE) techniques are particularly promising and received a lot of interest recently [ 16 , 17 , 18 ] . These methods approximate Quantum Imaginary Time Evolution by mapping the quantum state evolution to the evolution of parameters in a parameterized quantum circuit, which serves as an ansatz for the evolved state.
+The interest in these approaches stems from the fact that imaginary time evolution is an integral part of many quantum algorithms and can, for instance, be used to find ground states of given Hamiltonians [ 16 ] or to prepare corresponding Gibbs states [ 19 , 20 , 17 , 18 ] . The former is important, e.g., for quantum chemistry or combinatorial optimization, while the latter finds applications, e.g., in the simulation of many-body systems [ 21 ] , quantum semi-definite program solvers [ 22 ] , as well as in evaluating and training Quantum Boltzmann Machines (QBMs) [ 23 ] .
+
+ Another interesting property is that VarQITE is closely related to Quantum Natural Gradient (QNG) Descent [ 24 ] .
+Unlike standard Gradient Descent, which moves into the steepest direction of the loss function in ℓ 2 \ell_{2} geometry, the QNG considers the steepest direction in the Quantum Information Geometry. This change in geometry has several advantages, such as an invariance under re-parameterization [ 25 ] or update steps that are adjusted to the loss sensitivity in each parameter dimension.
+VarQITE coincides with QNG for the special case where the loss function corresponds to the system energy, this is discussed in more detail in Appendix A .
+
+ One significant drawback of VarQITE and QNG is that it requires evaluating the Quantum Fisher Information matrix (QFIM) at every iteration. This operation has a cost scaling quadratically with the number of circuit parameters and is computationally expensive for complex objective function with a large number of variational parameters.
+There exist proposed methods to lower the computational cost to linear complexity are to approximate the QFIM by a (block-) diagonal matrix [ 24 ] , however these cannot properly capture parameter correlations and might not work well for problems where these correlations are strong.
+
+ In this paper, we propose a new approach to approximate VarQITE that only requires a constant number of circuit evaluations per iteration.
+This is achieved by applying ideas originally developed for the Simultaneous Perturbation Stochastic Approximation (SPSA) algorithm [ 26 ] to approximate the QFIM. A similar approach has previously been explored for the classical Fisher Information matrix in the context of the Expectation-Maximization algorithm [ 27 ] .
+Our approach is particularly efficient if no precise state evolution is required, as is the case, e.g., for ground state approximation.
+However, by allowing additional circuit evaluations, our algorithm is able to approximate the exact path of VarQITE arbitrarily closely.
+
+ The remainder of this paper is structured as follows. Sec. 2 reviews first- and second-order SPSA and introduces the required concepts.
+Sec. 3 adapts second-order SPSA to provide stochastic approximations of the QFIM and shows how this can be used to approximate QNG and to train QBMs.
+Lastly, we show numerical results for both applications in Sec. 4 and conclude our paper in Sec. 5 .
+
+ 2 SPSA
+
+ Minimizing a function’s value by selecting optimal input parameters is an ubiquitous problem in computational science, for example, in neural networks or variational quantum algorithms.
+A widely used family of methods to find the minimum of the function is gradient descent.
+There, starting from an initial guess, the function’s parameters are updated iteratively by following the direction of the negative gradient of the function with respect to the parameters. Since the negative gradient points to the direction of steepest descent, the idea is that this update rule will eventually lead to a (local) minimum [ 28 ] .
+
+ Calculating gradients of a function scales linearly with the number of parameters for both analytic gradients and finite difference approximations.
+As gradient descent techniques require that the gradients must be evaluated at each iteration step, this possibly leads to a computational bottleneck when applied to problems with high-dimensional parameter spaces.
+
+ Simultaneous perturbation methods provide a solution to these linearly increasing computational costs.
+Instead of considering each parameter dimension individually, SPSA uses a stochastic approximation for the gradient by simultaneously perturbing all parameters in a random direction.
+This results in an unbiased estimator for the gradient if the random directions are sampled from a suitable distribution, for instance, uniformly from { 1 , − 1 } \{1,-1\} for each parameter.
+In addition to the computational efficiency, SPSA is also well suited for optimizing noisy objective functions which usually appear in near-term variational quantum algorithms [ 26 ] .
+
+ Let f : ℝ d → ℝ f:\mathbb{R}^{d}\rightarrow\mathbb{R} be a function with d d parameters.
+For an initial point 𝜽 ( 0 ) ∈ ℝ d \bm{\theta}^{(0)}\in\mathbb{R}^{d} and a small learning rate η > 0 \eta>0 , the k k -th iteration of standard—also called vanilla—gradient descent to minimize f f is defined by
+
+ 𝜽 ( k + 1 ) = 𝜽 ( k ) − η ∇ f ( 𝜽 ( k ) ) , \bm{\theta}^{(k+1)}=\bm{\theta}^{(k)}-\eta\bm{\nabla}f(\bm{\theta}^{(k)}), 
+
+ (1) 
+
+ where ∇ f ​ ( 𝜽 ) ∈ ℝ d \bm{\nabla}f(\bm{\theta})\in\mathbb{R}^{d} denotes the gradient of f f with respect to all its parameters.
+In contrast, the k k -th iteration of SPSA first samples a random direction 𝚫 ( k ) ∼ 𝒰 ⁡ ( { 1 , − 1 } d ) \bm{\Delta}^{(k)}\sim\mathcal{U}(\{1,-1\}^{d}) and then approximates the gradient ∇ f ​ ( 𝜽 ( k ) ) \bm{\nabla}f(\bm{\theta}^{(k)}) by
+
+ ∇ f ​ ( 𝜽 ( k ) ) ≈ f ⁡ ( 𝜽 ( k ) + ϵ ​ 𝚫 ( k ) ) − f ⁡ ( 𝜽 ( k ) − ϵ ​ 𝚫 ( k ) ) 2 ​ ϵ ​ 𝚫 ( k ) , \bm{\nabla}f(\bm{\theta}^{(k)})\approx\frac{f(\bm{\theta}^{(k)}+\epsilon\bm{\Delta}^{(k)})-f(\bm{\theta}^{(k)}-\epsilon\bm{\Delta}^{(k)})}{2\epsilon}\bm{\Delta}^{(k)}, 
+
+ (2) 
+
+ for some small displacement ϵ > 0 \epsilon>0 .
+This update uses only two evaluations of f f , as opposed
+to the 𝒪 ⁡ ( d ) \mathcal{O}(d) evaluations required for analytic gradients or finite difference approximations.
+
+ SPSA can be extended to a second order-method, i.e., to approximate the Hessian in addition to the gradient [ 29 ] , and we denote this algorithm as 2-SPSA.
+In second order-methods, the gradient descent update rule is given by
+
+ 𝜽 ( k + 1 ) = 𝜽 ( k ) − η H − 1 ( 𝜽 ( k ) ) ∇ f ( 𝜽 ( k ) ) , \bm{\theta}^{(k+1)}=\bm{\theta}^{(k)}-\eta H^{-1}(\bm{\theta}^{(k)})\bm{\nabla}f(\bm{\theta}^{(k)}), 
+
+ (3) 
+
+ where H ∈ ℝ d × d H\in\mathbb{R}^{d\times d} is the (approximated) Hessian of f f .
+
+ Instead of computing all d 2 d^{2} entries of H H in each iteration, 2-SPSA samples the Hessian using two random directions 𝚫 1 ( k ) \bm{\Delta}_{1}^{(k)} and 𝚫 2 ( k ) \bm{\Delta}_{2}^{(k)} . The resulting symmetric point-sample is
+
+ H ^ ( k ) = δ ​ f 2 ​ ϵ 2 ​ 𝚫 1 ( k ) ​ 𝚫 2 ( k ) ​ T + 𝚫 2 ( k ) ​ 𝚫 1 ( k ) ​ T 2 , \hat{H}^{(k)}=\frac{\delta f}{2\epsilon^{2}}\frac{\bm{\Delta}_{1}^{(k)}\bm{\Delta}_{2}^{(k)T}+\bm{\Delta}_{2}^{(k)}\bm{\Delta}_{1}^{(k)T}}{2}, 
+
+ (4) 
+
+ where
+
+ δ ​ f \displaystyle\delta f 
+ = f ⁡ ( 𝜽 ( k ) + ϵ ​ 𝚫 1 ( k ) + ϵ ​ 𝚫 2 ( k ) ) \displaystyle=f(\bm{\theta}^{(k)}+\epsilon\bm{\Delta}_{1}^{(k)}+\epsilon\bm{\Delta}_{2}^{(k)}) 
+
+ (5) 
+
+ − f ⁡ ( 𝜽 ( k ) + ϵ ​ 𝚫 1 ( k ) ) \displaystyle-f(\bm{\theta}^{(k)}+\epsilon\bm{\Delta}_{1}^{(k)}) 
+
+ − f ⁡ ( 𝜽 ( k ) − ϵ ​ 𝚫 1 ( k ) + ϵ ​ 𝚫 2 ( k ) ) \displaystyle-f(\bm{\theta}^{(k)}-\epsilon\bm{\Delta}_{1}^{(k)}+\epsilon\bm{\Delta}_{2}^{(k)}) 
+
+ + f ⁡ ( 𝜽 ( k ) − ϵ ​ 𝚫 1 ( k ) ) . \displaystyle+f(\bm{\theta}^{(k)}-\epsilon\bm{\Delta}_{1}^{(k)}). 
+
+ The point sample H ^ ( k ) \hat{H}^{(k)} is then combined with all previous samples in an exponentially smoothed estimator
+
+ H ¯ ( k ) = k k + 1 ​ H ¯ ( k − 1 ) + 1 k + 1 ​ H ^ ( k ) . \bar{H}^{(k)}=\frac{k}{k+1}\bar{H}^{(k-1)}+\frac{1}{k+1}\hat{H}^{(k)}. 
+
+ (6) 
+
+ To evaluate the gradient, the first-order SPSA technique is used.
+In total, this update step uses 6 function evaluations instead of d 2 + d d^{2}+d for an analytic second order method, assuming access to the corresponding derivatives.
+
+ In Eq. ( 4 ), the Hessian estimate is based on the sampling of two random directions and the resulting point-estimate H ^ ( k ) \hat{H}^{(k)} is an unbiased estimator of the full Hessian.
+By re-sampling additional directions and averaging over many point-samples, the stochastic approximation of the Hessian can be systematically improved to arbitrary accuracy [ 29 ] .
+Note, however, that the parameter update rule in Eq. ( 3 ) uses the inverse of the smoothed estimator H ¯ ( k ) \bar{H}^{(k)} which is not a unbiased estimator of the inverse Hessian anymore.
+While the convergence proofs in Ref. [ 29 ] do not require an unbiased estimator of the inverse Hessian, techniques to remove the bias might improve the convergence, but this is beyond the scope of our work.
+
+ Close enough to a minimum, the Hessian of a function is positive semi-definite and our approximation should reflect this.
+One possibility for imposing this property is to replace H ¯ ( k ) \bar{H}^{(k)} with H ¯ ( k ) ​ H ¯ ( k ) \sqrt{\bar{H}^{(k)}\bar{H}^{(k)}} , whose eigenvalues correspond to the absolute values of the eigenvalues of H ¯ ( k ) \bar{H}^{(k)} .
+Since we also need to ensure invertibility of the Hessian estimate, we further add a small positive regularization constant β > 0 \beta>0 to the diagonal
+and obtain the regularization
+
+ H ¯ ( k ) ​ H ¯ ( k ) + β ​ I , \sqrt{\bar{H}^{(k)}\bar{H}^{(k)}}+\beta I, 
+
+ (7) 
+
+ where I ∈ ℝ d × d I\in\mathbb{R}^{d\times d} denotes the identity matrix.
+To further mitigate instabilities that may arise from a close-to-singular estimate, a blocking condition can be invoked that only accepts an update step 𝜽 ( k + 1 ) \bm{\theta}^{(k+1)} if the loss at the candidate parameters is smaller than the current loss, plus a tolerance, and otherwise re-samples from the Hessian and gradient.
+If the loss function is not evaluated exactly, such as in the case of a sample-based estimation through measurements from a quantum circuit, Ref. [ 29 ] suggests choosing a tolerance that is twice the standard deviation of the loss.
+
+ Moreover, the convergence of SPSA and 2-SPSA is guaranteed if a set of conditions on the noise in the loss function evaluation, the differentiability of the loss function, and the meta-parameters η , ϵ \eta,\epsilon and 𝚫 \bm{\Delta} are satisfied. For details as well as the proof of convergence, we refer to Sec. 3 in Ref. [ 29 ] .
+
+ 3 SPSA of the QFIM
+
+ In this section, we present the Quantum Natural SPSA (QN-SPSA) algorithm by
+extending 2-SPSA to estimate the QFIM instead of the Hessian of the loss function.
+First, we show how QN-SPSA efficiently approximates the QNG algorithm for preparing Hamiltonian ground states.
+Then, we leverage this idea to approximate Gibbs state preparation, which we use for the evaluation and training of VarQBMs.
+These are all algorithms that rely on accessing the QFIM in every iteration and any algorithm with this reliance can be significantly sped up with our approach.
+
+ 3.1 Quantum Natural Gradient
+
+ Consider a parameterized model p p depending on d d real-valued parameters and a loss function f f such that
+the loss for parameters 𝜽 ∈ ℝ d \bm{\theta}\in\mathbb{R}^{d} is given as f ⁡ ( p ⁡ ( 𝜽 ) ) f(p(\bm{\theta})) .
+Now, the goal is to find the optimal parameters that minimize the loss, given a starting point 𝜽 ( 0 ) ∈ ℝ d \bm{\theta}^{(0)}\in\mathbb{R}^{d} . For convenience we will omit p p in the loss expression and abbreviate f ⁡ ( 𝜽 ) = f ⁡ ( p ⁡ ( 𝜽 ) ) f(\bm{\theta})=f(p(\bm{\theta})) .
+
+ Vanilla gradient descent attempts to minimize the loss by choosing the parameter update step
+proportional to the negative gradient − η ∇ f ( 𝜽 ) -\eta\bm{\nabla}f(\bm{\theta}) , with the learning rate η \eta .
+From the geometric perspective, this means selecting the direction of steepest descent in the ℓ 2 \ell_{2} geometry of the loss landscape which induces the smallest possible change in the parameter space. Eq. ( 1 ) follows, thus, as shown in App. B , from the minimization of the following function
+
+ 𝜽 ( k + 1 ) = arg ​ min 𝜽 ∈ ℝ d ⁡ ( CLOSE \displaystyle\bm{\theta}^{(k+1)}=\argmin_{\bm{\theta}\in\mathbb{R}^{d}}\bigg( 
+ ⟨ 𝜽 − 𝜽 ( k ) , ∇ f ​ ( 𝜽 ( k ) ) ⟩ \displaystyle\langle\bm{\theta}-\bm{\theta}^{(k)},\bm{\nabla}f(\bm{\theta}^{(k)})\rangle 
+
+ (8) 
+
+ OPEN + 1 2 ​ η ​ ‖ 𝜽 − 𝜽 ( k ) ‖ 2 2 ) , \displaystyle+\frac{1}{2\eta}||\bm{\theta}-\bm{\theta}^{(k)}||_{2}^{2}\bigg), 
+
+ where | | ⋅ | | 2 ||\cdot||_{2} is the ℓ 2 \ell_{2} norm.
+A limitation of vanilla gradient descent is that the learning rate is a global quantity that does not take into account the sensitivity of the model to parameters changes.
+For example, small changes in some subset of parameters might lead to very large changes in model space, whereas large changes of some other parameters be negligible.
+
+ An elegant solution to this sensitivity problem is to modify the update step in such a way that the changes with respect to the model p p remain under control.
+Taking an information geometric approach, this is realized by considering updates in a space that directly reflects the sensitivity of the model.
+To this end, we replace the ℓ 2 \ell_{2} norm | | ⋅ | | 2 ||\cdot||_{2} by
+ | | ⋅ | | g ⁡ ( 𝜽 ) = ⟨ ⋅ , g ( 𝜽 ) ⋅ ⟩ ||\cdot||_{g(\bm{\theta})}=\langle\cdot,g(\bm{\theta})\cdot\rangle where g ⁡ ( 𝜽 ) ∈ ℝ d × d g(\bm{\theta})\in\mathbb{R}^{d\times d} denotes the Riemannian metric tensor induced by the model p ⁡ ( 𝜽 ) p(\bm{\theta}) .
+Now, the update rule changes to
+
+ 𝜽 ( k + 1 ) = arg ​ min 𝜽 ∈ ℝ d ⁡ ( CLOSE \displaystyle\bm{\theta}^{(k+1)}=\argmin_{\bm{\theta}\in\mathbb{R}^{d}}\bigg( 
+ ⟨ 𝜽 − 𝜽 ( k ) , ∇ f ​ ( 𝜽 ( k ) ) ⟩ \displaystyle\langle\bm{\theta}-\bm{\theta}^{(k)},\bm{\nabla}f(\bm{\theta}^{(k)})\rangle 
+
+ (9) 
+
+ OPEN + 1 2 ​ η ​ ‖ 𝜽 − 𝜽 ( k ) ‖ g ⁡ ( 𝜽 ( k ) ) 2 ) , \displaystyle+\frac{1}{2\eta}||\bm{\theta}-\bm{\theta}^{(k)}||_{g(\bm{\theta}^{(k)})}^{2}\bigg), 
+
+ which—as shown in App. B —results in the Natural Gradient Descent formula [ 25 ] 
+
+ 𝜽 ( k + 1 ) = 𝜽 ( k ) − η g − 1 ( 𝜽 ( k ) ) ∇ f ( 𝜽 ( k ) ) . \bm{\theta}^{(k+1)}=\bm{\theta}^{(k)}-\eta g^{-1}(\bm{\theta}^{(k)})\bm{\nabla}f(\bm{\theta}^{(k)}). 
+
+ (10) 
+
+ See also Refs. [ 24 , 30 ] for more detailed discussions on the derivation of the QNG.
+
+ We now consider the case where p p is a parameterized quantum circuit.
+Let | ψ ⁡ ( 𝜽 ) ⟩ \ket{\psi(\bm{\theta})} describe a parameterized pure quantum state in a Hilbert space on n n qubits for d d classical parameters 𝜽 ∈ ℝ d \bm{\theta}\in\mathbb{R}^{d} .
+Then, the metric tensor g ⁡ ( 𝜽 ) ∈ ℝ d × d g(\bm{\theta})\in\mathbb{R}^{d\times d} is the Fubini-Study metric tensor with elements [ 24 ] 
+
+ g i ​ j ​ ( 𝜽 ) = Re ⁡ { ⟨ ∂ ψ ∂ θ i | ∂ ψ ∂ θ j ⟩ − ⟨ ∂ ψ ∂ θ i | ψ ⟩ ​ ⟨ ψ | ∂ ψ ∂ θ j ⟩ } , \displaystyle g_{ij}(\bm{\theta})=\mathrm{Re}\bigg\{\left\langle\frac{\partial\psi}{\partial{\theta_{i}}}\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle-\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\psi\right\rangle\bigg\langle\psi\bigg|\frac{\partial\psi}{\partial\theta_{j}}\bigg\rangle\bigg\}, 
+
+ (11) 
+
+ where θ i \theta_{i} ( θ j \theta_{j} ) denotes the i i -th ( j j -th) element of the parameter vector 𝜽 \bm{\theta} and the quantum state and its derivatives are evaluated at 𝜽 \bm{\theta} .
+The required expectation values can be computed by using a linear combination of unitaries or by parameter shift techniques [ 31 ] . Note that evaluating the Fubini-Study metric tensor g g allows us to directly compute the QFIM since they are equivalent up to a constant factor; the QFIM equals 4 ​ g 4g [ 32 ] .
+
+ Computing g g in general requires evaluating 𝒪 ⁡ ( d 2 ) \mathcal{O}(d^{2}) expectation values. By using the 2-SPSA algorithm, we can replace g ⁡ ( 𝜽 ( k ) ) g(\bm{\theta}^{(k)}) by a stochastic approximation g ¯ ( k ) \bar{g}^{(k)} , requiring only the evaluation of four expectation values, i.e., constant and independent of d d .
+To exploit 2-SPSA, we use a different representation of the metric tensor g g than in Eq. ( 11 ), namely, the Hessian of the Fubini-Study metric [ 24 , 33 ] 
+
+ g i ​ j ​ ( 𝜽 ) = − 1 2 ​ ∂ ∂ θ i ​ ∂ ∂ θ j ​ | ⟨ ψ ⁡ ( 𝜽 ′ ) | ψ ⁡ ( 𝜽 ) ⟩ | 2 | 𝜽 ′ = 𝜽 . g_{ij}(\bm{\theta})=-\frac{1}{2}\frac{\partial}{\partial\theta_{i}}\frac{\partial}{\partial\theta_{j}}|\langle\psi(\bm{\theta}^{\prime})|\psi(\bm{\theta})\rangle|^{2}\bigg|_{\bm{\theta}^{\prime}=\bm{\theta}}. 
+
+ (12) 
+
+ See Appendix C for the equivalence to the previous representation.
+We generalize 2-SPSA for the Hessian of a metric instead of a function by applying perturbations only to the second argument of the metric and keeping the first argument fixed.
+Concretely, Eqs. ( 4 ) and ( 5 ) change to
+
+ g ^ ( k ) = − 1 2 ​ δ ​ F 2 ​ ϵ 2 ​ 𝚫 1 ( k ) ​ 𝚫 2 ( k ) ​ T + 𝚫 2 ( k ) ​ 𝚫 1 ( k ) ​ T 2 , \hat{g}^{(k)}=-\frac{1}{2}\frac{\delta F}{2\epsilon^{2}}\frac{\bm{\Delta}_{1}^{(k)}\bm{\Delta}_{2}^{(k)T}+\bm{\Delta}_{2}^{(k)}\bm{\Delta}_{1}^{(k)T}}{2}, 
+
+ (13) 
+
+ where
+
+ δ ​ F \displaystyle\delta F 
+ = F ⁡ ( 𝜽 ( k ) , 𝜽 ( k ) + ϵ ​ 𝚫 1 ( k ) + ϵ ​ 𝚫 2 ( k ) ) \displaystyle=F(\bm{\theta}^{(k)},\bm{\theta}^{(k)}+\epsilon\bm{\Delta}_{1}^{(k)}+\epsilon\bm{\Delta}_{2}^{(k)}) 
+
+ (14) 
+
+ − F ⁡ ( 𝜽 ( k ) , 𝜽 ( k ) + ϵ ​ 𝚫 1 ( k ) ) \displaystyle-F(\bm{\theta}^{(k)},\bm{\theta}^{(k)}+\epsilon\bm{\Delta}_{1}^{(k)}) 
+
+ − F ⁡ ( 𝜽 ( k ) , 𝜽 ( k ) − ϵ ​ 𝚫 1 ( k ) + ϵ ​ 𝚫 2 ( k ) ) \displaystyle-F(\bm{\theta}^{(k)},\bm{\theta}^{(k)}-\epsilon\bm{\Delta}_{1}^{(k)}+\epsilon\bm{\Delta}_{2}^{(k)}) 
+
+ + F ⁡ ( 𝜽 ( k ) , 𝜽 ( k ) − ϵ ​ 𝚫 1 ( k ) ) , \displaystyle+F(\bm{\theta}^{(k)},\bm{\theta}^{(k)}-\epsilon\bm{\Delta}_{1}^{(k)}), 
+
+ and F ⁡ ( 𝜽 , 𝜽 ′ ) = | ⟨ ψ ⁡ ( 𝜽 ) | ψ ⁡ ( 𝜽 ′ ) ⟩ | 2 F(\bm{\theta},\bm{\theta}^{\prime})=|\langle\psi(\bm{\theta})|\psi(\bm{\theta}^{\prime})\rangle|^{2} . The
+smoothing of the point-estimates g ^ ( k ) \hat{g}^{(k)} into g ¯ ( k ) \bar{g}^{(k)} and
+the technique to ensure the estimate is positive semi-definite remains the same as in the previous section.
+
+ Evaluating the Fubini-Study metric requires calculation of the absolute value of the overlap of | ψ ⁡ ( 𝜽 ) ⟩ \ket{\psi(\bm{\theta})} with parameter values 𝜽 \bm{\theta} and slightly shifted parameters 𝜽 + ϵ ​ 𝚫 \bm{\theta}+\epsilon\bm{\Delta} .
+The overlap of two quantum states can for instance be estimated using the swap test [ 34 ] , where both states are prepared in separate qubit registers.
+Another option, if the states are given by | ψ ⁡ ( 𝜽 ) ⟩ = U ⁡ ( 𝜽 ) ​ | 0 ⟩ \ket{\psi(\bm{\theta})}=U(\bm{\theta})\ket{0} for a parameterized unitary U U , and we only need the absolute value of the overlap, is to prepare U † ​ ( 𝜽 + ϵ ​ 𝚫 ) ​ U ​ ( 𝜽 ) ​ | 0 ⟩ U^{\dagger}(\bm{\theta}+\epsilon\bm{\Delta})U(\bm{\theta})\ket{0} and estimate the probability of measuring | 0 ⟩ \ket{0} , which is equal to | ⟨ ψ ⁡ ( 𝜽 ) | ψ ⁡ ( 𝜽 + ϵ ​ 𝚫 ) ⟩ | 2 |\langle\psi(\bm{\theta})|\psi(\bm{\theta}+\epsilon\bm{\Delta})\rangle|^{2} .
+If our state has n n qubits and the circuit corresponding to U U has depth m m , the swap test requires a circuit width of
+ 2 ​ n 2n , but only leads to a depth of m + 𝒪 ⁡ ( 1 ) m+\mathcal{O}(1) [ 35 ] .
+In contrast, the compute-uncompute method [ 13 ] uses circuits of width n n , but instead needs twice the depth, 2 ​ m 2m .
+To avoid doubling both circuit with and circuit depth, the overlap can also be estimated via randomized measurements of two independent state preparations [ 36 ] , however this technique requires an exponential number of measurements.
+Depending on the complexity of the unitary and the structure of the available hardware, either method can be advantageous.
+
+ 3.2 Quantum Boltzmann Machines
+
+ QBMs are energy-based machine learning models that encode information in the parameters 𝝎 \bm{\omega} of a parameterized n n -qubit Hamiltonian ℋ ^ 𝝎 \hat{\mathcal{H}}_{\bm{\omega}} [ 23 ] . This Hamiltonian defines a Gibbs state
+
+ ρ Gibbs ​ ( ℋ ^ 𝝎 ) = e − ℋ ^ 𝝎 / ( k B T ) Z , \rho^{\text{Gibbs}}(\hat{\mathcal{H}}_{\bm{\omega}})=\frac{e^{-\hat{\mathcal{H}}_{\bm{\omega}}/\left(\text{k}_{\text{B}}\text{T}\right)}}{Z}, 
+
+ (15) 
+
+ with the Boltzmann constant k B \text{k}_{\text{B}} , system temperature T T and partition function Z = Tr [ e − ℋ ^ 𝝎 / ( k B T ) ] Z=\text{Tr}[e^{-\hat{\mathcal{H}}_{\bm{\omega}}/(\text{k}_{\text{B}}T)}] .
+Depending on the construction of ℋ ^ 𝝎 \hat{\mathcal{H}}_{\bm{\omega}} and the choice of the loss function, QBMs can be used for various machine learning tasks, such as generative or discriminative learning [ 18 ] .
+Throughout the training, the Gibbs state ρ Gibbs ​ ( ℋ ^ 𝝎 ) \rho^{\text{Gibbs}}(\hat{\mathcal{H}}_{\bm{\omega}}) is repeatedly prepared and measured for different parameter values 𝝎 \bm{\omega} .
+The obtained samples are then used to evaluate the loss function.
+
+ Preparing quantum thermal states, such as Gibbs states, is difficult and several techniques have been proposed to solve this task [ 37 , 38 , 39 , 40 , 41 , 42 , 43 , 44 ] .
+In the following, we consider approximate construction of the Gibbs state using VarQITE, which follows the time evolution of a maximally mixed state under ℋ ^ 𝝎 \hat{\mathcal{H}}_{\bm{\omega}} for the time ( 2 ​ k B ​ T ) − 1 (2\text{k}_{\text{B}}\text{T})^{-1} .
+
+ At first, the initial maximally mixed state on n n qubits is constructed using n n additional environmental qubits. Each of the n n qubits encoding the Gibbs state is assigned to one environmental qubit and each qubit pair is prepared in the Bell state ( | 00 ⟩ + | 11 ⟩ ) / 2 (\ket{00}+\ket{11})/\sqrt{2} . If the environmental qubits are now traced out, the remaining n n qubits are in a maximally mixed state. The Hamiltonian is adjusted to the extended system by acting trivially on the environmental qubits
+
+ ℋ ^ 𝝎 → ℋ ^ 𝝎 ⊗ 𝕀 ⊗ n , \hat{\mathcal{H}}_{\bm{\omega}}\rightarrow\hat{\mathcal{H}}_{\bm{\omega}}\otimes\mathbb{I}^{\otimes n}, 
+
+ where 𝕀 \mathbb{I} denotes the identity operator on a single qubit.
+In the variational approach, the state of the 2 ​ n 2n qubits is represented by a parameterized quantum circuit with parameters 𝜽 \bm{\theta} . For VarQBMs, the initial parameter values 𝜽 ( 0 ) \bm{\theta}^{(0)} must be chosen such that each qubit pair is in a Bell state [ 18 ] .
+
+ With the correct initial state prepared, we can now apply VarQITE.
+The update rule for the circuit parameters are governed by McLachlan’s variational principle [ 45 ] 
+
+ g i ​ j ( 𝜽 ( t ) ) ∂ θ j ( t ) ∂ t = − Re { ⟨ ∂ ψ ⁡ ( 𝜽 ( t ) ) ∂ θ i | ℋ ^ 𝝎 | ψ ⁡ ( 𝜽 ( t ) ) ⟩ } , g_{ij}(\bm{\theta}^{(t)})\frac{\partial\theta_{j}^{(t)}}{\partial t}=-\text{Re}\left\{\left\langle\frac{\partial\psi(\bm{\theta}^{(t)})}{\partial\theta_{i}}\right|\hat{\mathcal{H}}_{\bm{\omega}}\ket{\psi(\bm{\theta}^{(t)})}\right\}, 
+
+ (16) 
+
+ where g g is the Fubini-Study metric from Eq. ( 11 ). We obtain the time-evolution of the parameters by integrating with an arbitrary ODE solver, such as the explicit Euler scheme
+
+ 𝜽 ( t + δ ​ τ ) = 𝜽 ( t ) + δ ​ τ ​ ∂ 𝜽 ( t ) ∂ t , \bm{\theta}^{(t+\delta\tau)}=\bm{\theta}^{(t)}+\delta\tau\frac{\partial\bm{\theta}^{(t)}}{\partial t}, 
+
+ (17) 
+
+ where δ ​ τ \delta\tau is ( 2 ​ k B ​ T ) − 1 (2\mathrm{k}_{\mathrm{B}}T)^{-1} divided by the number of time steps.
+
+ Now, we can apply the same idea as before and replace g ⁡ ( 𝜽 ( t ) ) g(\bm{\theta}^{(t)}) in the linear system of equations in Eq. ( 16 ) with the approximation g ¯ ( t ) \bar{g}^{(t)} obtained with QN-SPSA and hence significantly reduce the costs associated with Gibbs state preparation, while sacrificing some accuracy.
+Note that for VarQITE we attempt to track the exact evolution more closely than for the QNG and therefore it
+is important to average over multiple point samples g ^ ( t ) \hat{g}^{(t)} per time step.
+
+ 4 Numerical Results
+
+ In this section, we apply the introduced technique to different problem instances. First, we analyze how QN-SPSA performs compared with QNG for ground state approximation, and, second, we show how VarQBMs perform when the Gibbs states are prepared with VarQITE when the QFIM is approximated using 2-SPSA.
+
+ 4.1 Diagonal Hamiltonians
+
+ (a) (b) (c) 
+ Figure 1: Investigation of the loss for the Pauli two-design circuit with the local observable ℋ ^ = Z 1 ​ Z 2 \hat{\mathcal{H}}=Z_{1}Z_{2} .
+(a) The circuit for five qubits, where in each layer the dashed box is repeated. At the end we add a final rotation layer, not shown here. For each rotation gate R P i R_{P_{i}} the rotation axis is chosen uniformly at random, i.e., P i ∼ 𝒰 ⁡ ( { X , Y , Z } ) P_{i}\sim\mathcal{U}(\{X,Y,Z\}) .
+(b) The loss for 11 qubits with the observable Z 5 ​ Z 6 Z_{5}Z_{6} and 3 layer repetitions for vanilla gradient descent, QNG and the respective SPSA variants.
+(c) The same problem scaled to 22 qubits with the observable Z 11 ​ Z 12 Z_{11}Z_{12} and 5 layer repetitions. The analytic optimizers are not shown since they are computationally too costly to evaluate for 132 parameters. 
+
+ We compare the performance of the following optimization routines on problems from the related literature to illustrate the speed of convergence, as well as the robustness of convergence with respect to the initial choice of parameters: vanilla gradient descent, SPSA, QNG, and QN-SPSA.
+
+ 4.1.1 Speed of convergence
+
+ To investigate the speed of convergence, we compare the value of the loss function against the number of
+iterative parameter updates. As in Ref. [ 24 ] we use
+a Pauli two-design circuit as the parameterized quantum circuit.
+The circuit consists of an initial layer of R Y ​ ( π / 4 ) R_{\mathrm{Y}}(\pi/4) gates followed by alternating rotation and
+entanglement layers. The rotation layers apply uniformly at randomly selected R X , R Y R_{\mathrm{X}},R_{\mathrm{Y}} or R Z R_{\mathrm{Z}} gates and
+the entanglement layers apply controlled- Z Z gates between nearest neighbors.
+An example of the circuit for 5 qubits is schematically shown in Fig. 1 (a).
+The loss function is the expectation with respect to a local Z i ​ Z i + 1 Z_{i}Z_{i+1} observable placed in the
+middle of the circuit and the layers in the circuit are repeated sufficiently often such that the light cone of the two measurements involves all qubits. For instance, for 11 qubits we set i = 5 i=5 and repeat the layers 3 times.
+
+ In this benchmark, we use 11 and 22 qubits with 3 and 5 layer repetitions leading to 44 and 132 parameters respectively.
+The learning rate for all optimizers is chosen to be η = 10 − 2 \eta=10^{-2} and the displacement for the finite different approximation in the SPSA methods is ϵ = 10 − 2 \epsilon=10^{-2} .
+The regularization constant for QN-SPSA is set to β = 10 − 3 \beta=10^{-3} .
+The analytic optimizers are only run once, while for both SPSA techniques we show the mean and standard deviation of 25 independent runs from the same initial point.
+The circuits are implemented in Qiskit [ 46 ] and executed using the built-in simulator with 8192 shots.
+
+ Fig. 1 (b) shows the loss per iteration for each method for 11 qubits.
+As previously presented in Ref. [ 24 ] , the analytic QNG converges faster than vanilla gradient descent.
+The spikes in the QNG loss are due to numerical instabilities in the inversion of the Fubini-Study metric tensor and can be avoided using a regularization.
+The mean of the standard SPSA algorithm coincides almost exactly with the vanilla gradient descent,
+which is the expected behavior since SPSA is an unbiased estimator of the gradient.
+We further observe that QN-SPSA outperforms SPSA and vanilla gradient descent and approaches the loss achieved by the analytic QNG, although with a larger variance than standard SPSA.
+The mean of the QN-SPSA loss is close to the QNG loss, but it cannot reach it due to the regularization constant β > 0 \beta>0 that we add for numerical stability. With this regularization constant, we can interpolate
+between the natural gradient ( β = 0 \beta=0 ) and vanilla gradient ( β ≫ 0 \beta\gg 0 ), see Appendix D a more detailed investigation.
+
+ In Fig. 1 (c), we repeat the experiment for 22 qubits. With 132 parameters, this example already manifests the advantage of SPSA-based optimizers over analytic gradients: While QNG requires the execution of approximately 2.6 million circuits, QN-SPSA needs only 2100 circuits. Due to the large computational cost, the analytic gradients are not presented in the 22 qubit case.
+
+ In Appendix E , we compare the convergence of the different optimization schemes with respect to the number of function evaluations and discuss the efficiency and true costs of the different optimizers in more detail.
+
+ 4.1.2 Region of convergence
+
+ The advantage of natural gradients is not just a faster convergence, which—for problems with a simple loss landscape—might also be achieved with vanilla gradient descent or SPSA if the learning rate is carefully calibrated.
+But, since QNG (or VarQITE) approximates imaginary time evolution, we have the guarantee that QNG always converges to the ground state if the initial state has a non-zero overlap with it and if a sufficiently powerful ansatz and small stepsize are chosen [ 16 ] .
+Even with an ansatz that cannot follow the imaginary time evolution exactly, QNG and QN-SPSA can have superior convergence properties to vanilla gradient descent and SPSA.
+
+ To illustrate this, we use the same problem as in Ref. [ 16 ] with the ansatz
+
+ | ψ ⁡ ( 𝜽 ) ⟩ = \displaystyle\ket{\psi(\bm{\theta})}= 
+ e i ​ θ 0 ​ ( | 0 ⟩ ​ ⟨ 0 | ⊗ 𝕀 + | 1 ⟩ ​ ⟨ 1 | ⊗ R Y ​ ( θ 2 ) ) \displaystyle e^{i\theta_{0}}(\ket{0}\bra{0}\otimes\mathbb{I}+\ket{1}\bra{1}\otimes R_{\mathrm{Y}}(\theta_{2})) 
+
+ ( R X ​ ( θ 1 ) ⊗ 𝕀 ) ​ | 00 ⟩ , \displaystyle(R_{\mathrm{X}}(\theta_{1})\otimes\mathbb{I})\ket{00}, 
+
+ prepared by the circuit in Fig. 2 (a) and try to minimize the energy with
+respect to the Hamiltonian
+
+ ℋ ^ = ( 1 0 0 0 0 2 0 0 0 0 3 0 0 0 0 0 ) . \hat{\mathcal{H}}=\begin{pmatrix}1&0&0&0\\
+0&2&0&0\\
+0&0&3&0\\
+0&0&0&0\end{pmatrix}. 
+
+ A variational global phase is added to account for phase differences between the target state and the ansatz, which does not impact the expectation value but can lead to incorrect gradients [ 17 ] .
+We choose different initial points in the same loss landscape and test if vanilla gradient, natural gradient, and the SPSA variants converge to the optimal solution.
+
+ (a) (b) 
+ Figure 2: Convergence tests for a simple loss function. (a) The parameterized quantum circuit used as ansatz. (b) A comparison of the performance of (1) vanilla gradient descent, (2) QNG, (3) SPSA and (4) QN-SPSA. Each dot marks an initial point, which is marked blue if the method converged and red otherwise. For SPSA and QN-SPSA we repeat the optimization 10 times and consider the point as converged if at least one out of the 10 runs converged to the global optimum.
+The global phase parameter θ 0 \theta_{0} is not shown since it does not affect the value of the loss function. 
+
+ In this example, we choose an equidistant grid of 15 × 15 15\times 15 points in [ − π , π ] 2 [-\pi,\pi]^{2} for the initial values of θ 1 \theta_{1} and θ 2 \theta_{2} .
+The initial global phase is set to zero, θ 0 = 0 \theta_{0}=0 .
+As in Ref. [ 16 ] we use constant learning rates of η = 0.886 \eta=0.886 for vanilla gradient descent and η = 0.225 \eta=0.225 for QNG and all methods do 200 iterations.
+We consider an optimization run as converged if the final absolute error is below 10 − 4 10^{-4} .
+For the SPSA methods, we execute 10 optimization runs for each initial point and label the point converged if at least one out of the 10 runs converged. The analytic methods are deterministic and only run once.
+Standard SPSA and QN-SPSA use the same learning rates as the
+corresponding analytic versions, i.e., 0.886 and 0.225, respectively.
+
+ The results are shown in Fig. 2 (b).
+The vanilla gradient descent and QNG reproduce the results from Ref. [ 16 ] . QNG converges from all sampled points except when one of the initial angles is exactly 0, where at least one gradient component vanishes and the parameter update cannot move towards one of the minima in the corners of the plot.
+Vanilla gradient additionally fails to converge in a diamond-shaped region around the saddle point ( 0 , 0 ) (0,0) .
+The regions of convergence for the SPSA methods are similar to the analytic variants, however, they do not suffer as much from vanishing gradient components. Due to the random selection of the direction of the gradient, the stochastic methods have a chance to move to a region where both gradient components are nonzero.
+To conclude, QN-SPSA outperforms all other methods and impressively converges for the most initial points.
+
+ 4.2 Molecular Hamiltonian
+
+ In this section we use QN-SPSA to approximate the ground state of the lithium-hydride (LiH) molecule at a bond distance of 2.5Å on the ibmq_montreal device, which is one of the IBM Quantum Falcon processors, using Qiskit Runtime [ 47 ] .
+
+ In order to extract the one and two body integrals for the molecular system we perform a Restricted Hartree Fock calculation using PySCF. For the description of the system we use the STO3G basis set that results in 6 molecular orbitals. We restrict the active space of the system to 3 molecular orbitals and we use the parity mapping as fermion-to-qubit transformation [ 48 ] , leading to a system of 6 qubits. The intrinsic property of parity mapping [ 48 ] allows us to reduce the qubit requirements by another 2 qubits and we eventually obtain a system of 4 qubits that we simulate. As trial wave function we select a hardware-efficient ansatz, similar to Ref. [ 49 ] , that consists of alternating single-qubit rotation layers and two-qubit nearest-neighbour entanglement layers. This entanglement structure is naturally compatible with our device’s heavy-hex coupling map such that we can map the circuit to our hardware with no additional SWAP gates. The circuit schematics are shown in Fig. 3 (a).
+
+ (a) (b) 
+ Figure 3: Ground state calculation of LiH at bond distance of 2.5Å.
+(a) The hardware-efficient ansatz wave function with alternating rotation and entanglement layers.
+(b) The evolution of the energy for QN-SPSA and SPSA in Hartree. The reference energy is calculated classically using the dense matrix representation of the qubit Hamiltonian.
+
+ In Fig. 3 (b) we present the convergence of the QN-SPSA and SPSA optimization using a learning rate of η = 10 − 2 \eta=10^{-2} , a perturbation of ϵ = 10 − 1 \epsilon=10^{-1} and a regularization of β = 10 − 3 \beta=10^{-3} . The perturbation is larger than in the noiseless simulations, which is a less accurate approximation but much more stable with respect to local fluctuations induced by the noisy loss function evaluations.
+To start with a good estimate for the Fubini-Study metric tensor, the first two iterations of QN-SPSA average 100 point-samples into a single estimate and then average over 2 for the rest of the optimization.
+For both optimizers we start at the same random initial point and show average and standard deviation of 5 experiments with 300 iterations each. We observe that QN-SPSA not only converges faster than SPSA but also reaches a lower final energy.
+Due to hardware noise, the final energy achieved deviates from the exact energy by approximately 200mH, which can likely be overcome using error mitigation techniques such as Richardson Extrapolation [ 50 ] .
+
+ After grouping all commuting Pauli terms we need to measure in 25 different bases to evaluate the expectation value of the Hamiltonian, where we average each measurement over 1024 shots. Since the QFIM only depends on the ansatz and is independent of the system’s Hamiltonian, each stochastic sample of the QFIM still only requires 4 circuit evaluations. Thus, the more complex the problem Hamiltonian gets the smaller the overhead of computing the QN-SPSA update becomes compared to SPSA.
+
+ To assess the real computational cost on the quantum device, we change the perspective to see how fast each method converges with respect to the number of function evaluations instead of iterations. One function evaluation corresponds here to the execution of a single circuit.
+For the Pauli two-design, see Fig. 4 (a), we observe that the analytic methods require about one, respectively two, orders of magnitude more evaluations than the SPSA-based techniques. Since QN-SPSA requires 7 function evaluations per step and SPSA only 3, both methods perform similarly for this diagonal Hamiltonian even though QN-SPSA takes less iterations to converge.
+For a non-diagonal Hamiltonian however, such as for LiH where we have to measure in multiple bases, QN-SPSA adds negligible additional costs and significantly speeds up the converge as shown in Fig. 4 (b).
+In Appendix E we provide another example where QN-SPSA converges much faster.
+If the loss function parameters are much more sensitive in certain dimensions than others, the Natural Gradient information can modulate the learning rate accordingly, whereas vanilla gradients are forced to choose a learning rate small enough to avoid overshooting in any parameter dimension.
+
+ (a) (b) 
+ Figure 4: Convergence comparison with respect to the number of evaluated circuits.
+(a) The Pauli two-design example on 11 qubits.
+(b) The LiH experiment.
+
+ 4.3 Quantum Boltzmann Machines
+
+ In the following, we show that QN-SPSA enables the realization of an approximate VarQBM implementation, where the computational complexity is reduced compared to standard VarQITE-based Gibbs state preparation. We choose to apply the suggested method to a generative learning example, investigated in Ref. [ 18 ] , where the aim is to prepare a Gibbs state whose sampling probabilities correspond to a given target probability density function.
+
+ The learning task in this example is to reproduce the sampling statistics of the Bell state
+ ( | 00 ⟩ + | 11 ⟩ ) / 2 (\ket{00}+\ket{11})/\sqrt{2} . Given a parameterized Hamiltonian ℋ ^ 𝝎 \hat{\mathcal{H}}_{\bm{\omega}} ,
+we aim to find a set of parameters, 𝝎 \bm{\omega} , such that the sampling probabilities of the corresponding Gibbs state
+ ρ Gibbs ​ ( ℋ ^ 𝝎 ) \rho^{\text{Gibbs}}(\hat{\mathcal{H}}_{\bm{\omega}}) are close to the target sampling probabilities
+
+ p Bell = ( 0.5 , 0 , 0 , 0.5 ) , p^{\text{Bell}}=(0.5,0,0,0.5), 
+
+ (18) 
+
+ measured in the computational basis.
+The distance to the target distribution is assessed using the relative entropy, which is a measure that describes the distance between two probability distributions. Minimizing the distance between two distributions with respect to the relative entropy is equivalent to minimizing the cross-entropy of the respective probability distributions
+
+ ℓ ( 𝝎 ) = − ∑ x = 0 3 p x Bell log ( p x Gibbs ( ℋ ^ 𝝎 ) ) , \ell(\bm{\omega})=-\sum_{x=0}^{3}p^{\text{Bell}}_{x}\log\left(p^{\text{Gibbs}}_{x}(\hat{\mathcal{H}}_{\bm{\omega}})\right), 
+
+ where x x corresponds to the computational basis states and
+
+ p x Gibbs ​ ( ℋ ^ 𝝎 ) = Tr ⁡ [ ρ Gibbs ​ ( ℋ ^ 𝝎 ) ​ | x ⟩ ​ ⟨ x | ] . p^{\text{Gibbs}}_{x}(\hat{\mathcal{H}}_{\bm{\omega}})=\mathrm{Tr}\left[\rho^{\text{Gibbs}}(\hat{\mathcal{H}}_{\bm{\omega}})\ket{x}\bra{x}\right]. 
+
+ (19) 
+
+ This example uses the parameterized Hamiltonian
+
+ ℋ ^ 𝝎 = ω 1 ​ Z 1 ​ Z 2 + ω 2 ​ Z 1 + ω 3 ​ Z 2 . \hat{\mathcal{H}}_{\bm{\omega}}=\omega_{1}Z_{1}Z_{2}+\omega_{2}Z_{1}+\omega_{3}Z_{2}. 
+
+ The system temperature is set to k B ​ T = 1 \mathrm{k}_{\mathrm{B}}T=1 which results in the evolution time ( 2 ​ k B ​ T ) − 1 = 0.5 (2\mathrm{k}_{\mathrm{B}}T)^{-1}=0.5 . Furthermore, the approximate QN-SPSA Gibbs state preparation uses forward Euler with 10 equidistant time steps and the ansatz circuit shown in Fig. 5 (a).
+To start the evolution in a maximally mixed state, the initial parameters for the circuit are
+
+ ∀ i ∈ { 1 , … , d } : θ i ( 0 ) = { π 2 ,  if  ​ i ∈ { 9 , 10 } , 0 ,  otherwise. \forall i\in\{1,\dots,d\}:\theta^{(0)}_{i}=\begin{cases}\frac{\pi}{2},\text{ if }i\in\{9,10\},\\
+0,\text{ otherwise.}\end{cases} 
+
+ The initial parameters for the Hamiltonian 𝝎 ( 0 ) \bm{\omega}^{(0)} are chosen uniformly at random from [ − 2 , 2 ] [-2,2] .
+We optimize the Hamiltonian parameters 𝝎 \bm{\omega} with 100 iterations of SPSA with a learning rate and perturbation of 0.1.
+
+ (a) (b) (c) 
+ Figure 5: Generative learning with VarQBMs. (a) The parameterized circuit encoding the Gibbs state. (b) The mean and standard deviation of the QN-SPSA training loss and loss of the exact evolution via matrix exponentiation. The target loss is the final value the training with exact evolution. (c) The final probabilities of the trained Gibbs states. For each of the 10 optimization runs we prepare the
+final state 10 times to approximate the standard deviation on the final sampling statistics. 
+
+ For QN-SPSA, we choose a perturbation of ϵ = 10 − 2 \epsilon=10^{-2} and a regularization constant of β = 0.1 \beta=0.1 .
+Numerical tests reveal that these experiments perform well with 10 re-samplings of the Hessian per iteration and an averaging of 10 Gibbs state preparation per set of Hamiltonian parameters.
+This additional averaging might be necessary due to ill-conditioning of the underlying linear system of equations. In practice, the number of re-samplings and averages can be traded off against a larger standard deviation of the loss function.
+
+ Fig. 5 (b) shows the development of the loss function of 10 optimization runs of VarQBM with QN-SPSA along with the loss if the exact Gibbs state preparation by means of matrix exponentiation is used. Though they are subject to noise, the VarQBMs reliably converge to the same loss as the optimization with exact evolution. By using more time steps, decreasing the regularization constant β \beta , and using more Hessian re-samplings, the loss of QN-SPSA, we can attempt to track the exact evolution more closely.
+
+ The sampling statistics of the final, trained Gibbs states are presented in Fig. 5 (c). The output sampling distribution of the Gibbs state prepared with QN-SPSA approximates the Bell distribution well: the target sampling probabilities for the states | 00 ⟩ \ket{00} and | 11 ⟩ \ket{11} are within the standard deviation of the trained state, and, though they are not exactly 0, the states | 01 ⟩ \ket{01} and | 10 ⟩ \ket{10} have only minuscule amplitudes. These non-zero amplitudes are, however, also present in the final state obtained with exact Gibbs state preparation and might also be a limitation of the chosen system Hamiltonian ℋ ^ 𝝎 \hat{\mathcal{H}}_{\bm{\omega}} .
+
+ 5 Conclusion
+
+ In this paper, we presented how SPSA can be used to approximate the QFIM. Thereby we reduce the cost of circuit executions from scaling quadratically with the number of parameters to constant. We tested the resulting algorithm, QN-SPSA, on ground state preparation and VarQBMs and reproduced existing results from literature where the analytic QFIM was used.
+
+ In the ground state calculations, we observed that QN-SPSA inherits the fast convergence and robustness of QNG with respect to the initial parameters, while having the computational cost benefits of SPSA, overall, leading to the most effective optimization method of the tested algorithms. With the reduced number of circuits required to evaluate the QNG, our approach enables the simulation and investigation of much larger systems than previously possible.
+If the system’s Hamiltonian is complex and we have to measure in a large number of bases, we have further seen that the overhead of calculating QN-SPSA compared to SPSA becomes negligible. This means we can benefit from the QNG properties at very little additional cost.
+There are other proposed optimization routines, designed especially for variational circuits, that minimize the required resources, such as iCANS [ 51 ] , and a comparison as well as potential combination with QN-SPSA techniques could be of great interest.
+
+ For generative learning with VarQBMs, we successfully trained a Gibbs state to reproduce a Bell-state target distribution.
+The speed-up on this small example was not as significant as the ground state calculations due to the required re-sampling. The performance of QN-SPSA for more difficult distributions and more parameters requires further investigation. Another application to consider is VarQBMs for discriminative learning.
+
+ QN-SPSA allows incorporating several adaptive strategies to tailor the optimization routine to the problem or improve convergence.
+These include using first-order SPSA in the beginning of the optimization to construct a stable QFIM estimate, calibrating the perturbation for the finite difference gradients, and dynamically adjusting the number of sampled dimensions according to the rejected or accepted steps.
+
+ A caveat of QN-SPSA is the required evaluation of the overlap of two variational ansatze with different parameters to compute the point-estimates of the QFIM.
+Current available algorithms to compute the overlap of two states either require duplication of the circuit depth or of the circuit width, or are not scalable.
+Finding options to reduce this overhead is a relevant open question for further research, particularly for running this algorithm on real noisy quantum devices.
+
+ To conclude, QN-SPSA provides a promising and efficient new method for parameter optimization in variational quantum algorithms. Given the enormous reduction in the number of evaluations needed for many relevant applications compared with the original QNG, this is an important step towards scaling these quantum algorithms to practically relevant problem sizes.
+
+ 6 Acknowledgements
+
+ We would like to thank Ali Javadi-Abhari for insightful discussions throughout the project, in particular regarding the evaluation of state overlaps. We are grateful for Amira Abbas, who generously shared her helpful intuition and knowledge on the Quantum Fisher Information, as well as feedback on this manuscript. Also, we thank Daniel Egger and Panagiotis Barkoutsos for their ideas of challenging loss functions for the optimizers in this work.
+
+ Further, we thank Jessie Yu, Andrew Wack, Blake Johnson and the whole Qiskit Runtime team for enabling us to leverage the Qiskit Runtime architecture to significantly improve execution times for the real hardware experiments.
+
+ Christa Zoufal acknowledges the support of the National Centre of Competence in Research Quantum Science and Technology (QSIT).
+
+ We acknowledge the use of IBM Quantum services for this work. The views expressed are those of the authors, and do not reflect the official policy or position of IBM or the IBM Quantum team.
+
+ IBM, the IBM logo, and ibm.com are trademarks of International Business Machines Corp., registered in many jurisdictions worldwide. Other product and service names might be trademarks of IBM or other companies. The current list of IBM trademarks is available at https://www.ibm.com/legal/copytrade .
+
+ References
+
+ [1] 
+
+Alán Aspuru-Guzik, Anthony D. Dutoi, Peter J. Love, and Martin
+Head-Gordon.
+
+ Simulated Quantum Computation of Molecular Energies.
+
+ Science , 309(5741):1704–1707, September
+2005.
+
+ doi: 10.1126/science.1113479 .
+
+ [2] 
+
+Alberto Peruzzo et al.
+
+ A variational eigenvalue solver on a photonic quantum processor.
+
+ Nature Communications , 5:4213, July 2014.
+
+ doi: 10.1038/ncomms5213 .
+
+ [3] 
+
+Mari Carmen Bañuls et al.
+
+ Simulating lattice gauge theories within quantum technologies.
+
+ European Physical Journal D , 74(8):165,
+August 2020.
+
+ doi: 10.1140/epjd/e2020-100571-8 .
+
+ [4] 
+
+Alejandro Perdomo-Ortiz, Neil Dickson, Marshall Drew-Brook, Geordie
+Rose, and Alán Aspuru-Guzik.
+
+ Finding low-energy conformations of lattice protein models by
+quantum annealing.
+
+ Scientific Reports , 2:571, August 2012.
+
+ doi: 10.1038/srep00571 .
+
+ [5] 
+
+Mark Fingerhuth, Tomáš Babej, and Christopher Ing.
+
+ A quantum alternating operator ansatz with hard and soft constraints
+for lattice protein folding.
+
+ arXiv, October 2018.
+
+ URL https://arxiv.org/abs/1810.13411 .
+
+ [6] 
+
+Anton Robert, Panagiotis Kl. Barkoutsos, Stefan Woerner, and Ivano Tavernelli.
+
+ Resource-efficient quantum algorithm for protein folding.
+
+ npj Quantum Information , 7(1):38, February
+2021.
+
+ ISSN 2056-6387.
+
+ doi: 10.1038/s41534-021-00368-4 .
+
+ [7] 
+
+Edward Farhi, Jeffrey Goldstone, and Sam Gutmann.
+
+ A Quantum Approximate Optimization Algorithm.
+
+ arXiv, November 2014.
+
+ URL https://arxiv.org/abs/1411.4028 .
+
+ [8] 
+
+Austin Gilliam, Stefan Woerner, and Constantin Gonciulea.
+
+ Grover Adaptive Search for Constrained Polynomial Binary
+Optimization.
+
+ arXiv, December 2019.
+
+ URL https://arxiv.org/abs/1912.04088 .
+
+ [9] 
+
+Lee Braine, Daniel J. Egger, Jennifer Glick, and Stefan Woerner.
+
+ Quantum Algorithms for Mixed Binary Optimization applied to
+Transaction Settlement.
+
+ arXiv, October 2019.
+
+ URL https://arxiv.org/abs/1910.05788 .
+
+ [10] 
+
+J. Gacon, C. Zoufal, and S. Woerner.
+
+ Quantum-enhanced simulation-based optimization.
+
+ In 2020 IEEE International Conference on Quantum Computing and
+Engineering (QCE) , pages 47–55, 2020.
+
+ doi: 10.1109/QCE49297.2020.00017 .
+
+ [11] 
+
+D. J. Egger et al.
+
+ Quantum computing for finance: State-of-the-art and future prospects.
+
+ IEEE Transactions on Quantum Engineering , 1:1–24,
+2020.
+
+ doi: 10.1109/TQE.2020.3030314 .
+
+ [12] 
+
+J. S. Otterbach et al.
+
+ Unsupervised Machine Learning on a Hybrid Quantum Computer.
+
+ arXiv, December 2017.
+
+ URL https://arxiv.org/abs/1712.05771 .
+
+ [13] 
+
+Vojtěch Havlíček et al.
+
+ Supervised learning with quantum-enhanced feature spaces.
+
+ Nature , 567(7747):209–212, March 2019.
+
+ doi: 10.1038/s41586-019-0980-2 .
+
+ [14] 
+
+Maria Schuld.
+
+ Quantum machine learning models are kernel methods.
+
+ arXiv, January 2021.
+
+ URL https://arxiv.org/abs/2101.11020 .
+
+ [15] 
+
+Nikolaj Moll et al.
+
+ Quantum optimization using variational algorithms on near-term
+quantum devices.
+
+ Quantum Science and Technology , 3(3):030503, July 2018.
+
+ doi: 10.1088/2058-9565/aab822 .
+
+ [16] 
+
+Sam McArdle et al.
+
+ Variational ansatz-based quantum simulation of imaginary time
+evolution.
+
+ npj Quantum Information , 5(1), Sep 2019.
+
+ ISSN 2056-6387.
+
+ doi: 10.1038/s41534-019-0187-2 .
+
+ [17] 
+
+Xiao Yuan, Suguru Endo, Qi Zhao, Ying Li, and Simon C. Benjamin.
+
+ Theory of variational quantum simulation.
+
+ Quantum , 3:191, October 2019.
+
+ ISSN 2521-327X.
+
+ doi: 10.22331/q-2019-10-07-191 .
+
+ [18] 
+
+Christa Zoufal, Aurélien Lucchi, and Stefan Woerner.
+
+ Variational quantum boltzmann machines.
+
+ Quantum Machine Intelligence , 3:7, 2020.
+
+ ISSN 2524-4914.
+
+ doi: 10.1007/s42484-020-00033-7 .
+
+ [19] 
+
+Taku Matsui.
+
+ Quantum statistical mechanics and Feller semigroup.
+
+ Quantum Probability Communications , 1998.
+
+ doi: 10.1142/9789812816054_0004 .
+
+ [20] 
+
+Masoud Khalkhali and Matilde Marcolli.
+
+ An Invitation to Noncommutative Geometry .
+
+ World Scientific, 2008.
+
+ doi: 10.1142/6422 .
+
+ [21] 
+
+J. Eisert, M. Friesdorf, and C. Gogolin.
+
+ Quantum many-body systems out of equilibrium.
+
+ Nature Physics , 11(2), 2015.
+
+ doi: 10.1038/nphys3215 .
+
+ [22] 
+
+Fernando G. S. L. Brandão et al.
+
+ Quantum SDP Solvers: Large speed-ups, optimality, and
+applications to quantum learning.
+
+ arXiv, 2017.
+
+ URL https://arxiv.org/abs/1710.02581 .
+
+ [23] 
+
+Mohammad H. Amin, Evgeny Andriyash, Jason Rolfe, Bohdan Kulchytskyy, and Roger
+Melko.
+
+ Quantum Boltzmann Machine.
+
+ Phys. Rev. X , 8, 2018.
+
+ doi: 10.1103/PhysRevX.8.021050 .
+
+ [24] 
+
+James Stokes, Josh Izaac, Nathan Killoran, and Giuseppe Carleo.
+
+ Quantum natural gradient.
+
+ Quantum , 4:269, May 2020.
+
+ ISSN 2521-327X.
+
+ doi: 10.22331/q-2020-05-25-269 .
+
+ [25] 
+
+S. Amari and S. C. Douglas.
+
+ Why natural gradient?
+
+ In Proceedings of the 1998 IEEE International Conference on
+Acoustics, Speech and Signal Processing, ICASSP ’98 (Cat. No.98CH36181) ,
+volume 2, pages 1213–1216 vol.2, 1998.
+
+ doi: 10.1109/ICASSP.1998.675489 .
+
+ [26] 
+
+J.C. Spall.
+
+ Multivariate stochastic approximation using a simultaneous
+perturbation gradient approximation.
+
+ IEEE Transactions on Automatic Control , 37(3):332–341, 1992.
+
+ doi: 10.1109/9.119632 .
+
+ [27] 
+
+Lingyao Meng and James C. Spall.
+
+ Efficient computation of the fisher information matrix in the em
+algorithm.
+
+ In 2017 51st Annual Conference on Information Sciences and
+Systems (CISS) , pages 1–6, 2017.
+
+ doi: 10.1109/CISS.2017.7926126 .
+
+ [28] 
+
+A. Cauchy.
+
+ Methode generale pour la resolution des systemes d’equations
+simultanees.
+
+ C.R. Acad. Sci. Paris , 25:536–538, 1847.
+
+ doi: 10.1017/cbo9780511702396.063 .
+
+ [29] 
+
+J. C. Spall.
+
+ Accelerated second-order stochastic optimization using only function
+measurements.
+
+ In Proceedings of the 36th IEEE Conference on Decision and
+Control , volume 2, pages 1417–1424 vol.2, December 1997.
+
+ doi: 10.1109/CDC.1997.657661 .
+
+ ISSN: 0191-2216.
+
+ [30] 
+
+Yuan Yao, Pierre Cussenot, Alex Vigneron, and Filippo M. Miatto.
+
+ Natural Gradient Optimization for Optical Quantum Circuits.
+
+ arXiv, June 2021.
+
+ URL https://arxiv.org/abs/2106.13660 .
+
+ [31] 
+
+Maria Schuld, Ville Bergholm, Christian Gogolin, Josh Izaac, and Nathan
+Killoran.
+
+ Evaluating analytic gradients on quantum hardware.
+
+ Phys. Rev. A , 99(3):032331, March 2019.
+
+ doi: 10.1103/PhysRevA.99.032331 .
+
+ [32] 
+
+Johannes Jakob Meyer.
+
+ Fisher Information in Noisy Intermediate-Scale Quantum
+Applications.
+
+ Quantum , 5:539, September 2021.
+
+ ISSN 2521-327X.
+
+ doi: 10.22331/q-2021-09-09-539 .
+
+ [33] 
+
+Andrea Mari, Thomas R. Bromley, and Nathan Killoran.
+
+ Estimating the gradient and higher-order derivatives on quantum
+hardware.
+
+ Phys. Rev. A , 103(1):012405, Jan 2021.
+
+ doi: 10.1103/PhysRevA.103.012405 .
+
+ [34] 
+
+Harry Buhrman, Richard Cleve, John Watrous, and Ronald de Wolf.
+
+ Quantum fingerprinting.
+
+ Phys. Rev. Lett. , 87(16):167902, Sep 2001.
+
+ doi: 10.1103/PhysRevLett.87.167902 .
+
+ [35] 
+
+Lukasz Cincio, Yiğit Subaşı, Andrew T. Sornborger, and Patrick J. Coles.
+
+ Learning the quantum algorithm for state overlap.
+
+ arXiv, November 2018.
+
+ URL http://arxiv.org/abs/1803.04114 .
+
+ [36] 
+
+A. Elben, B. Vermersch, C. F. Roos, and P. Zoller.
+
+ Statistical correlations between locally randomized measurements: A
+toolbox for probing entanglement in many-body quantum states.
+
+ Phys. Rev. A , 99(5), May 2019.
+
+ doi: 10.1103/PhysRevA.99.052323 .
+
+ [37] 
+
+Kristan Temme, Tobias J. Osborne, Karl Gerd H. Vollbrecht, David Poulin, and
+Frank Verstraete.
+
+ Quantum Metropolis Sampling.
+
+ Nature , 471, 2011.
+
+ doi: 10.1038/nature09770 .
+
+ [38] 
+
+Man-Hong Yung and Alán Aspuru-Guzik.
+
+ A quantum–quantum Metropolis algorithm.
+
+ Proceedings of the National Academy of Sciences , 109(3), 2012.
+
+ doi: 10.1073/pnas.1111758109 .
+
+ [39] 
+
+David Poulin and Pawel Wocjan.
+
+ Sampling from the Thermal Quantum Gibbs State and Evaluating
+Partition Functions with a Quantum Computer.
+
+ Phys. Rev. Lett. , 103(22), 2009.
+
+ doi: 10.1103/PhysRevLett.103.220502 .
+
+ [40] 
+
+Mario Motta and et al.
+
+ Determining eigenstates and thermal states on a quantum computer
+using quantum imaginary time evolution.
+
+ Nature Physics , 16(2), 2020.
+
+ doi: 10.1038/s41567-019-0704-4 .
+
+ [41] 
+
+Fernando G. S. L. Brandão and Michael J. Kastoryano.
+
+ Finite Correlation Length Implies Efficient Preparation of Quantum
+Thermal States.
+
+ Communications in Mathematical Physics , 365(1),
+2019.
+
+ doi: 10.1007/s00220-018-3150-8 .
+
+ [42] 
+
+Michael J. Kastoryano and Fernando G. S. L. Brandão.
+
+ Quantum Gibbs Samplers: The Commuting Case.
+
+ Communications in Mathematical Physics , 344(3),
+2016.
+
+ doi: 10.1007/s00220-016-2641-8 .
+
+ [43] 
+
+Jingxiang Wu and Timothy H. Hsieh.
+
+ Variational Thermal Quantum Simulation via Thermofield Double
+States.
+
+ Phys. Rev. Lett. , 123(22), 2019.
+
+ doi: 10.1103/PhysRevLett.123.220502 .
+
+ [44] 
+
+Anirban Chowdhury, Guang Hao Low, and Nathan Wiebe.
+
+ A Variational Quantum Algorithm for Preparing Quantum Gibbs States.
+
+ arXiv, 2020.
+
+ URL https://arxiv.org/abs/2002.00055 .
+
+ [45] 
+
+A.D. McLachlan.
+
+ A variational solution of the time-dependent Schrödinger
+equation.
+
+ Molecular Physics , 8(1), 1964.
+
+ doi: 10.1080/00268976400100041 .
+
+ [46] 
+
+Héctor Abraham et al.
+
+ Qiskit: An open-source framework for quantum computing.
+
+ 2019.
+
+ doi: 10.5281/zenodo.2562110 .
+
+ [47] 
+
+IBM Quantum, 2021.
+
+ URL
+ https://quantum-computing.ibm.com/services/docs/services/runtime/ .
+
+ [48] 
+
+Sergey Bravyi, Jay M. Gambetta, Antonio Mezzacapo, and Kristan Temme.
+
+ Tapering off qubits to simulate fermionic hamiltonians.
+
+ arXiv, 2017.
+
+ URL https://arxiv.org/abs/1701.08213 .
+
+ [49] 
+
+Abhinav Kandala et al.
+
+ Hardware-efficient variational quantum eigensolver for small
+molecules and quantum magnets.
+
+ Nature , 549(7671):242–246, September
+2017.
+
+ doi: 10.1038/nature23879 .
+
+ [50] 
+
+Abhinav Kandala, Kristan Temme, Antonio D. Corcoles, Antonio Mezzacapo,
+Jerry M. Chow, and Jay M. Gambetta.
+
+ Error mitigation extends the computational reach of a noisy quantum
+processor.
+
+ Nature , 567(7749):491–495, March 2019.
+
+ doi: 10.1038/s41586-019-1040-7 .
+
+ [51] 
+
+Jonas M. Kübler, Andrew Arrasmith, Lukasz Cincio, and Patrick J. Coles.
+
+ An Adaptive Optimizer for Measurement-Frugal Variational
+Algorithms.
+
+ Quantum , 4:263, May 2020.
+
+ ISSN 2521-327X.
+
+ doi: 10.22331/q-2020-05-11-263 .
+
+ Appendix A Variational Quantum Imaginary Time Evolution
+
+ For a Hamiltonian ℋ ^ \hat{\mathcal{H}} , the Wick-rotated Schrödinger equation
+
+ ∂ | ψ ⁡ ( t ) ⟩ ∂ t = − ( ℋ ^ − E t ) ​ | ψ ⁡ ( t ) ⟩ \frac{\partial\ket{\psi(t)}}{\partial t}=-(\hat{\mathcal{H}}-E_{t})\ket{\psi(t)} 
+
+ describes the normalized form of Quantum Imaginary Time Evolution where
+
+ | ψ ⁡ ( t ) ⟩ = e − ℋ ^ ​ t ⟨ ψ ⁡ ( 0 ) | ​ e − ℋ ^ ​ t ​ | ψ ⁡ ( 0 ) ⟩ ​ | ψ ⁡ ( 0 ) ⟩ , \ket{\psi(t)}=\frac{e^{-\hat{\mathcal{H}}t}}{\sqrt{\bra{\psi(0)}e^{-\hat{\mathcal{H}}t}\ket{\psi(0)}}}\ket{\psi(0)}, 
+
+ and E t = ⟨ ψ ⁡ ( t ) | ℋ ^ | ψ ⁡ ( t ) ⟩ E_{t}=\braket{\psi(t)|\hat{\mathcal{H}}|\psi(t)} .
+
+ A time-discretized approximation of this evolution can be implemented using a variational ansatz state | ψ ⁡ ( 𝜽 OPEN ( t ) ) CLOSE ⟩ \ket{\psi(\bm{\theta}^{(t))}} with parameters 𝜽 ( t ) \bm{\theta}^{(t)} associated with time t t . VarQITE can be realized using McLachlan’s variational principle [ 45 ] 
+
+ δ ​ ‖ ∂ | ψ ⁡ ( 𝜽 ( t ) ) ⟩ ∂ t + ( ℋ ^ − E τ ) ​ | ψ ⁡ ( 𝜽 ( t ) ) ⟩ ‖ ℓ 2 2 = 0 , \displaystyle\delta\left\|\frac{\partial\ket{\psi(\bm{\theta}^{(t)})}}{\partial t}+(\hat{\mathcal{H}}-E_{\tau})\ket{\psi(\bm{\theta}^{(t)})}\right\|_{\ell^{2}}^{2}=0, 
+
+ which aims to minimize the distance between the left and right side of the Wick-rotated Schrödinger equation w.r.t. the variational space given by | ψ ⁡ ( t ) ⟩ \ket{\psi(t)} .
+
+ This variational principle leads to the following linear system of equations
+
+ g i ​ j ( 𝜽 ( t ) ) ∂ θ j ( t ) ∂ t = − Re { ⟨ ∂ ψ ⁡ ( 𝜽 ( t ) ) ∂ θ i | ℋ ^ | ψ ⁡ ( 𝜽 ( t ) ) ⟩ } g_{ij}(\bm{\theta}^{(t)})\frac{\partial\theta_{j}^{(t)}}{\partial t}=-\text{Re}\left\{\left\langle\frac{\partial\psi(\bm{\theta}^{(t)})}{\partial\theta_{i}}\right|\hat{\mathcal{H}}\ket{\psi(\bm{\theta}^{(t)})}\right\} 
+
+ which together with an initial value for 𝜽 \bm{\theta} defines an initial value problem that can be numerically solved with an ODE solver.
+
+ Given that the time discretization used to solve the ODE is chosen sufficiently small and the variational quantum circuit is sufficiently expressive, the VarQITE steps can only decrease the system energy or keep it constant [ 16 ] .
+Thus, this approach offers interesting convergence properties for searching for the state corresponding to the minimum energy eigenstate given that the initial state has a non-zero overlap with this state.
+
+ VarQITE may also be used for approximate Gibbs state preparation, see Sec. 3.2 for further details, as well as for ground state evaluation. The latter case, can be motivated as follows. Suppose the initial state | ψ ⁡ ( 𝜽 ( 0 ) ) ⟩ \ket{\psi(\bm{\theta}^{(0)})} has an overlap with the ground state and the evolution time t → ∞ t\rightarrow\infty . In this case, all contributions in | ψ ⁡ ( 𝜽 ( t ) ) ⟩ \ket{\psi(\bm{\theta}^{(t)})} which correspond to eigenvalues bigger than the minimum are being damped with time and lim t → ∞ ​ | ψ ⁡ ( 𝜽 ( t ) ) ⟩ \mathrm{lim}_{t\rightarrow\infty}\ket{\psi(\bm{\theta}^{(t)})} is equal to the ground state. Since, in practice, an infinite time cannot be simulated one needs to find a sufficiently big, finite time.
+
+ Notably, a VarQITE ground state search coincides with a special case of QNG where
+
+ f ⁡ ( 𝜽 ) = − 1 2 ​ ⟨ ψ ⁡ ( 𝜽 ) | ℋ ^ | ψ ⁡ ( 𝜽 ) ⟩ . \displaystyle f(\bm{\theta})=-\frac{1}{2}\braket{\psi(\bm{\theta})|\hat{\mathcal{H}}|\psi(\bm{\theta})}. 
+
+ Appendix B Minimization-formulation of Vanilla and Natural Gradient Descent
+
+ In this section we show the equivalence of Eqs. ( 1 ) and ( 8 ) for the vanilla gradient descent update rule by showing that Eq. ( 1 ) is the solution to the minimization in Eq. ( 8 ).
+To solve the minimization
+
+ 𝜽 ( k + 1 ) = arg ​ min 𝜽 ∈ ℝ d ⁡ ( ⟨ 𝜽 − 𝜽 ( k ) , ∇ f ​ ( 𝜽 ( k ) ) ⟩ + 1 2 ​ η ​ ‖ 𝜽 − 𝜽 ( k ) ‖ 2 2 ) , \bm{\theta}^{(k+1)}=\argmin_{\bm{\theta}\in\mathbb{R}^{d}}\left(\langle\bm{\theta}-\bm{\theta}^{(k)},\bm{\nabla}f(\bm{\theta}^{(k)})\rangle+\frac{1}{2\eta}||\bm{\theta}-\bm{\theta}^{(k)}||_{2}^{2}\right), 
+
+ we take the gradient of the right hand side with respect to 𝜽 \bm{\theta} and set it to 𝟎 \bm{0} 
+
+ 𝟎 = ∇ f ​ ( 𝜽 ( k ) ) + 1 η ​ ( 𝜽 − 𝜽 ( k ) ) . \bm{0}=\bm{\nabla}f(\bm{\theta}^{(k)})+\frac{1}{\eta}(\bm{\theta}-\bm{\theta}^{(k)}). 
+
+ Then, solving for 𝜽 \bm{\theta} yields the solution labelled 𝜽 ( k + 1 ) \bm{\theta}^{(k+1)} 
+
+ 𝜽 ( k + 1 ) = 𝜽 ( k ) − η ∇ f ( 𝜽 ( k ) ) , \bm{\theta}^{(k+1)}=\bm{\theta}^{(k)}-\eta\bm{\nabla}f(\bm{\theta}^{(k)}), 
+
+ which is exactly Eq. ( 1 ).
+
+ We solve for the update step of the Natural Gradient Descent
+
+ 𝜽 ( k + 1 ) = arg ​ min 𝜽 ∈ ℝ d ⁡ ( ⟨ 𝜽 − 𝜽 ( k ) , ∇ f ​ ( 𝜽 ( k ) ) ⟩ + 1 2 ​ η ​ ‖ 𝜽 − 𝜽 ( k ) ‖ g ⁡ ( 𝜽 ( k ) ) 2 ) , \bm{\theta}^{(k+1)}=\argmin_{\bm{\theta}\in\mathbb{R}^{d}}\bigg(\langle\bm{\theta}-\bm{\theta}^{(k)},\bm{\nabla}f(\bm{\theta}^{(k)})\rangle+\frac{1}{2\eta}||\bm{\theta}-\bm{\theta}^{(k)}||_{g(\bm{\theta}^{(k)})}^{2}\bigg), 
+
+ in the same fashion. We differentiate the right-hand side and set it to 𝟎 \bm{0} 
+
+ 𝟎 = ∇ f ​ ( 𝜽 ( k ) ) + 1 η ​ g ​ ( 𝜽 ( k ) ) ​ ( 𝜽 − 𝜽 ( k ) ) , \bm{0}=\bm{\nabla}f(\bm{\theta}^{(k)})+\frac{1}{\eta}g(\bm{\theta}^{(k)})(\bm{\theta}-\bm{\theta}^{(k)}), 
+
+ where we used
+
+ ∇ ‖ 𝜽 − 𝜽 ( k ) ‖ g ⁡ ( 𝜽 ( k ) ) 2 \displaystyle\bm{\nabla}||\bm{\theta}-\bm{\theta}^{(k)}||^{2}_{g(\bm{\theta}^{(k)})} 
+ = ∇ ⟨ 𝜽 − 𝜽 ( k ) , g ⁡ ( 𝜽 ( k ) ) ​ ( 𝜽 − 𝜽 ( k ) ) ⟩ \displaystyle=\bm{\nabla}\langle\bm{\theta}-\bm{\theta}^{(k)},g(\bm{\theta}^{(k)})(\bm{\theta}-\bm{\theta}^{(k)})\rangle 
+
+ = g ⁡ ( 𝜽 ( k ) ) ​ ( 𝜽 − 𝜽 ( k ) ) + g T ​ ( 𝜽 ( k ) ) ​ ( 𝜽 − 𝜽 ( k ) ) \displaystyle=g(\bm{\theta}^{(k)})(\bm{\theta}-\bm{\theta}^{(k)})+g^{T}(\bm{\theta}^{(k)})(\bm{\theta}-\bm{\theta}^{(k)}) 
+
+ = 2 ​ g ​ ( 𝜽 ( k ) ) ​ ( 𝜽 − 𝜽 ( k ) ) \displaystyle=2g(\bm{\theta}^{(k)})(\bm{\theta}-\bm{\theta}^{(k)}) 
+
+ and the fact that g g is symmetric. Then solve for the update step
+
+ 𝜽 ( k + 1 ) = 𝜽 ( k ) − η g − 1 ( 𝜽 ( k ) ) ∇ f ( 𝜽 ( k ) ) , \bm{\theta}^{(k+1)}=\bm{\theta}^{(k)}-\eta g^{-1}(\bm{\theta}^{(k)})\bm{\nabla}f(\bm{\theta}^{(k)}), 
+
+ Appendix C Comparison of the QFIM Formulas
+
+ Eqs. ( 11 ) and ( 12 ) show different ways to compute the QFI. Here we show the equivalence
+and justify the coefficient of 1/2 in Eq. ( 12 ).
+A single element of the Fubini-Study metric tensor according to Eq. ( 12 ) is
+
+ − 1 2 ​ ∂ 2 ∂ θ i ​ ∂ θ j ​ | ⟨ ψ ⁡ ( 𝜽 ′ ) | ψ ⁡ ( 𝜽 ) ⟩ | 2 | 𝜽 ′ = 𝜽 \displaystyle-\frac{1}{2}\frac{\partial^{2}}{\partial\theta_{i}\partial\theta_{j}}|\braket{\psi(\bm{\theta}^{\prime})|\psi(\bm{\theta})}|^{2}\bigg|_{\bm{\theta}^{\prime}=\bm{\theta}} 
+
+ = − 1 2 ​ ∂ 2 ∂ θ i ​ ∂ θ j ​ ⟨ ψ ⁡ ( 𝜽 ′ ) | ψ ⁡ ( 𝜽 ) ⟩ ​ ⟨ ψ ⁡ ( 𝜽 ) | ψ ⁡ ( 𝜽 ′ ) ⟩ | 𝜽 ′ = 𝜽 \displaystyle=-\frac{1}{2}\frac{\partial^{2}}{\partial\theta_{i}\partial\theta_{j}}\braket{\psi(\bm{\theta}^{\prime})|\psi(\bm{\theta})}\braket{\psi(\bm{\theta})|\psi(\bm{\theta}^{\prime})}\bigg|_{\bm{\theta}^{\prime}=\bm{\theta}} 
+
+ = − ∂ ∂ θ i ​ Re ​ { ⟨ ψ ⁡ ( 𝜽 ′ ) | ψ ⁡ ( 𝜽 ) ⟩ ⁡ ⟨ ψ ⁡ ( 𝜽 ′ ) | ∂ ψ ∂ θ j ⟩ } | 𝜽 ′ = 𝜽 \displaystyle=-\frac{\partial}{\partial\theta_{i}}\mathrm{Re}\left\{\braket{\psi(\bm{\theta}^{\prime})|\psi(\bm{\theta})}\left\langle\psi(\bm{\theta}^{\prime})\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\right\}\bigg|_{\bm{\theta}^{\prime}=\bm{\theta}} 
+
+ = − Re ⁡ { ⟨ ψ ⁡ ( 𝜽 ′ ) ​ | ∂ 2 ψ ∂ θ i ​ ∂ θ j ⟩ + ⟨ ψ ⁡ ( 𝜽 ′ ) | ​ ∂ ψ ∂ θ j ⟩ ​ ⟨ ∂ ψ ∂ θ i | ψ ⁡ ( 𝜽 ′ ) ⟩ } | 𝜽 ′ = 𝜽 \displaystyle=-\mathrm{Re}\left\{\left\langle\psi(\bm{\theta}^{\prime})\bigg|\frac{\partial^{2}\psi}{\partial\theta_{i}\partial\theta_{j}}\right\rangle+\left\langle\psi(\bm{\theta}^{\prime})\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\psi(\bm{\theta}^{\prime})\right\rangle\right\}\bigg|_{\bm{\theta}^{\prime}=\bm{\theta}} 
+
+ = Re ⁡ { − ⟨ ψ ⁡ ( 𝜽 ) ​ | ∂ 2 ψ ∂ θ i ​ ∂ θ j ⟩ − ⟨ ∂ ψ ∂ θ i | ψ ⁡ ( 𝜽 ) ⟩ ​ ⟨ ψ ⁡ ( 𝜽 ) | ​ ∂ ψ ∂ θ j ⟩ } . \displaystyle=\mathrm{Re}\left\{-\left\langle\psi(\bm{\theta})\bigg|\frac{\partial^{2}\psi}{\partial\theta_{i}\partial\theta_{j}}\right\rangle-\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\psi(\bm{\theta})\right\rangle\left\langle\psi(\bm{\theta})\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\right\}. 
+
+ We can rewrite the first summand using the identity we obtain from differentiating both sides of the equation 1 = ⟨ ψ ⁡ ( 𝜽 ) | ψ ⁡ ( 𝜽 ) ⟩ 1=\braket{\psi(\bm{\theta})|\psi(\bm{\theta})} with
+respect to 𝜽 \bm{\theta} ,
+
+ 0 \displaystyle 0 
+ = ∂ 2 ∂ θ i ​ ∂ θ j ​ ⟨ ψ ⁡ ( 𝜽 ) | ψ ⁡ ( 𝜽 ) ⟩ \displaystyle=\frac{\partial^{2}}{\partial\theta_{i}\partial\theta_{j}}\braket{\psi(\bm{\theta})|\psi(\bm{\theta})} 
+
+ = 2 ​ Re ​ { ∂ ∂ θ i ​ ⟨ ∂ ψ ∂ θ j | ψ ⁡ ( 𝜽 ) ⟩ } \displaystyle=2\mathrm{Re}\left\{\frac{\partial}{\partial\theta_{i}}\left\langle\frac{\partial\psi}{\partial\theta_{j}}\bigg|\psi(\bm{\theta})\right\rangle\right\} 
+
+ = 2 ​ Re ​ { ( ⟨ ∂ 2 ψ ∂ θ i ​ ∂ θ j | ψ ⁡ ( 𝜽 ) ⟩ + ⟨ ∂ ψ ∂ θ i | ∂ ψ ∂ θ j ⟩ ) } \displaystyle=2\mathrm{Re}\left\{\left(\left\langle\frac{\partial^{2}\psi}{\partial\theta_{i}\partial\theta_{j}}\bigg|\psi(\bm{\theta})\right\rangle+\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\right)\right\} 
+
+ ⇔ \displaystyle\Leftrightarrow 
+ − Re ⁡ { ⟨ ∂ 2 ψ ∂ θ i ​ ∂ θ j | ψ ⁡ ( 𝜽 ) ⟩ } = Re ⁡ { ⟨ ∂ ψ ∂ θ i | ∂ ψ ∂ θ j ⟩ } . \displaystyle-\mathrm{Re}\left\{\left\langle\frac{\partial^{2}\psi}{\partial\theta_{i}\partial\theta_{j}}\bigg|\psi(\bm{\theta})\right\rangle\right\}=\mathrm{Re}\left\{\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\right\}. 
+
+ Replacing the second derivative of | ψ ⁡ ( 𝜽 ) ⟩ \ket{\psi(\bm{\theta})} with the two first order derivatives we obtain
+
+ g i ​ j ​ ( 𝜽 ) = Re ⁡ { ⟨ ∂ ψ ∂ θ i ​ | ∂ ψ ∂ θ j ⟩ − ⟨ ∂ ψ ∂ θ i | ψ ⁡ ( 𝜽 ) ⟩ ​ ⟨ ψ ⁡ ( 𝜽 ) | ​ ∂ ψ ∂ θ j ⟩ } , g_{ij}(\bm{\theta})=\mathrm{Re}\left\{\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle-\left\langle\frac{\partial\psi}{\partial\theta_{i}}\bigg|\psi(\bm{\theta})\right\rangle\left\langle\psi(\bm{\theta})\bigg|\frac{\partial\psi}{\partial\theta_{j}}\right\rangle\right\}, 
+
+ which is the same as Eq. ( 11 ).
+
+ Appendix D Influence of QFIM Regularization
+
+ In each iteration step QN-SPSA constructs a (up to) rank-2 estimate g ^ ( k ) \hat{g}^{(k)} of the QFI.
+Even though we start with a full rank matrix, g ¯ ( 0 ) = I \bar{g}^{(0)}=I this can lead to a singular
+approximation.
+Since we have to invert the estimated QFI, or solve a LSE, this can be problematic.
+
+ To solve this problem we ensure that the estimate is symmetric-positive definite in each iteration by taking the absolute value of the eigenvalues and adding a regularization constant β > 0 \beta>0 on the diagonal, i.e., A ​ A + β ​ I \sqrt{AA}+\beta I .
+To better understand the influence of the regularization for larger values we further normalize the
+expression as ( A ​ A + β ​ I ) / ( 1 + β ) (\sqrt{AA}+\beta I)/(1+\beta) .
+Without the normalization, a large regularization
+decreases the step size such that for β → ∞ \beta\rightarrow\infty the update step approaches zero.
+
+ If the QFIM estimate is faithful the eigenvalues are already positive and taking the absolute value of the eigenvalues
+does not change anything.
+However, adding the regularization constant always has an impact.
+A small regularization constant leads to an update closer to the QNG while a large constant neglects the QFIM approximation and leads to an update closer to vanilla gradient descent.
+On the other hand, using a small constant is more prone to numerical instabilities than using a large one.
+
+ The regularization β \beta is thus a hyper-parameter to trade off numerical stability for faithful QFIM approximation. Fig. 6 shows the Pauli two-design example from
+Sec. 4.1 with 9 qubits for different values of β \beta and visualizes how the regularization can be used to interpolate between natural and vanilla gradient descent.
+
+ Figure 6: Loss function for the Pauli two-design for vanilla and natural gradient descent and QN-SPSA. QN-SPSA is shown for different regularization constants β ∈ { 10 − 3 , 10 − 2 , 10 − 1 , 1 } \beta\in\{10^{-3},10^{-2},10^{-1},1\} . 
+
+ Appendix E Convergence efficiency of natural gradients
+
+ In Secs. 4.1 and 4.2 we show how fast different gradient descent techniques converge in the number of required iteration steps and in the number of required circuit evaluations. We observed, that natural gradients have a converge clearly faster than vanilla gradient approaches in the number of iterations, however due to the additional costs, they might not be more efficient if the circuit costs are considered. Due to the small overhead of QN-SPSA, especially if the system Hamiltonian requires a lot of measurements. Here, we investigate another example where QN-SPSA is more efficient than first-order SPSA even if the Hamiltonian is diagonal and require only one measurement per loss function evaluation.
+
+ In difficult loss landscapes, where small changes in a subset of parameters can lead to large changes in function values, natural gradient methods show a stable convergence since they control how much a parameter step can change the model. Vanilla gradients are agnostic to model sensitivity and easily overshoot if the learning rate is not adjusted to the loss function.
+
+ To investigate this behaviour, we consider a challenging loss landscape motivated
+from a QAOA ansatz [ 7 ] for a MAXCUT problem on a five-node random graph with random integer weights sampled from 𝒰 ⁡ ( [ − 10 , 10 ] ) \mathcal{U}([-10,10]) .
+The observable for this particular application is
+
+ ℋ ^ = \displaystyle\hat{\mathcal{H}}= 
+ Z 4 ​ Z 5 + 2.5 ​ Z 3 ​ Z 5 + 2.5 ​ Z 3 ​ Z 4 − 0.5 ​ Z 2 ​ Z 5 \displaystyle Z_{4}Z_{5}+2.5Z_{3}Z_{5}+2.5Z_{3}Z_{4}-0.5Z_{2}Z_{5} 
+
+ − 0.5 ​ Z 2 ​ Z 3 − 4.5 ​ Z 1 ​ Z 5 + 3.5 ​ Z 1 ​ Z 3 \displaystyle-0.5Z_{2}Z_{3}-4.5Z_{1}Z_{5}+3.5Z_{1}Z_{3} 
+
+ and the mixer Hamiltonian is ∑ i = 1 5 X i / 20 \sum_{i=1}^{5}X_{i}/20 .
+The resulting QAOA ansatz is shown in Fig. 7 (a).
+
+ (a) (b) (c) 
+ Figure 7: The weighted MAXCUT problem. (a) The QAOA ansatz for the problem instance. (b) The loss landscape and the path of different optimization routines through the landscape. (c) The convergence of the investigates methods with respect to the required number of function evaluations. 
+
+ The resulting loss function has numerous local extrema and has spiky regions close to the global
+minima, where the gradients are several magnitudes larger than in the flatter surroundings.
+The paths of the different optimizers in this landscape is shown in Fig. 7 (b).
+QN-SPSA uses a learning rate of η = 10 − 2 \eta=10^{-2} , a displacement of ϵ = 10 − 2 \epsilon=10^{-2} and a regularization constant
+of β = 10 − 3 \beta=10^{-3} .
+SPSA is run three times: first with the same settings as QN-SPSA, then with the automatic calibration introduced in [ 49 ] , and lastly with a manually adjusted calibration.
+The automated calibration chooses the learning rate and displacements as power series with optimal exponents for SPSA [ 26 ] and calibrates the constant coefficients of the power series such that in the first step the magnitude of the parameter update is | θ i ( 1 ) − θ i ( 0 ) | ≈ 2 ​ π / 10 |\theta^{(1)}_{i}-\theta^{(0)}_{i}|\approx 2\pi/10 .
+However, in practice, fixing the parameter update can be problematic as it does not take into account how sensitive the model is with respect to a rescaling of the parameters. This becomes obvious in Fig. 7 (b), where SPSA with this automatic calibration acts on too large length scales and starts to oscillate heavily.
+Thus, in the second run, we manually tested different parameter magnitude updates and selected the best at | θ i ( 1 ) − θ i ( 0 ) | ≈ 0.1 |\theta^{(1)}_{i}-\theta^{(0)}_{i}|\approx 0.1 .
+
+ In Fig. 7 (c), the mean and standard deviation of the loss for 25 runs is shown for each of the methods.
+We clearly see that QN-SPSA outperforms SPSA, even with manual calibrations and the additional evaluation costs taken into account.
+
+ The MAXCUT experiment highlights another advantage of natural gradient approaches. Vanilla gradient descent optimizations, both analytic and SPSA-based, require careful tuning of the learning rate to the sensitivity of the objective function. An optimal tuning might further not always be possible since the learning rate acts globally in each parameter dimension but the objective might necessarily be equally sensitive in each dimension. In natural gradient methods, the learning rate controls the change of the model instead of the parameters and takes the objective sensitivity into account. Thus, the learning rate can largely be set independent of the model and in practice the value of η = 10 − 2 \eta=10^{-2} worked well on every example.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+

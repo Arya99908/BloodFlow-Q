@@ -1,0 +1,15 @@
+{
+  "original_runs": 36,
+  "reproduced_runs": 36,
+  "identical_selected_fields": 36,
+  "fields": [
+    "variant",
+    "penalty",
+    "config",
+    "counts",
+    "feasible_shot_rate",
+    "optimal_shot_rate",
+    "best_feasible_objective",
+    "absolute_gap"
+  ]
+}

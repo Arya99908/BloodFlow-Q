@@ -1,0 +1,1014 @@
+ 
+
+ Multi-angle Quantum Approximate Optimization Algorithm 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ I Introduction 
+
+ II Results 
+
+ III Discussion 
+
+ IV Methods 
+
+ References 
+
+ License: CC BY 4.0
+
+arXiv:2109.11455v1 [quant-ph] 23 Sep 2021
+
+ Multi-angle Quantum Approximate Optimization Algorithm
+
+ Rebekah Herrman
+
+ Email:  rherrma2@tennessee.edu 
+
+ Thanks:  corresponding author, co-first author
+
+ Affiliation:  
+Department of Industrial and Systems Engineering
+ University of Tennessee at Knoxville
+ Knoxville, TN 37996
+
+ Phillip C. Lotshaw
+
+ Email:  lotshawpc@ornl.gov 
+
+ Thanks:  corresponding author, co-first author
+
+ Affiliation:  
+Quantum Computing Institute
+ Oak Ridge National Laboratory
+ Oak Ridge, TN 37830
+
+ James Ostrowski
+
+ Affiliation:  
+Department of Industrial and Systems Engineering
+ University of Tennessee at Knoxville
+ Knoxville, TN 37996
+
+ Travis S. Humble
+
+ Affiliation:  
+Quantum Computing Institute
+ Oak Ridge National Laboratory
+ Oak Ridge, TN 37830
+
+ George Siopsis
+
+ Affiliation:  
+Department of Physics and Astronomy
+ University of Tennessee at Knoxville
+ Knoxville, TN 37996
+
+ Abstract
+
+ The quantum approximate optimization algorithm (QAOA) generates an approximate solution to combinatorial optimization problems using a variational ansatz circuit defined by parameterized layers of quantum evolution. In theory, the approximation improves with increasing ansatz depth but gate noise and circuit complexity undermine performance in practice. Here, we introduce a multi-angle ansatz for QAOA that reduces circuit depth and improves the approximation ratio by increasing the number of classical parameters. Even though the number of parameters increases, our results indicate that good parameters can be found in polynomial time. This new ansatz gives a 33% increase in the approximation ratio for an infinite family of MaxCut instances over QAOA. The optimal performance is lower bounded by the conventional ansatz, and we present empirical results for graphs on eight vertices that one layer of the multi-angle anstaz is comparable to three layers of the traditional ansatz on MaxCut problems. Similarly, multi-angle QAOA yields a higher approximation ratio than QAOA at the same depth on a collection of MaxCut instances on fifty and one-hundred vertex graphs. Many of the optimized parameters are found to be zero, so their associated gates can be removed from the circuit, further decreasing the circuit depth. These results indicate that multi-angle QAOA requires shallower circuits to solve problems than QAOA, making it more viable for near-term intermediate-scale quantum devices.
+
+ † † 
+
+ This manuscript has been authored by UT-Battelle, LLC under Contract No. DE-AC05-00OR22725 with the U.S. Department of Energy. The United States Government retains and the publisher, by accepting the article for publication, acknowledges that the United States Government retains a non-exclusive, paid-up, irrevocable, world-wide license to publish or reproduce the published form of this manuscript, or allow others to do so, for United States Government purposes. The Department of Energy will provide public access to these results of federally sponsored research in accordance with the DOE Public Access Plan. (http://energy.gov/downloads/doe-public-access-plan). 
+
+ I Introduction
+
+ Among several quantum algorithms implemented on noisy intermediate-scale quantum (NISQ) devices [ 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 , 10 , 11 , 12 ] , the quantum approximate optimization algorithm (QAOA) offers an opportunity to approximately solve combinatorial optimization problems such as MaxCut, Max Independent Set, and Max k-cover [ 13 , 14 , 15 , 16 , 17 , 18 , 19 , 20 , 21 , 22 ] . QAOA tunes a set of classical parameters to optimize the cost function expectation value for a quantum state prepared by well-defined sequence of operators acting on a known initial state. Variations to the original algorithm include alternative operators and initial states [ 23 , 24 , 25 , 26 , 27 , 28 , 29 , 30 , 31 ] while purely classical aspects such as the parameter optimization and problem structure have been tested as well [ 32 , 33 , 34 , 35 , 36 ] . However, an outstanding concern is that practical implementations of QAOA require large numbers of qubits and deep circuits [ 37 , 38 ] . Noise grows rapidly with circuit depth and affects the fidelity of the prepared quantum state [ 39 , 40 , 41 , 42 , 43 , 44 , 45 , 46 , 47 ] .
+
+ One approach to reduce the circuit depth of QAOA is to increase
+the number of classical parameters introduced in each layer, a variation that we term multi-angle QAOA (ma-QAOA). Increasing the number of classical parameters allows for finer-grain control over the optimization of the cost function and the approximation ratio, which measures optimality relative to the known best solution. While introducing more classical parameters can lead to a more challenging optimization, a corresponding reduction in circuit depth preserves the critical resource of the quantum state. In addition, finding the absolute optimal angles is not necessary in order to see an improvement over QAOA.
+
+ Here, we quantify the advantages of using multiple parameters for each layer of QAOA. First, we prove that the approximation ratio converges to one as the number of iterations of ma-QAOA tends to infinity, a property that ensures the optimal solution is the most likely. We next demonstrate that one iteration of ma-QAOA gives an approximation ratio that is at least that of the approximation ratio after one iteration of QAOA. This shows that ma-QAOA performs at least as well as QAOA. We also show that ma-QAOA used to solve the MaxCut problem on star graphs achieves an approximation ratio of one after one iteration, while single-iteration QAOA tends to an approximation ratio of 0.75 as the number of vertices goes to infinity. This result gives a concrete example where ma-QAOA gives a strictly larger approximation ratio than QAOA. We simulate solving MaxCut using ma-QAOA and QAOA on all connected, non-isomorphic eight vertex graphs and compare the performance of the two ansatzes. In doing so, we find that the average approximation ratio for ma-QAOA after one iteration is larger than the average approximation ratio of QAOA after three iterations. In looking at larger, 50- and 100-vertex graphs, we see that ma-QAOA retains its advantage over QAOA, giving approximation ratios that are on average six percentage points higher after the first iteration.
+
+ II Results
+
+ Quantum approximate optimization algorithm
+
+ The quantum approximate optimization algorithm (QAOA) relies on a combination of classical parameter optimization and applying cost and mixing operators to a quantum state in order to approximately solve combinatorial optimization (CO) problems [ 13 ] . The algorithm is implemented by applying two operators,
+
+ U ⁡ ( C , γ ) = e − i ​ C ​ γ U(C,\gamma)=e^{-iC\gamma} 
+
+ and
+
+ U ⁡ ( B , β ) = e − i ​ B ​ β U(B,\beta)=e^{-iB\beta} 
+
+ in succession on an initial state,
+
+ | s ⟩ = 1 2 n ∑ z | z ⟩ . {\left|s\right\rangle}=\frac{1}{\sqrt{2^{n}}}\sum_{z}{\left|z\right\rangle}. 
+
+ Here the sum is over the computational basis | z ⟩ {\left|z\right\rangle} . QAOA applied p p times to | s ⟩ {\left|s\right\rangle} is denoted p p -QAOA. The state for p p -QAOA is
+
+ | γ , β ⟩ = U ( B , β p ) U ( C , γ p ) … U ( B , β 1 ) U ( C , γ 1 ) | s ⟩ . {\left|\gamma,\beta\right\rangle}=U(B,\beta_{p})U(C,\gamma_{p})...U(B,\beta_{1})U(C,\gamma_{1}){\left|s\right\rangle}. 
+
+ C C encodes the problem to be solved and B B drives transitions between computational basis states. Often, C C is the sum over a collection of clauses,
+
+ C = ∑ a C a , C=\sum_{a}C_{a}, 
+
+ and B B is typically
+
+ B = ∑ v ∈ V ⁡ ( G ) B v B=\sum_{v\in V(G)}B_{v} 
+
+ where B v = σ v x B_{v}=\sigma_{v}^{x} is the Pauli-x operator acting on the v t ​ h v^{th} qubit. Thus, we may write
+
+ U ( C , γ ) = e − i γ ∑ a C a U(C,\gamma)=e^{-i\gamma\sum_{a}C_{a}} 
+
+ and
+
+ U ( B , β ) = e − i β ∑ v ∈ V ⁡ ( G ) B v . U(B,\beta)=e^{-i\beta\sum_{v\in V(G)}B_{v}}. 
+
+ Instead of focusing on minimizing the classical optimization efforts in QAOA, we modify QAOA such that it requires more classical parameters. The new classical parameters are introduced to QAOA by allowing each summand of the cost and mixing operators to have its own angle instead of a single angle for the cost operator and a second angle for the mixing operator. In this modification,
+
+ U ( C , γ l → ) = e − i ∑ a C a γ l , a = ∏ a e − i ​ γ l , a ​ C a U(C,\vec{\gamma_{l}})=e^{-i\sum_{a}C_{a}\gamma_{l,a}}=\prod_{a}e^{-i\gamma_{l,a}C_{a}} 
+
+ and
+
+ U ( B , β l → ) = e − i ∑ v ∈ V ⁡ ( G ) B v β l , v = ∏ v ∈ V ⁡ ( G ) e − i ​ β l , v ​ B v U(B,\vec{\beta_{l}})=e^{-i\sum_{v\in V(G)}B_{v}\beta_{l,v}}=\prod_{v\in V(G)}e^{-i\beta_{l,v}B_{v}} 
+
+ where γ l → = ( γ l , a 1 , γ l , a 2 , … ) \vec{\gamma_{l}}=(\gamma_{l,a_{1}},\gamma_{l,a_{2}},...) and β l → = ( β l , v 1 , β l , v 2 , … ) \vec{\beta_{l}}=(\beta_{l,v_{1}},\beta_{l,v_{2}},...) . Here, l l denotes the layer, a i a_{i} denotes an edges in the graph, and v j v_{j} refers to a specific vertex. We call this modification multi-angle QAOA and abbreviate it ma-QAOA.
+
+ Convergence of ma-QAOA
+
+ For QAOA, the expected value of C C after p p iterations is ⟨ C ⟩ p = ⟨ γ , β | C | γ , β ⟩ \langle C\rangle_{p}={\left\langle\gamma,\beta\right|}C{\left|\gamma,\beta\right\rangle} . Let M p M_{p} be the maximum of ⟨ C ⟩ p \langle C\rangle_{p} over all angles. Then, M p ≥ M p − 1 M_{p}\geq M_{p-1} . Farhi, Goldstone, and Gutmann showed that M p M_{p} tends to the maximum of the objective function, C max C_{\mathrm{max}} , for the CO problem being solved as p p tends to infinity [ 13 ] .
+
+ We similarly define the expected value of C C after p p iterations of ma-QAOA as ⟨ C ⟩ p ma = ⟨ γ → ma , β → ma | C | γ → ma , β → ma ⟩ \langle C\rangle_{p}^{\mathrm{ma}}={\left\langle\vec{\gamma}_{\mathrm{ma}},\vec{\beta}_{\mathrm{ma}}\right|}C{\left|\vec{\gamma}_{\mathrm{ma}},\vec{\beta}_{\mathrm{ma}}\right\rangle} where γ → ma = ( γ → 1 , γ → 2 , … ​ γ → p ) \vec{\gamma}_{\mathrm{ma}}=(\vec{\gamma}_{1},\vec{\gamma}_{2},...\vec{\gamma}_{p}) and β → ma = ( β → 1 , β → 2 , … ​ β → p ) \vec{\beta}_{\mathrm{ma}}=(\vec{\beta}_{1},\vec{\beta}_{2},...\vec{\beta}_{p}) . We also define M p ma M_{p}^{\mathrm{ma}} to be the maximum of ⟨ C ⟩ p ma \langle C\rangle_{p}^{\mathrm{ma}} over all angles. Clearly, M p ma ≥ M p M_{p}^{\mathrm{ma}}\geq M_{p} because QAOA is the special case of ma-QAOA where β p , u = β p , v \beta_{p,u}=\beta_{p,v} for all u ≠ v u\neq v and γ p , a i = γ p , a j \gamma_{p,a_{i}}=\gamma_{p,a_{j}} for edges a i ≠ a j a_{i}\neq a_{j} .
+
+ In order to show ma-QAOA gives the optimal solution to a combinatorial optimization problem, we must show ⟨ C ⟩ p ma \langle C\rangle_{p}^{\mathrm{ma}} converges to C max C_{\mathrm{max}} as p p tends to infinity. Convergence is the first main result of this work.
+
+ Theorem II.1 . 
+
+ The multi-angle quantum approximate optimization algorithm converges to the optimal solution of a combinatorial optimization problem as p → ∞ p\rightarrow\infty .
+
+ The proof of convergence is given in Sec.  IV .
+
+ MaxCut on star graphs
+
+ Recall that the approximation ratio for p p -QAOA is equal to ⟨ C ⟩ p / C max \langle C\rangle_{p}/C_{\mathrm{max}} , where C max C_{\mathrm{max}} is the optimal solution to the CO problem. Similarly, we define the approximation ratio for p p iterations of ma-QAOA as ⟨ C ⟩ p ma / C max \langle C\rangle_{p}^{\mathrm{ma}}/C_{\mathrm{max}} . The approximation ratio is often used to measure the success of QAOA.
+
+ In graph theory, a star graph on n n vertices is a graph that consists of one vertex of degree n − 1 n-1 , called the center. All other vertices of the graph have degree one, meaning each vertex is connected to the center and only the center. An example can be seen in Fig.  1 . All stars are trees, and are thus bipartite, so the optimal MaxCut solution includes all edges of the graph. In order to show ma-QAOA outperforms QAOA when solving MaxCut on star graphs, we show that ⟨ C ⟩ 1 ma = 1 \langle C\rangle_{1}^{\mathrm{ma}}=1 and ⟨ C ⟩ 1 \langle C\rangle_{1} tends to 0.75 0.75 as n n tends to infinity. The proof is found in Sec.  IV .
+
+ Figure 1 : The star graph on five vertices. 
+
+ Computational results
+
+ In order to test how ma-QAOA performs, we simulated the algorithm on a collection of one-hundred triangle-free 3-regular graphs with fifty vertices and one-hundred triangle-free 3-regular graphs with 100 vertices and compared the approximation ratios calculated with ma-QAOA to those of 1-QAOA. We also performed the same calculations with fifty modified G n , p G_{n,p} random graphs with fifty and one-hundred vertices each. In the G n , p G_{n,p} model, n n sets the number of nodes, and p p is the probability that an edge exists. In particular, we examined G 50 , 0.08 G_{50,0.08} and G 100 , 0.035 G_{100,0.035} in order to create random graphs that have average degree approximately three. After randomly generating the graphs, triangles were removed by randomly removing edges from each triangle. For these sets of triangle-free graphs we can compute ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} for large n n using the analytical result of Thm.  IV.1 . Table  1 shows the average approximation ratios for each collection of graphs with ma-QAOA and 1-QAOA, as well as the changes in the approximation ratio and percent change in the approximation ratio gap. This approximation ratio gap is the percent difference between one minus the approximation ratio for 1-QAOA and one minus the approximation ratio for ma-QAOA. The ma-QAOA has a higher average approximation ratio and gives a significant percent increase in approximation ratio gap for each collection of graphs. These simulations only compare 1-QAOA to ma-QAOA, however, the next set of computational results compares ma-QAOA to p p -QAOA for p ≤ 3 p\leq 3 on all connected, non-isomorphic graphs.
+
+ In previous work, we determined ⟨ C ⟩ 1 \langle C\rangle_{1} , ⟨ C ⟩ 2 \langle C\rangle_{2} , and ⟨ C ⟩ 3 \langle C\rangle_{3} for all connected, non-isomorphic eight vertex graphs and compiled them into an online data set [ 36 , 48 ] . For this work, we calculated the angles that maximize ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} and compared ⟨ C ⟩ p \langle C\rangle_{p} to ⟨ C ⟩ 1 ma \langle C\rangle^{\mathrm{ma}}_{1} . On average, the performance of ma-QAOA is comparable to 3-QAOA on these graphs. Table 2 shows that ma-QAOA has a higher average approximation ratio than 1-QAOA and 2-QAOA on all eight vertex graphs. However, the average approximation ratio for one iteration of ma-QAOA is larger than the average approximation ratio for 3-QAOA.
+
+ Figure 2 shows how the distribution of approximation ratios for ma-QAOA compares to the approximation ratios for up to three iterations of QAOA for all connected, non-isomorphic eight vertex graphs. The percentage of graphs with approximation ratio at least 0.95 is significantly higher with ma-QAOA than up to three levels of QAOA. The fraction of graphs with approximation ratio at least 0.85 and 0.9 is higher for 3-QAOA than ma-QAOA, however significantly more graphs have an approximation ratio of at least 0.95 with ma-QAOA.
+
+ Figure 2 : Fractions of non-isomorphic, eight vertex graphs with approximation ratios (A.R.) at least x x for ma-QAOA and p p -QAOA. The lines are included in order to outline the shape of each distribution. 
+
+ Graph type 
+ Average A.R. for 1-QAOA 
+ Average A.R. for ma-QAOA 
+ Change in A.R. 
+ Percent change in Gap (1-AR) 
+
+ 50 vertex 3-regular 
+ 0.7617 
+ 0.8123 
+ 0.0506 
+ 21.26% 
+
+ 100 vertex 3-regular 
+ 0.7562 
+ 0.8000 
+ 0.0438 
+ 17.98% 
+
+ Modified G 50 , .08 G_{50,.08} 
+ 0.7554 
+ 0.8156 
+ 0.0602 
+ 24.65& 
+
+ Modified G 100 , .035 G_{100,.035} 
+ 0.7497 
+ 0.8098 
+ 0.0602 
+ 24.04% 
+
+ Table 1 : The average approximation ratio (A.R.) for a collection of one-hundred 3-regular graphs with fifty vertices, one-hundred 3-regular graphs with 100 vertices, fifty modified G 50 , 0.08 G_{50,0.08} random graphs, and fifty modified G 100 , 0.035 G_{100,0.035} random graphs. 
+
+ QAOA type 
+ Average approximation ratio for all eight vertex graphs 
+
+ ma-QAOA 
+ .9257 
+
+ 1-QAOA 
+ .8061 
+
+ 2-QAOA 
+ .8767 
+
+ 3-QAOA 
+ .9192 
+
+ Table 2 : The average approximation ratio for all connected, non-isomorphic graphs eight vertices. 
+
+ Circuit Fidelity
+
+ On fully connected hardware, the number of one-qubit unitary operators and two-qubit unitary operators per iteration of QAOA for MaxCut corresponds to the number of vertices and edges in the graph respectively. In order to solve MaxCut on all eight vertex graphs, eight one-qubit unitary operators and between seven and twenty-eight two-qubit unitary operators are needed per iteration of the algorithm, depending on the number of edges in the graph.
+Assuming a simple noise model based on Kraus-operator error channels acting after each unitary, the circuit produces a final state ρ = F ​ ρ ideal + ( 1 − F ) ​ ρ noise \rho=F\rho_{\mathrm{ideal}}+(1-F)\rho_{\mathrm{noise}} , where F F is the probability associated with the ideal noiseless evolution component ρ ideal \rho_{\mathrm{ideal}} [ 49 ] . The expected number of measurements to sample from the ideal distribution is 1 / F 1/F in the worst-case, when Tr ​ ρ ideal ​ ρ noise = 0 \mathrm{Tr}\rho_{\mathrm{ideal}}\rho_{\mathrm{noise}}=0 ; more generally the number of measurements can decrease depending on the specific state and noise process, but to keep the discussion general we take the expected number of measurements as 1 / F 1/F . With this model, for p p -QAOA or p p -ma-QAOA, F = ( 1 − ϵ n ) n ​ p ​ ( 1 − ϵ m ) m ​ p F=(1-\epsilon_{n})^{np}(1-\epsilon_{m})^{mp} , where
+ ϵ n \epsilon_{n} is the expected error per single-qubit unitary, ϵ m \epsilon_{m} is the expected error per two-qubit unitary, n n is the number of qubits, and m m is the number of edges in the MaxCut graph. Assuming p = 1 p=1 and an error rate of 1% for each unitary operator, the expected number of measurements to obtain a sample from the noiseless distribution is 1.25 when n = 8 n=8 and m = 14.4 m=14.4 . We choose m = 14.4 m=14.4 since this is the average number of edges per graph in the collection of connected, non-isomorphic eight vertex graphs, though note each specific graph has an integer number of edges.
+
+ We find that parameter optimization with ma-QAOA yields angles of zero for a subset of the edge and vertex unitary operators. Since exp ⁡ ( − i ​ γ p , a ​ C a ) = 𝕀 = exp ⁡ ( − i ​ β p , v ​ B v ) \exp(-i\gamma_{p,a}C_{a})=\mathbb{I}=\exp(-i\beta_{p,v}B_{v}) when γ p , a = 0 \gamma_{p,a}=0 and β p , v = 0 \beta_{p,v}=0 , all unitary operators with an angle of zero may be excluded from the optimized circuit. The presence of fewer operators reduces the amount of noise in the circuit by decreasing the exponent of the first and second terms in F F by the number of vertex and edge operators that have zero angles, respectively.
+When maximizing the expected value of the cost function using ma-QAOA, a sizeable percent of angles associated with vertices and edges were zero. Table  3 gives the percent of zero angles, rounded to three decimal places, for each collection of graphs that were studied. These zero angles impact the fidelity of each solution, as the operators associated with them need not be implemented on hardware. Table  4 shows the ratio of the expected number of measurements needed to sample from the noiseless distribution for p p -QAOA relative to ma-QAOA for each collection of graphs with varying values of ϵ m \epsilon_{m} , using the average reduction in gates for ma-QAOA from Table 3 . Note that if the ϵ m = 0.05 \epsilon_{m}=0.05 , the number of samples increases rapidly with p p . Since one iteration of ma-QAOA is comparable to three iterations of QAOA on eight vertex graphs, if the trend holds for larger graphs, ma-QAOA has the potential to require significantly fewer samples than QAOA.
+
+ n n 
+ Percent of v v with β v = 0 \beta_{v}=0 
+ Percent of a a with γ a = 0 \gamma_{a}=0 
+
+ 8 
+ 15.030 
+ 25.449 
+
+ 50 (3-reg.) 
+ 13.000 
+ 18.147 
+
+ 50 (E.R.) 
+ 11.440 
+ 14.381 
+
+ 100 (3-reg.) 
+ 14.690 
+ 19.973 
+
+ 100 (E.R.) 
+ 12.900 
+ 16.541 
+
+ Table 3 : The percent of β v \beta_{v} and γ a \gamma_{a} , rounded to three decimal places, that are zero when optimizing ma-QAOA on the family of graphs found in the first column. 
+
+ n n 
+ m m 
+ ϵ n = ϵ m = 0.01 \epsilon_{n}=\epsilon_{m}=0.01 
+ ϵ n = 0.01 , ϵ m = 0.05 \epsilon_{n}=0.01,\epsilon_{m}=0.05 
+
+ p = 1 p=1 
+ p = 2 p=2 
+ p = 3 p=3 
+ p = 1 p=1 
+ p = 2 p=2 
+ p = 3 p=3 
+
+ 8 
+ 14.4 
+ 1.05 
+ 1.32 
+ 1.65 
+ 1.22 
+ 2.77 
+ 6.28 
+
+ 50 (3-reg.) 
+ 75 
+ 1.22 
+ 4.30 
+ 15.10 
+ 2.15 
+ 166.16 
+ 1 × 10 4 1\times 10^{4} 
+
+ 50 (E.R.) 
+ 87.2 
+ 1.20 
+ 4.77 
+ 18.94 
+ 2.02 
+ 291.78 
+ 4 × 10 4 4\times 10^{4} 
+
+ 100 (3-reg.) 
+ 150 
+ 1.57 
+ 19.32 
+ 238.39 
+ 5.39 
+ 3 × 10 4 3\times 10^{4} 
+ 2 × 10 8 2\times 10^{8} 
+
+ 100 (E.R.) 
+ 167.34 
+ 1.50 
+ 22.08 
+ 324.26 
+ 4.71 
+ 7 × 10 4 7\times 10^{4} 
+ 1 × 10 9 1\times 10^{9} 
+
+ Table 4 : The ratio of the expected number of measurements to obtain a sample from the noiseless distribution for p p -QAOA relative to 1 1 -ma-QAOA on an n n vertex graph with m m edges. 
+
+ Computing Angles
+
+ With a larger number of variables to optimize, the ma-QAOA method requires more classical effort to find angles that optimize the approximation ratio. However, it is not necessary to identify exact optimal angles, only to find angles that are better than QAOA angles.
+
+ We used the BFGS algorithm to compute angles for the 8-vertex graphs; details can be found in Methods. Figure  3 shows how the approximation ratio improves on average across all iterations of BFGS for each ansatz studied for a random sample of eight vertex graphs. Note that after approximately ten iterations, ma-QAOA tends to achieve a higher approximation ratio than any of the p p -QAOA. We do note that the time required to perform each iteration of BFGS is slower for ma-QAOA, as the number of gradient components is linearly dependent on the number of variables being optimized.
+
+ Figure 3 : Typical behavior of the BFGS search algorithm for ma-QAOA at p = 1 p=1 and regular QAOA at p = 1 , 2 , 3 p=1,2,3 on a set of 100 random eight vertex graphs. Each curve is computed as an average over the graphs and over 100 random angle seeds for each graph. Each curve terminates at the average final iteration of the BFGS algorithm for the dataset. 
+
+ Scaling
+
+ We assess the scalability of ma-QAOA using computed optimized ⟨ C ⟩ \langle C\rangle for sets of triangle-free Erdős-Rényi and 3-regular graphs of sizes n = 50 n=50 and n = 100 n=100 . The computational details are given in the Methods. We compare the run times for typical graph optimizations to assess how the ma-QAOA parameter optimization time increases with graph size.
+
+ For the Erdős-Rényi graphs, the time for a single optimization for n = 50 n=50 was 0.10 seconds, for n = 100 n=100 it was 0.46 seconds. We attribute the difference primarily to the scaling in the calculation of the gradient, which is the most expensive calculation in the optimization. Our approach computes each of the n + m n+m derivatives ∂ ⟨ C p , u ​ v ⟩ ma / ∂ β p , w \partial\langle C_{p,uv}\rangle^{\mathrm{ma}}/\partial\beta_{p,w} and ∂ ⟨ C p , u ​ v ⟩ ma / ∂ γ p , j ​ k \partial\langle C_{p,uv}\rangle^{\mathrm{ma}}/\partial\gamma_{p,jk} for each of the m m terms ⟨ C p , u ​ v ⟩ ma \langle C_{p,uv}\rangle^{\mathrm{ma}} in the cost function, giving a total number of terms ∼ ( n + m ) ​ m \sim(n+m)m . The time to compute each term will vary with the degree of the graph, as this determines the number of cosine terms in Thm.  IV.1 ; however, for our graphs the degree is approximately constant hence does not affect the scaling. For our graphs m ∼ n m\sim n on average, so the overall scaling is ∼ n 2 \sim n^{2} , which is consistent with the ≈ 4 × \approx 4\times increase in time when n n is doubled from n = 50 n=50 to n = 100 n=100 . We attribute the remainder of the time difference to variations in the number of iterations as n n and m m increase.
+
+ III Discussion
+
+ We have shown that multi-angle QAOA converges to an optimal solution, and furthermore that ⟨ C ⟩ 1 ma ≥ ⟨ C ⟩ 1 \langle C\rangle_{1}^{\mathrm{ma}}\geq\langle C\rangle_{1} , as QAOA is a special case of ma-QAOA. We also show that the circuit depth for one iteration of ma-QAOA can be less than the depth for one iteration of QAOA. Additionally, the analysis of star graphs shows that there is a family of graphs that gives larger ⟨ C ⟩ \langle C\rangle for MaxCut when solved with ma-QAOA than when solved with QAOA. We find significant increases in the approximation ratio in numerical optimizations for large triangle-free graphs and over the set of all non-isomorphic graphs with eight vertices, hence fewer layers are required to reach the same performance as QAOA. In the presence of noise, the reduction in number of layers and in the number of unitary operators per layer can significantly decrease the expected number of measurements needed to sample from the noiseless distribution. This could be a significant advantage for computations on noisy quantum hardware.
+
+ Interestingly, some graphs do not have a significantly higher ⟨ C ⟩ \langle C\rangle when solving MaxCut with ma-QAOA versus QAOA. It would be useful to characterize for which graphs the increase in ⟨ C ⟩ \langle C\rangle from QAOA to ma-QAOA is insignificant. This would help determine the appropriate ansatz to use in order to solve MaxCut on the graph.
+
+ One drawback to ma-QAOA is that the number of classically optimized parameters is n + m n+m per layer, where n n is the number of vertices of G G and m m is the number of edges. From a practical standpoint, one way to solve optimal ma-QAOA angles would be to calculate β \beta and γ \gamma that optimize QAOA. We can use those angles as the initial point of a BFGS search for the optimal β p , v \beta_{p,v} and γ p , a i \gamma_{p,a_{i}} for all vertices v v and edges a i a_{i} . Overall, however, the results seem to indicate that good paramaters can be found in polynomial time. As many combinatorial optimization problems, like MaxCut, are NP-Hard, any polynomially-bounded effort that improves performance is likely to improve performance at large scale.
+
+ IV Methods
+
+ Proof of convergence
+
+ Proof.
+
+ Recall that QAOA converges to the optimal solution for a combinatorial optimization problem, which is the maximum over the objective function [ 13 ] .
+Thus, in order to show convergence of ma-QAOA, we need only bound ma-QAOA from below by the value of QAOA. However, it is clear that the optimal expected value of the cost function for ma-QAOA can be no lower than that of QAOA, since QAOA is a special case of ma-QAOA when all γ p , i ​ j = γ p , k ​ l \gamma_{p,ij}=\gamma_{p,kl} and all β p , a = β p , b \beta_{p,a}=\beta_{p,b} for all edges i ​ j , k ​ l ij,kl and all vertices a , b a,b .
+∎ 
+
+ ⟨ C ⟩ \langle C\rangle for solving MaxCut on triangle-free graphs using ma-QAOA
+
+ In order to prove that ⟨ C ⟩ 1 ma = 1 \langle C\rangle_{1}^{\mathrm{ma}}=1 for MaxCut on star graphs, we derive a formula that calculates ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} for MaxCut on triangle-free graphs.
+
+ Theorem IV.1 . 
+
+ Let β p , u ′ = 2 ​ β p , u \beta_{p,u}^{\prime}=2\beta_{p,u} and β p , v ′ = 2 ​ β p , v \beta_{p,v}^{\prime}=2\beta_{p,v} The expected value of C C after one iteration of ma-QAOA applied to MaxCut for triangle free graphs G G is
+
+ ⟨ γ 1 → β 1 → | C u ​ v | γ 1 → β 1 → ⟩ = 1 2 + 1 2 sin γ 1 , u ​ v ( cos β 1 , v ′ sin β 1 , u ′ ∏ w cos γ 1 , u ​ w + cos β 1 , u ′ sin β 1 , v ′ ∏ x cos γ 1 , v ​ x ) \displaystyle\begin{split}&{\left\langle\vec{\gamma_{1}}\vec{\beta_{1}}\right|}C_{uv}{\left|\vec{\gamma_{1}}\vec{\beta_{1}}\right\rangle}=\frac{1}{2}+\\
+&\frac{1}{2}\sin{\gamma_{1,uv}}(\cos{\beta_{1,v}^{\prime}}\sin{\beta_{1,u}^{\prime}}\prod_{w}\cos{\gamma_{1,uw}}+\\
+&\cos{\beta_{1,u}^{\prime}}\sin{\beta_{1,v}^{\prime}}\prod_{x}\cos{\gamma_{1,vx}})\end{split} 
+
+ where w ∈ N ​ b ​ h ​ d ​ ( u ) ∖ v w\in Nbhd(u)\setminus v and x ∈ N ​ b ​ h ​ d ​ ( v ) ∖ u x\in Nbhd(v)\setminus u .
+
+ The neighborhood of a vertex x x , denoted N ​ b ​ h ​ d ​ ( x ) Nbhd(x) , is the set of vertices y y such that x ​ y ∈ E ⁡ ( G ) xy\in E(G) .
+
+ Proof.
+
+ The proof of this result relies on the Pauli-solver algorithm, which is explained in detail in [ 50 ] . The proof of the result is virtually identical to that for QAOA on triangle-free graphs, but we include the proof here for completeness. 
+
+ Consider edge u ​ v uv and consider acting on C u ​ v = ( 1 / 2 ) ​ ( 𝕀 − Z u ​ Z v ) C_{uv}=(1/2)(\mathbb{I}-Z_{u}Z_{v}) by conjugation of the mixing operator, ∏ i ∈ V e − i ​ β 1 , i ​ B i , \prod_{i\in V}e^{-i\beta_{1,i}B_{i}}, followed by conjugation of the phase operator, ∏ u ​ v ∈ E e − i ​ γ 1 , u ​ v ​ C u ​ v \prod_{uv\in E}e^{-i\gamma_{1,uv}C_{uv}} .
+We have that 
+
+ ∏ i ∈ V e i ​ β 1 , i ​ B i ​ Z u ​ Z v ​ ∏ i ∈ V e − i ​ β 1 , i ​ B i = e 2 ​ i ​ β 1 , u ​ X u ​ e 2 ​ i ​ β 1 , v ​ X v ​ Z u ​ Z v = cos ⁡ 2 ​ β 1 , u ​ cos ⁡ 2 ​ β 1 , v ​ Z u ​ Z v + cos ⁡ 2 ​ β 1 , v ​ sin ⁡ 2 ​ β 1 , u ​ Y v ​ Z u + cos ⁡ 2 ​ β 1 , u ​ sin ⁡ 2 ​ β 1 , v ​ Z v ​ Y u + sin ⁡ 2 ​ β 1 , u ​ sin ⁡ 2 ​ β 1 , v ​ Y u ​ Y v . \begin{split}&\prod_{i\in V}e^{i\beta_{1,i}B_{i}}Z_{u}Z_{v}\prod_{i\in V}e^{-i\beta_{1,i}B_{i}}=e^{2i\beta_{1,u}X_{u}}e^{2i\beta_{1,v}X_{v}}Z_{u}Z_{v}=\\
+&\cos{2\beta_{1,u}}\cos{2\beta_{1,v}}Z_{u}Z_{v}+\cos{2\beta_{1,v}}\sin{2\beta_{1,u}}Y_{v}Z_{u}\\
+&+\cos{2\beta_{1,u}}\sin{2\beta_{1,v}}Z_{v}Y_{u}+\sin{2\beta_{1,u}}\sin{2\beta_{1,v}}Y_{u}Y_{v}.\end{split} 
+
+ (1) 
+
+ Note that the first term commutes with ∏ u ​ v ∈ E e − i ​ γ 1 , u ​ v ​ C u ​ v \prod_{uv\in E}e^{-i\gamma_{1,uv}C_{uv}} , so does not contribute to the expected value. Let V u V_{u} be the neighborhood of u u in V ⁡ ( G ) V(G) . Conjugating the third term of Eqn. ( 1 ) by ∏ u ​ v ∈ E e − i ​ γ 1 , u ​ v ​ C u ​ v \prod_{uv\in E}e^{-i\gamma_{1,uv}C_{uv}} , we get 
+
+ ⟨ s | Υ † Y u Z v Υ | s ⟩ = \displaystyle{\left\langle s\right|}\Upsilon^{\dagger}Y_{u}Z_{v}\Upsilon{\left|s\right\rangle}= 
+
+ ⟨ s | e 2 ​ i ​ γ 1 , u ​ v ​ C u ​ v e 2 ​ i ​ ∑ a ∈ V u ∖ v γ 1 , u ​ a ​ C u ​ a Y u Z v | s ⟩ = \displaystyle{\left\langle s\right|}e^{2i\gamma_{1,uv}C_{uv}}e^{2i\sum_{a\in V_{u}\setminus{v}}\gamma_{1,ua}C_{ua}}Y_{u}Z_{v}{\left|s\right\rangle}= 
+
+ ⟨ s | e − i ​ γ 1 , u ​ v ​ Z u ​ Z v e − i ∑ a ∈ V u ∖ v γ 1 , u ​ a Z u Z a Y u Z v | s ⟩ = \displaystyle{\left\langle s\right|}e^{-i\gamma_{1,uv}Z_{u}Z_{v}}e^{-i\sum_{a\in V_{u}\setminus{v}}\gamma_{1,ua}Z_{u}Z_{a}}Y_{u}Z_{v}{\left|s\right\rangle}= 
+
+ ⟨ s | ( 𝕀 cos γ 1 , u ​ v − i sin γ 1 , u ​ v ) Z u Z v \displaystyle{\left\langle s\right|}(\mathbb{I}\cos{\gamma_{1,uv}}-i\sin{\gamma_{1,uv}})Z_{u}Z_{v} 
+
+ ∏ a ∈ V u ( 𝕀 cos γ 1 , u ​ a − i sin γ 1 , u ​ a Z u Z a ) Y u Z v | s ⟩ = \displaystyle\prod_{a\in V_{u}}(\mathbb{I}\cos{\gamma_{1,ua}}-i\sin{\gamma_{1,ua}}Z_{u}Z_{a})Y_{u}Z_{v}{\left|s\right\rangle}= 
+
+ − sin γ 1 , u ​ v ∏ a ∈ V u cos γ 1 , u ​ a , \displaystyle-\sin{\gamma_{1,uv}}\prod_{a\in V_{u}}\cos{\gamma_{1,ua}}, 
+
+ where Υ = e − i ​ γ 1 , u ​ v ​ C u ​ v e − i ∑ a ∈ V u ∖ v γ 1 , u ​ a C u ​ a \Upsilon=e^{-i\gamma_{1,uv}C_{uv}}e^{-i\sum_{a\in V_{u}\setminus{v}}\gamma_{1,ua}C_{ua}} , and Υ † \Upsilon^{\dagger} is its Hermitian conjugate. By symmetry, the term for Z u ​ Y v Z_{u}Y_{v} is − sin γ 1 , u ​ v ∏ b ∈ V v ∖ u cos γ 1 , v ​ b -\sin{\gamma_{1,uv}}\prod_{b\in V_{v}\setminus{u}}\cos{\gamma_{1,vb}} , where V v V_{v} is the neighborhood of v v in V V . Factoring in the coefficient − 1 / 2 -1/2 of Z u ​ Z v Z_{u}Z_{v} in C u ​ v C_{uv} gives the final two terms in the theorem.
+
+ Now, let us conjugate the last term of Eqn. ( 1 ). Doing so, we get 
+
+ ⟨ s | e i ​ ∑ g ​ h ∈ E γ 1 , g ​ h ​ C g ​ h Y u Y v e − i ∑ g ​ h ∈ E γ 1 , g ​ h C g ​ h | s ⟩ = \displaystyle{\left\langle s\right|}e^{i\sum_{gh\in E}\gamma_{1,gh}C_{gh}}Y_{u}Y_{v}e^{-i\sum_{gh\in E}\gamma_{1,gh}C_{gh}}{\left|s\right\rangle}= 
+
+ ⟨ s | ∏ a ∈ V u ∖ v ( 𝕀 cos γ 1 , u ​ a − i sin γ 1 , u ​ a Z u Z a ) × \displaystyle{\left\langle s\right|}\prod_{a\in V_{u}\setminus v}(\mathbb{I}\cos{\gamma_{1,ua}}-i\sin{\gamma_{1,ua}}Z_{u}Z_{a})\times 
+
+ ∏ b ∈ V v ∖ u ( 𝕀 cos γ 1 , v ​ b − i sin γ 1 , v ​ b Z v Z b ) Y u Y v | s ⟩ \displaystyle\prod_{b\in V_{v}\setminus u}(\mathbb{I}\cos{\gamma_{1,vb}}-i\sin{\gamma_{1,vb}}Z_{v}Z_{b})Y_{u}Y_{v}{\left|s\right\rangle} 
+
+ The simplest terms that contribute to the expected value are of the form 
+
+ sin γ 1 , u ​ c sin γ 1 , v ​ c ∏ x ≠ y cos γ 1 , u ​ x cos γ 1 , v ​ y \displaystyle\sin{\gamma_{1,uc}}\sin{\gamma_{1,vc}}\prod_{x\neq y}\cos{\gamma_{1,ux}}\cos{\gamma_{1,vy}} 
+
+ and there are f f of these where f f is the number of triangles containing u ​ v uv . The higher order terms only contribute to the expected value if there are triangles in the graph. Thus, the last term of Eqn. ( 1 ) contributes nothing to the expected value of triangle-free graphs.
+
+ Combining these expressions gives the theorem.
+∎ 
+
+ Star graphs
+
+ First, we will show that ⟨ C i ​ j ⟩ \langle C_{ij}\rangle approaches 0.75 0.75 as n n tends to infinity for QAOA. Since there are n − 1 n-1 edges in a star on n n vertices, this implies ⟨ C ⟩ \langle C\rangle tends to 0.75 ​ ( n − 1 ) 0.75(n-1) . Additionally, n − 1 n-1 is the size of the optimal MaxCut solution, so ⟨ C ⟩ 1 / C max = 0.75 \langle C\rangle_{1}/C_{\mathrm{max}}=0.75 .
+
+ Wang, Hadfield, Jiang, and Rieffel showed that [ 51 ] 
+
+ ⟨ C i ​ j ⟩ 1 = 1 2 + 1 4 ​ ( sin ⁡ 4 ​ β ​ sin ⁡ γ ) ​ ( cos d ⁡ γ + cos e ⁡ γ ) − 1 4 ​ ( sin 2 ⁡ 2 ​ β ​ cos d + e − f ⁡ γ ) ​ ( 1 − cos f ⁡ 2 ​ γ ) \begin{split}&\langle C_{ij}\rangle_{1}=\frac{1}{2}+\frac{1}{4}(\sin{4\beta}\sin{\gamma})(\cos^{d}{\gamma}+\cos^{e}{\gamma})\\
+&-\frac{1}{4}(\sin^{2}{2\beta}\cos^{d+e-f}{\gamma})(1-\cos^{f}{2\gamma})\end{split} 
+
+ (2) 
+
+ where d d is the deg ⁡ ( i ) − 1 \deg(i)-1 , e e is the deg ⁡ ( j ) − 1 \deg(j)-1 and f f is the number of triangles containing edge i ​ j ij [ 51 , 50 ] .
+
+ Let us consider the above formula applied to a star graph. Without loss of generality, let j j be the center of each star. Then d = 0 d=0 , e = n − 2 e=n-2 , and f = 0 f=0 , since star graphs are trees. For each edge of the star, Eq. ( 2 ) reduces to
+
+ ⟨ C i ​ j ⟩ 1 = 1 2 + 1 4 ​ ( sin ⁡ 4 ​ β ​ sin ⁡ γ ) ​ ( 1 + cos n − 2 ⁡ γ ) . \langle C_{ij}\rangle_{1}=\frac{1}{2}+\frac{1}{4}(\sin{4\beta}\sin{\gamma})(1+\cos^{n-2}{\gamma}). 
+
+ We set β = π / 8 \beta=\pi/8 , which implies sin ⁡ 4 ​ β = 1 \sin{4\beta}=1 , since only one trigonometric function has β \beta as an argument. As n n tends to infinity, note cos n − 2 ⁡ γ \cos^{n-2}{\gamma} tends to zero unless γ = k ​ π \gamma=k\pi for some k ∈ 𝐍 k\in\mathbf{N} . However, if γ = k ​ π \gamma=k\pi , sin ⁡ γ = 0 \sin{\gamma}=0 . Thus, this quantity is maximized when γ ≠ k ​ π \gamma\neq k\pi , which implies ⟨ C i ​ j ⟩ 1 \langle C_{ij}\rangle_{1} tends to 0.75 0.75 for star graphs.
+
+ In order to prove ⟨ C ⟩ ma = n − 1 \langle C\rangle^{\mathrm{ma}}=n-1 for ma-QAOA on star graphs, we examine Thm.  IV.1 . Without loss of generality, let u u be a leaf vertex and v v be the center. Note that the first product is empty, since the leaf vertices have no neighbors except the center. Thus, Thm.  IV.1 reduces to
+
+ ⟨ γ 1 → β 1 → | C u ​ v | γ 1 → β 1 → ⟩ = 1 2 + \displaystyle{\left\langle\vec{\gamma_{1}}\vec{\beta_{1}}\right|}C_{uv}{\left|\vec{\gamma_{1}}\vec{\beta_{1}}\right\rangle}=\frac{1}{2}+ 
+
+ 1 2 sin γ 1 , u ​ v ( cos β 1 , v ′ sin β 1 , u ′ + cos β 1 , u ′ sin β 1 , v ′ ∏ x cos γ 1 , v ​ x ) \displaystyle\frac{1}{2}\sin{\gamma_{1,uv}}(\cos{\beta_{1,v}^{\prime}}\sin{\beta_{1,u}^{\prime}}+\cos{\beta_{1,u}^{\prime}}\sin{\beta_{1,v}^{\prime}}\prod_{x}\cos{\gamma_{1,vx}}) 
+
+ Now, recall ⟨ γ 1 → β 1 → | C u ​ v | γ 1 → β 1 → ⟩ ≤ 1 {\left\langle\vec{\gamma_{1}}\vec{\beta_{1}}\right|}C_{uv}{\left|\vec{\gamma_{1}}\vec{\beta_{1}}\right\rangle}\leq 1 , as two vertices that have an edge between them add one to the objective function if they are in different sets. In order to obtain equality, we can set γ 1 , u ​ v = π / 2 \gamma_{1,uv}=\pi/2 , as it is an argument for only a single sine term. Next, note that if either term in the parenthesis is one, the other must be zero. Also, setting one term equal to one allows gives an expected value of one for the edge. Let β 1 , u ′ = π / 2 \beta_{1,u}^{\prime}=\pi/2 and β 1 , v ′ = 0 \beta_{1,v}^{\prime}=0 . Then cos ⁡ β 1 , v ′ = sin ⁡ β 1 , u ′ = 1 \cos{\beta_{1,v}^{\prime}}=\sin{\beta_{1,u}^{\prime}}=1 while cos ⁡ β 1 , u ′ = sin ⁡ β 1 , v ′ = 0 \cos{\beta_{1,u}^{\prime}}=\sin{\beta_{1,v}^{\prime}}=0 . Thus, the first term in the parenthesis is one and the second is zero. This allows us to set γ 1 , v ​ x = π / 2 \gamma_{1,vx}=\pi/2 for all x ∈ N ​ b ​ h ​ d ​ ( v ) x\in Nbhd(v) . Since each of the n − 1 n-1 edges in the star are described similarly, ⟨ C ⟩ 1 ma = n − 1 \langle C\rangle_{1}^{\mathrm{ma}}=n-1 for all n n . The size of the optimal cut on a star graph is n − 1 n-1 , so ⟨ C ⟩ 1 ma / C max = 1 \langle C\rangle_{1}^{\mathrm{ma}}/C_{\mathrm{max}}=1 .
+
+ Setup for Computational Results
+
+ In order to calculate the angles that maximize ⟨ C ⟩ p \langle C\rangle_{p} and ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} for the eight vertex graphs, we used the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm [ 52 ] . The algorithm inputs an initial collection of angles and then uses a numerical gradient and second order approximate Hessian to find angles that converge to local maxima of ⟨ C ⟩ p \langle C\rangle_{p} and ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} . For the eight vertex graphs, 100 random seeds were used to optimize ⟨ C ⟩ 1 ma \langle C\rangle^{\mathrm{ma}}_{1} . The results for the ⟨ C ⟩ p \langle C\rangle_{p} were taken from the online dataset [ 48 ] of Ref.  [ 36 ] , where we performed an exhaustive analysis of QAOA performance on small graphs. These used 50 seeds for p = 1 p=1 , 100 seeds for p = 2 p=2 , and 1,000 seeds for p = 3 p=3 .
+
+ For the 50 and 100 node graphs, we used the method of moving asymptotes (MMA) algorithm [ 53 , 54 ] , but note that calculations with BFGS gave similar results. The ⟨ C ⟩ 1 \langle C\rangle_{1} were computed using Eq. ( 2 ) and the reported results were taken as the best from 1000 initial seeds in MMA optimizations. The ⟨ C ⟩ 1 ma \langle C\rangle_{1}^{\mathrm{ma}} were computed with Theorem IV.1 and MMA optimization. We report results as the best optimized values from 1,000 seeds at n = 50 n=50 and from 100 seeds at n = 100 n=100 .
+
+ Acknowledgements
+
+ This work was supported by DARPA ONISQ program under award W911NF-20-2-0051. J. Ostrowski acknowledges the Air Force Office of Scientific Research award, AF-FA9550-19-1-0147. G. Siopsis acknowledges the Army Research Office award W911NF-19-1-0397. J. Ostrowski and G. Siopsis acknowledge the National Science Foundation award OMA-1937008.
+
+ References
+
+ [1] 
+
+Diogo Cruz, Romain Fournier, Fabien Gremion, Alix Jeannerot, Kenichi Komagata,
+Tara Tosic, Jarla Thiesbrummel, Chun Lam Chan, Nicolas Macris, Marc-André
+Dupertuis, et al.
+
+ Efficient quantum algorithms for ghz and w states, and implementation
+on the ibm quantum computer.
+
+ Advanced Quantum Technologies , 2(5-6):1900015, 2019.
+
+ [2] 
+
+Jingfu Zhang, Swathi S Hegde, and Dieter Suter.
+
+ Efficient implementation of a quantum algorithm in a single
+nitrogen-vacancy center of diamond.
+
+ Physical Review Letters , 125(3):030501, 2020.
+
+ [3] 
+
+Clément Godfrin, Abdelkarim Ferhat, Rafik Ballou, Svetlana Klyatskaya,
+Mario Ruben, Wolfgang Wernsdorfer, and Franck Balestro.
+
+ Operating quantum states in single magnetic molecules: implementation
+of grover’s quantum algorithm.
+
+ Physical review letters , 119(18):187702, 2017.
+
+ [4] 
+
+Ajinkya Borle, Vincent E Elfving, and Samuel J Lomonaco.
+
+ Quantum approximate optimization for hard problems in linear algebra.
+
+ arXiv preprint arXiv:2006.15438 , 2020.
+
+ [5] 
+
+Amir H Karamlou, William A Simon, Amara Katabarwa, Travis L Scholten, Borja
+Peropadre, and Yudong Cao.
+
+ Analyzing the performance of variational quantum factoring on a
+superconducting quantum processor.
+
+ arXiv preprint arXiv:2012.07825 , 2020.
+
+ [6] 
+
+Cornelius Hempel, Christine Maier, Jonathan Romero, Jarrod McClean, Thomas
+Monz, Heng Shen, Petar Jurcevic, Ben P Lanyon, Peter Love, Ryan Babbush,
+et al.
+
+ Quantum chemistry calculations on a trapped-ion quantum simulator.
+
+ Physical Review X , 8(3):031022, 2018.
+
+ [7] 
+
+C Huerta Alderete, Shivani Singh, Nhung H Nguyen, Daiwei Zhu, Radhakrishnan
+Balu, Christopher Monroe, CM Chandrashekar, and Norbert M Linke.
+
+ Quantum walks and dirac cellular automata on a programmable
+trapped-ion quantum computer.
+
+ Nature communications , 11(1):1–7, 2020.
+
+ [8] 
+
+Peng Xue, Barry C Sanders, and Dietrich Leibfried.
+
+ Quantum walk on a line for a trapped ion.
+
+ Physical review letters , 103(18):183602, 2009.
+
+ [9] 
+
+Norbert M Linke, Dmitri Maslov, Martin Roetteler, Shantanu Debnath, Caroline
+Figgatt, Kevin A Landsman, Kenneth Wright, and Christopher Monroe.
+
+ Experimental comparison of two quantum computing architectures.
+
+ Proceedings of the National Academy of Sciences ,
+114(13):3305–3310, 2017.
+
+ [10] 
+
+Guido Pagano, Aniruddha Bapat, Patrick Becker, Katherine S Collins, Arinjoy De,
+Paul W Hess, Harvey B Kaplan, Antonis Kyprianidis, Wen Lin Tan, Christopher
+Baldwin, et al.
+
+ Quantum approximate optimization of the long-range ising model with a
+trapped-ion quantum simulator.
+
+ Proceedings of the National Academy of Sciences ,
+117(41):25396–25401, 2020.
+
+ [11] 
+
+Andreas Bengtsson, Pontus Vikstål, Christopher Warren, Marika Svensson, Xiu
+Gu, Anton Frisk Kockum, Philip Krantz, Christian Križan, Daryoush
+Shiri, I Svensson, et al.
+
+ Quantum approximate optimization of the exact-cover problem on a
+superconducting quantum processor.
+
+ arXiv preprint arXiv:1912.10495 , 2019.
+
+ [12] 
+
+Matthew P Harrigan, Kevin J Sung, Matthew Neeley, Kevin J Satzinger, Frank
+Arute, Kunal Arya, Juan Atalaya, Joseph C Bardin, Rami Barends, Sergio Boixo,
+et al.
+
+ Quantum approximate optimization of non-planar graph problems on a
+planar superconducting processor.
+
+ Nature Physics , 17(3):332–336, 2021.
+
+ [13] 
+
+Edward Farhi, Jeffrey Goldstone, and Sam Gutmann.
+
+ A quantum approximate optimization algorithm.
+
+ arXiv preprint arXiv:1411.4028 , 2014.
+
+ [14] 
+
+Zain Hamid Saleem.
+
+ Max-independent set and the quantum alternating operator ansatz.
+
+ International Journal of Quantum Information , 18(04):2050011,
+2020.
+
+ [15] 
+
+Jeremy Cook, Stephan Eidenbenz, and Andreas Bärtschi.
+
+ The quantum alternating operator ansatz on max-k vertex cover.
+
+ Bulletin of the American Physical Society , 65, 2020.
+
+ [16] 
+
+Gavin E Crooks.
+
+ Performance of the quantum approximate optimization algorithm on the
+maximum cut problem.
+
+ arXiv preprint arXiv:1811.08419 , 2018.
+
+ [17] 
+
+Hannes Pichler, Sheng-Tao Wang, Leo Zhou, Soonwon Choi, and Mikhail D Lukin.
+
+ Quantum optimization for maximum independent set using rydberg atom
+arrays.
+
+ arXiv preprint arXiv:1808.10816 , 2018.
+
+ [18] 
+
+Edward Farhi, David Gamarnik, and Sam Gutmann.
+
+ The quantum approximate optimization algorithm needs to see the whole
+graph: Worst case examples.
+
+ arXiv preprint arXiv:2005.08747 , 2020.
+
+ [19] 
+
+Edward Farhi, David Gamarnik, and Sam Gutmann.
+
+ The quantum approximate optimization algorithm needs to see the whole
+graph: A typical case.
+
+ arXiv preprint arXiv:2004.09002 , 2020.
+
+ [20] 
+
+Jonathan Wurtz and Peter J Love.
+
+ Bounds on maxcut qaoa performance for p¿ 1.
+
+ arXiv e-prints , pages arXiv–2010, 2020.
+
+ [21] 
+
+Jonathan Ward, Johannes Otterbach, Gavin Crooks, Nicholas Rubin, and Marcus
+da Silva.
+
+ Qaoa performance benchmarks using max-cut.
+
+ In APS March Meeting Abstracts , volume 2018, pages R15–007,
+2018.
+
+ [22] 
+
+Ruslan Shaydulin and Yuri Alexeev.
+
+ Evaluating quantum approximate optimization algorithm: A case study.
+
+ In 2019 tenth international green and sustainable computing
+conference (IGSC) , pages 1–6. IEEE, 2019.
+
+ [23] 
+
+Andreas Bärtschi and Stephan Eidenbenz.
+
+ Grover mixers for qaoa: Shifting complexity from mixer design to
+state preparation.
+
+ In 2020 IEEE International Conference on Quantum Computing and
+Engineering (QCE) , pages 72–82. IEEE, 2020.
+
+ [24] 
+
+Stuart Hadfield, Zhihui Wang, Bryan O’Gorman, Eleanor G Rieffel, Davide
+Venturelli, and Rupak Biswas.
+
+ From the quantum approximate optimization algorithm to a quantum
+alternating operator ansatz.
+
+ Algorithms , 12(2):34, 2019.
+
+ [25] 
+
+Jonathan Wurtz and Peter Love.
+
+ Classically optimal variational quantum algorithms.
+
+ arXiv preprint arXiv:2103.17065 , 2021.
+
+ [26] 
+
+Zhihui Wang, Nicholas C Rubin, Jason M Dominy, and Eleanor G Rieffel.
+
+ x ​ y xy -mixers: analytical and numerical results for qaoa.
+
+ arXiv preprint arXiv:1904.09314 , 2019.
+
+ [27] 
+
+Daniel J Egger, Jakub Mareček, and Stefan Woerner.
+
+ Warm-starting quantum optimization.
+
+ Quantum , 5:479, 2021.
+
+ [28] 
+
+Linghua Zhu, Ho Lun Tang, George Barron, Fernando Calderon-Vargas, Nicholas
+Mayhall, Edwin Barnes, and Sophia Economou.
+
+ Improving the performance of quantum approximate optimization
+algorithm through an adaptive, problem-tailored ansatz.
+
+ Bulletin of the American Physical Society , 2021.
+
+ [29] 
+
+Reuben Tate, Majid Farhadi, Creston Herold, Greg Mohler, and Swati Gupta.
+
+ Bridging classical and quantum with sdp initialized warm-starts for
+qaoa.
+
+ arXiv preprint arXiv:2010.14021 , 2020.
+
+ [30] 
+
+Eleanor Rieffel, Jason M Dominy, Nicholas Rubin, and Zhihui Wang.
+
+ Xy-mixers: analytical and numerical results for qaoa.
+
+ 2020.
+
+ [31] 
+
+John Golden, Andreas Bärtschi, Daniel O’Malley, and Stephan Eidenbenz.
+
+ Threshold-based quantum optimization.
+
+ arXiv preprint arXiv:2106.13860 , 2021.
+
+ [32] 
+
+Rebekah Herrman, Lorna Treffert, James Ostrowski, Phillip C. Lotshaw, Travis S.
+Humble, and George Siopsis.
+
+ Impact of graph structures for qaoa on maxcut.
+
+ arXiv preprint arXiv:2102.05997 , 2021.
+
+ [33] 
+
+Ruslan Shaydulin, Stuart Hadfield, Tad Hogg, and Ilya Safro.
+
+ Classical symmetries and qaoa.
+
+ arXiv preprint arXiv:2012.04713 , 2020.
+
+ [34] 
+
+Yuri Alexeev, Sami Khairy, Ruslan Shaydulin, Lukasz Cincio, and Prasanna
+Balaprakash.
+
+ Reinforcement learning for finding qaoa parameters.
+
+ Bulletin of the American Physical Society , 65, 2020.
+
+ [35] 
+
+Matteo M Wauters, Emanuele Panizon, Glen B Mbeng, and Giuseppe E Santoro.
+
+ Reinforcement-learning-assisted quantum optimization.
+
+ Physical Review Research , 2(3):033446, 2020.
+
+ [36] 
+
+Phillip C. Lotshaw, Travis S. Humble, Rebekah Herrman, James Ostrowski, and
+George Siopsis.
+
+ Empirical performance bounds for quantum approximate optimization.
+
+ arXiv preprint arXiv:2102.06813 , 2021.
+
+ [37] 
+
+Gian Giacomo Guerreschi and Anne Y Matsuura.
+
+ Qaoa for max-cut requires hundreds of qubits for quantum speed-up.
+
+ Scientific reports , 9, 2019.
+
+ [38] 
+
+Rebekah Herrman, James Ostrowski, Travis S Humble, and George Siopsis.
+
+ Lower bounds on circuit depth of the quantum approximate optimization
+algorithm.
+
+ Quantum Information Processing , 20(2):1–17, 2021.
+
+ [39] 
+
+Cheng Xue, Zhao-Yun Chen, Yu-Chun Wu, and Guo-Ping Guo.
+
+ Effects of quantum noise on quantum approximate optimization
+algorithm.
+
+ Chinese Physics Letters , 38(3):030302, 2021.
+
+ [40] 
+
+Samson Wang, Enrico Fontana, M Cerezo, Kunal Sharma, Akira Sone, Lukasz Cincio,
+and Patrick J Coles.
+
+ Noise-induced barren plateaus in variational quantum algorithms.
+
+ arXiv preprint arXiv:2007.14384 , 2020.
+
+ [41] 
+
+Prakash Murali, Jonathan M Baker, Ali Javadi-Abhari, Frederic T Chong, and
+Margaret Martonosi.
+
+ Noise-adaptive compiler mappings for noisy intermediate-scale quantum
+computers.
+
+ In Proceedings of the Twenty-Fourth International Conference on
+Architectural Support for Programming Languages and Operating Systems , pages
+1015–1029, 2019.
+
+ [42] 
+
+Jinzhao Sun, Xiao Yuan, Takahiro Tsunoda, Vlatko Vedral, Simon C Benjamin, and
+Suguru Endo.
+
+ Mitigating realistic noise in practical noisy intermediate-scale
+quantum devices.
+
+ Physical Review Applied , 15(3):034026, 2021.
+
+ [43] 
+
+Jeffrey Marshall, Filip Wudarski, Stuart Hadfield, and Tad Hogg.
+
+ Characterizing local noise in qaoa circuits.
+
+ IOP SciNotes , 1(2):025208, 2020.
+
+ [44] 
+
+Mahabubul Alam, Abdullah Ash-Saki, and Swaroop Ghosh.
+
+ Design-space exploration of quantum approximate optimization
+algorithm under noise.
+
+ In 2020 IEEE Custom Integrated Circuits Conference (CICC) ,
+pages 1–4. IEEE, 2020.
+
+ [45] 
+
+Mahabubul Alam, Abdullah Ash-Saki, and Swaroop Ghosh.
+
+ Analysis of quantum approximate optimization algorithm under
+realistic noise in superconducting qubits.
+
+ arXiv preprint arXiv:1907.09631 , 2019.
+
+ [46] 
+
+Michael Streif, Martin Leib, Filip Wudarski, Eleanor Rieffel, and Zhihui Wang.
+
+ Quantum algorithms with local particle-number conservation: Noise
+effects and error correction.
+
+ Physical Review A , 103(4):042412, 2021.
+
+ [47] 
+
+Filip B Maciejewski, Flavio Baccari, Zoltán Zimborás, and Michał
+Oszmaniec.
+
+ Modeling and mitigation of realistic readout noise with applications
+to the quantum approximate optimization algorithm.
+
+ arXiv preprint arXiv:2101.02331 , 2021.
+
+ [48] 
+
+Phillip C. Lotshaw and Travis S. Humble.
+
+ QAOA dataset.
+
+ Found at https://code.ornl.gov/qci/qaoa-dataset-version1.
+
+ [49] 
+
+Phillip C. Lotshaw, Thien Nguyen, Anthony Santana, Alexander McCaskey, Rebekah
+Herrman, James Ostrowski, George Siopsis, and Travis S. Humble.
+
+ Scaling quantum approximate optimization on near-term hardware.
+
+ forthcoming , 2021.
+
+ [50] 
+
+Stuart Hadfield.
+
+ Quantum algorithms for scientific computing and approximate
+optimization.
+
+ arXiv preprint arXiv:1805.03265 , 2018.
+
+ [51] 
+
+Zhihui Wang, Stuart Hadfield, Zhang Jiang, and Eleanor G Rieffel.
+
+ Quantum approximate optimization algorithm for maxcut: A fermionic
+view.
+
+ Physical Review A , 97(2):022304, 2018.
+
+ [52] 
+
+William H. Press, Brian P. Flannery, and Saul A. Teukolsky.
+
+ Numerical Recipes in Fortran 77: The Art of Scientific
+Computing .
+
+ Cambridge University Press, second edition, 1993.
+
+ https://people.sc.fsu.edu/ ∼ \sim inavon/5420a/DFP.pdf.
+
+ [53] 
+
+Steven G. Johnson.
+
+ The nlopt nonlinear-optimization package.
+
+ http://github.com/stevengj/nlopt.
+
+ [54] 
+
+Krister Svanberg.
+
+ A class of globally convergent optimization methods based on
+conservative convex separable approximations.
+
+ SIAM J. Optim. , 12:555–573, 2002.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+

@@ -1,0 +1,229 @@
+ 
+
+ [2005.10258] An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer 
+
+ Skip to main content 
+
+ Search
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:2005.10258 (quant-ph)
+
+ [Submitted on 20 May 2020 ( v1 ), last revised 7 Jul 2022 (this version, v3)]
+
+ Title: An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer
+
+ Authors: Linghua Zhu , Ho Lun Tang , George S. Barron , F. A. Calderon-Vargas , Nicholas J. Mayhall , Edwin Barnes , Sophia E. Economou 
+ View a PDF of the paper titled An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer, by Linghua Zhu and 6 other authors
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: The quantum approximate optimization algorithm (QAOA) is a hybrid variational quantum-classical algorithm that solves combinatorial optimization problems. While there is evidence suggesting that the fixed form of the standard QAOA ansatz is not optimal, there is no systematic approach for finding better ansätze. We address this problem by developing an iterative version of QAOA that is problem-tailored, and which can also be adapted to specific hardware constraints. We simulate the algorithm on a class of Max-Cut graph problems and show that it converges much faster than the standard QAOA, while simultaneously reducing the required number of CNOT gates and optimization parameters. We provide evidence that this speedup is connected to the concept of shortcuts to adiabaticity.
+
+ Comments: 
+ 11 pages, 7 figures; v3: additional analysis, analytical results, and simulations of larger systems 
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Cite as: 
+ arXiv:2005.10258 [quant-ph] 
+
+ (or 
+ arXiv:2005.10258v3 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.2005.10258 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Submission history
+ From: Edwin Barnes [ view email ] [v1] 
+ Wed, 20 May 2020 18:00:01 UTC (48 KB) 
+ [v2] 
+ Tue, 22 Dec 2020 18:57:03 UTC (620 KB) 
+ [v3] 
+ Thu, 7 Jul 2022 20:23:33 UTC (106 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer, by Linghua Zhu and 6 other authors
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2020-05 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ NASA ADS 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ 

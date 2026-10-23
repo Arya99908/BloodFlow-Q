@@ -42,6 +42,15 @@ Use the app's clearly marked synthetic experiences to test these workflows witho
 
 The authenticated donor and authorized-hospital pages use the Supabase frontend client and database policies. The FastAPI coordination endpoints do not read or write private Supabase rows. Live dashboard counts therefore remain unavailable until an authorized platform administrator signs in and the counts query is permitted. Empty/unavailable live counts are not replaced by made-up values.
 
+The dashboard now distinguishes four cases instead of showing the same generic “Unavailable” label for each card:
+
+- **Sign in**: no Supabase session is active in this browser.
+- **Admin only**: the signed-in account is not a verified platform administrator.
+- **Query error**: the database query failed for another reason.
+- **A number, including 0**: the authorized metrics function returned that actual count.
+
+The public dashboard must not query donor tables directly or relax database permissions to make the cards visible. Use **Sign in to view counts** to open the private account page. The database must also contain a verified `platform_admin` membership for that signed-in user; signing in alone does not grant that role. This avoids exposing donor-network aggregates or contact records to public visitors.
+
 To test live account access later, first configure and verify the intended Supabase email or SMS delivery provider. Use a test identity that you control and only after reviewing the current RLS policies. This readiness check deliberately did not transmit a phone number, email address, OTP, or other personal data.
 
 ## Repeat the safe checks

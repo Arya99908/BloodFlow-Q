@@ -1,0 +1,2413 @@
+=== PDF PAGE 1 ===
+Deﬁning and detecting quantum speedup
+Troels F. Rønnow, 1 Zhihui Wang,2 Joshua Job, 3 Sergio Boixo, 4 Sergei V. Isakov, 5
+David Wecker,6 John M. Martinis, 7 Daniel A. Lidar, 8 and Matthias Troyer∗1
+1Theoretische Physik, ETH Zurich, 8093 Zurich, Switzerland
+2Department of Chemistry and Center for Quantum Information Science & Technology,
+University of Southern California, Los Angeles, California 90089, USA
+3Department of Physics and Center for Quantum Information Science & Technology,
+University of Southern California, Los Angeles, California 90089, USA
+4Google, 150 Main St, Venice Beach, CA, 90291
+5Google, Brandschenkestrasse 110, 8002 Zurich, Switzerland
+6Quantum Architectures and Computation Group, Microsoft Research, Redmond, WA 98052, USA
+7Department of Physics, University of California, Santa Barbara, CA 93106-9530, USA
+8Departments of Electrical Engineering, Chemistry and Physics,
+and Center for Quantum Information Science & Technology,
+University of Southern California, Los Angeles, California 90089, USA
+The development of small-scale digital and analog quantum devices raises the question of how
+to fairly assess and compare the computational power of classical and quantum devices, and of
+how to detect quantum speedup. Here we show how to deﬁne and measure quantum speedup in
+various scenarios, and how to avoid pitfalls that might mask or fake quantum speedup. We illustrate
+our discussion with data from a randomized benchmark test on a D-Wave Two device with up to
+503 qubits. Comparing the performance of the device on random spin glass instances with limited
+precision to simulated classical and quantum annealers, we ﬁnd no evidence of quantum speedup
+when the entire data set is considered, and obtain inconclusive results when comparing subsets of
+instances on an instance-by-instance basis. Our results for one particular benchmark do not rule out
+the possibility of speedup for other classes of problems and illustrate that quantum speedup is elusive
+and can depend on the question posed.
+I. INTRODUCTION
+The interest in quantum computing originates in the
+potential of a quantum computer to solve certain com-
+putational problems much faster than is possible classi-
+cally. Examples are the factoring of integers [1] or the
+simulation of quantum systems [2]. Shor’s algorithm can
+ﬁnd the prime factors of an integer in a time that scales
+polynomially in the number of digits of the integer to be
+factored, while all known classical algorithms scale ex-
+ponentially. The simulation of the time evolution of a
+quantum system on a classical computer also takes ex-
+ponential resources, because the Hilbert space of an N
+particle system is exponentially large in N, while quan-
+tum hardware can simulate the same time evolution with
+polynomial complexity [3, 4].
+In these examples the quantum algorithm is exponen-
+tially faster than the best available classical algorithm.
+This type of exponential quantum speedup substantially
+simpliﬁes the discussion, since it renders the details of the
+classical or quantum hardware unimportant. According
+to the extended Church-Turing thesis all classical com-
+puters are equivalent up to polynomial factors [5]. Sim-
+ilarly, all proposed models of quantum computation are
+polynomially equivalent, so that a ﬁnding of exponential
+quantum speedup will be model-independent. In other
+cases, in particular on small devices, or when the quan-
+tum speedup is polynomial, deﬁning and detecting quan-
+tum speedup becomes more subtle. One such subtlety is
+how to properly deﬁne the hardness of a problem given
+prior knowledge about the answer [6].
+Here we discuss how to deﬁne “quantum speedup”
+and show that this term may refer to diﬀerent quanti-
+ties depending on the goal of the study. In particular,
+we deﬁne what we call “limited quantum speedup”—
+essentially a speedup relative to a given, corresponding
+classical algorithm—and explain how such a speedup can
+be reliably detected. To illustrate these issues we com-
+pare the performance of a 503-qubit D-Wave Two (DW2)
+device to classical algorithms running on a standard CPU
+and analyze the evidence for quantum speedup on ran-
+dom spin glass problems. This example is particularly
+relevant since it is an open question whether quantum
+annealing [7] or the quantum adiabatic algorithm [8] can
+exhibit a quantum speedup for such problems. Random
+spin glass problems are an interesting benchmark prob-
+lem, though not necessarily the most relevant for practi-
+cal applications, such as machine learning. We also dis-
+cuss issues that might mask or fake a quantum speedup
+when not considered carefully, such as comparing subop-
+timal algorithms or improperly accounting for the scaling
+of hardware resources.
+arXiv:1401.2910v1  [quant-ph]  13 Jan 2014
+
+=== PDF PAGE 2 ===
+2
+II. DEFINING QUANTUM SPEEDUP
+A. The classical to quantum scaling ratio
+When the time to solution depends not only on the
+problem sizeN but also on the speciﬁc problem instance,
+then the purpose of the comparison becomes another fac-
+tor in deciding how to measure performance. Speciﬁcally,
+when a device is used as a tool for solving problems, then
+the question of interest is to determine which device is
+better for the hardest problem, or for almost all possible
+problem instances. On the other hand, if we are inter-
+ested in aspects of the underlying physics of a device
+then it might suﬃce to ﬁnd some instances or a subclass
+of instances where a quantum device exhibits a speedup.
+These two questions will lead to diﬀerent quantities of
+interest.
+In all of these cases we denote the time used by a clas-
+sical device to solve a problem of size N by C(N) and
+the time used on the quantum device by Q(N), deﬁning
+quantum speedup as the ratio
+S(N) = C(N)Q(N). (1)
+Note that in both the quantum and classical case this
+deﬁnition includes a speciﬁc choice of algorithm and de-
+vice.
+The ﬁrst question that arises is which classical algo-
+rithm to compare against, i.e., what is C(N). This leads
+to diﬀerent deﬁnitions of quantum speedup.
+B. Five diﬀerent types of quantum speedup
+The optimal scenario is one of a provable quantum
+speedup, where there exists a proof that no classical algo-
+rithm can outperform a given quantum algorithm. Per-
+haps the best known example is Grover’s search algo-
+rithm [9], which exhibits a provable quadratic speedup
+over the best possible classical algorithm [10], assuming
+an oracle.
+A strong quantum speedup was deﬁned in [11] by using
+the performance of the best classical algorithm forC(N),
+whether such an algorithm is known or not. Unfortu-
+nately the performance of the best classical algorithm
+is unknown for many interesting problems. In the case
+of factoring, for example, all known classical algorithms
+have super-polynomial cost in the number of digits N of
+the number to be factored [12], while the cost of Shor’s
+algorithm is polynomial in N. However, a proof of a
+classical exponential lower-bound for factorization is not
+known [13]. A less ambitious goal is therefore desirable,
+and thus one usually deﬁnes quantum speedup (without
+additional adjectives) by comparing to the best available
+classical algorithm instead of the best possible classical
+algorithm.
+However, this notion of quantum speedup depends on
+there being a consensus about “best available”, and this
+consensus may be time- and community-dependent [14].
+In the absence of a consensus about what is the best clas-
+sical algorithm, we deﬁne potential (quantum) speedup as
+a speedup compared to a speciﬁc classical algorithm or
+a set of classical algorithms. An example is the simula-
+tion of the time evolution of a quantum system, where the
+propagation of the wave function on a quantum computer
+would be exponentially faster than a direct integration of
+Schr¨ odinger’s equation on a classical computer. A poten-
+tial quantum speedup can of course be trivially attained
+by deliberately choosing a poor classical algorithm (for
+example, factoring using classical instead of quantum pe-
+riod ﬁnding while ignoring known, better classical factor-
+ing algorithms), so that here too one must make a genuine
+attempt to compare against the best classical algorithms
+known, and any potential quantum speedup might be
+short-lived if a better classical algorithm is found.
+Underlying all the above notions of quantum speedup
+is the availability of a fully coherent, universal quantum
+computer. A weaker scenario is one where the device
+is merely a putative or candidate quantum information
+processor, or where a quantum algorithm is designed to
+make use of quantum eﬀects but it is not known whether
+these quantum eﬀects provide an advantage over classical
+algorithms. To capture this scenario, which is of central
+interest to us in this work, we deﬁne limited quantum
+speedup as a speedup obtained when comparing speciﬁ-
+cally with classical algorithms that “correspond” to the
+quantum algorithm in the sense that they implement the
+same algorithmic approach, but on classical hardware.
+In the context of an analog quantum device this can be
+thought of as being the result of decohering the device.
+Since there is no unique way to decohere a quantum de-
+vice, one may arrive at diﬀerent corresponding classical
+algorithms. A natural example is quantum annealing im-
+plemented on a candidate physical quantum information
+processor vs either classical simulated annealing, classi-
+cal spin dynamics, or simulated quantum annealing (as
+deﬁned in Methods). In this comparison a limited quan-
+tum speedup would be a demonstration that quantum
+eﬀects improve the annealing algorithm [15].
+III. CLASSICAL AND QUANTUM ANNEALING
+OF A SPIN GLASS
+As our primary example we will use the problem of
+ﬁnding the ground state of an Ising spin glass model de-
+scribed by a “problem Hamiltonian”
+HIsing =−
+∑
+i∈V
+hiσzi− ∑
+(i,j)∈E
+Jijσziσzj , (2)
+with N binary variables σzi =±1. The local ﬁelds {hi}
+and coupling{Jij} are ﬁxed and deﬁne aproblem instance
+of the Ising model. The spins occupy the vertices V of a
+graph G ={V,E} with edge setE. Solving this problem
+problem is NP-hard already for planar graphs [16], which
+means that no polynomial time algorithm to ﬁnd these
+
+=== PDF PAGE 3 ===
+3
+ground states is known and the computational eﬀort of
+all existing classical algorithms scales exponentially with
+problem size. NP-hardness refers only to the hardest
+problems, but the typical problem in our benchmarks,
+where the graph forms a two-dimensional (2D) lattice,
+is still hard since for zero local ﬁelds ( hi = 0) there ex-
+ists a spin glass phase at zero temperature. While the
+critical temperature Tc = 0 for these 2D spin glasses
+makes the problem easier than 3D spin glasses with a
+nonzeroTc > 0 [17], solving the typical problem instance
+is nevertheless non-trivial and with all known algorithms
+a super-polynomial scaling is observed. While quantum
+mechanics is not expected to reduce this scaling to poly-
+nomial, a quantum algorithm might still scale better with
+problem size N than any classical algorithm.
+We use simulated annealing (SA) [18], simulated quan-
+tum annealing (SQA) [19, 20], and a DW2 device to ﬁnd
+the ground states of the Ising model above (see Methods
+for details). The D-Wave devices [21–24] are designed
+to be physical realizations of quantum annealing using
+superconducting ﬂux qubits and programmable couplers.
+Tests on a 108-qubit D-Wave One (DW1) device [25] have
+shown that despite decoherence and coupling to a ther-
+mal bath, the device correlates well with SQA, which is
+consistent with it actually performing quantum anneal-
+ing [26, 27]. It also correlates well with the predictions of
+a quantum master equation [28], which is consistent with
+it being governed by open system quantum dynamics. It
+is well understood that the D-Wave devices, just like any
+other quantum information processing device, must be
+error-corrected in order to overcome the eﬀects of deco-
+herence and control errors. While such error correction
+has already been demonstrated [29], our study focuses on
+the native performance of the device.
+All annealing methods mentioned above are heuristic.
+They are not guaranteed to ﬁnd the global optimum in
+a single annealing run, but only ﬁnd it with a certain
+instance-dependent success probability s≤ 1. We deter-
+mine the true ground state energy using an exact belief
+propagation algorithm [30]. We then perform at least
+1000 repetitions of the annealing for each instance, count
+how often the ground state has been found by comparing
+to the exact result, and use this to estimate the success
+probabilitys for each problem instance.
+The total annealing time is deﬁned as the time to per-
+formR annealing runs, where R is the number of repeti-
+tions needed to ﬁnd the ground state at least once with
+probabilityp:
+R =
+⌈log(1−p)
+log(1−s)
+⌉
+(3)
+In order to reduce the eﬀect of calibration errors on the
+DW2, it is advantageous to repeat the annealing runs
+for several diﬀerent encodings (“gauges”) of a problem
+instance. See Methods for details.
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+10-2
+10-1
+100
+101
+102
+103
+104
+105
+106
+Total time [µs]
+A) SA, median
+Annealing time [MCS]
+5
+10
+50
+100
+200
+500
+1000
+2000
+True scaling
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+100
+101
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+B) SQA, median
+Annealing time [MCS]
+5
+10
+50
+100
+200
+500
+1000
+2000
+True scaling
+FIG. 1. Scaling of the typical time to ﬁnd a solution
+at constant annealing time. Shown is the typical (me-
+dian) time to ﬁnd a ground state with 99% probability for
+spin glasses with±1 couplings and no local ﬁeld. A) for SA,
+B) for SQA. The envelope of the curves at constantta, shown
+in red, corresponds to the minimal time at a given problem
+size N and is relevant for discussion of the asymptotic scal-
+ing. Annealing times are given in units of Monte Carlo steps
+(MCS). One MCS corresponds to one update per spin. Note
+in particular that the slope for small N is much ﬂatter at
+large annealing time (e.g., MCS = 4000) than that of the
+true scaling.
+IV. CONSIDERATIONS WHEN COMPUTING
+QUANTUM SPEEDUP
+Let us ﬁrst consider the subtleties of estimating the
+asymptotic scaling from small problem sizes N, and inef-
+ﬁciencies at small problem sizes that can fake or mask a
+speedup. In the context of annealing methods the opti-
+mal choice of the annealing time turns out to be crucial
+for estimating asymptotic scaling.
+
+=== PDF PAGE 4 ===
+4
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+0
+1
+2
+3
+4
+5
+6
+TSA/TSQA ·103
+Suboptimal
+Optimal
+FIG. 2. Pitfalls when detecting speedup. Shown is the
+speedup of SQA over SA, deﬁned as the ratio of median time
+to ﬁnd a solution with 99% probability between SA and SQA.
+Two cases are presented: a) both SA and SQA run optimally
+(i.e., the ratio of the true scaling curves shown in Figure 1),
+and there is no asymptotic speedup (solid line). b) SQA is run
+suboptimally at small sizes by choosing a ﬁxed large annealing
+time ta = 10000 MCS (dashed line). The apparent speedup
+is, however, due to suboptimal performance on small sizes
+and not indicative of the true asymptotic behavior given by
+the solid line, which displays a slowdown of SQA compared
+to SA.
+A. Asymptotic scaling: SA vs SQA
+To illustrate these issues we consider the time to so-
+lution using SA and SQA run at diﬀerent ﬁxed anneal-
+ing times ta, independent of the problem size N. The
+problem instances we choose are random couplings of
+Jij =±1 on each of the edges in a perfect Chimera graph
+ofL×L unit cells, containing N = 8L2 spins (see Meth-
+ods). We set the local ﬁelds hi = 0. Figure 1 shows the
+scaling of the median total annealing time (over 1000 dif-
+ferent random instances) for both SA and SQA to ﬁnd
+a solution with probability p = 0.99. We observe that
+at constant ta, as long as ta is long enough to ﬁnd the
+ground state almost every time, the scaling of the total
+eﬀort is at ﬁrst relatively ﬂat. The total eﬀort then rises
+more rapidly, once one reaches problem sizes for which
+the chosen annealing time is too short and the success
+probabilities are thus low, requiring many repetitions.
+Figure 1 demonstrates that no conclusion can be drawn
+from annealing (simulated or in a device) about the
+asymptotic scaling at ﬁxed annealing times. It is mis-
+leading to conclude about the asymptotic scaling from
+the initial slow increase at constant ta, and instead the
+optimal annealing time topta needs to be found for each
+problem sizeN [25, 31]. The lower envelope of the scaling
+curves (indicated in red in Figure 1) corresponds to the
+total eﬀort at an optimal size-dependent annealing time
+topta (N) and can be used to infer the asymptotic scaling.
+In fact, the initial, relatively ﬂat slope is due to subop-
+timal performance at small problem sizes N, and should
+therefore not be interpreted as speedup. To illustrate this
+we show in Figure 2 (solid line) the true “speedup” ratio
+of the scaling of SA and SQA (actually a slowdown), and
+a misleading, fake speedup (dashed line) due to using a
+constant and excessively long annealing timeta for SQA.
+Since the initial, slow increase of the total SQA eﬀort at
+constant annealing time is a lower bound for the scaling
+of the true eﬀort, the speedup slope obtained from this
+data—which depends inversely on the SQA eﬀort—is an
+upper bound, as conﬁrmed by Figure 2.
+B. Resource usage and speedup from parallelism
+A related issue is the scaling of hardware resources
+with problem size and parallelism in classical and quan-
+tum devices. To avoid mistaking a parallel speedup for
+a quantum speedup we need to scale hardware resources
+(computational gates and memory) in the same way for
+the devices we compare, and employ these resources op-
+timally. These considerations are not universal but need
+to be carefully applied for each comparison of a quantum
+algorithm and device to a classical one.
+For a problem of size N, the DW2 uses only N out of
+512 qubits and O(N) couplers and classical logical con-
+trol gates to solve a spin glass instance with N spin vari-
+ables. We denote the time it needs to solve a problem by
+TDW(N). The classical simulated annealer (or simulated
+quantum annealer) running on a single classical CPU,
+on the other hand, uses ﬁxed resources independent of
+problem size N, and we denote the time it requires to
+solve a problem by TSA(N). We consider here only the
+pure annealing times, as they are what is relevant for
+the asymptotic scaling rather than the readout or setup
+times, which scale subdominantly for large problems.
+In order to avoid confusing quantum speedup with par-
+allel speedup we thus consider as a classical counterpart
+to the DW2 a (hypothetical) special purpose parallel clas-
+sical simulated annealing device, with the same hardware
+scaling as the DW2. Simulated annealing (and simulated
+quantum annealing) is perfectly parallelizable for the bi-
+partite Chimera graphs realized by the DW2. The rea-
+son is that one Monte Carlo step (consisting of one at-
+tempted update per spin) can be performed in constant
+time, since all spins in each of the two sublattices can
+be updated simultaneously. The time to solve a problem
+on this equivalent classical device, denoted by TC(N), is
+thus related to the time TSA(N) taken by a simulated
+annealer using a ﬁxed-size classical CPU by
+TC(N)∝ 1NTSA(N), (4)
+since the latter needs time O(N) for one Monte Carlo
+step, while the former performs it in constant time.
+The quantum part of speedup is then estimated by
+comparing the times required by two devices with the
+
+=== PDF PAGE 5 ===
+5
+same hardware scaling, giving
+S(N) = TC(N)TDW(N)∝ TSA(N)TDW(N) 1N. (5)
+The factor 1/N in the speedup calculation thus discounts
+for the intrinsic parallel speedup of the analog device
+whose hardware resources scale as N. See Methods for
+an alternative derivation that leads to the same results
+(up to subleading corrections) by using a ﬁxed size device
+eﬃciently.
+V. PERFORMANCE OF D-WAVE TWO
+VERSUS SA AND SQA
+A. Comparing devices
+If the goal is to compare the performance of devices
+as optimizers, then one is interested in solving almost
+all problem instances. In this case we should run the
+devices in such a way that all but a small fraction of
+the problems can be solved. This will lead to a speedup
+deﬁned as the ratio of the quantiles (“R of Q”) of the
+time to solution, with an emphasis on the high quantiles,
+which we discuss in Sec. V C. A complementary question
+is to ask whether a device exhibits better performance
+than another for some problems. To answer this question
+we compare the time to solution individually for each
+problem instance. We then consider the quantiles of the
+ratio (“Q of R”) of the time to solution, and discuss this
+approach in Sec. V D.
+A complementary distinction is that betweenwall-clock
+time, denoting the full time to solution, and the pure an-
+nealing time. Wall-clock time is the total time to ﬁnd a
+solution and is the relevant quantity when one is inter-
+ested in the performance of a device for applications and
+has been used in Ref. [32]. It includes the setup, cooling,
+annealing and readout times on the DW2, and the setup,
+annealing and measurement time for the classical anneal-
+ing codes. The pure annealing time is simply Rta, where
+R is the number of repetitions and ta the time used for
+a single annealing run. It is the relevant quantity when
+one is interested in the intrinsic physics of the annealing
+processes and in scaling to larger problem sizes on future
+devices. We discuss both wall-clock and pure annealing
+times below.
+B. Problem instances
+The family of problem instances we use for our bench-
+marking tests employ couplings Jij on all edges of N =
+8LL′-vertex subgraphs of the Chimera graph of the DW2,
+comprisingL×L′ unit cells, with L,L′∈{ 1,..., 8}. We
+set the ﬁelds hi = 0 since nonzero values of the ﬁelds hi
+destroy the spin glass phase that exists at zero ﬁeld, thus
+making the instances easier [33]. We choose the values
+of the couplings Jij from 2r discrete values{n/r}, with
+n∈{− r,−r− 1,..., −1, 1,...,r − 1,r}, and call r the
+“range”. Thus when the range r = 1 we only pick values
+Jij =±1. This choice is the least susceptible to calibra-
+tion errors of the device, but the large degeneracy of the
+ground states in these cases makes ﬁnding a ground state
+somewhat easier. At the opposite end we consider r = 7,
+which is the upper limit given the four bits of accuracy of
+the couplings in the DW2. These problem instancess are
+harder since there are fewer degenerate minima, but they
+also suﬀer more from calibration errors in the device. In
+the Supplementary Material we present additional results
+for r = 3.
+C. Performance as an optimizer: comparing the
+scaling of hard problem instances
+1. Pure annealing time
+We start our analysis by focusing on pure annealing
+times and show in Figure 3 the scaling of the time to ﬁnd
+the ground state at least once with probability p = 0.99
+for various quantiles, from the easiest instances (1%) to
+the hardest (99%), for two diﬀerent ranges. Since we
+do not a priori know the hardness of a given problem
+instance we have to assume the worst case and perform
+a suﬃcient number of repetitions R to be able to solve
+even the hardest problem instances. Hence the scaling
+for the selected high quantile will apply to all problem
+instances we run on the optimizer.
+In all three cases (SA, SQA, DW2) we observe, for suﬃ-
+ciently largeN, that the total time to solution scales with
+exp(c
+√
+N), as reported previously for SA and SQA [25].
+The origin of the
+√
+N exponent is well understood for
+exact solvers as reﬂecting the treewidth of the Chimera
+graph (see Methods and Ref. [34]), and a similar scaling
+is observed here for the heuristic algorithms. While the
+SA and SQA codes were run at an optimized annealing
+time for each problem size N, the DW2 has a minimal
+annealing time of ta = 20µs, which is longer than the
+optimal time for all problem sizes (see Methods). There-
+fore the observed slope of the DW2 data should only be
+taken as a lower bound for the asymptotic scaling. Even
+so, we observe similar scaling for the classical codes and
+on DW2.
+2. The ratio of quantiles
+With algorithms such as SA or quantum annealing,
+where the time to solution depends on the problem in-
+stance, it is often not possible (and usually irrelevant) to
+experimentally ﬁnd the hardest problem instance. It is
+preferable to decide instead for which fraction of prob-
+lem instances one wishes to ﬁnd the ground state, which
+then deﬁnes the relevant quantile. If we target q% of
+the instances then we should consider the qth percentile
+
+=== PDF PAGE 6 ===
+6
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+10-3
+10-2
+10-1
+100
+101
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+A) SA, range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+10-1
+100
+101
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+B) SA, range 7
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+102
+103
+104
+105
+106
+107
+108
+109
+1010
+1011
+Total time [µs]
+C) SQA, range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+102
+103
+104
+105
+106
+107
+108
+109
+1010
+1011
+Total time [µs]
+D) SQA, range 7
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+10-1
+100
+101
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+E) DW, range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+Total time [µs]
+F) DW, range 7
+99%
+95%
+90%
+75%
+50%
+10%
+5%
+1%
+FIG. 3. Scaling of time to solution for the ranges r = 1 (panels A, C and E) and r = 7 (panels B, D and F). Shown
+is the scaling of the time to ﬁnd the ground state at least once with a probability p = 0.99 for various quantiles of hardness,
+for A,B) simulated annealing (SA), C,D) simulated quantum annealing (SQA) and E,F) the DW2. The SA and SQA data is
+obtained by running the simulations at an optimized annealing time for each problem size. The DW2 annealing time of 20 µs is
+the shortest possible. Note the diﬀerent vertical axis scales, and that both the DW2 and SQA have trouble solving the hardest
+instances for the large problem sizes, as indicated by the terminating lines for the highest quantiles. More than the maximum
+number of of repetitions (10000 for SQA, at least 32000 for DW2) of the annealing we performed would be needed to ﬁnd the
+ground state in those cases.
+in the scaling plots shown in Figure 3. The appropriate
+speedup quantity is then the ratio of these quantiles. De-
+noting a quantile q of a random variable X by [X]q we
+can deﬁne this as
+SRofQq (N) = [TC(N)]q[TDW(N)]q∝ [TSA(N)]q[TDW(N)]q 1N. (6)
+Plotting this quantity for the DW2 vs SA in Figure 4
+we ﬁnd no evidence for a limited quantum speedup in
+the interesting regime of large N. That is, while for all
+quantiles, and for both ranges (with the exception of the
+50th quantile and r = 1), the initial slope is positive,
+when N becomes large enough we observe a turnaround
+and eventually a negative slope, showing that SA outper-
+forms the DW2.
+Taking into account that (as discussed in Sec. IV A)
+due to the ﬁxed suboptimal annealing times the speedup
+deﬁned in Eq. (6) is an upper bound, we conclude that
+
+=== PDF PAGE 7 ===
+7
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+[TSA]q /[TDW]q ·512/N
+A) Range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+0
+1
+2
+3
+4
+5
+[TSA]q /[TDW]q ·512/N
+B) Range 7
+50%
+75%
+90%
+95%
+99%
+FIG. 4. Speedup for ratio of quantiles for the DW2
+compared to SA. A) For instances with range r = 1. B)
+For instances with range r = 7. Shown are curves from the
+median (50th quantile) to the 99th quantile. 16 gauges were
+used. In these plots we multiplied Eq. (6) by 512 so that
+the speedup value at N = 512 directly compares one DW2
+processor against one classical CPU.
+the DW2 does not exhibit a speedup over SA for this
+particular benchmark.
+3. Wall-clock time
+While not as interesting from a complexity theory
+point of view, it is instructive to also compare wall-clock
+times for the above benchmarks, as we do in Figure 5. We
+observe that the DW2 performs similarly to SA run on a
+single classical CPU, for suﬃciently large problem sizes
+and at high range values. Note that the large constant
+programming overhead of the DW2 masks the exponen-
+tial increase of time to solution that is obvious in the
+plots of pure annealing time.
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+101
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+A) Range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+102
+103
+104
+105
+106
+107
+108
+Total time [µs]
+B) Range 7
+99%
+95%
+90%
+75%
+50%
+FIG. 5. Comparing wall-clock times A comparison of the
+wall-clock time to ﬁnd the solution with probability p = 0.99
+for SA running on a single CPU (dashed lines) compared to
+the DW2 (solid lines) using 16 gauges. A) for range r = 1,
+B) for range r = 7. Shown are curves from the median (50th
+quantile) to the 99th quantile. The large constant program-
+ming overhead of the DW2 masks the exponential increase of
+time to solution that is obvious in the plots of pure annealing
+time. Results for a single gauge are shown in the Supplemen-
+tary Material.
+D. Instance-by-instance comparison
+1. Total time to solution
+We now focus on the question of whether the DW2
+exhibits a limited quantum speedup for some fraction of
+the instances of our benchmark set. To this end we per-
+form individual comparisons for each instance and show
+in Figure 6A-B the ratios of time to solution between
+the DW2 and SA, considering only the pure annealing
+time. We ﬁnd a wide scatter, which is not surprising
+since we previously found that DW1 performs like a sim-
+ulated quantum annealer, but correlates less well with a
+simulated classical annealer [25]. We ﬁnd that while the
+DW2 is sometimes up to 10 × faster in pure annealing
+time, there are many cases where it is ≥ 100× slower.
+Considering the wall-clock times, the advantage of the
+DW2 seen in Figure 6A-B for some instances tends to
+
+=== PDF PAGE 8 ===
+8
+10-1 100 101 102 103 104 10510-1
+100
+101
+102
+103
+104
+105
+Total time TDW [ms]
+A) Range 1
+Pure annealing time
+averaging 16 gauges
+10-1 100 101 102 103 104 10510-1
+100
+101
+102
+103
+104
+105
+C) Range 1
+Wall-clock time
+single gauge
+10-1 100 101 102 103 104 10510-1
+100
+101
+102
+103
+104
+105
+E) Range 1
+Wall-clock time
+16 gauges
+10-1 100 101 102 103 104 105
+Total time TSA [ms]
+10-1
+100
+101
+102
+103
+104
+105
+Total time TDW [ms]
+B) Range 7
+10-1 100 101 102 103 104 105
+Total time TSA [ms]
+10-1
+100
+101
+102
+103
+104
+105
+D) Range 7
+10-1 100 101 102 103 104 105
+Total time TSA [ms]
+10-1
+100
+101
+102
+103
+104
+105
+F) Range 7
+SA faster
+DW2 faster
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+20
+Instances
+FIG. 6. Instance-by-instance comparison of annealing times and wall-clock times. Shown is a scatter plot of the
+pure annealing time for the DW2 compared to a simulated classical annealer (SA) using an average over 16 gauges on the DW2.
+A) DW2 compared to SA for r = 1, B) DW2 compared to SA for r = 7. The color scale indicates the number of instances
+in each square. Instances below the diagonal red line are faster on the DW2, those above are faster classically. Instances for
+which the DW2 did not ﬁnd the solution with 10000 repetitions per gauge are shown at the top of the frame (no such instances
+were found for SA). Panels C) and D) show wall-clock times using a single gauge on the DW2. Panels E) and F) show the
+wall-clock time for DW2 using 16 gauges. N = 503 in all cases.
+disappear, since it is penalized by the need for program-
+ming the device with multiple diﬀerent gauge choices (see
+Methods). Figure 6C-D shows that for one gauge choice
+there are some instances, for r = 7, where the DW2 is
+faster, but many instances where it never ﬁnds a solution.
+Using 16 gauges the DW2 ﬁnds the solution in most cases,
+but is always slower than the classical annealer on a clas-
+sical CPU for r = 1, as can be seen in Figure 6E-F. For
+r = 7 the DW2 is sometimes faster than a single classical
+CPU. Overall, the performance of the DW2 is better for
+r = 7 than for r = 1, and comparable to SA only when
+just the pure annealing time is considered. The diﬀerence
+to the results of Ref. [32] is due to the use of optimized
+classical codes using a full CPU in our comparison, as
+opposed to the use of generic optimization codes using
+only a single CPU core in Ref. [32].
+2. Quantiles of ratio
+Comparisons of the absolute time to solution are of lim-
+ited importance compared to the real question of scaling,
+which can give insight into the behavior of future devices
+that can solve larger problems. In Section V C we did not
+ﬁnd evidence for a limited quantum speedup when con-
+sidering all instances. Now we consider instead whether
+there is such a speedup for a subset of problem instances.
+To this end we study the scaling of the ratios of the time
+to solution for individual instances, and display in Fig-
+ure 7 the scaling of various quantiles of the ratio
+SQofRq (N) =
+[ TC(N)
+TDW(N)
+]
+q
+∝
+[TSA(N)
+TDW(N)
+1
+N
+]
+q
+. (7)
+For r = 7 all the quantiles bend down for suﬃciently
+large N, so that there is no evidence of a limited quan-
+tum speedup. Yet, now there seems to be an indication
+of such a speedup compared to SA in the high quan-
+tiles for r = 1. However, for the reasons discussed in
+Sec. IV A, one must be careful not to overinterpret this
+as solid evidence for a speedup since the instances con-
+tributing here are not run at the optimal annealing time.
+Moreover, as discussed in the Supplementary Material,
+we ﬁnd no evidence of a limited quantum speedup for
+r = 3. Thus, while perhaps encouraging from the per-
+
+=== PDF PAGE 9 ===
+9
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+103
+[TSA/TDW]q ·512/N
+A) Range 1
+√
+8
+√
+32
+√
+72
+√
+128
+√
+200
+√
+288
+√
+392
+√
+512
+Linear problem size 
+√
+N
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+[TSA/TDW]q ·512/N
+B) Range 7
+99%
+95%
+90%
+75%
+50%
+10%
+5%
+1%
+FIG. 7. Speedup for quantiles of the ratio of the DW2
+compared to SA, for A) r = 1, B) r = 7. No asymptotic
+speedup is visible for any of the quantiles atr = 7, while some
+evidence of a limited quantum speedup (relative to SA) is seen
+for quantiles higher than the median at r = 1. As in Figure 4
+we multiplied Eq. (7) by 512 so that the speedup value at
+N = 512 directly compares one DW2 processor against one
+classical CPU.
+spective of a search for a (limited) quantum speedup,
+more work is needed to establish that the r = 1 result
+persists for those instances for which one can be sure that
+the annealing time is optimal.
+E. Arguments for and against a speedup on the
+DW2
+Let us consider in some more detail the speedup re-
+sults discussed above. We have argued that the apparent
+limited quantum speedup seen in ther = 1 results of Fig-
+ure 7 must be treated with care due to the suboptimal
+annealing time. It might then be tempting to argue that,
+strictly speaking, the comparison with suboptimal-time
+instances cannot be used for claiming a slowdown either,
+i.e., that we simply cannot infer how the DW2 will be-
+have for optimal-time instances by basing the analysis on
+suboptimal times only.
+However, let us make the assumption that, along with
+the total time, the optimal annealing time topta (N) also
+grows with problem size N. This assumption is sup-
+ported by the SA and SQA data shown in Figure 1, and is
+plausible as long as the growing annealing time does not
+become counterproductive due to coupling to the thermal
+bath [35]. By deﬁnition, TDW(N,t opta (N))≤TDW(N,t a),
+where we have added the explicit dependence on the an-
+nealing time, and ta is a ﬁxed annealing time. Thus
+S(N) = TC(N)TDW(N,t a) 1N (8)
+≤ TC(N)
+TDW(N,t opta (N))
+1
+N =Sopt(N).
+Under our assumption, topta (N)<t a for small N, but for
+suﬃciently large N the optimal annealing time grows so
+thattopta (N)≥ta. Thus there must be a problem sizeN∗
+at which topta (N∗) = ta, and hence at this special prob-
+lem size we also have S(N∗) = Sopt(N∗). However, as
+mentioned in Section V C 1, the minimal annealing time
+of 20µs is longer than the optimal time for all problem
+sizes (see Supplementary Material), i.e., N∗ > 503 in our
+case. Therefore, if S(N) is a decreasing function ofN for
+suﬃciently largeN, as we indeed observe in all our “R of
+Q” results (recall Figure 4), then since Sopt(N)≥S(N)
+and S(N∗) =Sopt(N∗), it follows thatSopt(N) too must
+be a decreasing function for a range of N values, at least
+untilN∗. This shows that the slowdown conclusion holds
+also for the case of optimal annealing times.
+For the instance-by-instance comparison (“Q of R”),
+no such conclusion can be drawn for the subset of in-
+stances (at r = 1) corresponding to the high quantiles
+whereSQofRq (N) is an increasing function ofN. This lim-
+ited quantum speedup may or may not persist for larger
+problem sizes or if optimal annealing times are used.
+VI. DISCUSSION
+In this work we have discussed challenges in prop-
+erly deﬁning and assessing quantum speedup, and used
+comparisons between a DW2 and simulated classical and
+quantum annealing to illustrate these challenges. Strong
+or provable quantum speedup, implying speedup of a
+quantum algorithm or device over any classical algo-
+rithm, is an elusive goal in most cases and one thus usu-
+ally deﬁnes quantum speedup as a speedup compared to
+the best available classical algorithm. We have intro-
+duced the notion of limited quantum speedup , referring
+to a more restricted comparison to “corresponding” clas-
+sical algorithms solving the same task, such as a quantum
+annealer compared to a classical annealing algorithm.
+Quantum speedup is most easily deﬁned and detected
+in the case of an exponential speedup, where the de-
+tails of the quantum or classical hardware do not matter
+since they only contribute subdominant polynomial fac-
+tors. In the case of an unknown or a polynomial quantum
+speedup one must be careful to fairly compare the clas-
+sical and quantum devices, and, in particular, to scale
+hardware resources in the same manner. Otherwise par-
+
+=== PDF PAGE 10 ===
+10
+allel speedup might be mistaken for (or hide) quantum
+speedup.
+An experimental determination of quantum speedup
+suﬀers from the problem that all measurements are lim-
+ited to ﬁnite problem sizes N, while we are most inter-
+ested in the asymptotic behavior for large N. To arrive
+at a reliable extrapolation it is advantageous to focus the
+scaling analysis on the part of the execution time that be-
+comes dominant for large problem sizes N, which in our
+example is the pure annealing time, and not the total
+wall-clock time. For each problem size we furthermore
+need to ensure that neither the quantum device nor the
+classical algorithm are run suboptimally, since this might
+hide or fake quantum speedup.
+If the time to solution depends not only on the prob-
+lem size N but also on the speciﬁc problem instance,
+then one needs to carefully choose the relevant quantity
+to benchmark. We argued that in order to judge the
+performance over many possible inputs of a randomized
+benchmark test, one needs to study the high quantiles,
+and deﬁne speedup by considering the ratio of the quan-
+tiles of time to solution. If, on the other hand, one is
+interested in ﬁnding out whether there is a speedup for
+some subset of problem instances, then one can instead
+perform an instance-by-instance comparison by focusing
+on the quantiles of the ratio of time to solution.
+We note that it is not yet known whether a quantum
+annealer or even a perfectly coherent adiabatic quantum
+optimizer can exhibit (limited) quantum speedup at all
+[36], although there are promising indications from sim-
+ulation [20] and experiments on spin glass materials [37].
+Experimental tests will thus be important. We chose to
+focus here on the benchmark problem of random zero-
+ﬁeld Ising problems parametrized by the range of cou-
+plings. We did not ﬁnd evidence of limited quantum
+speedup for the DW2 relative to simulated annealing in
+our particular benchmark set when we considered the ra-
+tio of quantiles of time to solution, which is the relevant
+quantity for the performance of a device as an optimizer.
+We note that random spin glass problems, while an in-
+teresting and important physics problem, may not be the
+most relevant benchmark for practical applications, for
+which other benchmarks may have to be studied.
+When we focus on subsets of problem instances in an
+instance-by-instance comparison, we observe a possibil-
+ity for a limited quantum speedup for a fraction of the
+instances [38]. However, since the DW2 runs at a subop-
+timal annealing time for most of the corresponding prob-
+lem instances, the observed speedup may be an artifact
+of attempting to solve the smaller problem sizes using
+an excessively long annealing time. This diﬃculty can
+only be overcome by ﬁxing the issue of suboptimal an-
+nealing times, e.g., by ﬁnding problem classes for which
+the annealing time is demonstrably already optimal.
+There are several candidate explanations for the ab-
+sence of a clear quantum speedup in our tests. Perhaps
+quantum annealing simply does not provide any advan-
+tages over simulated (quantum) annealing or other clas-
+sical algorithms for the problem class we have studied
+[17]; or, perhaps, the noisy implementation in the DW2
+cannot realize quantum speedup and is thus not better
+than classical devices. Alternatively, a speedup might be
+masked by calibration errors, improvements might arise
+from error correction [29], or other problem classes might
+exhibit a speedup [39]. Future studies will probe these
+alternatives and aim to determine whether one can ﬁnd
+a class of problem instances for which an unambiguous
+speedup over classical hardware can be observed.
+METHODS
+Simulated annealing. Simulated annealing [18] per-
+forms a Monte Carlo simulation on the model of Eq. (2),
+starting from a random initial state at high temperature.
+During the course of the simulation the temperature is
+lowered towards zero. At the end of the annealing schedule,
+at low temperature, the spin conﬁguration of the system
+ends up in in a local minimum. By repeating the simulation
+many times one may hope to ﬁnd the global minimum. More
+speciﬁcally, SA is performed by sequentially iterating through
+all spins and proposing to ﬂip them based on a Metropolis
+algorithm using the Boltzmann weight of the conﬁguration
+at ﬁnite temperature. During the annealing schedule we
+linearly increase the inverse temperature over time from an
+initial value of β = 0.1 to a ﬁnal value of β = 3r.
+For the case of ±1 couplings ( r = 1), and for r = 3 we
+use a highly optimized multispin-coded algorithm based on
+Refs. [40, 41]. This algorithm performs updates on 64 copies
+in parallel, updating all at once. For the r = 7 simulations
+we use a code optimized for bipartite lattices [42]. Imple-
+mentations of the simulated annealing codes are available in
+Ref. [42]. We used the code an ms r1 nf for r = 1, the code
+an ms r3 nf forr = 3 and the code an ss ge nf bp forr = 7.
+Quantum annealing. To perform quantum annealing one
+maps the Ising variables σzi to Pauli z-matrices and adds a
+transverse magnetic ﬁeld in the x-direction to induce quan-
+tum ﬂuctuations, thus obtaining the time-dependent quantum
+Hamiltonian
+H(t) =−A(t)
+∑
+i
+σxi +B(t)HIsing , t ∈ [0,t a] . (9)
+The annealing schedule starts at time t = 0 with just the
+transverse ﬁeld term (i.e., B(0) = 0) andA(0)≫kBT , where
+T is the temperature, which is kept constant. The system is
+then in a simple quantum state with (to an excellent approx-
+imation) all spins aligned in the x direction, corresponding
+to a uniform superposition over all 2 N computational basis
+states (products of eigenstates of the σzi ). During the
+annealing process the problem Hamiltonian magnitude
+B(t) is increased and the transverse ﬁeld A(t) is decreased,
+ending with A(ta) = 0, and couplings much larger than
+the temperature: B(ta) max(maxij|Jij|, maxi|hi|) ≫ kBT .
+At this point the system will again be trapped in a local
+minimum, and by repeating the process one may hope to
+ﬁnd the global minimum. Quantum annealing can be viewed
+as a ﬁnite-temperature variant of the adiabatic quantum
+algorithm [8].
+
+=== PDF PAGE 11 ===
+11
+Simulated quantum annealing. Simulated quantum
+annealing (SQA) [19, 20] is an annealing algorithm based
+on discrete-time path-integral quantum Monte Carlo simula-
+tions of the transverse ﬁeld Ising model, following the above
+annealing schedule at a constant low temperature, but using
+Monte Carlo dynamics instead of the open system evolution
+of a quantum system. This amounts to sampling the world
+line conﬁgurations of the quantum Hamiltonian (9) while
+slowly changing the couplings. The algorithm we used is
+similar to that of Ref. [43], but uses cluster updates along
+the imaginary time direction, typically with 64 time slices.
+Our annealing schedule is linear, as shown in Figure 9B): the
+Ising couplings are ramped up linearly while the transverse
+ﬁeld is ramped down linearly over time.
+The layout of the D-Wave Two Vesuvius chip. The
+Chimera graph of the DW2 used in our tests is shown in
+Figure 8. Each unit cell is a balanced K4,4 bipartite graph.
+In the ideal Chimera graph (of 512 qubits) the degree of
+each vertex is 6. For the scaling analysis we considered
+L×L′ rectangular sub-lattices of the Chimera graph, and
+restricted our simulations and tests on the DW2 to the
+subset of functional qubits within these subgraphs. More
+generally the N = 2cL2-vertex Chimera graph comprises an
+L× L grid of Kc,c unit cells, and the (so-called TRIAD)
+construction of Ref. [34] can be used to embed the complete
+L-vertex graph KL, where L = 4c. The treewidth of the
+N = 2cL2-vertex Chimera graph comprising an L×L grid of
+Kc,c unit cells is cL + 1∼O (
+√
+N) [34]. The treewidth of the
+512-vertex Chimera graph shown in Figure 8 is 33. Dynamic
+programming can always ﬁnd the true ground state of the
+corresponding Ising model in a time that is exponential in
+the treewidth, i.e., that scales as exp( c
+√
+N).
+Annealing schedule of the D-Wave Two device. Nomi-
+nally, the DW2 performs annealing by implementing the time-
+dependent Hamiltonian H(t) = −A(t)∑iσxi + B(t)HIsing,
+where t ∈ [0,t a]. However, in reality the transverse ﬁeld
+varies somewhat and the actual Hamiltonian realized is de-
+scribed more accurately as
+H(t) =−
+∑
+i
+Ai(t)σxi +B(t)HIsing (10)
+The annealing schedulesAi(t) andB(t) used in the device are
+shown in ﬁgure 9A). We used the minimal annealing time of
+ta = 20µs provided by the device since this always gave us
+the shortest total time to solution (see below). The source
+of this minimal annealing time is engineering restrictions in
+the DW2. There are four annealing lines, and their synchro-
+nization becomes harder for faster annealers. The ﬁltering of
+the input control lines introduces some additional distortion
+in the annealing control.
+The DW2 is programmed by providing the sets of couplings
+Jij and local longitudinal ﬁelds hi (which together deﬁne
+a problem instance by specifying HIsing), the number of
+repetitionsR of the annealing to be performed, the annealing
+time ta, and a number of other parameters which were
+included in our wall-clock results and which are described
+below.
+Gauge averaging on the D-Wave device. Calibration
+inaccuracies cause the couplings Jij and hi that are realized
+in the DW2 to be slightly diﬀerent from the intended and
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+FIG. 8. Qubits and couplers in the D-Wave Two de-
+vice. The DW2 “Vesuvius” chip consists of an 8 × 8 two-
+dimensional square lattice of eight-qubit unit cells, with open
+boundary conditions. The qubits are each denoted by circles,
+connected by programmable inductive couplers as shown by
+the lines between the qubits. Of the 512 qubits of the de-
+vice located at the University of Southern California used in
+this work, the 503 qubits marked in green and the couplers
+connecting them are functional.
+programmed values (∼ 5% variation). These calibration er-
+rors can sometimes lead to the ground states of the model
+realized in the device being diﬀerent from the perfect model.
+To overcome these problems it is advantageous to perform
+annealing on the device with multiple encodings of a prob-
+lem instance into the couplers of the device [25]. To realize
+these diﬀerent encodings we use a gauge freedom in realiz-
+ing the Ising spin glass: for each qubit we can freely deﬁne
+which of the two qubits states corresponds to σi = +1 and
+σi =−1. More formally this corresponds to a gauge trans-
+formation that changes spins σzi → aiσzi , with ai =±1 and
+the couplings as Jij → aiajJij and hi → aihi. The simu-
+lations are invariant under such a gauge transformation, but
+(due to calibration errors which break the gauge symmetry)
+the results returned by the DW2 are not.
+If the success probability of one annealing run is denoted
+by s, then the probability of failing to ﬁnd the ground state
+afterR independent repetitions (annealing runs) each having
+
+=== PDF PAGE 12 ===
+12
+0.0 0.2 0.4 0.6 0.8 1.0
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9Energy [Ghz]
+A) DW scheduleA(t)
+B(t)
+T
+0.0 0.2 0.4 0.6 0.8 1.0
+Time t/tf
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6Energy [a.u.]
+B) SQA scheduleA(t)
+B(t)/r
+T
+FIG. 9. Annealing schedules. A) The amplitude of the
+median transverse ﬁeld A(t) (decreasing, blue) and the longi-
+tudinal couplingsB(t) (increasing, red) as a function of time.
+The device temperature of T = 18mK is indicated by the
+black horizontal dashed line. B) The linear annealing sched-
+ule used in simulated quantum annealing.
+success probability s is (1−s)R, and the total success proba-
+bility of ﬁnding the ground state at least once inR repetitions
+is
+P = 1− (1−s)R. (11)
+Thus the number of repetitions needed to ﬁnd the ground
+state at least once with probability p is found by solving p =
+1− (1−s)R, i.e., Eq. (3).
+Following [25], after splitting these repetitions into R/G
+repetitions for each of G gauge choices with success probabil-
+ities sg, the total success probability becomes
+P (G) = 1−
+G∏
+g=1
+(1−sg)R/G. (12)
+If we denote bys the geometric mean of the success probabil-
+ities of the individual gauges
+s = 1−
+G∏
+g=1
+(1−sg)1/G, (13)
+then Eq. (12) can be written in the same form as Eq. (11):
+P (G) = 1− (1−s)R. (14)
+N tp [ms] tr [µs]
+8 14.7± 0.3 51.0± 0.2
+16 14.8± 0.3 53.0± 0.2
+31 14.8± 0.3 57.9± 0.2
+47 14.9± 0.4 60.6± 0.2
+70 15.0± 0.4 64.5± 0.2
+94 15.2± 0.3 68.3± 0.2
+126 15.6± 0.2 73.1± 0.2
+158 15.5± 0.2 78.0± 0.2
+198 15.5± 0.2 80.8± 0.2
+238 15.7± 0.2 83.5± 0.2
+284 15.8± 0.2 83.6± 0.1
+332 16.0± 0.3 87.1± 0.2
+385 16.6± 1.0 87.1± 0.6
+439 16.6± 0.1 90.4± 0.1
+503 16.6± 0.2 90.5± 0.1
+TABLE I. Wallclock times on the DW2. Listed are mea-
+sured programming timestp and annealing plus readout times
+tr (for a pure annealing time of 20µs) on the DW2 for various
+problem sizes.
+N≤ 238 N = 284, 332 N = 385, 439 N = 503
+1000 2000 5000 10000
+TABLE II. Repetitions of annealing runs used on the
+DW2. This table summarizes the total number of repetitions
+used to estimate the success probabilities on the DW2 for
+various system sizes.
+We thus use the geometric mean s in our scaling analysis.
+Wall-clock and annealing times. We show results mainly
+for pure annealing times, but also for wall clock times. The
+pure annealing time for R repetitions is straightforwardly de-
+ﬁned as
+tanneal =Rta. (15)
+Wall clock times include the time for programming, cooling,
+annealing, readout and communication. We have performed
+tests on the DW2 with varying numbers of repetitions R and
+performed a linear regression analysis to ﬁt the total wall clock
+time for each problem size to the formtp(N)+Rtr(N), where
+tp(N) is the total preprocessing time and tr(N) is the total
+run time per repetition for an N-spin problem. The values
+of tp and tr are summarized in Table I. With these numbers
+we obtain the total wall clock time for R annealing runs split
+overG gauges (with R/G annealing runs each) as
+ttotal(N) =Gtp(N) +Rtr(N). (16)
+To calculate pure annealing times for the simulated an-
+nealer we determine the total eﬀort in units of of Monte Carlo
+updates (attempted spin ﬂips), and then convert to time by
+dividing by the number of updates that the codes can perform
+per second [42]. Our classical reference CPU is an 8-core Intel
+Xeon E5-2670 CPU, which was introduced around the same
+time as the DW2.
+To obtain wall-clock times we measure the actual time
+needed to perform a simulation on the same Intel Xeon
+
+=== PDF PAGE 13 ===
+13
+102 103 104 105104
+105
+106
+107
+108
+109
+Total annealing time [MCS]
+A) SA, range 1
+101 102101
+102
+103
+104
+105
+106
+Total annealing time [µs]
+C) DW, range 1
+102 103 104 105
+Annealing time [MCS]
+105
+106
+107
+108
+109
+1010
+Total annealing time [MCS]
+B) SA, range 7
+101 102
+Annealing time [µs]
+102
+103
+104
+105
+106
+Total annealing time [µs]
+D) DW, range 7
+ 99%
+95%
+90%
+75%
+50%
+10%
+5%
+1%
+FIG. 10. Optimal annealing times for the simulated annealer and for the D-Wave device. Shown is the total
+eﬀort R(ta)ta as a function of annealing time ta for various quantiles of problems with r = 1 and r = 7 (see Supplementary
+Information for r = 3). A) and B) SA, where the minimum of the total eﬀort determines the optimal annealing time topta . C)
+and D) DW2, where we ﬁnd a monotonically increasing total eﬀort, meaning that the optimal time topta is always shorter than
+the minimal annealing time of 20µs.
+E5-2670 CPU. Since the multi-spin codes perform at 64
+repetitions in parallel, we always make at least 1024 rep-
+etitions when running 16 threads on 8 cores. This causes
+the initially ﬂatter scaling in wall-clock times as compared
+to pure annealing times. The measured initialization time
+includes all preparations needed for the algorithm to run,
+and the spin ﬂip rate was computed for the 99% quantile
+for 503 qubits. For smaller system sizes or lower quan-
+tiles, the spin ﬂip rate is lower since the problems are not
+hard enough to beneﬁt from parallelization over several cores.
+Optimal annealing times. As discussed in the main text
+we need to determine the optimal annealing timetopta for every
+problem size N in order to make meaningful extrapolations
+of the time to ﬁnd a solution. To determine topta we perform
+annealing runs at diﬀerent annealing times ta, determine the
+success probabilities s(ta) of 1000 instances, and from them
+the required number of repetitions R(ta) to ﬁnd the ground
+state with a probability of 99%. The total eﬀort R(ta)ta di-
+verges for ta → 0 and ta →∞ and has a minimum at an
+optimal annealing time topta . The reason is that for short ta
+the success probability goes to zero, which leads to a diverg-
+ing total eﬀort, while for large ta the time also grows since
+one always needs to perform at least one annealing run and
+the total eﬀort is thus bounded from below by ta.
+In Figure 10 (left) we plot various quantiles of the total
+eﬀort R(ta)ta for the simulated annealer as a function of
+ta to determine the optimal annealing time topta . For the
+DW2 we ﬁnd, as shown in Figure 10 (right) that the minimal
+annealing time of 20 µs is always longer than the optimal
+time and we thus always use the device in a suboptimal
+mode. As a consequence the scaling of time to solution is
+underestimated, as explained in detail in the main text.
+Alternative consideration of parallel versus quantum
+speedup. In the consideration of how to disentangle paral-
+lel and quantum speedup it may seem more natural to as-
+sume ﬁxed computational resources of a given device. We
+will show that this leads to the same scaling as Eq. (5).
+We might be tempted to deﬁne the speedup in this case as
+S(N) = TSA(N)/TDW(N). However, in this manner only a
+fractionN/512 of the qubits are used while the classical code
+uses the available CPU fully, independently of problem size.
+This suboptimal use of the DW2 may again be incorrectly
+interpreted as speedup. The same issue would appear when
+comparing a classical analog annealer against a classical sim-
+ulated annealer.
+As in the discussion of optimal annealing times above, we
+need to ensure an optimal implementation to correctly assess
+speedup. For the DW2 (or a similarly constructed classical
+analog annealer) this means that one should always attempt
+to make use of the entire device: we should perform as many
+annealing runs in parallel as possible. Let us denote the ma-
+chine size by M (e.g., M = 512 in the DW2 case). With this
+
+=== PDF PAGE 14 ===
+14
+we deﬁne a new, optimized, annealing time
+T optDW(N) =TDW(N) 1⌊M/N⌋, (17)
+and the correct speedup in our case is then
+S(N) = TSA(N)T optDW(N) = TSA(N)TDW(N)⌊MN⌋. (18)
+Omitting the ﬂoor function (⌊⌋ ), which only gives subdom-
+inant corrections in the limit M→∞ we recover Eq. (5).
+The conclusion that the speedup function includes a fac-
+tor proportional to 1 /N is validated from yet another per-
+spective, that focuses on the annealing time. Instead of em-
+bedding C≡⌊ M/N⌋ diﬀerent instances in parallel, we can
+embed C replicas of a given instance. Each replica r (where
+r ∈ {1,...,C }) results in a guess Er,i of the ground state
+energy for the ith run, and we can take Ei = minrEr,i as the
+proposed solution for that run. If the replicas are indepen-
+dent and each has equal probability s of ﬁnding the ground
+state, then using C replicas the probability that at least one
+will ﬁnd the ground state is s′ = 1− (1−s)C, which is also
+the probability that Ei is the ground state energy for the ith
+run. Repeating the argument leading to Eq. (3), the number
+of repetitions required to ﬁnd the ground state at least once
+with probability p is then:
+R′ =
+⌈ log(1−p)
+log(1−s′)
+⌉
+=
+⌈ log(1−p)
+C log(1−s)
+⌉
+= RC. (19)
+Focusing on the pure annealing time we haveT optDW(N) =taR′
+and TDW(N) =taR, which yields Eq. (17).
+Acknowledgements
+We thank N. Allen, M. Amin, E. Farhi, M. Mohseni, H.
+Neven, and C. McGeoch for useful discussions and com-
+ments. We are grateful to I. Zintchenko for providing the
+an ss ge nf bp simulated annealing code before publication
+of the code with Ref. [42]. This project was supported by
+the Swiss National Science Foundation through the National
+Competence Center in Research NCCR QSIT, the ARO
+MURI Grant No. W911NF-11-1-0268, ARO grant number
+W911NF-12-1-0523, the Lockheed Martin Corporation and
+Microsoft Research. We acknowledge hospitality of the Aspen
+Center for Physics, supported by NSF grant PHY-1066293.
+[1] Shor, P. W. Algorithms for quantum computation: dis-
+crete logarithms and factoring. Foundations of Computer
+Science, 1994 Proceedings., 35th Annual Symposium on
+124–134 (20-22 Nov 1994). URL http://dx.doi.org/
+10.1109/SFCS.1994.365700.
+[2] Feynman, R. Simulating physics with computers. In-
+ternational Journal of Theoretical Physics 21, 467–488
+(1982). URL http://dx.doi.org/10.1007/BF02650179.
+[3] Lloyd, S. Universal quantum simulators. Science 273,
+1073–1078 (1996). URL http://www.sciencemag.org/
+content/273/5278/1073.abstract.
+[4] Berry, D. W., Childs, A. M., Cleve, R., Kothari, R. &
+Somma, R. D. Exponential improvement in precision for
+simulating sparse hamiltonians. arXiv:1312.1414 (2013).
+URL http://arXiv.org/abs/1312.1414.
+[5] Parberry, I. Parallel speedup of sequential machines: a
+defense of parallel computation thesis. SIGACT News
+18, 54–67 (1986).
+[6] Smolin, J. A., Smith, G. & Vargo, A. Oversimplifying
+quantum factoring. Nature 499, 163–165 (2013). URL
+http://dx.doi.org/10.1038/nature12290.
+[7] Kadowaki, T. & Nishimori, H. Quantum annealing in
+the transverse Ising model. Phys. Rev. E 58, 5355–
+5363 (1998). URL http://link.aps.org/doi/10.1103/
+PhysRevE.58.5355.
+[8] Farhi, E. et al. A quantum adiabatic evolution algorithm
+applied to random instances of an NP-complete problem.
+Science 292, 472–475 (2001). URL http://dx.doi.org/
+10.1126/science.1057726.
+[9] Grover, L. K. Quantum mechanics helps in searching for
+a needle in a haystack. Physical Review Letters 79, 325–
+328 (1997). URL http://link.aps.org/doi/10.1103/
+PhysRevLett.79.325.
+[10] Bennett, C., Bernstein, E., Brassard, G. & Vazirani, U.
+Strengths and weaknesses of quantum computing. SIAM
+Journal on Computing 26, 1510–1523 (1997). URL http:
+//dx.doi.org/10.1137/S0097539796300933.
+[11] Papageorgiou, A. & Traub, J. F. Measures of
+quantum computing speedup. Phys. Rev. A 88,
+022316 (2013). URL http://link.aps.org/doi/10.
+1103/PhysRevA.88.022316.
+[12] Pomerance, C. A tale of two sieves. Notices of the Amer.
+Math. Soc. 43, 1473–1485 (1996). URL http://www.ams.
+org/notices/199612/pomerance.pdf.
+[13] Such a proof seems unlikely to be found any time soon
+since it would imply that factoring is not in the com-
+plexity class P (polynomial) and thus P and NP (non-
+deterministic polynomial) are distinct, solving the long-
+standing P versus NP question.
+[14] For example, it may be the case, though it seems unlikely,
+that a classiﬁed polynomial-time factoring algorithm is
+available to parts of the intelligence community.
+[15] We compare quantum annealing only to classical simu-
+lated annealing and simulated quantum annealing in this
+study. Another example of a limited quantum speedup
+would be Shor’s factoring algorithm running on a fully co-
+herent quantum computer vs a classical computer where
+the period ﬁnding using a quantum circuit has been re-
+placed by a classical period ﬁnding algorithm.
+[16] Barahona, F. On the computational complexity of Ising
+spin glass models. Journal of Physics A: Mathematical
+and General 15, 3241 (1982). URL http://stacks.iop.
+org/0305-4470/15/i=10/a=028.
+[17] Helmut G. Katzgraber, R. S. A., Firas Hamze. Glassy
+Chimeras are blind to quantum speedup: Designing bet-
+ter benchmarks for quantum annealing machines (2014).
+URL http://arxiv.org/abs/1401.1546. 1401.1546.
+[18] Kirkpatrick, S., Gelatt, C. D. & Vecchi, M. P. Opti-
+mization by simulated annealing. Science 220, 671–680
+(1983). URL http://dx.doi.org/10.1126/science.
+
+=== PDF PAGE 15 ===
+15
+220.4598.671.
+[19] Martoˇ n´ ak, R., Santoro, G. E. & Tosatti, E. Quan-
+tum annealing by the path-integral Monte Carlo method:
+The two-dimensional random Ising model. Phys. Rev. B
+66, 094203 (2002). URL http://link.aps.org/doi/10.
+1103/PhysRevB.66.094203.
+[20] Santoro, G. E., Martoˇ n´ ak, R., Tosatti, E. & Car, R. The-
+ory of quantum annealing of an Ising spin glass. Science
+295, 2427–2430 (2002). URL http://dx.doi.org/10.
+1126/science.1068774.
+[21] Harris, R. et al. Experimental investigation of an eight-
+qubit unit cell in a superconducting optimization pro-
+cessor. Phys. Rev. B 82, 024511 (2010). URL http:
+//link.aps.org/doi/10.1103/PhysRevB.82.024511.
+[22] Johnson, M. W. et al. A scalable control system for a
+superconducting adiabatic quantum optimization proces-
+sor. Superconductor Science and Technology 23, 065004
+(2010). URL http://stacks.iop.org/0953-2048/23/i=
+6/a=065004.
+[23] Berkley, A. J. et al. A scalable readout system for
+a superconducting adiabatic quantum optimization sys-
+tem. Superconductor Science and Technology 23, 105014
+(2010). URL http://stacks.iop.org/0953-2048/23/i=
+10/a=105014.
+[24] Johnson, M. W. et al. Quantum annealing with man-
+ufactured spins. Nature 473, 194–198 (2011). URL
+http://dx.doi.org/10.1038/nature10012.
+[25] Boixo, S. et al. Quantum annealing with more than one
+hundred qubits (2013). URL http://arxiv.org/abs/
+1304.4595. 1304.4595.
+[26] Smolin, J. A. & Smith, G. Classical signature of quantum
+annealing (2013). URL http://arxiv.org/abs/1305.
+4904. arXiv:1305.4904.
+[27] Wang, L. et al. Comment on: ‘Classical signature of
+quantum annealing’ (2013). URL http://arxiv.org/
+abs/1305.5837. arXiv:1305.5837.
+[28] Boixo, S., Albash, T., Spedalieri, F. M., Chancellor, N.
+& Lidar, D. A. Experimental signature of programmable
+quantum annealing (2012). URL http://arxiv.org/
+abs/1212.1739. 1212.1739.
+[29] Pudenz, K. L., Albash, T. & Lidar, D. A. Error
+corrected quantum annealing with hundreds of qubits.
+arXiv:1307.8190 (2013). URL http://arXiv.org/abs/
+1307.8190.
+[30] Dechter, R. Bucket elimination: A unifying framework
+for reasoning. Artiﬁcial Intelligence 113, 41–85 (1999).
+[31] While one can in principle look for an optimal annealing
+time for each individual problem instance, we instead
+determine an averaged optimal annealing time topta (N)
+for each problem size N by annealing many instances
+at various annealing times ta, and then use these for all
+future problems of that size.
+[32] McGeoch, C. C. & Wang, C. Experimental evaluation
+of an adiabatic quantum system for combinatorial opti-
+mization. In Proceedings of the 2013 ACM Conference
+on Computing Frontiers (2013).
+[33] Young, A. P. & Katzgraber, H. G. Absence of an
+Almeida-Thouless Line in Three-Dimensional Spin
+Glasses. Phys. Rev. Lett. 93, 207203 (2004). URL
+http://link.aps.org/doi/10.1103/PhysRevLett.93.
+207203.
+[34] Choi, V. Minor-embedding in adiabatic quantum com-
+putation: II. Minor-universal graph design. Quantum
+Information Processing 10, 343–353 (2011). URL http:
+//dx.doi.org/10.1007/s11128-010-0200-3 .
+[35] Sarandy, M. S. & Lidar, D. A. Adiabatic quantum com-
+putation in open systems. Physical Review Letters 95,
+250503– (2005). URL http://link.aps.org/doi/10.
+1103/PhysRevLett.95.250503.
+[36] An important exception is Ref. [44], but this example
+does not (yet) admit implementation on a physical de-
+vice.
+[37] Brooke, J., Bitko, D., Rosenbaum, T. & Aeppli,
+G. Quantum annealing of a disordered magnet.
+Science 284, 779–781 (1999). URL http://www.
+sciencemag.org/content/284/5415/779.abstract.
+http://www.sciencemag.org/content/284/5415/779.full.pdf.
+[38] The fact that some problems are solved faster on classical
+hardware and some on the DW2 raises the possibility of
+a hybrid approach that beneﬁts by solving a problem
+instance using both, and then selecting the best solution
+found.
+[39] For example, it is possible that a randomized benchmark
+with a tunable “hardness knob”, such as the clause den-
+sity in the MAX-2SAT problem [45], will allow for a more
+ﬁne-tuned exploration of the performance potential of a
+quantum annealer than a purely randomized benchmark
+such as we have used here. It was also proposed that em-
+bedding 3D spin-glass problems into the Chimera graph,
+with a ﬁnite critical temperature, might yield problem
+classes that are better suited as benchmarks for quan-
+tum annealing [17].
+[40] Bhanot, G., Duke, D. & Salvador, R. A fast algorithm for
+the Cyber 205 to simulate the 3d Ising model. J. Stat.
+Phys. 44, 985–1002 (1986). URL link.springer.com/
+content/pdf/10.1007/BF01011918.pdf.
+[41] Heuer, H.-O. A fast vectorized Fortran 77 program
+for the Monte Carlo simulation of the three-dimensional
+Ising system. Comput. Phys. Commun. 59, 387 – 398
+(1990). URL http://www.sciencedirect.com/science/
+article/pii/0010465590901865.
+[42] Isakov, S., Zintchenko, I., Rønnow, T. & Troyer, M. Op-
+timized simulated annealing for Ising spin glasses (2014).
+URL http://arxiv.org/abs/1401.1084. 1401.1084.
+[43] Martoˇ n´ ak, R., Santoro, G. E. & Tosatti, E. Quan-
+tum annealing by the path-integral Monte Carlo method:
+The two-dimensional random Ising model. Phys. Rev. B
+66, 094203 (2002). URL http://link.aps.org/doi/10.
+1103/PhysRevB.66.094203.
+[44] Somma, R. D., Nagaj, D. & Kieferov´ a, M. Quantum
+speedup by quantum annealing. Physical Review Letters
+109, 050501– (2012). URL http://link.aps.org/doi/
+10.1103/PhysRevLett.109.050501.
+[45] Santra, S., Quiroz, G., Steeg, G. V. & Lidar, D. MAX
+2-SAT with up to 108 qubits. arXiv:1307.3931 (2013).
+URL http://arXiv.org/abs/1307.3931.

@@ -1,0 +1,109 @@
+{
+  "id": "emergency_16",
+  "repr": "Scenario(id='emergency_16', blood_groups=('O',), blood_banks=(BloodBank(id='bank_a', name='Bank A', location_id='LOC_BANK_A', inventory={'O': 12}),), hospitals=(Hospital(id='hospital_1', name='Hospital 1', location_id='LOC_HOSPITAL_1', demand={'O': 16}, urgency={'O': Urgency(category='critical', priority_weight=3)}),), routes=(Route(source='bank_a', destination='hospital_1', travel_time_minutes=18.0, distance_km=7.2, transport_cost=4.5, status='available'),), compatibility={('O', 'O'): True}, synthetic=True)",
+  "qubits": 13,
+  "states": 8192,
+  "feasible_states": 43,
+  "optimal_states": 2,
+  "penalty": 954,
+  "exact_objective": 215.6,
+  "ising_max_error": 5.820766091346741e-11,
+  "classical": {
+    "exact": {
+      "objective": 215.6,
+      "seconds": 0.0002431659959256649
+    },
+    "milp": {
+      "objective": 215.6,
+      "seconds": 0.0009471660014241934
+    },
+    "greedy": {
+      "objective": 215.6,
+      "seconds": 2.9583010473288596e-05
+    },
+    "lp": {
+      "seconds": 0.0005497919919434935,
+      "values": {
+        "allocation": {
+          "('bank_a', 'hospital_1', 'O', 'O')": 12.0
+        },
+        "unmet_demand": {
+          "('hospital_1', 'O')": 4.0
+        },
+        "slack": {
+          "('bank_a', 'O')": 0.0
+        }
+      }
+    }
+  },
+  "xy_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      9
+    ],
+    [
+      0,
+      12
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ]
+  ],
+  "max_feasible_state_leakage_beta_0_7": [
+    0.9932748886533758,
+    2711
+  ],
+  "optimal_weight_sectors": [
+    5,
+    7
+  ]
+}

@@ -1,0 +1,1056 @@
+[
+  {
+    "arxiv_id": "1411.4028",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1411.4028",
+        "final_url": "https://arxiv.org/abs/1411.4028",
+        "bytes": 40595,
+        "sha256": "be0893fbd27910b553581774964f2e4f8c0c46d92201567edccb72283d088f2e",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1411.4028",
+        "final_url": "https://arxiv.org/html/1411.4028",
+        "bytes": 242676,
+        "sha256": "cfa83c41d6aa99b4d28306ffb74b77318f62c6940ecd484626a771f57ffd46b6",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "A Quantum Approximate Optimization Algorithm"
+      ],
+      "citation_author": [
+        "Farhi, Edward",
+        "Goldstone, Jeffrey",
+        "Gutmann, Sam"
+      ],
+      "citation_date": [
+        "2014/11/14"
+      ],
+      "citation_online_date": [
+        "2014/11/14"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1411.4028"
+      ],
+      "citation_arxiv_id": [
+        "1411.4028"
+      ],
+      "citation_abstract": [
+        "We introduce a quantum algorithm that produces approximate solutions for combinatorial optimization problems. The algorithm depends on a positive integer p and the quality of the approximation improves as p is increased. The quantum circuit that implements the algorithm consists of unitary gates whose locality is at most the locality of the objective function whose optimum is sought. The depth of the circuit grows linearly with p times (at worst) the number of constraints. If p is fixed, that is, independent of the input size, the algorithm makes use of efficient classical preprocessing. If p grows with the input size a different strategy is proposed. We study the algorithm as applied to MaxCut on regular graphs and analyze its performance on 2-regular and 3-regular graphs for fixed p. For p = 1, on 3-regular graphs the quantum algorithm always finds a cut that is at least 0.6924 times the size of the optimal cut."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2009.10095",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2009.10095",
+        "final_url": "https://arxiv.org/abs/2009.10095",
+        "bytes": 43304,
+        "sha256": "6b09be8057831ddcc13f0eea24776475739f83c43ddad57ae7a5e27a4aaf08f2",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2009.10095",
+        "final_url": "https://arxiv.org/html/2009.10095",
+        "bytes": 459709,
+        "sha256": "bde06878d1cb3f7af64b5c8556decb37f68088ec6f87c7cc85e40b890961a199",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Warm-starting quantum optimization"
+      ],
+      "citation_author": [
+        "Egger, Daniel J.",
+        "Marecek, Jakub",
+        "Woerner, Stefan"
+      ],
+      "citation_doi": [
+        "10.22331/q-2021-06-17-479"
+      ],
+      "citation_date": [
+        "2020/09/21"
+      ],
+      "citation_online_date": [
+        "2021/06/16"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2009.10095"
+      ],
+      "citation_arxiv_id": [
+        "2009.10095"
+      ],
+      "citation_abstract": [
+        "There is an increasing interest in quantum algorithms for problems of integer programming and combinatorial optimization. Classical solvers for such problems employ relaxations, which replace binary variables with continuous ones, for instance in the form of higher-dimensional matrix-valued problems (semidefinite programming). Under the Unique Games Conjecture, these relaxations often provide the best performance ratios available classically in polynomial time. Here, we discuss how to warm-start quantum optimization with an initial state corresponding to the solution of a relaxation of a combinatorial optimization problem and how to analyze properties of the associated quantum algorithms. In particular, this allows the quantum algorithm to inherit the performance guarantees of the classical algorithm. We illustrate this in the context of portfolio optimization, where our results indicate that warm-starting the Quantum Approximate Optimization Algorithm (QAOA) is particularly beneficial at low depth. Likewise, Recursive QAOA for MAXCUT problems shows a systematic increase in the size of the obtained cut for fully connected graphs with random weights, when Goemans-Williamson randomized rounding is utilized in a warm start. It is straightforward to apply the same ideas to other randomized-rounding schemes and optimization problems."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1907.04769",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1907.04769",
+        "final_url": "https://arxiv.org/abs/1907.04769",
+        "bytes": 43384,
+        "sha256": "cfff5defb556be92196eb654037157810d62237de07e4c8fc9e045517d3ee469",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1907.04769",
+        "final_url": "https://arxiv.org/html/1907.04769",
+        "bytes": 115559,
+        "sha256": "6e05c22a67859abc7c23de1bea0fa61ead27206b65785f9e506e60f191e12a79",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Improving Variational Quantum Optimization using CVaR"
+      ],
+      "citation_author": [
+        "Barkoutsos, Panagiotis Kl.",
+        "Nannicini, Giacomo",
+        "Robert, Anton",
+        "Tavernelli, Ivano",
+        "Woerner, Stefan"
+      ],
+      "citation_doi": [
+        "10.22331/q-2020-04-20-256"
+      ],
+      "citation_date": [
+        "2019/07/10"
+      ],
+      "citation_online_date": [
+        "2020/04/13"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1907.04769"
+      ],
+      "citation_arxiv_id": [
+        "1907.04769"
+      ],
+      "citation_abstract": [
+        "Hybrid quantum/classical variational algorithms can be implemented on noisy intermediate-scale quantum computers and can be used to find solutions for combinatorial optimization problems. Approaches discussed in the literature minimize the expectation of the problem Hamiltonian for a parameterized trial quantum state. The expectation is estimated as the sample mean of a set of measurement outcomes, while the parameters of the trial state are optimized classically. This procedure is fully justified for quantum mechanical observables such as molecular energies. In the case of classical optimization problems, which yield diagonal Hamiltonians, we argue that aggregating the samples in a different way than the expected value is more natural. In this paper we propose the Conditional Value-at-Risk as an aggregation function. We empirically show -- using classical simulation as well as quantum hardware -- that this leads to faster convergence to better solutions for all combinatorial optimization problems tested in our study. We also provide analytical results to explain the observed difference in performance between different variational algorithms."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1709.03489",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1709.03489",
+        "final_url": "https://arxiv.org/abs/1709.03489",
+        "bytes": 45985,
+        "sha256": "c3b1d2fe8382417422de82e71339780f6ae3dfbfddbae2359e236c8b3159a0f7",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1709.03489",
+        "final_url": "https://arxiv.org/html/1709.03489",
+        "bytes": 931096,
+        "sha256": "b065529aadadfb770b49d6eb82a039774a9981ba7b66ef24cfb60f96237ebacc",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "From the Quantum Approximate Optimization Algorithm to a Quantum Alternating Operator Ansatz"
+      ],
+      "citation_author": [
+        "Hadfield, Stuart",
+        "Wang, Zhihui",
+        "O'Gorman, Bryan",
+        "Rieffel, Eleanor G.",
+        "Venturelli, Davide",
+        "Biswas, Rupak"
+      ],
+      "citation_doi": [
+        "10.3390/a12020034"
+      ],
+      "citation_date": [
+        "2017/09/11"
+      ],
+      "citation_online_date": [
+        "2019/02/28"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1709.03489"
+      ],
+      "citation_arxiv_id": [
+        "1709.03489"
+      ],
+      "citation_abstract": [
+        "The next few years will be exciting as prototype universal quantum processors emerge, enabling implementation of a wider variety of algorithms. Of particular interest are quantum heuristics, which require experimentation on quantum hardware for their evaluation, and which have the potential to significantly expand the breadth of quantum computing applications. A leading candidate is Farhi et al.'s Quantum Approximate Optimization Algorithm, which alternates between applying a cost-function-based Hamiltonian and a mixing Hamiltonian. Here, we extend this framework to allow alternation between more general families of operators. The essence of this extension, the Quantum Alternating Operator Ansatz, is the consideration of general parametrized families of unitaries rather than only those corresponding to the time-evolution under a fixed local Hamiltonian for a time specified by the parameter. This ansatz supports the representation of a larger, and potentially more useful, set of states than the original formulation, with potential long-term impact on a broad array of application areas. For cases that call for mixing only within a desired subspace, refocusing on unitaries rather than Hamiltonians enables more efficiently implementable mixers than was possible in the original framework. Such mixers are particularly useful for optimization problems with hard constraints that must always be satisfied, defining a feasible subspace, and soft constraints whose violation we wish to minimize. More efficient implementation enables earlier experimental exploration of an alternating operator approach to a wide variety of approximate optimization, exact optimization, and sampling problems. Here, we introduce the Quantum Alternating Operator Ansatz, lay out design criteria for mixing operators, detail mappings for eight problems, and provide brief descriptions of mappings for diverse problems."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2203.06095",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2203.06095",
+        "final_url": "https://arxiv.org/abs/2203.06095",
+        "bytes": 43731,
+        "sha256": "1fbbf6febaa7d6be52a1e2ca2b4de09eec601a4d924003b8177023d8ad6ba7f8",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2203.06095",
+        "success": false,
+        "error": "Command '['curl', '--fail', '--silent', '--show-error', '--location', '--max-time', '40', 'https://arxiv.org/html/2203.06095']' returned non-zero exit status 56."
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Constrained mixers for the quantum approximate optimization algorithm"
+      ],
+      "citation_author": [
+        "Fuchs, Franz G.",
+        "Lye, Kjetil Olsen",
+        "Nilsen, Halvor M\u00f8ll",
+        "Stasik, Alexander J.",
+        "Sartor, Giorgio"
+      ],
+      "citation_doi": [
+        "10.3390/a15060202"
+      ],
+      "citation_date": [
+        "2022/03/11"
+      ],
+      "citation_online_date": [
+        "2022/06/22"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2203.06095"
+      ],
+      "citation_arxiv_id": [
+        "2203.06095"
+      ],
+      "citation_abstract": [
+        "The quantum approximate optimization algorithm/quantum alternating operator ansatz (QAOA) is a heuristic to find approximate solutions of combinatorial optimization problems. Most literature is limited to quadratic problems without constraints. However, many practically relevant optimization problems do have (hard) constraints that need to be fulfilled. In this article, we present a framework for constructing mixing operators that restrict the evolution to a subspace of the full Hilbert space given by these constraints; We generalize the \"XY\"-mixer designed to preserve the subspace of \"one-hot\" states to the general case of subspaces given by a number of computational basis states. We expose the underlying mathematical structure which reveals more of how mixers work and how one can minimize their cost in terms of number of CX gates, particularly when Trotterization is taken into account. Our analysis also leads to valid Trotterizations for \"XY\"-mixer with fewer CX gates than is known to date. In view of practical implementations, we also describe algorithms for efficient decomposition into basis gates. Several examples of more general cases are presented and analyzed."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2006.00354",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2006.00354",
+        "final_url": "https://arxiv.org/abs/2006.00354",
+        "bytes": 43534,
+        "sha256": "68c865da8fc7fa9ad9010a0020621bc3f19645bf9506175e946eb3cf2b5c9b20",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2006.00354",
+        "success": false,
+        "error": "Command '['curl', '--fail', '--silent', '--show-error', '--location', '--max-time', '40', 'https://arxiv.org/html/2006.00354']' returned non-zero exit status 56."
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Grover Mixers for QAOA: Shifting Complexity from Mixer Design to State Preparation"
+      ],
+      "citation_author": [
+        "B\u00e4rtschi, Andreas",
+        "Eidenbenz, Stephan"
+      ],
+      "citation_doi": [
+        "10.1109/QCE49297.2020.00020"
+      ],
+      "citation_date": [
+        "2020/05/30"
+      ],
+      "citation_online_date": [
+        "2020/10/02"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2006.00354"
+      ],
+      "citation_arxiv_id": [
+        "2006.00354"
+      ],
+      "citation_abstract": [
+        "We propose GM-QAOA, a variation of the Quantum Alternating Operator Ansatz (QAOA) that uses Grover-like selective phase shift mixing operators. GM-QAOA works on any NP optimization problem for which it is possible to efficiently prepare an equal superposition of all feasible solutions; it is designed to perform particularly well for constraint optimization problems, where not all possible variable assignments are feasible solutions. GM-QAOA has the following features: (i) It is not susceptible to Hamiltonian Simulation error (such as Trotterization errors) as its operators can be implemented exactly using standard gate sets and (ii) Solutions with the same objective value are always sampled with the same amplitude. We illustrate the potential of GM-QAOA on several optimization problem classes: for permutation-based optimization problems such as the Traveling Salesperson Problem, we present an efficient algorithm to prepare a superposition of all possible permutations of $n$ numbers, defined on $O(n^2)$ qubits; for the hard constraint $k$-Vertex-Cover problem, and for an application to Discrete Portfolio Rebalancing, we show that GM-QAOA outperforms existing QAOA approaches."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1903.05068",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1903.05068",
+        "final_url": "https://arxiv.org/abs/1903.05068",
+        "bytes": 44421,
+        "sha256": "b265210c6697ec647899850fc6b4b939440d966a9338633310fe8e4fa42ecae9",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1903.05068",
+        "final_url": "https://arxiv.org/html/1903.05068",
+        "bytes": 416494,
+        "sha256": "6279d77cbd0eba4bcd8533d56322d3ca66e30dda8577a39db78a6d3e6a7047fd",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Domain wall encoding of discrete variables for quantum annealing and QAOA"
+      ],
+      "citation_author": [
+        "Chancellor, Nicholas"
+      ],
+      "citation_doi": [
+        "10.1088/2058-9565/ab33c2"
+      ],
+      "citation_date": [
+        "2019/03/12"
+      ],
+      "citation_online_date": [
+        "2019/07/20"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1903.05068"
+      ],
+      "citation_arxiv_id": [
+        "1903.05068"
+      ],
+      "citation_abstract": [
+        "In this paper I propose a new method of encoding discrete variables into Ising model qubits for quantum optimization. The new method is based on the physics of domain walls in one dimensional Ising spin chains. I find that these encodings and the encoding of arbitrary two variable interactions is possible with only two body Ising terms. Following on from similar results for the `one hot' method of encoding discrete variables [Hadfield et. al. Algorithms 12.2 (2019): 34] I also demonstrate that it is possible to construct two body mixer terms which do not leave the logical subspace, an important consideration for optimising using the quantum alternating operator ansatz (QAOA). I additionally discuss how, since the couplings in the domain wall encoding only need to be ferromagnetic and therefore could in principle be much stronger than anti-ferromagnetic couplers, application specific quantum annealers for discrete problems based on this construction may be beneficial. Finally, I compare embedding for synthetic scheduling and colouring problems with the domain wall and one hot encodings on two graphs which are relevant for quantum annealing, the chimera graph and the Pegasus graph. For every case I examine I find a similar or better performance from the domain wall encoding as compared to one hot, but this advantage is highly dependent on the structure of the problem. For encoding some problems, I find an advantage similar to the one found by embedding in a Pegasus graph compared to embedding in a chimera graph."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1812.01041",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1812.01041",
+        "final_url": "https://arxiv.org/abs/1812.01041",
+        "bytes": 46445,
+        "sha256": "de5d078eb5d058278c571bd5cf2325aa5b73964c54b96ccc988d07ccc3faf933",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1812.01041",
+        "final_url": "https://arxiv.org/html/1812.01041",
+        "bytes": 518764,
+        "sha256": "83dd39126752a303a346baf0cc4685f324ba991c8310f751b4767b4f19561dae",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Quantum Approximate Optimization Algorithm: Performance, Mechanism, and Implementation on Near-Term Devices"
+      ],
+      "citation_author": [
+        "Zhou, Leo",
+        "Wang, Sheng-Tao",
+        "Choi, Soonwon",
+        "Pichler, Hannes",
+        "Lukin, Mikhail D."
+      ],
+      "citation_doi": [
+        "10.1103/PhysRevX.10.021067"
+      ],
+      "citation_date": [
+        "2018/12/03"
+      ],
+      "citation_online_date": [
+        "2019/11/09"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1812.01041"
+      ],
+      "citation_arxiv_id": [
+        "1812.01041"
+      ],
+      "citation_abstract": [
+        "The Quantum Approximate Optimization Algorithm (QAOA) is a hybrid quantum-classical variational algorithm designed to tackle combinatorial optimization problems. Despite its promise for near-term quantum applications, not much is currently understood about QAOA's performance beyond its lowest-depth variant. An essential but missing ingredient for understanding and deploying QAOA is a constructive approach to carry out the outer-loop classical optimization. We provide an in-depth study of the performance of QAOA on MaxCut problems by developing an efficient parameter-optimization procedure and revealing its ability to exploit non-adiabatic operations. Building on observed patterns in optimal parameters, we propose heuristic strategies for initializing optimizations to find quasi-optimal $p$-level QAOA parameters in $O(\\text{poly}(p))$ time, whereas the standard strategy of random initialization requires $2^{O(p)}$ optimization runs to achieve similar performance. We then benchmark QAOA and compare it with quantum annealing, especially on difficult instances where adiabatic quantum annealing fails due to small spectral gaps. The comparison reveals that QAOA can learn via optimization to utilize non-adiabatic mechanisms to circumvent the challenges associated with vanishing spectral gaps. Finally, we provide a realistic resource analysis on the experimental implementation of QAOA. When quantum fluctuations in measurements are accounted for, we illustrate that optimization will be important only for problem sizes beyond numerical simulations, but accessible on near-term devices. We propose a feasible implementation of large MaxCut problems with a few hundred vertices in a system of 2D neutral atoms, reaching the regime to challenge the best classical algorithms."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2109.11455",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2109.11455",
+        "final_url": "https://arxiv.org/abs/2109.11455",
+        "bytes": 42535,
+        "sha256": "4860285e5b65466a3d05adfe69cff12e4c47438f15079f41093e29844b0710cd",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2109.11455",
+        "final_url": "https://arxiv.org/html/2109.11455",
+        "bytes": 238700,
+        "sha256": "9a318333e0dcc20f8ecdea25045a51684d8250d62fdf9ce263d640cc7c46e178",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Multi-angle Quantum Approximate Optimization Algorithm"
+      ],
+      "citation_author": [
+        "Herrman, Rebekah",
+        "Lotshaw, Phillip C.",
+        "Ostrowski, James",
+        "Humble, Travis S.",
+        "Siopsis, George"
+      ],
+      "citation_date": [
+        "2021/09/23"
+      ],
+      "citation_online_date": [
+        "2021/09/23"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2109.11455"
+      ],
+      "citation_arxiv_id": [
+        "2109.11455"
+      ],
+      "citation_abstract": [
+        "The quantum approximate optimization algorithm (QAOA) generates an approximate solution to combinatorial optimization problems using a variational ansatz circuit defined by parameterized layers of quantum evolution. In theory, the approximation improves with increasing ansatz depth but gate noise and circuit complexity undermine performance in practice. Here, we introduce a multi-angle ansatz for QAOA that reduces circuit depth and improves the approximation ratio by increasing the number of classical parameters. Even though the number of parameters increases, our results indicate that good parameters can be found in polynomial time. This new ansatz gives a 33\\% increase in the approximation ratio for an infinite family of MaxCut instances over QAOA. The optimal performance is lower bounded by the conventional ansatz, and we present empirical results for graphs on eight vertices that one layer of the multi-angle anstaz is comparable to three layers of the traditional ansatz on MaxCut problems. Similarly, multi-angle QAOA yields a higher approximation ratio than QAOA at the same depth on a collection of MaxCut instances on fifty and one-hundred vertex graphs. Many of the optimized parameters are found to be zero, so their associated gates can be removed from the circuit, further decreasing the circuit depth. These results indicate that multi-angle QAOA requires shallower circuits to solve problems than QAOA, making it more viable for near-term intermediate-scale quantum devices."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2005.10258",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2005.10258",
+        "final_url": "https://arxiv.org/abs/2005.10258",
+        "bytes": 41383,
+        "sha256": "612ebe0c3b6e551ad6ea74a5dc44b0c94a14371ffd9f7c37c309ac27d242b187",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2005.10258",
+        "final_url": "https://arxiv.org/html/2005.10258",
+        "bytes": 255906,
+        "sha256": "4028d4a3cb622eebaccb7879faa49fd336f48111be044b7efbf59ee7c5dfcf5c",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer"
+      ],
+      "citation_author": [
+        "Zhu, Linghua",
+        "Tang, Ho Lun",
+        "Barron, George S.",
+        "Calderon-Vargas, F. A.",
+        "Mayhall, Nicholas J.",
+        "Barnes, Edwin",
+        "Economou, Sophia E."
+      ],
+      "citation_date": [
+        "2020/05/20"
+      ],
+      "citation_online_date": [
+        "2022/07/07"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2005.10258"
+      ],
+      "citation_arxiv_id": [
+        "2005.10258"
+      ],
+      "citation_abstract": [
+        "The quantum approximate optimization algorithm (QAOA) is a hybrid variational quantum-classical algorithm that solves combinatorial optimization problems. While there is evidence suggesting that the fixed form of the standard QAOA ansatz is not optimal, there is no systematic approach for finding better ans\\\"atze. We address this problem by developing an iterative version of QAOA that is problem-tailored, and which can also be adapted to specific hardware constraints. We simulate the algorithm on a class of Max-Cut graph problems and show that it converges much faster than the standard QAOA, while simultaneously reducing the required number of CNOT gates and optimization parameters. We provide evidence that this speedup is connected to the concept of shortcuts to adiabaticity."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1910.08980",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1910.08980",
+        "final_url": "https://arxiv.org/abs/1910.08980",
+        "bytes": 42987,
+        "sha256": "27e3766c27cb192102e4971d4fef0955f44af3338a16cddef4e6316c6693f617",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1910.08980",
+        "final_url": "https://arxiv.org/html/1910.08980",
+        "bytes": 560083,
+        "sha256": "d5f6694bff8ead948584219edb8a062541a734e8b396f487c45d6029f994abc5",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Obstacles to State Preparation and Variational Optimization from Symmetry Protection"
+      ],
+      "citation_author": [
+        "Bravyi, Sergey",
+        "Kliesch, Alexander",
+        "Koenig, Robert",
+        "Tang, Eugene"
+      ],
+      "citation_doi": [
+        "10.1103/PhysRevLett.125.260505"
+      ],
+      "citation_date": [
+        "2019/10/20"
+      ],
+      "citation_online_date": [
+        "2019/10/20"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1910.08980"
+      ],
+      "citation_arxiv_id": [
+        "1910.08980"
+      ],
+      "citation_abstract": [
+        "Local Hamiltonians with topological quantum order exhibit highly entangled ground states that cannot be prepared by shallow quantum circuits. Here, we show that this property may extend to all low-energy states in the presence of an on-site $\\mathbb{Z}_2$ symmetry. This proves a version of the No Low-Energy Trivial States (NLTS) conjecture for a family of local Hamiltonians with symmetry protected topological order. A surprising consequence of this result is that the Goemans-Williamson algorithm outperforms the Quantum Approximate Optimization Algorithm (QAOA) for certain instances of MaxCut, at any constant level. We argue that the locality and symmetry of QAOA severely limits its performance. To overcome these limitations, we propose a non-local version of QAOA, and give numerical evidence that it significantly outperforms standard QAOA for frustrated Ising models on random 3-regular graphs."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1812.04170",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1812.04170",
+        "final_url": "https://arxiv.org/abs/1812.04170",
+        "bytes": 41820,
+        "sha256": "12f746a60e2c71610da28923b65b824eb94ad72b173b3a91fdab53d48efa00fd",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1812.04170",
+        "final_url": "https://arxiv.org/html/1812.04170",
+        "bytes": 392595,
+        "sha256": "38f82564a150b7b8372403ec84cb09e1eaa141a097b4bd4debcb055a1d906100",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances"
+      ],
+      "citation_author": [
+        "Brandao, Fernando G. S. L.",
+        "Broughton, Michael",
+        "Farhi, Edward",
+        "Gutmann, Sam",
+        "Neven, Hartmut"
+      ],
+      "citation_date": [
+        "2018/12/11"
+      ],
+      "citation_online_date": [
+        "2018/12/11"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1812.04170"
+      ],
+      "citation_arxiv_id": [
+        "1812.04170"
+      ],
+      "citation_abstract": [
+        "The Quantum Approximate Optimization Algorithm, QAOA, uses a shallow depth quantum circuit to produce a parameter dependent state. For a given combinatorial optimization problem instance, the quantum expectation of the associated cost function is the parameter dependent objective function of the QAOA. We demonstrate that if the parameters are fixed and the instance comes from a reasonable distribution then the objective function value is concentrated in the sense that typical instances have (nearly) the same value of the objective function. This applies not just for optimal parameters as the whole landscape is instance independent. We can prove this is true for low depth quantum circuits for instances of MaxCut on large 3-regular graphs. Our results generalize beyond this example. We support the arguments with numerical examples that show remarkable concentration. For higher depth circuits the numerics also show concentration and we argue for this using the Law of Large Numbers. We also observe by simulation that if we find parameters which result in good performance at say 10 bits these same parameters result in good performance at say 24 bits. These findings suggest ways to run the QAOA that reduce or eliminate the use of the outer loop optimization and may allow us to find good solutions with fewer calls to the quantum computer."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1907.02359",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1907.02359",
+        "final_url": "https://arxiv.org/abs/1907.02359",
+        "bytes": 42589,
+        "sha256": "e73692fdadf6e02be78c03a23d170041f31c0306f63714c3e92cb488f2a5e690",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1907.02359",
+        "final_url": "https://arxiv.org/html/1907.02359",
+        "bytes": 458914,
+        "sha256": "f06c42ef6962863807c1cda278d965f9ba5fefed69c064b978f25bf3ad612546",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Benchmarking the Quantum Approximate Optimization Algorithm"
+      ],
+      "citation_author": [
+        "Willsch, Madita",
+        "Willsch, Dennis",
+        "Jin, Fengping",
+        "De Raedt, Hans",
+        "Michielsen, Kristel"
+      ],
+      "citation_doi": [
+        "10.1007/s11128-020-02692-8"
+      ],
+      "citation_date": [
+        "2019/07/04"
+      ],
+      "citation_online_date": [
+        "2020/06/05"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1907.02359"
+      ],
+      "citation_arxiv_id": [
+        "1907.02359"
+      ],
+      "citation_abstract": [
+        "The performance of the quantum approximate optimization algorithm is evaluated by using three different measures: the probability of finding the ground state, the energy expectation value, and a ratio closely related to the approximation ratio. The set of problem instances studied consists of weighted MaxCut problems and 2-satisfiability problems. The Ising model representations of the latter possess unique ground states and highly-degenerate first excited states. The quantum approximate optimization algorithm is executed on quantum computer simulators and on the IBM Q Experience. Additionally, data obtained from the D-Wave 2000Q quantum annealer is used for comparison, and it is found that the D-Wave machine outperforms the quantum approximate optimization algorithm executed on a simulator. The overall performance of the quantum approximate optimization algorithm is found to strongly depend on the problem instance."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2307.05420",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2307.05420",
+        "final_url": "https://arxiv.org/abs/2307.05420",
+        "bytes": 42982,
+        "sha256": "436a60b443467f7ce6c21c3cceef13923474a61e26e629b94a59402aaf21a756",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2307.05420",
+        "final_url": "https://arxiv.org/html/2307.05420",
+        "bytes": 226199,
+        "sha256": "c6102535d3ae2319df313c120e4745b1bf3734fb39cf7b1e31dc8e4dc966d1b7",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Similarity-Based Parameter Transferability in the Quantum Approximate Optimization Algorithm"
+      ],
+      "citation_author": [
+        "Galda, Alexey",
+        "Gupta, Eesh",
+        "Falla, Jose",
+        "Liu, Xiaoyuan",
+        "Lykov, Danylo",
+        "Alexeev, Yuri",
+        "Safro, Ilya"
+      ],
+      "citation_date": [
+        "2023/07/11"
+      ],
+      "citation_online_date": [
+        "2023/07/11"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2307.05420"
+      ],
+      "citation_arxiv_id": [
+        "2307.05420"
+      ],
+      "citation_abstract": [
+        "The quantum approximate optimization algorithm (QAOA) is one of the most promising candidates for achieving quantum advantage through quantum-enhanced combinatorial optimization. A near-optimal solution to the combinatorial optimization problem is achieved by preparing a quantum state through the optimization of quantum circuit parameters. Optimal QAOA parameter concentration effects for special MaxCut problem instances have been observed, but a rigorous study of the subject is still lacking. In this work we show clustering of optimal QAOA parameters around specific values; consequently, successful transferability of parameters between different QAOA instances can be explained and predicted based on local properties of the graphs, including the type of subgraphs (lightcones) from which graphs are composed as well as the overall degree of nodes in the graph (parity). We apply this approach to several instances of random graphs with a varying number of nodes as well as parity and show that one can use optimal donor graph QAOA parameters as near-optimal parameters for larger acceptor graphs with comparable approximation ratios. This work presents a pathway to identifying classes of combinatorial optimization instances for which variational quantum algorithms such as QAOA can be substantially accelerated."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1401.2910",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1401.2910",
+        "final_url": "https://arxiv.org/abs/1401.2910",
+        "bytes": 44544,
+        "sha256": "8fe8e1b1c545d6372a9dbb0cac23c2d46024769281cb9d589ab6a97a8ef71653",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/1401.2910",
+        "final_url": "https://arxiv.org/html/1401.2910",
+        "bytes": 292372,
+        "sha256": "51aa4cccfa8080c9d048a8f0e936be415885b9c74e493cf936a31d2deeeb8c73",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Defining and detecting quantum speedup"
+      ],
+      "citation_author": [
+        "R\u00f8nnow, Troels F.",
+        "Wang, Zhihui",
+        "Job, Joshua",
+        "Boixo, Sergio",
+        "Isakov, Sergei V.",
+        "Wecker, David",
+        "Martinis, John M.",
+        "Lidar, Daniel A.",
+        "Troyer, Matthias"
+      ],
+      "citation_doi": [
+        "10.1126/science.1252319"
+      ],
+      "citation_date": [
+        "2014/01/13"
+      ],
+      "citation_online_date": [
+        "2014/01/13"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1401.2910"
+      ],
+      "citation_arxiv_id": [
+        "1401.2910"
+      ],
+      "citation_abstract": [
+        "The development of small-scale digital and analog quantum devices raises the question of how to fairly assess and compare the computational power of classical and quantum devices, and of how to detect quantum speedup. Here we show how to define and measure quantum speedup in various scenarios, and how to avoid pitfalls that might mask or fake quantum speedup. We illustrate our discussion with data from a randomized benchmark test on a D-Wave Two device with up to 503 qubits. Comparing the performance of the device on random spin glass instances with limited precision to simulated classical and quantum annealers, we find no evidence of quantum speedup when the entire data set is considered, and obtain inconclusive results when comparing subsets of instances on an instance-by-instance basis. Our results for one particular benchmark do not rule out the possibility of speedup for other classes of problems and illustrate that quantum speedup is elusive and can depend on the question posed."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2105.11766",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2105.11766",
+        "final_url": "https://arxiv.org/abs/2105.11766",
+        "bytes": 45508,
+        "sha256": "26d0f60f6628010b1cfde1096051ea0669a270b1c12fdcb1c28741761a0c3f4b",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2105.11766",
+        "final_url": "https://arxiv.org/html/2105.11766",
+        "bytes": 372437,
+        "sha256": "2e12a4599eb19350bf6bb68f581616a07cc5435028dea37fbff7f6a99ebeb644",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "An evolving objective function for improved variational quantum optimisation"
+      ],
+      "citation_author": [
+        "Kolotouros, Ioannis",
+        "Wallden, Petros"
+      ],
+      "citation_doi": [
+        "10.1103/PhysRevResearch.4.023225"
+      ],
+      "citation_date": [
+        "2021/05/25"
+      ],
+      "citation_online_date": [
+        "2022/06/24"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2105.11766"
+      ],
+      "citation_arxiv_id": [
+        "2105.11766"
+      ],
+      "citation_abstract": [
+        "A promising approach to useful computational quantum advantage is to use variational quantum algorithms for optimisation problems. Crucial for the performance of these algorithms is to ensure that the algorithm converges with high probability to a near-optimal solution in a small time. In Barkoutsos et al (Quantum 2020) an alternative class of objective functions, called Conditional Value-at-Risk (CVaR), was introduced and it was shown that they perform better than standard objective functions. Here we extend that work by introducing an evolving objective function, which we call Ascending-CVaR and that can be used for any optimisation problem. We test our proposed objective function, in an emulation environment, using as case-studies three different optimisation problems: Max-Cut, Number Partitioning and Portfolio Optimisation. We examine multiple instances of different sizes and analyse the performance using the Variational Quantum Eigensolver (VQE) with hardware-efficient ansatz and the Quantum Approximate Optimization Algorithm (QAOA). We show that Ascending-CVaR in all cases performs better than standard objective functions or the \"constant\" CVaR of Barkoutsos et al (Quantum 2020) and that it can be used as a heuristic for avoiding sub-optimal minima. Our proposal achieves higher overlap with the ideal state in all problems, whether we consider easy or hard instances -- on average it gives up to ten times greater overlap at Portfolio Optimisation and Number Partitioning, while it gives an 80% improvement at Max-Cut. In the hard instances we consider, for the number partitioning problem, standard objective functions fail to find the correct solution in almost all cases, CVaR finds the correct solution at 60% of the cases, while Ascending-CVaR finds the correct solution in 95% of the cases."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2107.04109",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2107.04109",
+        "final_url": "https://arxiv.org/abs/2107.04109",
+        "bytes": 41712,
+        "sha256": "15962844c9a745729027651bc2f899d2466b7ff7e82e43701bdd43a2434cb479",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2107.04109",
+        "final_url": "https://arxiv.org/html/2107.04109",
+        "bytes": 205992,
+        "sha256": "de4422643b7f0b30b6a097dbee00a1a439886c6a3d89bd64233db4141763a721",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Quantum Local Search with the Quantum Alternating Operator Ansatz"
+      ],
+      "citation_author": [
+        "Tomesh, Teague",
+        "Saleem, Zain H.",
+        "Suchara, Martin"
+      ],
+      "citation_doi": [
+        "10.22331/q-2022-08-22-781"
+      ],
+      "citation_date": [
+        "2021/07/08"
+      ],
+      "citation_online_date": [
+        "2022/08/11"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2107.04109"
+      ],
+      "citation_arxiv_id": [
+        "2107.04109"
+      ],
+      "citation_abstract": [
+        "We present a new hybrid, local search algorithm for quantum approximate optimization of constrained combinatorial optimization problems. We focus on the Maximum Independent Set problem and demonstrate the ability of quantum local search to solve large problem instances on quantum devices with few qubits. This hybrid algorithm iteratively finds independent sets over carefully constructed neighborhoods and combines these solutions to obtain a global solution. We study the performance of this algorithm on 3-regular, Community, and Erd\\H{o}s-R\\'{e}nyi graphs with up to 100 nodes."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2001.06079",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2001.06079",
+        "final_url": "https://arxiv.org/abs/2001.06079",
+        "bytes": 43874,
+        "sha256": "a5337c938cfb309f00abfcd9856791ed9e964a7617feb88248d57bc40a3c9a25",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2001.06079",
+        "final_url": "https://arxiv.org/html/2001.06079",
+        "bytes": 142487,
+        "sha256": "93c1badd463a26f3c7bc855a1b4b0a4f66148799e9d91310b0697f1a5eeccb0e",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Optimizing the Optimizer: Decomposition Techniques for Quantum Annealing"
+      ],
+      "citation_author": [
+        "Bass, Gideon",
+        "Henderson, Max",
+        "Heath, Joshua",
+        "Dulny III, Joseph"
+      ],
+      "citation_date": [
+        "2020/01/16"
+      ],
+      "citation_online_date": [
+        "2020/01/16"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2001.06079"
+      ],
+      "citation_arxiv_id": [
+        "2001.06079"
+      ],
+      "citation_abstract": [
+        "Although quantum computing hardware has evolved significantly in recent years, spurred by increasing industrial and government interest, the size limitation of current generation quantum computers remains an obstacle when applying these devices to relevant, real-world problems. In order to effectively exploit the potential benefits of quantum computing, heterogeneous approaches that combine both classical and quantum computing techniques are needed. In this work, we explore multiple heterogeneous approaches to solving multiple industry-relevant benchmark problems in order to understand how best to leverage quantum computers given current constraints. Our results indicate: that solver performance is highly dependent on the structure (size and edge density) of the problem graph; that reusing a single fixed problem embedding, as opposed to dynamically searching for problem embeddings, is key to avoiding computational bottlenecks; that solutions of better quality are produced by algorithms that iteratively propagate the influence that solving an individual sub-problem has to the remainder of the larger problem; and that the Qbsolv algorithm (which implements the aforementioned techniques) is, at this time, the state-of-the-art in producing quality solutions, in a timely fashion, to a variety of theoretical and real-world problems too large to directly embed onto a quantum annealing device."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2103.09232",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2103.09232",
+        "final_url": "https://arxiv.org/abs/2103.09232",
+        "bytes": 41728,
+        "sha256": "7e6ea34df1e2c1031b557e499cea370dac112604c18c367e70cd3a15889ce77c",
+        "success": true
+      },
+      {
+        "url": "https://arxiv.org/html/2103.09232",
+        "final_url": "https://arxiv.org/html/2103.09232",
+        "bytes": 326585,
+        "sha256": "24a57dfdf5991ab6e88728715df3f729d9cf6f41bb7e7396de2bc899766bc014",
+        "success": true
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Simultaneous Perturbation Stochastic Approximation of the Quantum Fisher Information"
+      ],
+      "citation_author": [
+        "Gacon, Julien",
+        "Zoufal, Christa",
+        "Carleo, Giuseppe",
+        "Woerner, Stefan"
+      ],
+      "citation_doi": [
+        "10.22331/q-2021-10-20-567"
+      ],
+      "citation_date": [
+        "2021/03/15"
+      ],
+      "citation_online_date": [
+        "2021/10/13"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2103.09232"
+      ],
+      "citation_arxiv_id": [
+        "2103.09232"
+      ],
+      "citation_abstract": [
+        "The Quantum Fisher Information matrix (QFIM) is a central metric in promising algorithms, such as Quantum Natural Gradient Descent and Variational Quantum Imaginary Time Evolution. Computing the full QFIM for a model with $d$ parameters, however, is computationally expensive and generally requires $\\mathcal{O}(d^2)$ function evaluations. To remedy these increasing costs in high-dimensional parameter spaces, we propose using simultaneous perturbation stochastic approximation techniques to approximate the QFIM at a constant cost. We present the resulting algorithm and successfully apply it to prepare Hamiltonian ground states and train Variational Quantum Boltzmann Machines."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "1912.04088",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/1912.04088",
+        "success": true,
+        "bytes": 43224,
+        "sha256": "1891987331d56121631a624df82b362138d6e723efd7ef3a7f988650795aa168"
+      },
+      {
+        "url": "https://arxiv.org/pdf/1912.04088",
+        "success": true,
+        "bytes": 1481743,
+        "sha256": "6e42d337238ab168153c7d873318fe3fb9f91dd160fc61eff4d362f3d24ee426"
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Grover Adaptive Search for Constrained Polynomial Binary Optimization"
+      ],
+      "citation_author": [
+        "Gilliam, Austin",
+        "Woerner, Stefan",
+        "Gonciulea, Constantin"
+      ],
+      "citation_doi": [
+        "10.22331/q-2021-04-08-428"
+      ],
+      "citation_date": [
+        "2019/12/09"
+      ],
+      "citation_online_date": [
+        "2021/04/06"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/1912.04088"
+      ],
+      "citation_arxiv_id": [
+        "1912.04088"
+      ],
+      "citation_abstract": [
+        "In this paper we discuss Grover Adaptive Search (GAS) for Constrained Polynomial Binary Optimization (CPBO) problems, and in particular, Quadratic Unconstrained Binary Optimization (QUBO) problems, as a special case. GAS can provide a quadratic speed-up for combinatorial optimization problems compared to brute force search. However, this requires the development of efficient oracles to represent problems and flag states that satisfy certain search criteria. In general, this can be achieved using quantum arithmetic, however, this is expensive in terms of Toffoli gates as well as required ancilla qubits, which can be prohibitive in the near-term. Within this work, we develop a way to construct efficient oracles to solve CPBO problems using GAS algorithms. We demonstrate this approach and the potential speed-up for the portfolio optimization problem, i.e. a QUBO, using simulation and experimental results obtained on real quantum hardware. However, our approach applies to higher-degree polynomial objective functions as well as constrained optimization problems."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "quant-ph/9607014",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/quant-ph/9607014",
+        "success": true,
+        "bytes": 38124,
+        "sha256": "ea4ad12a98fed2386bc992ff03dcf510d62b15e67b625873a9858e1e00c7b109"
+      },
+      {
+        "url": "https://arxiv.org/pdf/quant-ph/9607014",
+        "success": true,
+        "bytes": 77176,
+        "sha256": "ff5c2ff71415e22f0ddf799b31e9b82d1990db9c1fc9d62ea2aabea5907e06cf"
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "A Quantum Algorithm for Finding the Minimum"
+      ],
+      "citation_author": [
+        "Durr, Christoph",
+        "Hoyer, Peter"
+      ],
+      "citation_date": [
+        "1996/07/18"
+      ],
+      "citation_online_date": [
+        "1999/01/07"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/quant-ph/9607014"
+      ],
+      "citation_arxiv_id": [
+        "quant-ph/9607014"
+      ],
+      "citation_abstract": [
+        " We give a quantum algorithm to find the index y in a table T of size N such that in time O(c sqrt N), T[y] is minimum with probability at least 1-1/2^c."
+      ]
+    }
+  },
+  {
+    "arxiv_id": "2602.08418",
+    "accessed_utc": "2026-10-23",
+    "attempts": [
+      {
+        "url": "https://arxiv.org/abs/2602.08418",
+        "success": true,
+        "bytes": 41077,
+        "sha256": "51503aedbf6831b4d80ea01ce9450922f39a2ced4a9baf27fb054c9f07c37f16"
+      },
+      {
+        "url": "https://arxiv.org/pdf/2602.08418",
+        "success": true,
+        "bytes": 404501,
+        "sha256": "a946fe82a2731e9b36d7537ddc0eb8d3b18fce3aecd9695f770d50a8e3422067"
+      }
+    ],
+    "metadata": {
+      "citation_title": [
+        "Grover Adaptive Search with Problem-Specific State Preparation"
+      ],
+      "citation_author": [
+        "Hess, Maximilian",
+        "Palackal, Lilly",
+        "Awasthi, Abhishek",
+        "Eder, Peter J.",
+        "Schnaus, Manuel",
+        "Demmler, Laurin",
+        "Wintersperger, Karen",
+        "Doetsch, Joseph"
+      ],
+      "citation_date": [
+        "2026/02/09"
+      ],
+      "citation_online_date": [
+        "2026/02/09"
+      ],
+      "citation_pdf_url": [
+        "https://arxiv.org/pdf/2602.08418"
+      ],
+      "citation_arxiv_id": [
+        "2602.08418"
+      ],
+      "citation_abstract": [
+        "Grover's search algorithm is one of the basic building block in the world of quantum algorithms. Successfully applying it to combinatorial optimization problems is a subtle challenge. As a quadratic speedup is not enough to naively search an exponentially large space, the search has to be complemented with a state preparation routine which increases the amplitudes of promising states by exploiting the problem structure. In this paper, we build upon previous work by Baertschi and Eidenbenz to construct heuristic state preparation routines for the Traveling Salesperson Problem (TSP), mimicking the well-known classical Lin-Kernighan heuristic. With our heuristic, we aim to achieve a reasonable approximation ratio with only a polynomial number of Grover iterations. Further, we compare several algorithmic settings relating to termination criteria and the choice of Grover iterations when the number of marked solutions is unknown."
+      ]
+    }
+  }
+]

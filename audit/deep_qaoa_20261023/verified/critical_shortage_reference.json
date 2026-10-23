@@ -1,0 +1,92 @@
+{
+  "id": "critical_shortage",
+  "repr": "Scenario(id='critical_shortage', blood_groups=('O',), blood_banks=(BloodBank(id='bank_a', name='Bank A', location_id='LOC_BANK_A', inventory={'O': 4}),), hospitals=(Hospital(id='hospital_1', name='Hospital 1', location_id='LOC_HOSPITAL_1', demand={'O': 7}, urgency={'O': Urgency(category='critical', priority_weight=3.0)}),), routes=(Route(source='bank_a', destination='hospital_1', travel_time_minutes=31.0, distance_km=7.2, transport_cost=7.0, status='available'),), compatibility={('O', 'O'): True}, synthetic=True)",
+  "qubits": 9,
+  "states": 512,
+  "feasible_states": 14,
+  "optimal_states": 1,
+  "penalty": 429,
+  "exact_objective": 145.4,
+  "ising_max_error": 1.8189894035458565e-12,
+  "classical": {
+    "exact": {
+      "objective": 145.4,
+      "seconds": 8.229199738707393e-05
+    },
+    "milp": {
+      "objective": 145.4,
+      "seconds": 0.0007960410002851859
+    },
+    "greedy": {
+      "objective": 145.4,
+      "seconds": 2.820898953359574e-05
+    },
+    "lp": {
+      "seconds": 0.0005177090060897171,
+      "values": {
+        "allocation": {
+          "('bank_a', 'hospital_1', 'O', 'O')": 4.0
+        },
+        "unmet_demand": {
+          "('hospital_1', 'O')": 3.0
+        },
+        "slack": {
+          "('bank_a', 'O')": 0.0
+        }
+      }
+    }
+  },
+  "xy_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      6
+    ],
+    [
+      0,
+      8
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ]
+  ],
+  "max_feasible_state_leakage_beta_0_7": [
+    0.9626337703129464,
+    173
+  ],
+  "optimal_weight_sectors": [
+    5
+  ]
+}

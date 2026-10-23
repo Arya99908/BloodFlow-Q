@@ -1,0 +1,2728 @@
+=== PDF PAGE 1 ===
+Quantum Approximate Optimization Algorithm: Performance, Mechanism, and
+Implementation on Near-Term Devices
+Leo Zhou,1,∗ Sheng-Tao Wang,1,† Soonwon Choi,1,2 Hannes Pichler,3,1 and Mikhail D. Lukin1
+1Department of Physics, Harvard University, Cambridge, MA 02138, USA
+2Department of Physics, University of California Berkeley, Berkeley, CA 94720, USA
+3ITAMP, Harvard-Smithsonian Center for Astrophysics, Cambridge, MA 02138, USA
+(Dated: November 12, 2019)
+The Quantum Approximate Optimization Algorithm (QAOA) is a hybrid quantum-classical vari-
+ational algorithm designed to tackle combinatorial optimization problems. Despite its promise for
+near-term quantum applications, not much is currently understood about QAOA’s performance
+beyond its lowest-depth variant. An essential but missing ingredient for understanding and de-
+ploying QAOA is a constructive approach to carry out the outer-loop classical optimization. We
+provide an in-depth study of the performance of QAOA on MaxCut problems by developing an eﬃ-
+cient parameter-optimization procedure and revealing its ability to exploit non-adiabatic operations.
+Building on observed patterns in optimal parameters, we propose heuristic strategies for initializ-
+ing optimizations to ﬁnd quasi-optimalp-level QAOA parameters inO(poly(p)) time, whereas the
+standard strategy of random initialization requires2O(p) optimization runs to achieve similar perfor-
+mance. We then benchmark QAOA and compare it with quantum annealing, especially on diﬃcult
+instances where adiabatic quantum annealing fails due to small spectral gaps. The comparison re-
+veals that QAOA can learn via optimization to utilize non-adiabatic mechanisms to circumvent the
+challenges associated with vanishing spectral gaps. Finally, we provide a realistic resource analysis
+on the experimental implementation of QAOA. When quantum ﬂuctuations in measurements are
+accounted for, we illustrate that optimization will be important only for problem sizes beyond nu-
+merical simulations, but accessible on near-term devices. We propose a feasible implementation of
+large MaxCut problems with a few hundred vertices in a system of 2D neutral atoms, reaching the
+regime to challenge the best classical algorithms.
+I. INTRODUCTION
+As quantum computing technology develops, there is
+a growing interest in ﬁnding useful applications of near-
+term quantum machines [1]. In the near future, however,
+the number of reliable quantum operations will be lim-
+ited by noise and decoherence. As such, hybrid quantum-
+classical algorithms [2–4] have been proposed to make the
+best of available quantum resources and integrate them
+with classical routines. The Quantum Approximate Op-
+timization Algorithm (QAOA) [2] and the Variational
+Quantum Eigensolver [3] are such algorithms put forward
+toaddressclassicalcombinatorialoptimizationandquan-
+tum chemistry problems, respectively. Proof-of-principle
+experiments running these algorithms have already been
+demonstrated in the lab [5–8].
+In these hybrid algorithms, a quantum processor pre-
+pares a quantum state according to a set of variational
+parameters. Using measurement outputs, the parameters
+are then optimized by a classical computer and fed back
+to the quantum machine in a closed loop. In QAOA,
+the state is prepared by a p-level circuit speciﬁed by
+2p variational parameters. Even at the lowest circuit
+depth (p = 1), QAOA has non-trivial provable perfor-
+mance guarantees [2, 9] and is not eﬃciently simulatable
+∗ leozhou@g.harvard.edu
+† shengtaowst@gmail.com;
+L.Z. and S.-T.W. contributed equally to this work.
+by classical computers [10]. It is thus an appealing algo-
+rithm to explore quantum speedups on near-term quan-
+tum machines.
+However, very little is known about QAOA beyond
+the lowest depth. While QAOA is known to monoton-
+ically improve with depth and succeed in thep → ∞
+limit [2], its performance when1<p< ∞ is largely un-
+explored. In fact, it has been argued that one needs to go
+beyond low-depth QAOA in order to compete with the
+best classical algorithm for some problems on bounded-
+degree graphs [11, 12]. It thus remains a critical problem
+to assess QAOA at intermediate depths where one may
+hope for a quantum computational advantage. One ma-
+jor hurdle lies in the diﬃculty to eﬃciently optimize in
+the non-convex, high-dimensional parameter landscape.
+Without constructive approaches to perform the param-
+eter optimization, any potential advantages of the hybrid
+algorithms could be lost [13].
+In this work, we contribute, in three major aspects,
+to the understanding and applicability of QAOA on
+near-term devices, with a focus on MaxCut problems.
+First, we develop heuristic strategies to eﬃciently opti-
+mize QAOA variational parameters. These strategies are
+found, via extensive benchmarking, to be quasi-optimal
+in the sense that they usually produce known global op-
+tima. The standard approach with random initializa-
+tion generically require 2O(p) optimization runs to sur-
+pass our heuristics. Secondly, we benchmark the perfor-
+mance of QAOA and compare it with quantum anneal-
+ing. On diﬃcult graph instances where the minimum
+arXiv:1812.01041v2  [quant-ph]  9 Nov 2019
+
+=== PDF PAGE 2 ===
+2
+spectral gap is very small, the time required for quantum
+annealing to remain adiabatic is very long as it scales in-
+versely with the square of the gap. For these instances,
+QAOA is found to outperform adiabatic quantum an-
+nealing by multiple orders of magnitude in computation
+time. Lastly, we provide a detailed resource analysis on
+the experimental implementation of QAOA with near-
+term quantum devices. Taking into account of quantum
+ﬂuctuations in projective measurements, we argue that
+optimization will play a role only for much larger problem
+sizes than numerically accessible ones. We also propose a
+2D physical implementation of QAOA on MaxCut with
+a few hundred Rydberg-interacting atoms, which can be
+put to the test against the best classical algorithm for
+potential quantum advantages.
+Our main results can be summarized as follows. By
+performing extensive searches in the entire parameter
+space, we discover persistent patterns in the optimal pa-
+rameters. Based on the observed patterns, we develop
+strategies for selecting initial parameters in optimization,
+which allow us to eﬃciently optimize QAOA at a cost
+scaling polynomially inp. This is in stark contrast to the
+2O(p) optimization runs required by random initializa-
+tion approaches. We also propose a new parametrization
+of QAOA that may signiﬁcantly simplify optimization
+by reducing the dimension of the search space. Using
+our heuristic strategy, we benchmark the performance
+of QAOA on many instances of MaxCut up toN≤ 22
+vertices and levelp≤ 50. Comparing QAOA with quan-
+tum annealing, we ﬁnd the former can learn via opti-
+mization to utilize diabatic mechanisms [14–17] and over-
+come the challenges faced by adiabatic quantum anneal-
+ing due to very small spectral gaps. Considering realistic
+experimental implementations, we also study the eﬀects
+of quantum “projection noise” in measurement: we ﬁnd
+that, for numerically accessible problem sizes, QAOA can
+often obtain the solution among measurement outputs
+before the best variational parameters are found. Pa-
+rameter optimization will be more useful at large system
+sizes (a few hundred vertices), as one expects the prob-
+ability of ﬁnding the solution from projective measure-
+ments to decrease exponentially. At such system sizes,
+we analyze a procedure to make graphs more experimen-
+tally realizable by reducing the required range of qubit
+interactions via vertex renumbering. Finally, we discuss
+a speciﬁc implementation using neutral atoms interacting
+via Rydberg excitations [18, 19], where a 2D implemen-
+tation with a few hundred atoms appears feasible on a
+near-term device.
+The rest of the paper is organized in the following or-
+der: In Sec. II, we review QAOA and the MaxCut prob-
+lem. In Sec. III, we describe some patterns found for
+QAOA optimal parameters and introduce heuristic opti-
+mization strategies based on the observed patterns. We
+benchmark our heuristic strategies and study the per-
+formance of QAOA on typical MaxCut graph instances
+in Sec. IV. We then, in Sec. V, compare QAOA with
+quantum annealing, shedding light on the non-adiabatic
+variational parameters
+Optimization
+2
+5
+1
+3
+4
+measure
+FIG. 1. (a) Schematic of ap-level Quantum Approximation
+Optimization Algorithm [2]. A quantum circuit takes input
+|+⟩⊗n and alternately applies e−iγiHC and Xβi = e−iβiσx,
+and the ﬁnal state is measured to obtain expectation value
+with respect to the objective functionHC. This is fed to a
+(classical) optimizer to ﬁnd the best parameters(⃗γ,⃗β) that
+maximizes⟨HC⟩. (b) An example of a MaxCut problem on
+a 5-vertex graph, where one seeks an assignment of spin vari-
+ables on the vertices such that the sum of edge weights be-
+tween anti-aligned spins is maximized (black edges).
+mechanism of QAOA. Lastly, we discuss considerations
+for experimental implementations for large problem sizes
+in Sec. VI.
+II. QUANTUM APPROXIMATE
+OPTIMIZATION ALGORITHM
+Many interesting real-world problems can be framed as
+combinatorial optimization problems [20, 21]. These are
+problems deﬁned onN-bit binary stringsz = z1··· zN,
+where the goal is to determine a string that maximizes
+a given classical objective functionC(z) :{+1,−1}N↦→
+R≥0. An approximate optimization algorithm aims to
+ﬁndastring z thatachievesadesiredapproximationratio
+C(z)
+Cmax
+≥r∗, (1)
+where Cmax = maxzC(z).
+The Quantum Approximate Optimization Algorithm
+(QAOA) is a quantum algorithm recently introduced to
+tackle these combinatorial optimization problems [2]. To
+encode the problem, the classical objective function can
+be converted to a quantum problem Hamiltonian by pro-
+moting each binary variablezi to a quantum spinσzi:
+HC =C(σz1,σz2,··· ,σzN). (2)
+
+=== PDF PAGE 3 ===
+3
+For p-level QAOA, which is visualized in Fig. 1(a), we
+initialize the quantum processor in the state|+⟩⊗N, and
+then apply the problem HamiltonianHC and a mixing
+Hamiltonian HB =∑Nj=1σxj alternately with controlled
+durations to generate a variational wavefunction
+|ψp(⃗γ,⃗β)⟩ =e−iβpHBe−iγpHC··· e−iβ1HBe−iγ1HC|+⟩⊗N,
+(3)
+which is parameterized by2p variational parametersγi
+and βi (i = 1, 2,··· p). We then determine the expecta-
+tion valueHC in this variational state
+Fp(⃗γ,⃗β) =⟨ψp(⃗γ,⃗β)|HC|ψp(⃗γ,⃗β)⟩, (4)
+which is done by repeated measurements of the quantum
+system in the computational basis. A classical computer
+isusedtosearchfortheoptimalparameters (⃗γ∗,⃗β∗)soas
+to maximize the averaged measurement outputFp(⃗γ,⃗β),
+(⃗γ∗,⃗β∗) = arg max
+⃗γ,⃗β
+Fp(⃗γ,⃗β). (5)
+This is typically done by starting with some initial guess
+of the parameters and performing simplex or gradient-
+based optimization. A ﬁgure of merit for benchmarking
+the performance of QAOA is the approximation ratio
+r = Fp(⃗γ∗,⃗β∗)Cmax . (6)
+The framework of QAOA can be applied to general
+combinatorial optimization problems. Here, we focus
+on its application to an archetypical problem called
+MaxCut, which is a combinatorial problem whose ap-
+proximate optimization beyond a minimum ratior∗ is
+NP-hard [22, 23]. The MaxCut problem, visualized in
+Fig. 1(b), is deﬁned for any input graph G = (V,E ).
+Here, V ={1, 2,...,N } denotes the set of vertices and
+E ={(⟨i,j⟩,wij)} is the set of edges, wherewij∈ R≥0
+is the weight of the edge⟨i,j⟩ connecting verticesi and
+j. The goal of MaxCut is to maximize the following ob-
+jective function
+HC =
+∑
+⟨i,j⟩
+wij
+2 (1−σziσzj ), (7)
+where an edge⟨i,j⟩ contributes with weightwij if and
+only if spinsσzi and σzj are anti-aligned.
+For simplicity, we restrict our attention to MaxCut on
+d-regular graphs, where every vertex is connected to ex-
+actly d other vertices. We study two classes of graphs:
+the ﬁrst is unweightedd-regular graphs (udR), where all
+edges have equal weightswij = 1; the second is weighted
+d-regular graphs (wdR), where the weightswij are cho-
+sen uniformly at random from the interval[0, 1]. It is
+NP-hard to design an algorithm that guarantees a min-
+imum approximation ratio of r∗ ≥ 16/17 for MaxCut
+on all graphs [22], orr∗≥ 331/332 when restricted to
+u3R graphs [23]. The current record for approximation
+ratio guarantee on generic graphs belongs to Goemans-
+Williamson [24], which achievesr∗≈ 0.87856 using semi-
+deﬁnite programming. This lower bound can be raised
+tor∗≈ 0.9326 when restricted to u3R graphs [25]. Farhi
+et al. [2] were able to prove that QAOA at levelp = 1
+achievesr∗≥ 0.6924 for u3R graphs, using the fact that
+Fp can be written as a sum of quasi-local terms, each
+corresponding to a subgraph involving edges at mostp
+steps away from a given edge. However, this approach
+to boundr∗ quickly becomes intractable since the local-
+ity of each term (i.e., size of each subgraph) grows ex-
+ponentially inp, as does the number of subgraph types
+involved.
+QAOA is believed to be a promising algorithm for
+multiple reasons [2, 9, 10, 26–31]. As mentioned above,
+for certain cases one can prove a guaranteed minimum
+approximation ratio when p = 1 [2, 9]. Addition-
+ally, under reasonable complexity-theoretic assumptions,
+QAOA cannot be eﬃciently simulated by any classi-
+cal computer even when p = 1 , making it a suitable
+candidate algorithm to establish the so-called “quantum
+supremacy” [10]. It has also been argued that the square-
+pulse (“bang-bang”) ansatz of dynamical evolution, of
+which QAOA is an example, is optimal given a ﬁxed
+quantum computation time [28]. In general, the per-
+formance of QAOA can only improve with increasing
+p, achieving r→ 1 when p→∞ since it can approx-
+imate adiabatic quantum annealing via Trotterization;
+this monotonicity makes it more attractive than quan-
+tum annealing whose performance may decrease with in-
+creased run time [14].
+While QAOA has a simple description, not much is
+currently understood beyondp = 1. To establish poten-
+tial quantum advantage over classical algorithms, it is of
+critical importance to investigate QAOA at intermediate
+depths (p> 1). Refs. [2, 11, 12] have shown that QAOA
+have limited performance on some problems on bounded-
+degree graphs when the depth is shallow. This limitation
+may result from the fact that the algorithm cannot “see”
+the entire graph at low depth. It thus indicates that one
+may need the depth of QAOA to grow with the system
+size (e.g.,p≥ logN) in order to outperform the best clas-
+sical algorithms. For the toy example of MaxCut on u2R
+graphs, i.e. 1D antiferromagnetic rings, it is conjectured
+that QAOA yieldsr≥ (2p+ 1)/(2p+ 2)based on numer-
+ical evidence [2, 26][32]. In another example of Grover’s
+unstructured search problem amongn items, QAOA is
+shown to be able to ﬁnd the target state withp = Θ(√n),
+achievingtheoptimalquerycomplexitywithinaconstant
+factor [30]. For more general problems, Farhiet al. [2]
+proposed a simple approach by discretizing each param-
+eter intoO(poly(N)) grid points; this, however, requires
+examining NO(p) possibilities at level p, which quickly
+becomes impractical asp grows. Eﬃcient optimization
+of QAOA parameters and understanding the algorithm
+for 1<p< ∞ remain outstanding problems. We address
+these problems in the present work.
+
+=== PDF PAGE 4 ===
+4
+1 2 3
+0
+0.1
+0.2
+0.3
+0.4 p=3
+1 2 3
+0
+0.05
+0.1
+0.15
+0.2
+p=3
+1 2 3 4
+0
+0.1
+0.2
+0.3
+0.4 p=4
+1 2 3 4
+0
+0.05
+0.1
+0.15
+0.2
+p=4
+1 2 3 4 5
+0
+0.1
+0.2
+0.3
+0.4 p=5
+1 2 3 4 5
+0
+0.05
+0.1
+0.15
+0.2
+p=5
+1 2 3 4 5 6 7
+0
+0.2
+0.4
+p=7
+1 2 3 4 5 6 7
+0
+0.1
+0.2
+p=7
+FIG.2. (a)OptimalQAOAparameters (⃗γ∗,⃗β∗)foranexam-
+ple instance of MaxCut on a 16-vertex unweighted 3-regular
+(u3R) graph at levelp = 7. (b) The parameter pattern visu-
+alized by plotting the optimal parameters of 40 instances of
+16-vertex u3R graphs, for3≤ p≤ 5. Each dashed line con-
+nects parameters for one particular graph instance. For each
+instance and eachp, we use the classical BFGS optimization
+routine [33] from104 random initial points, and keep the best
+parameters.
+III. OPTIMIZING VARIATIONAL
+PARAMETERS
+In this section, we address the issue of parameter op-
+timization in QAOA, since searching for the best pa-
+rameters via standard approaches that rely on random
+initialization generally become exponentially diﬃcult as
+level p increases. We mostly restrict our discussion to
+randomly generated instances of u3R and w3R graphs.
+Similar results are found for u4R and w4R graphs, as
+well as complete graphs with random weights. We utilize
+patterns in the optimal parameters to develop heuristic
+strategies that can eﬃciently ﬁnd quasi-optimal solutions
+in O(poly(p)) time.
+A. Patterns in optimal parameters
+Before searching for patterns in optimal QAOA pa-
+rameters, it is useful to eliminate degeneracies in the
+parameter space due to symmetries. Generally, QAOA
+has a time-reversal symmetry,Fp(⃗γ,⃗β) = Fp(−⃗γ,−⃗β),
+since bothHB and HC are real-valued. For QAOA ap-
+plied to MaxCut, there is an additional Z2 symmetry,
+as e−i(π/2)HB ≡ (σx)⊗N commutes through the circuit.
+Furthermore, the structure of the MaxCut problem on
+udR graphs creates redundancy sincee−iπHC = 1 if d is
+even, and(σz)⊗N ifd is odd. These symmetries allow us
+to restrictβi∈ [−π4, π4 ) in general, andγi∈ [−π2, π2 ) for
+udR graphs.
+We start by numerically investigating the optimal
+QAOA parameters for MaxCut on random u3R and w3R
+graphs with vertex number 8 ≤ N ≤ 22, with exten-
+sive searches in the entire parameter space. For each
+graph instance and a given levelp, we choose a random
+initial point (seed) in the parameter space [34] and use
+a commonly used, gradient-based optimization routine
+known as BFGS [33] to ﬁnd a local optimum(⃗γL,⃗βL).
+This local optimization is repeated with suﬃciently many
+diﬀerent seeds to ﬁnd the global optimum(⃗γ∗,⃗β∗) [35].
+We then reduce the degeneracies of the optimal param-
+eters (⃗γ∗,⃗β∗) using the aforementioned symmetries. In
+all cases examined, we ﬁnd that the global optimum is
+non-degenerate up to these symmetries.
+After performing the above numerical experiment for
+100 random u3R and w3R graphs with various vertex
+numberN, we discover some patterns in the optimal pa-
+rameters (⃗γ∗,⃗β∗). Generically, the optimalγ∗i tends to
+increase smoothly withi = 1, 2,··· ,p, whileβ∗i tends to
+decrease smoothly, as shown for the example instance in
+Fig. 2(a). In Fig. 2(b), we illustrate the pattern by si-
+multaneously plotting the optimal parameters for 40 in-
+stances of 16-vertex u3R graphs for3≤p≤ 5. Further-
+more, for a given class of graphs, the optimal parameters
+are observed to roughly occupy the same range of val-
+ues as p is varied. Similar patterns are found for w3R
+graphs and weighted complete graphs, which we illus-
+trate in Appendix A. This demonstrates a clear pattern
+in the optimal QAOA parameters that we can exploit in
+the optimization, as we discuss later in Sec. IIIB. Similar
+patterns are found for parameters up top ≲ 15, if the
+number of random seeds is increased accordingly.
+We give two remarks here: First, we note that sur-
+prisingly, even at small depth, this parameter pattern is
+reminiscent of adiabatic quantum annealing whereHC
+is gradually turned on whileHB is gradually turned oﬀ.
+However, we will demonstrate in Sec. V that the mech-
+anism of QAOA goes beyond the adiabatic principle.
+Secondly, we note that these optimal parameters have
+a small spread over many diﬀerent instances. This is be-
+cause the objective functionFp(⃗γ,⃗β) is a sum of terms
+corresponding to subgraphs involving vertices that are
+distance≤ p away from every edge. At smallp, there
+are only a few relevant subgraph types that enter into
+Fp and eﬀectively determine the optimal parameters. As
+N→∞ and at a ﬁxed ﬁnitep, we expect the probability
+of a relevant subgraph type appearing in a random graph
+to approach a ﬁxed fraction. This implies that the dis-
+tribution of optimal parameters(⃗γ∗,⃗β∗) should converge
+to a ﬁxed set of values in this limit.
+
+=== PDF PAGE 5 ===
+5
+B. Heuristic optimization strategy for largep
+The optimal parameter patterns observed above indi-
+cate that generically, there is a slowly varying continuous
+curve that underlies the parametersγ∗i and β∗i. More-
+over, this curve changes only slightly from levelp top+1.
+These observations allow us to choose educated guesses
+of variational parameters for(p+1)-level QAOA based on
+optimized parameters fromp-level (or in general fromq-
+level, whereq≤p). These educated guesses can serve as
+initialpointsfedtovariousclassicaloptimizationroutines
+that ﬁnd a nearby local optimum. Based on this idea, we
+have developed two types of heuristic strategies for ini-
+tializing optimization. We give a high-level overview of
+these heuristics in this section, while deferring the de-
+tails of its implementation to Appendix B. While these
+heuristics are not guaranteed to ﬁnd the global optimum
+of QAOA parameters, we show that in Sec. IVA, it can
+produce, in O(poly(p)) time, quasi-optima that require
+2O(p) randomly initialized optimization runs to surpass.
+Consequently, this allows us to study the performance
+and mechanism of QAOA beyondp = 1.
+The ﬁrst heuristic strategy, which we call INTERP,
+uses linear interpolation to choose initial parameters.
+Starting at levelp=1, we optimize, and linearly interpo-
+late the curve formed by optimized parameters at levelp
+to extract a set of initial parameters for levelp + 1.
+The second heuristic strategy, which we call
+FOURIER, uses a new parameterization of QAOA. In-
+stead of using the2p parameters (⃗γ,⃗β)∈ R2p, we switch
+to 2q parameters (⃗u,⃗v)∈ R2q, where the individual ele-
+mentsγi andβi are written as functions of(⃗u,⃗v) through
+the following transformation:
+γi =
+q∑
+k=1
+uk sin
+[(
+k− 12)(i− 12)πp],
+βi =
+q∑
+k=1
+vk cos
+[(
+k− 12)(i− 12)πp]. (8)
+These transformations are known as Discrete
+Sine/Cosine Transform, where uk and vk can be
+interpreted as the amplitude of k-th frequency com-
+ponent for ⃗γ and ⃗β, respectively. In this strategy,
+when optimizing levelp + 1, the initial parameters are
+generated by simply re-using the optimized amplitudes
+(⃗u∗,⃗v∗) from levelp. Note that whenq≥ p, the (⃗u,⃗v)
+parametrization is capable of describing all possible
+QAOA protocols at levelp. However, the smoothness
+of the optimal parameters (⃗γ,⃗β) implies that only the
+low-frequency components are important. Thus, we
+can also consider the case where q is a ﬁxed constant
+independent of p, so the number of parameters is
+bounded even as the QAOA circuit depth increases.
+While both heuristics work well, we have decided to fo-
+cus on using the FOURIER heuristics in the main text,
+because we ﬁnd that it gives a slight edge in performance
+0 2 4 6 8 10
+0.01
+0.02
+0.05
+0.1
+0.2
+0.5
+FOURIER
+1000 RI runs avg.
+best of 1000 RI runs
+1 2 3 4 5 6 7100
+101
+102
+103
+104
+105
+# randomly initialized (RI)
+runs to match heuristic
+u3R graphs median
+w3R graphs median
+fit u3R: 0.42 (2.63)p
+fit w3R: 0.55 (4.26)p
+FIG. 3. (a) Comparison between our FOURIER heuris-
+tic and the random initialization (RI) approach for optimiz-
+ing QAOA, on an example instance of 16-vertex w4R graph.
+The ﬁgure of merit1−r, where r is the approximation ra-
+tio, is plotted as a function of QAOA levelp on a log-linear
+scale. The RI points are obtained by optimizing from 1000
+randomly generated initial parameters, averaged over 10 such
+realizations. (b) The median number of randomly initialized
+optimization runs needed to obtain an approximation ratio as
+good as our FOURIER heuristic, for 40 instances of 16-vertex
+u3R and w3R graphs. A log-linear scale is used, and expo-
+nential curves are ﬁtted to the results. Error bars are 5th and
+95th percentiles.
+for MaxCut problems. The INTERP heuristic is simpler
+and may work better on other problems. More details on
+the implementation of the heuristics and their compari-
+son can be found in Appendix B.
+We stress that these heuristic strategies are developed
+to generate good initial points for optimization. These
+initial points can then be fed to standard optimization
+routines such as gradient descent, BFGS [33], Nelder-
+Mead [36], and Bayesian Optimization [37]. This is in
+contrast to the standard strategy of random initializa-
+tion (RI), where one picks a random set of parameters to
+begin optimization. In order to ﬁnd the global optimum
+in a highly non-convex landscape, the number of RI runs
+needed generically scales exponentially with the number
+of parameters, which becomes intractable for large num-
+ber of parameters. In the following section, we will com-
+pare our heuristics to the RI approach, and ﬁnd that an
+exponential number of RI runs is needed to match the
+performance of our heuristics.
+
+=== PDF PAGE 6 ===
+6
+IV. PERFORMANCE OF HEURISTICALLY
+OPTIMIZED QAOA
+A. Comparison between our heuristics and
+randomly initialized (RI) optimizations
+Here, we compare the performance of our heuristic
+strategies to the standard strategy of random initializa-
+tion (RI). In Fig. 3(a), we show the result for an ex-
+ample instance of 16-vertex w4R graph. At lowp, our
+FOURIER heuristic strategies perform just as well as the
+best out of 1000 RI optimization runs—both are able to
+ﬁnd the global optimum. The average performance of
+the RI strategy, on the other hand, is much worse than
+our heuristics. This indicates that the QAOA parame-
+ter landscape is highly non-convex and ﬁlled with low-
+quality, non-degenerate local optima. Whenp≥ 5, our
+heuristic optimization outperforms the best RI run. To
+estimate the number of RI runs needed to ﬁnd an op-
+timum with the same or better approximation ratio as
+our FOURIER heuristics, we generate 40 instances of 16-
+vertex u3R and w3R graphs, and perform 40000 RI op-
+timization for each instance at each levelp. In Fig. 3(b),
+the median number of RI runs needed to match our
+heuristic is shown to scale exponentially withp. There-
+fore, our heuristics oﬀer a dramatic improvement in the
+resource required to ﬁnd good parameters for QAOA. As
+we have veriﬁed with an excessive number of RI runs, the
+heuristics usually ﬁnd the global optima.
+We remark that although we mostly used a gradient-
+based optimization routine (BFGS) in our numerical sim-
+ulations, non-gradient based routines, such as Nelder-
+Mead[36], workequallywellwithourheuristicstrategies.
+The choice to use BFGS is mainly motivated by the sim-
+ulation speed. Later in Sec. VI, we account for the mea-
+surement costs in estimating the gradient using a ﬁnite-
+diﬀerence method, and perform a full Monte-Carlo simu-
+lation of the entire QAOA algorithm, including quantum
+ﬂuctuations in the determination ofFp.
+B. Performance of QAOA on typical instances
+With our heuristic optimization strategies in hand, we
+study the performance of intermediatep-level QAOA on
+many graph instances. We consider many randomly gen-
+erated instances u3R and w3R graphs with vertex num-
+ber 8 ≤ N ≤ 22, and use our FOURIER strategy to
+ﬁnd optimal QAOA parameters for levelp≤ 20. In the
+following discussion, we use the fractional error1−r to
+assess the performance of QAOA.
+We ﬁrst examine the case of unweighted graphs, specif-
+ically u3R graphs. In Fig. 4(a), we plot the fractional
+error 1−r as a function of QAOA’s levelp. Here, we
+see that, on average, 1−r∝ e−p/p0 appears to decay
+exponentially withp. Note that since the instances stud-
+ied are u3R graphs with system size N ≤ 22, where
+Cmax ≤ |E| ≤ 33, we have essentially prepared the
+0 5 10 15 2010-3
+10-2
+10-1
+100
+10 15 20
+0
+1
+2
+0 5 10 15 2010-4
+10-3
+10-2
+10-1
+100
+N=8
+N=10
+N=12
+N=14
+N=16
+N=18
+N=20
+N=22
+10 15 20
+0
+2
+4
+FIG. 4. Average performance of QAOA as measured by the
+fractional error 1−r, plotted on log-linear scale. The results
+are obtained by applying our heuristic optimization strategies
+FOURIER to up to 100 random instances of (a) u3R graphs
+and (b) w3R graphs. Diﬀerently colored lines correspond to
+ﬁtted lines to the average for diﬀerent system sizeN, where
+the model function is1−r∝ e−p/p0 for unweighted graphs
+and 1−r∝ e−
+√
+p/p0 for weighted graphs. Insets show the
+dependence of the ﬁt parametersp0 on the system sizeN.
+MaxCut state whenever the fractional error goes be-
+low∼ 10−2. This good performance can be understood
+by interpreting QAOA as Trotterized quantum anneal-
+ing, especially when the optimized parameters are of
+the pattern seen in Fig. 2, where one initializes in the
+ground state of−HB and evolve withHB (andHC) with
+smoothly decreasing (and increasing) durations. The
+equivalent total annealing timeT is approximately pro-
+portional to the levelp, since the individual parameters
+γi,βi =O(1) and correspond to the evolution times un-
+der HC and HB. If T is much longer than 1/∆2min,
+where ∆min is the minimum spectral gap, quantum an-
+nealing will be able to ﬁnd the exact solution to MaxCut
+(groundstateof −HC)bytheadiabatictheorem[17], and
+achieve exponentially small fractional error as predicted
+by Landau-Zener [38]. Numerically, we ﬁnd that the min-
+imumgapsoftheseu3Rinstanceswhenrunningquantum
+annealing are on the order of∆min & 0.2. It is thus not
+surprising that QAOA achieves exponentially small frac-
+tional error on average, since it is able to prepare the
+ground state of−HC through the adiabatic mechanism
+for these large-gap instances. Nevertheless, as we will see
+in the following section, this exponential behavior breaks
+
+=== PDF PAGE 7 ===
+7
+down for hard instances, where the gap is small.
+Let us now turn to the case of w3R graphs. As shown
+in Fig. 4(b), the fractional error appears to scale as
+1−r∝e−
+√
+p/p0. We note that the stretched-exponential
+scaling is true in the average sense, while individual in-
+stances have very diﬀerent behavior. For easy instances
+whose corresponding minimum gaps∆min are large, ex-
+ponential scaling of the fractional error is found. For
+more diﬃcult instances whose minimum gaps are small,
+weﬁndthattheirfractionalerrorsreachplateausatinter-
+mediatep, before decreasing further whenp is increased.
+We analyze these hard instances in more depth in the
+following Section V. Surprisingly, when we average over
+randomly generated instances, the fractional error is ﬁt-
+ted remarkably well by a stretched-exponential function.
+These results of average performance of QAOA are
+interesting despite considerations of ﬁnite-size eﬀect.
+While the decay constantp0 does appear to depend on
+the system sizeN as shown in the insets of Fig. 4, our
+ﬁnite-size simulations cannot conclusively determine the
+exact scaling. Although it remains unknown whether the
+(stretched)-exponential scaling will start to break down
+at larger system sizes, if the trend continues to system
+size of N = 100 ∼ 1000, then QAOA will be practi-
+cally useful in solving interesting MaxCut instances, bet-
+ter or on par with other known algorithms, in a regime
+where ﬁnding the exact solution will be infeasible. Even
+if QAOA fails for the worst-case graphs, it can still be
+practically useful, if it performs well on a randomly cho-
+sen graph of large system size.
+V. ADIABATIC MECHANISM, QUANTUM
+ANNEALING, AND QAOA
+Intheprevioussection, webenchmarktheperformance
+of QAOA for MaxCut on random graph instances in
+terms of the approximation ratior. Although designed
+for approximate optimization, QAOA is often able to ﬁnd
+the MaxCut conﬁguration—the global optimum of the
+problem—with a high probability as levelp increases. In
+this section, we assess the eﬃciency of the algorithm to
+ﬁndtheMaxCutconﬁgurationandcompareitwithquan-
+tum annealing. In particular, we ﬁnd that QAOA is not
+necessarily limited by the minimum gap as in quantum
+annealing, and explain a mechanism at work that allows
+it to overcome the adiabatic limitations.
+A. Comparing QAOA with quantum annealing
+A predecessor of QAOA, quantum annealing (QA) has
+beenwidelystudiedforthepurposeofsolvingcombinato-
+rial optimization problems [39–42]. To ﬁnd the MaxCut
+conﬁguration that maximizes⟨HC⟩, we consider the fol-
+lowing simple QA protocol:
+HQA(s) =−[sHC + (1−s)HB], s =t/T, (9)
+where t ∈ [0,T ] and T is the total annealing time.
+The initial state is prepared to be the ground state of
+HQA(s = 0), i.e.,|ψ(0)⟩ =|+⟩⊗N. The ground state of
+the ﬁnal Hamiltonian,HQA(s = 1), corresponds to the
+solution of the MaxCut problem encoded inHC [43]. In
+adiabatic QA, the algorithm relies on the adiabatic the-
+orem to remain in the instantaneous ground state along
+the annealing path, and solves the computational prob-
+lem by ﬁnding the ground state at the end. To guarantee
+success, the necessary run time of the algorithm typically
+scales as T = O(1/∆2min), where ∆min is the minimum
+spectral gap [17]. Consequently, adiabatic QA becomes
+ineﬃcient for instances where ∆min is extremely small.
+We refer to these graph instances as hard instances (for
+adiabatic QA).
+Beyond the completely adiabatic regime, there is often
+a tradeoﬀ between the success probability (ground state
+populationpGS(T )) and the run time (annealing timeT):
+one can either run the algorithm with a long annealing
+time to obtain a high success probability or run it mul-
+tiple times at a shorter time to ﬁnd the solution at least
+once. A metric often used to determine the best balance
+is the time-to-solution (TTS) [17]:
+TTSQA(T ) =T ln(1−pd)ln[1−pGS(T )] (10)
+TTSoptQA = minT> 0TTSQA(T ). (11)
+TTSQA(T )measures the time required to ﬁnd the ground
+stateatleastoncewiththetargetprobability pd (takento
+be 99% in this paper), neglecting non-algorithmic over-
+heads such as state-preparation and measurement time.
+Intheadiabaticregimewhere ln[1−pGS(T )]∝T ∆2min per
+Landau-Zener formula [38], we have TTSQA∝ 1/∆2min
+which is independent of T. However, it has been ob-
+served in some cases that it can be better to run QA
+non-adiabatically to obtain a shorter TTS [14–17]. By
+choosing the best annealing timeT, regardless of adia-
+baticity, we can determine TTSoptQA as the minimum al-
+gorithmic run time of QA. For QAOA, a similar metric
+can be deﬁned. The variational parametersγi andβi can
+be regarded as the time evolved under the Hamiltonians
+HC andHB, respectively. Onecanthusinterpretthesum
+of the variational parameters to be the total “annealing”
+time, i.e.,Tp =∑pi=1(|γ∗i| +|β∗i|) [44], and deﬁne
+TTSQAOA(p) =Tp
+ln(1−pd)
+ln[1−pGS(p)] (12)
+TTSoptQAOA = minp>0 TTSQAOA(p), (13)
+where pGS(p) is the ground state population after the
+optimalp-level QAOA protocol. Note this quantity does
+not take into account of the overhead in ﬁnding the opti-
+mal parameters. We use TTSQAOA(p)here to benchmark
+the algorithm, and it should not be taken directly to be
+the actual experimental run time.
+To compare the algorithms, we compute TTSoptQA and
+
+=== PDF PAGE 8 ===
+8
+10-10 10-8 10-6 10-4 10-2 100
+101
+102
+103
+104
+TTSQAOAopt
+N=10
+N=12
+N=14
+N=16
+N=18
+LZ
+(a)
+<latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit>
+(b)
+<latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit>
+101 102 103 104
+TTSQAopt
+101
+102
+103
+104
+TTSQAOAopt
+N=10
+N=12
+N=14
+N=16
+N=18
+FIG. 5. (a) TTS optQAOA versus the minimum spectral gap in
+QA ,∆min, for many random w3R graph instances. 1000 ran-
+dominstancesaregeneratedforeachgraphvertexsize N. The
+maximum cutoﬀp is taken to bepmax = 50, 50, 40, 35, 30 for
+N = 10, 12, 14, 16, 18, respectively. Dashed line corresponds
+to adiabatic QA run time of 1/∆2min predicted by Landau-
+Zener [38]. (b) TTS optQAOA versus TTSoptQA for each random
+graph instance. Dashed line indicates when the two are equal.
+The (Pearson’s) correlation coeﬃcient between QAOA TTS
+and QA TTS isρ
+(
+ln(TTSoptQAOA), ln(TTSoptQA))≈ 0.91.
+TTSoptQAOA for many random graph instances. For each
+even vertex number from N = 10 to N = 18 , we
+randomly generate 1000 instances of w3R graphs. In
+Fig. 5(a), we plot the relationship between TTSoptQAOA
+and the minimum gap ∆min in quantum annealing for
+each instance. Most of the random graphs have large
+gaps (∆min & 10−2), and we observe that the opti-
+mal TTS follows the Landau-Zener prediction of1/∆2min
+for these graphs. This indicates that a quasi-adiabatic
+parametrization of QAOA is the best when∆min is rea-
+sonably large. Many graphs, however, exhibit very small
+gaps (∆min ≲ 10−3), and thus require exceedingly long
+run time for adiabatic evolution. For some graphs,∆min
+is as small as 10−8, which implies an adiabatic evolu-
+tion requires a run time T & 1016. Nevertheless, we
+see that QAOA can ﬁnd the solution for these hard in-
+stancesfasterthanadiabaticQA.Remarkably, TTS optQAOA
+appears to be independent of the gap for all graphs that
+have extremely small gaps, and beats the adiabatic TTS
+(Landau-Zener line) by many orders of magnitude. This
+suggests that an exponential improvement of TTS is pos-
+sible with non-adiabatic mechanisms when adiabatic QA
+is limited by exponentially small gaps.
+Similarly for QA, the optimal annealing time T is
+often not in the adiabatic limit for small-gap graphs.
+In Fig. 5(b), we observe a strong correlation between
+TTSoptQAOA and TTSoptQA for each graph instance. This sug-
+gests that QAOA is making use of the optimal annealing
+schedule, regardless of whether a slow adiabatic evolution
+or a fast diabatic evolution is better. We believe that if
+we use an optimized schedule beyond the linear ramp in
+Eq. (9), QA should be able to match the performance of
+QAOA. In the following subsection, we take a represen-
+tative example to explain our results observed in Fig. 5
+and a mechanism of QAOA to go beyond the adiabatic
+paradigm.
+B. Beyond the adiabatic mechanism: a case study
+To understand the behavior of QAOA, we focus on
+graph instances that are hard for adiabatic QA in this
+subsection. In particular, we study a representative in-
+stance to explain how QAOA as well as diabatic QA
+can overcome the adiabatic limitations. As illustrated in
+Fig. 6(a), we demonstrate that QAOA can learn to uti-
+lize diabatic transitions at anti-crossings to circumvent
+diﬃculties caused by very small gaps in QA.
+Fig. 6(b) shows a representative graph withN = 14,
+whose minimum spectral gap∆min < 10−3. For this ex-
+ample hard instance, we ﬁrst numerically simulate the
+quantum annealing process. Fig. 6(c) shows populations
+in the ground state and low excited states at the end
+of the process for diﬀerent annealing timeT. Since the
+minimum gap is very small, the adiabatic condition re-
+quiresT & 1/∆2min≈ 106. TheLandau-Zenerformulafor
+the ground state populationpGS = 1− exp
+(
+−cT ∆2min)
+ﬁts well with our exact numerical simulation, wherec is
+a ﬁtting parameter. However, we can clearly observe a
+“bump” in the ground state population at annealing time
+T ≈ 40. At such a time scale, the dynamics is clearly
+non-adiabatic; we call this phenomenon adiabatic bump.
+This phenomenon has been observed earlier in Ref. [14–
+17] for other optimization problems.
+Subsequently, we simulate QAOA on this hard in-
+stance. As mentioned earlier, although QAOA opti-
+mizes energy instead of ground state overlap, substan-
+tial ground state population can still be obtained even
+for many hard graphs. Using our FOURIER heuristic
+strategy, various low-energy state populations of the out-
+put state are shown for diﬀerent levelsp in Fig. 6(d).
+We observe that QAOA can achieve similar ground state
+population as the diabatic bump at smallp, and then
+substantially enhance it afterp & 24.
+To better understand the mechanism of QAOA and
+
+=== PDF PAGE 9 ===
+9
+00.10.20.30.40.50.60.70.80.91
+0
+0.2
+0.4
+0.6
+0.8
+1
+instantaneous eigenstate
+population
+GS
+1E
+2E
+3E
+4E
+0 0.10.20.30.40.50.60.70.80.9 1
+0
+0.2
+0.4
+0.6
+0.8
+1
+10 20 30 40
+0
+0.2
+0.4
+0.6
+QAOA
+parameters
+0.47
+0.56
+0.37
+0.43
+0.89
+0.76
+0.66 0.9
+0.69
+0.76
+0.36
+0.14
+0.16
+0.76
+0.15
+0.16
+ 0.7
+0.82
+0.52
+0.38
+0.19
+excited
+state
+ground
+state
+anti-crossing
+QAOA
+Energy
+Time
+0 10 20 30 40 50
+0
+0.2
+0.4
+0.6
+0.8
+1
+population
+100 101 102 103 104 105 106 107
+0
+0.2
+0.4
+0.6
+0.8
+1
+populationDiabatic 
+bump
+Adiabatic QA
+(a)
+<latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit>
+(b)
+<latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit>
+(c)
+<latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit>
+(d)
+<latexit sha1_base64="Gn+8THen3bVQiod5fl8UonChIlM=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7g2eVWc77W6nWxtsOmHjtEljh2e7re/xQLEiQ2mZoMZEYTe3SUm15Uxg5ceFwZyyCR1h5FxJMzRJWUuuIHCRAQyVdp+0UEeXESXNjJllqavMqB2b9dw8+K9cVNjh66TkMi8sSrZoNCwEWAXz+8OAa2RWzJxDmeZOK7Ax1ZRZNyU/gOU+Utl6TMbRfJ6BmkpoUqt60qzy/SCAt5o+n6CFL1c4CAI/ljhlKsuoHJRxqqkrqKJeUsaCypFAaIdwCe0exLo+u1bvuZMDaUN2JWKDqIrCVRYHnUu4BlH3dYjLee3fZvDpfz1YjdrfVOt++8ssq5qn3I5B5aipdS/MJaRop4hr/PQc1++wxPjGra0bLjiCDxe5e7OFwuvG7PY3XN/WTee41wmd//VF++Bls8nb5Al5SvZISF6RA/KRHJI+YUSSH+Qn+eV1vCMv8pJFaWurwTwmK+YN/wAzNCq+</latexit><latexit sha1_base64="Gn+8THen3bVQiod5fl8UonChIlM=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7g2eVWc77W6nWxtsOmHjtEljh2e7re/xQLEiQ2mZoMZEYTe3SUm15Uxg5ceFwZyyCR1h5FxJMzRJWUuuIHCRAQyVdp+0UEeXESXNjJllqavMqB2b9dw8+K9cVNjh66TkMi8sSrZoNCwEWAXz+8OAa2RWzJxDmeZOK7Ax1ZRZNyU/gOU+Utl6TMbRfJ6BmkpoUqt60qzy/SCAt5o+n6CFL1c4CAI/ljhlKsuoHJRxqqkrqKJeUsaCypFAaIdwCe0exLo+u1bvuZMDaUN2JWKDqIrCVRYHnUu4BlH3dYjLee3fZvDpfz1YjdrfVOt++8ssq5qn3I5B5aipdS/MJaRop4hr/PQc1++wxPjGra0bLjiCDxe5e7OFwuvG7PY3XN/WTee41wmd//VF++Bls8nb5Al5SvZISF6RA/KRHJI+YUSSH+Qn+eV1vCMv8pJFaWurwTwmK+YN/wAzNCq+</latexit><latexit sha1_base64="Gn+8THen3bVQiod5fl8UonChIlM=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7g2eVWc77W6nWxtsOmHjtEljh2e7re/xQLEiQ2mZoMZEYTe3SUm15Uxg5ceFwZyyCR1h5FxJMzRJWUuuIHCRAQyVdp+0UEeXESXNjJllqavMqB2b9dw8+K9cVNjh66TkMi8sSrZoNCwEWAXz+8OAa2RWzJxDmeZOK7Ax1ZRZNyU/gOU+Utl6TMbRfJ6BmkpoUqt60qzy/SCAt5o+n6CFL1c4CAI/ljhlKsuoHJRxqqkrqKJeUsaCypFAaIdwCe0exLo+u1bvuZMDaUN2JWKDqIrCVRYHnUu4BlH3dYjLee3fZvDpfz1YjdrfVOt++8ssq5qn3I5B5aipdS/MJaRop4hr/PQc1++wxPjGra0bLjiCDxe5e7OFwuvG7PY3XN/WTee41wmd//VF++Bls8nb5Al5SvZISF6RA/KRHJI+YUSSH+Qn+eV1vCMv8pJFaWurwTwmK+YN/wAzNCq+</latexit><latexit sha1_base64="Gn+8THen3bVQiod5fl8UonChIlM=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7g2eVWc77W6nWxtsOmHjtEljh2e7re/xQLEiQ2mZoMZEYTe3SUm15Uxg5ceFwZyyCR1h5FxJMzRJWUuuIHCRAQyVdp+0UEeXESXNjJllqavMqB2b9dw8+K9cVNjh66TkMi8sSrZoNCwEWAXz+8OAa2RWzJxDmeZOK7Ax1ZRZNyU/gOU+Utl6TMbRfJ6BmkpoUqt60qzy/SCAt5o+n6CFL1c4CAI/ljhlKsuoHJRxqqkrqKJeUsaCypFAaIdwCe0exLo+u1bvuZMDaUN2JWKDqIrCVRYHnUu4BlH3dYjLee3fZvDpfz1YjdrfVOt++8ssq5qn3I5B5aipdS/MJaRop4hr/PQc1++wxPjGra0bLjiCDxe5e7OFwuvG7PY3XN/WTee41wmd//VF++Bls8nb5Al5SvZISF6RA/KRHJI+YUSSH+Qn+eV1vCMv8pJFaWurwTwmK+YN/wAzNCq+</latexit><latexit sha1_base64="Gn+8THen3bVQiod5fl8UonChIlM=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7g2eVWc77W6nWxtsOmHjtEljh2e7re/xQLEiQ2mZoMZEYTe3SUm15Uxg5ceFwZyyCR1h5FxJMzRJWUuuIHCRAQyVdp+0UEeXESXNjJllqavMqB2b9dw8+K9cVNjh66TkMi8sSrZoNCwEWAXz+8OAa2RWzJxDmeZOK7Ax1ZRZNyU/gOU+Utl6TMbRfJ6BmkpoUqt60qzy/SCAt5o+n6CFL1c4CAI/ljhlKsuoHJRxqqkrqKJeUsaCypFAaIdwCe0exLo+u1bvuZMDaUN2JWKDqIrCVRYHnUu4BlH3dYjLee3fZvDpfz1YjdrfVOt++8ssq5qn3I5B5aipdS/MJaRop4hr/PQc1++wxPjGra0bLjiCDxe5e7OFwuvG7PY3XN/WTee41wmd//VF++Bls8nb5Al5SvZISF6RA/KRHJI+YUSSH+Qn+eV1vCMv8pJFaWurwTwmK+YN/wAzNCq+</latexit>
+(e)
+<latexit sha1_base64="BGgG8xnVsAv5ixYeloQOr7teCb0=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7uGz6myn3e10a4NNJ2ycNmns8Gy39T0eKFZkKC0T1Jgo7OY2Kam2nAms/LgwmFM2oSOMnCtphiYpa8kVBC4ygKHS7pMW6ugyoqSZMbMsdZUZtWOznpsH/5WLCjt8nZRc5oVFyRaNhoUAq2B+fxhwjcyKmXMo09xpBTammjLrpuQHsNxHKluPyTiazzNQUwlNalVPmlW+HwTwVtPnE7Tw5QoHQeDHEqdMZRmVgzJONXUFVdRLylhQORII7RAuod2DWNdn1+o9d3IgbciuRGwQVVG4yuKgcwnXIOq+DnE5r/3bDD79rwerUfubat1vf5llVfOU2zGoHDW17oW5hBTtFHGNn57j+h2WGN+4tXXDBUfw4SJ3b7ZQeN2Y3f6G69u66Rz3OqHzv75oH7xsNnmbPCFPyR4JyStyQD6SQ9InjEjyg/wkv7yOd+RFXrIobW01mMdkxbzhHzZ1Kr8=</latexit><latexit sha1_base64="BGgG8xnVsAv5ixYeloQOr7teCb0=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7uGz6myn3e10a4NNJ2ycNmns8Gy39T0eKFZkKC0T1Jgo7OY2Kam2nAms/LgwmFM2oSOMnCtphiYpa8kVBC4ygKHS7pMW6ugyoqSZMbMsdZUZtWOznpsH/5WLCjt8nZRc5oVFyRaNhoUAq2B+fxhwjcyKmXMo09xpBTammjLrpuQHsNxHKluPyTiazzNQUwlNalVPmlW+HwTwVtPnE7Tw5QoHQeDHEqdMZRmVgzJONXUFVdRLylhQORII7RAuod2DWNdn1+o9d3IgbciuRGwQVVG4yuKgcwnXIOq+DnE5r/3bDD79rwerUfubat1vf5llVfOU2zGoHDW17oW5hBTtFHGNn57j+h2WGN+4tXXDBUfw4SJ3b7ZQeN2Y3f6G69u66Rz3OqHzv75oH7xsNnmbPCFPyR4JyStyQD6SQ9InjEjyg/wkv7yOd+RFXrIobW01mMdkxbzhHzZ1Kr8=</latexit><latexit sha1_base64="BGgG8xnVsAv5ixYeloQOr7teCb0=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7uGz6myn3e10a4NNJ2ycNmns8Gy39T0eKFZkKC0T1Jgo7OY2Kam2nAms/LgwmFM2oSOMnCtphiYpa8kVBC4ygKHS7pMW6ugyoqSZMbMsdZUZtWOznpsH/5WLCjt8nZRc5oVFyRaNhoUAq2B+fxhwjcyKmXMo09xpBTammjLrpuQHsNxHKluPyTiazzNQUwlNalVPmlW+HwTwVtPnE7Tw5QoHQeDHEqdMZRmVgzJONXUFVdRLylhQORII7RAuod2DWNdn1+o9d3IgbciuRGwQVVG4yuKgcwnXIOq+DnE5r/3bDD79rwerUfubat1vf5llVfOU2zGoHDW17oW5hBTtFHGNn57j+h2WGN+4tXXDBUfw4SJ3b7ZQeN2Y3f6G69u66Rz3OqHzv75oH7xsNnmbPCFPyR4JyStyQD6SQ9InjEjyg/wkv7yOd+RFXrIobW01mMdkxbzhHzZ1Kr8=</latexit><latexit sha1_base64="BGgG8xnVsAv5ixYeloQOr7teCb0=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7uGz6myn3e10a4NNJ2ycNmns8Gy39T0eKFZkKC0T1Jgo7OY2Kam2nAms/LgwmFM2oSOMnCtphiYpa8kVBC4ygKHS7pMW6ugyoqSZMbMsdZUZtWOznpsH/5WLCjt8nZRc5oVFyRaNhoUAq2B+fxhwjcyKmXMo09xpBTammjLrpuQHsNxHKluPyTiazzNQUwlNalVPmlW+HwTwVtPnE7Tw5QoHQeDHEqdMZRmVgzJONXUFVdRLylhQORII7RAuod2DWNdn1+o9d3IgbciuRGwQVVG4yuKgcwnXIOq+DnE5r/3bDD79rwerUfubat1vf5llVfOU2zGoHDW17oW5hBTtFHGNn57j+h2WGN+4tXXDBUfw4SJ3b7ZQeN2Y3f6G69u66Rz3OqHzv75oH7xsNnmbPCFPyR4JyStyQD6SQ9InjEjyg/wkv7yOd+RFXrIobW01mMdkxbzhHzZ1Kr8=</latexit><latexit sha1_base64="BGgG8xnVsAv5ixYeloQOr7teCb0=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7uGz6myn3e10a4NNJ2ycNmns8Gy39T0eKFZkKC0T1Jgo7OY2Kam2nAms/LgwmFM2oSOMnCtphiYpa8kVBC4ygKHS7pMW6ugyoqSZMbMsdZUZtWOznpsH/5WLCjt8nZRc5oVFyRaNhoUAq2B+fxhwjcyKmXMo09xpBTammjLrpuQHsNxHKluPyTiazzNQUwlNalVPmlW+HwTwVtPnE7Tw5QoHQeDHEqdMZRmVgzJONXUFVdRLylhQORII7RAuod2DWNdn1+o9d3IgbciuRGwQVVG4yuKgcwnXIOq+DnE5r/3bDD79rwerUfubat1vf5llVfOU2zGoHDW17oW5hBTtFHGNn57j+h2WGN+4tXXDBUfw4SJ3b7ZQeN2Y3f6G69u66Rz3OqHzv75oH7xsNnmbPCFPyR4JyStyQD6SQ9InjEjyg/wkv7yOd+RFXrIobW01mMdkxbzhHzZ1Kr8=</latexit>
+(f)
+<latexit sha1_base64="FpGO/COUmuuD0j6OLlMTRRSXg50=">AAADrHicfVLbbtNAEN3GXIq5tfDIywjLUnkgilMEPJabhIRARWraCtuq1ptxsoq9a+2um0au/4BHXuG/+Bs2jityoYxka3Zmzpmzs5MUGdem1/u91XFu3Lx1e/uOe/fe/QcPd3YfHWtZKoYDJjOpThOqMeMCB4abDE8LhTRPMjxJJu/m+ZNzVJpLcWRmBcY5HQmeckaNDX2LDF6Yai99Vp/teL1urzHYdILW8Uhrh2e7ne/RULIyR2FYRrUOg15h4ooqw1mGtRuVGgvKJnSEoXUFzVHHVSO5Bt9GhpBKZT9hoIkuIyqaaz3LE1uZUzPW67l58F+5sDTp67jioigNCrZolJYZGAnz+8OQK2Qmm1mHMsWtVmBjqigzdkquD8t9hDTNmLSl+TwDORXQplb1JHntur4PbxV9PkEDX65w4PtuJHDKZJ5TMayiRFFbUIf9uIoyKkYZghfAJXh9iFRztq3ecysHkpbsSsQGUR0GqywWOpdwDaLpaxGX89q/zeDT/3qwBrW/qdb+9pdZVjVPuRmDLFBRY1+YC0jQTBHX+Ok5rt9hifGNXVs7XLAEHy4K+2YLhdeN2e5vsL6tm85xvxtY/+sL7+Blu8nb5Al5SvZIQF6RA/KRHJIBYUSQH+Qn+eV0nSMndOJFaWerxTwmK+akfwA5tirA</latexit><latexit sha1_base64="FpGO/COUmuuD0j6OLlMTRRSXg50=">AAADrHicfVLbbtNAEN3GXIq5tfDIywjLUnkgilMEPJabhIRARWraCtuq1ptxsoq9a+2um0au/4BHXuG/+Bs2jityoYxka3Zmzpmzs5MUGdem1/u91XFu3Lx1e/uOe/fe/QcPd3YfHWtZKoYDJjOpThOqMeMCB4abDE8LhTRPMjxJJu/m+ZNzVJpLcWRmBcY5HQmeckaNDX2LDF6Yai99Vp/teL1urzHYdILW8Uhrh2e7ne/RULIyR2FYRrUOg15h4ooqw1mGtRuVGgvKJnSEoXUFzVHHVSO5Bt9GhpBKZT9hoIkuIyqaaz3LE1uZUzPW67l58F+5sDTp67jioigNCrZolJYZGAnz+8OQK2Qmm1mHMsWtVmBjqigzdkquD8t9hDTNmLSl+TwDORXQplb1JHntur4PbxV9PkEDX65w4PtuJHDKZJ5TMayiRFFbUIf9uIoyKkYZghfAJXh9iFRztq3ecysHkpbsSsQGUR0GqywWOpdwDaLpaxGX89q/zeDT/3qwBrW/qdb+9pdZVjVPuRmDLFBRY1+YC0jQTBHX+Ok5rt9hifGNXVs7XLAEHy4K+2YLhdeN2e5vsL6tm85xvxtY/+sL7+Blu8nb5Al5SvZIQF6RA/KRHJIBYUSQH+Qn+eV0nSMndOJFaWerxTwmK+akfwA5tirA</latexit><latexit sha1_base64="FpGO/COUmuuD0j6OLlMTRRSXg50=">AAADrHicfVLbbtNAEN3GXIq5tfDIywjLUnkgilMEPJabhIRARWraCtuq1ptxsoq9a+2um0au/4BHXuG/+Bs2jityoYxka3Zmzpmzs5MUGdem1/u91XFu3Lx1e/uOe/fe/QcPd3YfHWtZKoYDJjOpThOqMeMCB4abDE8LhTRPMjxJJu/m+ZNzVJpLcWRmBcY5HQmeckaNDX2LDF6Yai99Vp/teL1urzHYdILW8Uhrh2e7ne/RULIyR2FYRrUOg15h4ooqw1mGtRuVGgvKJnSEoXUFzVHHVSO5Bt9GhpBKZT9hoIkuIyqaaz3LE1uZUzPW67l58F+5sDTp67jioigNCrZolJYZGAnz+8OQK2Qmm1mHMsWtVmBjqigzdkquD8t9hDTNmLSl+TwDORXQplb1JHntur4PbxV9PkEDX65w4PtuJHDKZJ5TMayiRFFbUIf9uIoyKkYZghfAJXh9iFRztq3ecysHkpbsSsQGUR0GqywWOpdwDaLpaxGX89q/zeDT/3qwBrW/qdb+9pdZVjVPuRmDLFBRY1+YC0jQTBHX+Ok5rt9hifGNXVs7XLAEHy4K+2YLhdeN2e5vsL6tm85xvxtY/+sL7+Blu8nb5Al5SvZIQF6RA/KRHJIBYUSQH+Qn+eV0nSMndOJFaWerxTwmK+akfwA5tirA</latexit><latexit sha1_base64="FpGO/COUmuuD0j6OLlMTRRSXg50=">AAADrHicfVLbbtNAEN3GXIq5tfDIywjLUnkgilMEPJabhIRARWraCtuq1ptxsoq9a+2um0au/4BHXuG/+Bs2jityoYxka3Zmzpmzs5MUGdem1/u91XFu3Lx1e/uOe/fe/QcPd3YfHWtZKoYDJjOpThOqMeMCB4abDE8LhTRPMjxJJu/m+ZNzVJpLcWRmBcY5HQmeckaNDX2LDF6Yai99Vp/teL1urzHYdILW8Uhrh2e7ne/RULIyR2FYRrUOg15h4ooqw1mGtRuVGgvKJnSEoXUFzVHHVSO5Bt9GhpBKZT9hoIkuIyqaaz3LE1uZUzPW67l58F+5sDTp67jioigNCrZolJYZGAnz+8OQK2Qmm1mHMsWtVmBjqigzdkquD8t9hDTNmLSl+TwDORXQplb1JHntur4PbxV9PkEDX65w4PtuJHDKZJ5TMayiRFFbUIf9uIoyKkYZghfAJXh9iFRztq3ecysHkpbsSsQGUR0GqywWOpdwDaLpaxGX89q/zeDT/3qwBrW/qdb+9pdZVjVPuRmDLFBRY1+YC0jQTBHX+Ok5rt9hifGNXVs7XLAEHy4K+2YLhdeN2e5vsL6tm85xvxtY/+sL7+Blu8nb5Al5SvZIQF6RA/KRHJIBYUSQH+Qn+eV0nSMndOJFaWerxTwmK+akfwA5tirA</latexit><latexit sha1_base64="FpGO/COUmuuD0j6OLlMTRRSXg50=">AAADrHicfVLbbtNAEN3GXIq5tfDIywjLUnkgilMEPJabhIRARWraCtuq1ptxsoq9a+2um0au/4BHXuG/+Bs2jityoYxka3Zmzpmzs5MUGdem1/u91XFu3Lx1e/uOe/fe/QcPd3YfHWtZKoYDJjOpThOqMeMCB4abDE8LhTRPMjxJJu/m+ZNzVJpLcWRmBcY5HQmeckaNDX2LDF6Yai99Vp/teL1urzHYdILW8Uhrh2e7ne/RULIyR2FYRrUOg15h4ooqw1mGtRuVGgvKJnSEoXUFzVHHVSO5Bt9GhpBKZT9hoIkuIyqaaz3LE1uZUzPW67l58F+5sDTp67jioigNCrZolJYZGAnz+8OQK2Qmm1mHMsWtVmBjqigzdkquD8t9hDTNmLSl+TwDORXQplb1JHntur4PbxV9PkEDX65w4PtuJHDKZJ5TMayiRFFbUIf9uIoyKkYZghfAJXh9iFRztq3ecysHkpbsSsQGUR0GqywWOpdwDaLpaxGX89q/zeDT/3qwBrW/qdb+9pdZVjVPuRmDLFBRY1+YC0jQTBHX+Ok5rt9hifGNXVs7XLAEHy4K+2YLhdeN2e5vsL6tm85xvxtY/+sL7+Blu8nb5Al5SvZIQF6RA/KRHJIBYUSQH+Qn+eV0nSMndOJFaWerxTwmK+akfwA5tirA</latexit>
+FIG. 6. (a) A schematic of how QAOA and the interpolated annealing path can overcome the small minimum gap limitations
+via diabatic transitions (purple line). Naive adiabatic quantum annealing path leads to excited states passing through the
+anti-crossing point (green line). (b) An instance of weighted 3-regular graph that has a small minimum spectral gap along the
+quantum annealing path given by Eq. (9). The optimal MaxCut conﬁguration is shown with two vertex colors, and the black
+(red) lines are the cut (uncut) edges. (c) Population in low excited states after the quantum annealing protocol with diﬀerent
+total timeT. The black solid line follows the Landau-Zener formula for the ground state population,pGS = 1−exp
+(
+−cT ∆2min),
+where c is a ﬁtting parameter. (d) Population in low excited states using QAOA at diﬀerent levelp. The FOURIER heuristic
+strategy is used in the optimization. (e) Interpreting QAOA parameters (atp = 40) as a smooth quantum annealing path, via
+linear interpolation according to Eq. (14). The annealing time parameters = t/Tp, whereTp =∑pi=1(|γ∗i| +|β∗i|). The red
+dotted line labels the location of anti-crossing where the gap is at its minimum, at which pointf(s)≈ 0.92. Inset shows the
+original QAOA optimal parametersγ∗i and β∗i for p = 40. (f) Instantaneous eigenstate population under the annealing path
+given in (e). Note that the instantaneous ground state and ﬁrst excited state swap at the anti-crossing point.
+makeameaningfulcomparisonwithQA,wecaninterpret
+the QAOA parameters as a smooth annealing path. We
+again interpret the sum of the variational parameters to
+be the total annealing time, i.e.,Tp =∑pi=1(|γi|+|βi|). A
+smooth annealing path can be constructed from QAOA
+optimal parameters as
+HQAOA(t) =−[f(t)HC + (1−f(t))HB], (14)
+f
+
+ti =
+i∑
+j=1
+(|γ∗j| +|β∗j|)− 12(|γ∗i| +|β∗i|)
+
+ = γ∗i
+|γ∗i| +|β∗i|,
+where ti is chosen to be at the mid-point of each time
+interval (γ∗i +β∗i ). With the boundary conditionsf(t =
+0) = 0, f(t = Tp) = 1 and linear interpolation at other
+intermediate timet, we can convert QAOA parameters to
+a well-deﬁned annealing path. We apply this conversion
+to the QAOA optimal parameters atp = 40 [Fig. 6(e)].
+With this annealing path, we can follow the instanta-
+neous eigenstate population throughout the quantum an-
+nealing process [Fig. 6(f)]. In contrast to adiabatic QA,
+the state population leaks out of the ground state and
+accumulates in the ﬁrst excited state before the anti-
+crossing point, where the gap is at its minimum. Using
+a diabatic transition at the anti-crossing, the two states
+swap populations, and a large ground state population is
+obtained in the end. We note that the ﬁnal state popula-
+tion from the constructed annealing path diﬀers slightly
+from those of QAOA, due to Trotterization and interpo-
+lation, but the underlying mechanism is the same, which
+is also responsible for the diabatic bump seen in Fig. 6(c).
+In addition to the conversion used in Eq. (14), we have
+tested a few other prescriptions to construct an annealing
+path from QAOA parameters, and qualitative features do
+not seem to change.
+Hence, our results indicate that QAOA is closely re-
+lated to a cleverly optimized diabatic QA path that
+can overcome limitations set by the adiabatic theorem.
+Through optimization, QAOA can ﬁnd a good anneal-
+ing path and exploit diabatic transitions to enhance
+ground state population. This explains the observation
+in Fig. 5(a) that TTSoptQAOA can be signiﬁcantly shorter
+than the time required by the adiabatic algorithm. On
+the other hand, as seen in Fig. 5(b), TTSoptQAOA is strongly
+
+=== PDF PAGE 10 ===
+10
+correlated with TTSoptQA: QAOA automatically ﬁnds a
+good annealing path, which could be adiabatic or not,
+depending on what is the best route for the speciﬁc prob-
+lem instance.
+The eﬀective dynamics of QAOA for this speciﬁc in-
+stance, as we see in Fig. 6(f), can be understood mostly
+by an eﬀective two-level system (see Appendix D for
+more discussions). In general, the energy spectrum can
+be more complex, and the dynamics may involve many
+excited states, which may not be explainable by the sim-
+ple schematic in Fig. 6(a). Nonetheless, QAOA can ﬁnd
+a suitable path via our heuristic optimization strategies
+even in more complicated cases [45].
+VI. CONSIDERATIONS FOR EXPERIMENTAL
+IMPLEMENTATION
+In this section, we discuss some important consider-
+ations for experimental realization. The framework of
+QAOA is general and can be applied to various exper-
+imental platforms to solve combinatorial optimization
+problems. Here, we again focus on the MaxCut prob-
+lem as a paradigmatic example, although it can also be
+applied to solve other interesting problems [45, 46].
+A. Finite measurement samples
+So far, we have focused on understanding the best the-
+oretically possible performance of QAOA, and assumed
+perfect measurement precision of the objective function
+in our numerical simulations. However, due to quan-
+tum ﬂuctuations (i.e., projection noise) in actual experi-
+ments, the precision is ﬁnite since it is obtained via aver-
+aging over ﬁnitely many measurement outcomes that can
+only take on discrete values. Hence, in practice, there is
+a trade-oﬀ between measurement cost and optimization
+quality: ﬁnding good optimum requires good precision
+at the cost of large number of measurements [47]. Ad-
+ditionally, large variance in the objective function value
+demands more measurements, but may help improve the
+chances of ﬁnding near-optimal MaxCut conﬁgurations.
+Here, we study the eﬀect of measurement projection
+noise with a full Monte-Carlo simulation of QAOA on
+some example graphs, where objective function is eval-
+uated by repeated projective measurements until its er-
+ror is below a threshold. More implementation details of
+this numerical simulation are discussed in Appendix F. In
+Fig. 7, we present the Monte-Carlo simulation result for
+the example instance studied earlier in Fig. 6(b). Here,
+we simulate QAOA by starting at either levelp=1 or
+p=5, and increasing to higher p using our FOURIER
+heuristics. The initial parameters atp=1 and p=5, re-
+spectively, are chosen based on known optima found for
+smaller size instances. We see that QAOA can ﬁnd the
+MaxCut solution in∼10–102 measurements, and starting
+our optimization at intermediate level (p=5) is better
+than starting at the lowest level (p=1). In comparison,
+100 101 102 103 104 10510-3
+10-2
+10-1
+100
+first
+excited
+state
+FIG. 7. Full Monte-Carlo simulation of QAOA account-
+ing for measurement projection noise, on the example 14-
+vertex instance studied in Fig. 6(b). For various optimiza-
+tion strategies, we keep track of approximation ratiori =
+|Cuti|/|MaxCut| from the i-th measurement, and plot min-
+imum fractional error 1−ri found after M measurements,
+averaged over many Monte-Carlo realizations. The blue solid
+and red dashed lines correspond to QAOA optimized with
+the FOURIER strategy starting with an educated guess of
+(⃗γ,⃗β) at p = 1 and p = 5, respectively. The orange dash-dot
+line corresponds to QAOA optimized starting with random
+guesses atp = 1. The three labelled dotted lines are results
+from QA with total timeT = 10, 102, 103.
+random choices of initial parameters starting atp = 1
+perform much worse, which fails to ﬁnd the MaxCut
+solution until 103–104 measurements have been made.
+Moreover, when we compare QAOA to QA with various
+annealing time, it appears that the choice of annealing
+time T = 100 can perform just as well as QAOA on this
+instance. Nevertheless, running QAOA at level p = 5
+is still more advantageous than QA atT = 100, when
+coherence time is limited.
+We remark that our simulation is only limited to small-
+size instances, and the good performance of QAOA and
+QA we observe is complicated by the small but signif-
+icant ground state population from generic annealing
+schedules. Since it often takes102 measurements to ob-
+tain a suﬃciently precise estimate of the objective func-
+tion, a ground state probability of& 10−2 would mean
+that one can ﬁnd the ground state without much pa-
+rameter optimization. Nevertheless, as quantum com-
+puters with 102∼ 103 qubits begin to come online, it
+will be interesting to see how QAOA performs on much
+larger instances where the ground state probability from
+generic QAOA/QA protocol is expected to be exponen-
+tially small, whereas the number of measurements neces-
+sary for optimization grows only polynomially with prob-
+lem size. The results here indicate that the parameter
+pattern and our heuristic strategies are practically useful
+guidelines in realistic implementation of QAOA.
+
+=== PDF PAGE 11 ===
+11
+B. Implementation for large problem sizes
+As experiments begin to test solving the MaxCut prob-
+lems with quantum machines [6, 8], limited quantum co-
+herence time and graph connectivity will be among the
+biggest challenges. In terms of coherence time, QAOA is
+highly advantageous: the hybrid nature of QAOA as well
+as its short- and intermediate-depth circuit parametriza-
+tion makes it ideal for near-term quantum devices. In
+addition, we have demonstrated that QAOA is not gener-
+ally limited by the small spectral gaps, which raises hopes
+to (approximately) solve interesting problems within the
+coherence time.
+What would be the necessary problem size to explore
+a meaningful quantum advantage? We note that one of
+the leading exact classical solver, the BiqMac solver [48],
+is able to solve MaxCut exactly up to N ≲ 100, but
+takes a long time (more than an hour) for larger prob-
+lem sizes. A fast heuristic algorithm, the breakout local
+search algorithm [49], can ﬁnd the MaxCut solution with
+a high probability for problem size of a few hundreds,
+although the solution is not guaranteed. Hence, a Max-
+Cut problem with a few hundred vertices will be an in-
+teresting regime to benchmark quantum algorithms. In
+terms of approximation, we have noted earlier that the
+polynomial-time Goemans-Willamson algorithm has an
+approximation ratio guarantee ofr∗≈ 0.878. It will be
+also interesting to ﬁnd out if QAOA is able to achieve
+a better approximation ratio for some problem instances
+where the exact solution is not obtainable, in this regime
+of hundreds of vertices.
+We now discuss a few considerations that put these
+large-size problems in the experimentally feasible regime
+on near-term quantum systems.
+1. Reducing interaction range
+In a quantum experiment, each vertex can be rep-
+resented by a qubit. For a large problem size, a ma-
+jor challenge to encode general graphs will be the nec-
+essary range and versatility of the interaction patterns
+(between qubits). The embedding of a random graph
+into a physical implementation with a 1D or 2D ge-
+ometry may require very long-range interactions. By
+relabelling the graph vertices, one can actually reduce
+the required range of interactions. This can be formu-
+lated as the graph bandwidth problem : Given a graph
+G = (V,E ) with N vertices, a vertex numbering is a bi-
+jective map from vertices to distinct integers,f : V →
+{1, 2,··· ,N}. The bandwidth of a vertex numberingf
+is Bf(G) = max{|f(u)−f(v)| : (u,v )∈ E(G)}, which
+can be understood as the length of the longest edge (in
+1D). The graph bandwidth problem is then to ﬁnd the
+minimum bandwidth among all vertex numberings, i.e.,
+B(G) = minfBf(G); namely, it is to minimize the length
+of the longest edge by vertex renumbering.
+In general, ﬁnding the minimum graph bandwidth is
+50 100 150 200 250 300 350 400
+bandwidth
+0
+0.1
+0.2
+0.3
+0.4probability
+1 2 3 4 5 1 2 3 5 4
+Original graph G Vertex renumbering
+|0i
+<latexit sha1_base64="hirVVigZwQvAH+5S//1FRUlUyrQ=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVuE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGNcKZw=</latexit><latexit sha1_base64="hirVVigZwQvAH+5S//1FRUlUyrQ=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVuE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGNcKZw=</latexit><latexit sha1_base64="hirVVigZwQvAH+5S//1FRUlUyrQ=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVuE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGNcKZw=</latexit><latexit sha1_base64="hirVVigZwQvAH+5S//1FRUlUyrQ=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVuE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGNcKZw=</latexit><latexit sha1_base64="hirVVigZwQvAH+5S//1FRUlUyrQ=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVuE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGNcKZw=</latexit>
+|1i
+<latexit sha1_base64="Ftny+aNI64p5ZTP3O9AODiA2YtA=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVtE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGacKZ0=</latexit><latexit sha1_base64="Ftny+aNI64p5ZTP3O9AODiA2YtA=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVtE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGacKZ0=</latexit><latexit sha1_base64="Ftny+aNI64p5ZTP3O9AODiA2YtA=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVtE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGacKZ0=</latexit><latexit sha1_base64="Ftny+aNI64p5ZTP3O9AODiA2YtA=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVtE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGacKZ0=</latexit><latexit sha1_base64="Ftny+aNI64p5ZTP3O9AODiA2YtA=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVtE5cVeM2yFlcG2E9VOk9R2erHf+B4PFctTlJYJakw/CjM7KKi2nAks/Tg3mFE2pWPsO1fSFM2gqPSWELjIEEZKu09aqKKriIKmxszTxFWm1E7MZm4R/Feun9vR4aDgMsstSrZsNMoFWAWLy8OQa2RWzJ1DmeZOK7AJ1ZRZNyI/gNU+UtlqRsbRfJqDmkmoU+t6krT0/SCAE01fuWnC52scBIEfS5wxlaZUDos40dQVlP32oIgFlWOB0IzgCpptiHV1dq3ecScHkprsWsQWUdmP1lkcdCHhBkTV1yGuFrV/m8HH//VgFepgW637HayyrGuecTsBlaGm1r0wl5CgnSFu8NNL3LzDCuOx21k3XHAE779l7s2WCm8as9vfaHNbt53zdisKW9HZ6+bRYb3Ju+QZeU5ekIi8IUfkAzklHcLIlPwgP8kv76V35vW8r8vSxk6NeUrWzGN/AGacKZ0=</latexit>
+|ri
+<latexit sha1_base64="EV6lbV0Z+aFzGLKCEyaMuQoYjl8=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVvo8mKvGbbCymDbiWqnSWo7vdhvfI+HiuUpSssENaYfhZkdFFRbzgSWfpwbzCib0jH2nStpimZQVHpLCFxkCCOl3SctVNFVREFTY+Zp4ipTaidmM7cI/ivXz+3ocFBwmeUWJVs2GuUCrILF5WHINTIr5s6hTHOnFdiEasqsG5EfwGofqWw1I+NoPs1BzSTUqXU9SVr6fhDAiaav3DTh8zUOgsCPJc6YSlMqh0WcaOoKyn57UMSCyrFAaEZwBc02xLo6u1bvuJMDSU12LWKLqOxH6ywOupBwA6Lq6xBXi9q/zeDj/3qwCnWwrdb9DlZZ1jXPuJ2AylBT616YS0jQzhA3+Oklbt5hhfHY7awbLjiC998y92ZLhTeN2e1vtLmt2855uxWFrejsdfPosN7kXfKMPCcvSETekCPygZySDmFkSn6Qn+SX99I783re12VpY6fGPCVr5rE/Oesp3g==</latexit><latexit sha1_base64="EV6lbV0Z+aFzGLKCEyaMuQoYjl8=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVvo8mKvGbbCymDbiWqnSWo7vdhvfI+HiuUpSssENaYfhZkdFFRbzgSWfpwbzCib0jH2nStpimZQVHpLCFxkCCOl3SctVNFVREFTY+Zp4ipTaidmM7cI/ivXz+3ocFBwmeUWJVs2GuUCrILF5WHINTIr5s6hTHOnFdiEasqsG5EfwGofqWw1I+NoPs1BzSTUqXU9SVr6fhDAiaav3DTh8zUOgsCPJc6YSlMqh0WcaOoKyn57UMSCyrFAaEZwBc02xLo6u1bvuJMDSU12LWKLqOxH6ywOupBwA6Lq6xBXi9q/zeDj/3qwCnWwrdb9DlZZ1jXPuJ2AylBT616YS0jQzhA3+Oklbt5hhfHY7awbLjiC998y92ZLhTeN2e1vtLmt2855uxWFrejsdfPosN7kXfKMPCcvSETekCPygZySDmFkSn6Qn+SX99I783re12VpY6fGPCVr5rE/Oesp3g==</latexit><latexit sha1_base64="EV6lbV0Z+aFzGLKCEyaMuQoYjl8=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVvo8mKvGbbCymDbiWqnSWo7vdhvfI+HiuUpSssENaYfhZkdFFRbzgSWfpwbzCib0jH2nStpimZQVHpLCFxkCCOl3SctVNFVREFTY+Zp4ipTaidmM7cI/ivXz+3ocFBwmeUWJVs2GuUCrILF5WHINTIr5s6hTHOnFdiEasqsG5EfwGofqWw1I+NoPs1BzSTUqXU9SVr6fhDAiaav3DTh8zUOgsCPJc6YSlMqh0WcaOoKyn57UMSCyrFAaEZwBc02xLo6u1bvuJMDSU12LWKLqOxH6ywOupBwA6Lq6xBXi9q/zeDj/3qwCnWwrdb9DlZZ1jXPuJ2AylBT616YS0jQzhA3+Oklbt5hhfHY7awbLjiC998y92ZLhTeN2e1vtLmt2855uxWFrejsdfPosN7kXfKMPCcvSETekCPygZySDmFkSn6Qn+SX99I783re12VpY6fGPCVr5rE/Oesp3g==</latexit><latexit sha1_base64="EV6lbV0Z+aFzGLKCEyaMuQoYjl8=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVvo8mKvGbbCymDbiWqnSWo7vdhvfI+HiuUpSssENaYfhZkdFFRbzgSWfpwbzCib0jH2nStpimZQVHpLCFxkCCOl3SctVNFVREFTY+Zp4ipTaidmM7cI/ivXz+3ocFBwmeUWJVs2GuUCrILF5WHINTIr5s6hTHOnFdiEasqsG5EfwGofqWw1I+NoPs1BzSTUqXU9SVr6fhDAiaav3DTh8zUOgsCPJc6YSlMqh0WcaOoKyn57UMSCyrFAaEZwBc02xLo6u1bvuJMDSU12LWKLqOxH6ywOupBwA6Lq6xBXi9q/zeDj/3qwCnWwrdb9DlZZ1jXPuJ2AylBT616YS0jQzhA3+Oklbt5hhfHY7awbLjiC998y92ZLhTeN2e1vtLmt2855uxWFrejsdfPosN7kXfKMPCcvSETekCPygZySDmFkSn6Qn+SX99I783re12VpY6fGPCVr5rE/Oesp3g==</latexit><latexit sha1_base64="EV6lbV0Z+aFzGLKCEyaMuQoYjl8=">AAADqXicfVLbbtNAEN3GXIq5tfDIy4jIEhIislMk+tgWkJAQqJVIExFH1XozSVZZ71q764bI9R/wwit8GX/DxnFFLpSRbM3OzDlzdnaSTHBjw/D3TsO7dfvO3d17/v0HDx893tt/cm5Urhl2mBJK9xJqUHCJHcutwF6mkaaJwG4yfbvIdy9RG67kFzvPcJDSseQjzqh1oW48RVvo8mKvGbbCymDbiWqnSWo7vdhvfI+HiuUpSssENaYfhZkdFFRbzgSWfpwbzCib0jH2nStpimZQVHpLCFxkCCOl3SctVNFVREFTY+Zp4ipTaidmM7cI/ivXz+3ocFBwmeUWJVs2GuUCrILF5WHINTIr5s6hTHOnFdiEasqsG5EfwGofqWw1I+NoPs1BzSTUqXU9SVr6fhDAiaav3DTh8zUOgsCPJc6YSlMqh0WcaOoKyn57UMSCyrFAaEZwBc02xLo6u1bvuJMDSU12LWKLqOxH6ywOupBwA6Lq6xBXi9q/zeDj/3qwCnWwrdb9DlZZ1jXPuJ2AylBT616YS0jQzhA3+Oklbt5hhfHY7awbLjiC998y92ZLhTeN2e1vtLmt2855uxWFrejsdfPosN7kXfKMPCcvSETekCPygZySDmFkSn6Qn+SX99I783re12VpY6fGPCVr5rE/Oesp3g==</latexit>
+⇡
+<latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit>
+⇡
+<latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit><latexit sha1_base64="KLmMC1a0zbyE7x8d8C7kgRNe0oQ=">AAADpXicfVLbbtNAEN3GXIq5tIVHXkZEFrwQ2SkSfSw3CQkVFdGkleIoWm8mySrrXWt33RC5+QN4hW/jb1g7rsiFMpKt2Zk5Z87OTpIJbmwY/t5peLdu37m7e8+//+Dho739g8ddo3LNsMOUUPoioQYFl9ix3Aq8yDTSNBF4nkzflfnzS9SGK3lm5xn2UzqWfMQZtS70Nc74YL8ZtsLKYNuJaqdJajsdHDS+x0PF8hSlZYIa04vCzPYLqi1nAhd+nBvMKJvSMfacK2mKpl9UWhcQuMgQRkq7T1qooquIgqbGzNPEVabUTsxmrgz+K9fL7eioX3CZ5RYlWzYa5QKsgvLiMOQamRVz51CmudMKbEI1ZdaNxw9gtY9UtpqPcTQnc1AzCXVqXU+SLnw/COCtpi+naOHzNQ6CwI8lzphKUyqHRZxo6goWvXa/iAWVY4HQjOAKmm2IdXV2rd5zJweSmuxaxBbRohetszhoKeEGRNXXIa7K2r/N4NP/erAKdbit1v0OV1nWNc+4nYDKUFPrXphLSNDOEDf46SVu3mGF8Y3bVzdccAQfvmXuzZYKbxqz299oc1u3nW67FYWt6Mur5vFRvcm75Cl5Rl6QiLwmx+QjOSUdwsiY/CA/yS/vuXfinXndZWljp8Y8IWvmDf4ApRAn4Q==</latexit>
+⌦
+<latexit sha1_base64="E8odiej6R+uKF6NaIRN4nteXfrw=">AAADqHicfVLbjtMwEPU2XJZw2QuPvIyoIiEkqqSLxD4uLEhICCgSbRc11cpxp62pY0e2s6XK9g944BX+jL/BTbOiF5aREo1n5pw5Hk+SCW5sGP7eqXk3bt66vXvHv3vv/oO9/YPDjlG5ZthmSih9llCDgktsW24FnmUaaZoI7CaT00W+e4HacCU/21mG/ZSOJB9yRq0LdeKPKY7o+X49bISlwbYTVU6dVNY6P6h9jweK5SlKywQ1pheFme0XVFvOBM79ODeYUTahI+w5V9IUTb8o5c4hcJEBDJV2n7RQRlcRBU2NmaWJq0ypHZvN3CL4r1wvt8PjfsFllluUbNlomAuwChZ3hwHXyKyYOYcyzZ1WYGOqKbNuQn4Aq32ksuWIjKN5PwM1lVCl1vUk6dz3gwBeafpsghY+XOEgCPxY4pSpNKVyUMSJpq5g3mv2i1hQORII9Qguod6EWJdn1+o1d3IgqciuRGwRzXvROouDLiRcgyj7OsTlovZvM3j3vx6sRB1tq3W/o1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzpVtYNFxzBm2+Ze7OlwuvG7PY32tzWbafTbERhI/r0vH5yXG3yLnlEHpMnJCIvyAl5S1qkTRj5Sn6Qn+SX99RreV3vy7K0tlNhHpI185I/kIMpDw==</latexit><latexit sha1_base64="E8odiej6R+uKF6NaIRN4nteXfrw=">AAADqHicfVLbjtMwEPU2XJZw2QuPvIyoIiEkqqSLxD4uLEhICCgSbRc11cpxp62pY0e2s6XK9g944BX+jL/BTbOiF5aREo1n5pw5Hk+SCW5sGP7eqXk3bt66vXvHv3vv/oO9/YPDjlG5ZthmSih9llCDgktsW24FnmUaaZoI7CaT00W+e4HacCU/21mG/ZSOJB9yRq0LdeKPKY7o+X49bISlwbYTVU6dVNY6P6h9jweK5SlKywQ1pheFme0XVFvOBM79ODeYUTahI+w5V9IUTb8o5c4hcJEBDJV2n7RQRlcRBU2NmaWJq0ypHZvN3CL4r1wvt8PjfsFllluUbNlomAuwChZ3hwHXyKyYOYcyzZ1WYGOqKbNuQn4Aq32ksuWIjKN5PwM1lVCl1vUk6dz3gwBeafpsghY+XOEgCPxY4pSpNKVyUMSJpq5g3mv2i1hQORII9Qguod6EWJdn1+o1d3IgqciuRGwRzXvROouDLiRcgyj7OsTlovZvM3j3vx6sRB1tq3W/o1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzpVtYNFxzBm2+Ze7OlwuvG7PY32tzWbafTbERhI/r0vH5yXG3yLnlEHpMnJCIvyAl5S1qkTRj5Sn6Qn+SX99RreV3vy7K0tlNhHpI185I/kIMpDw==</latexit><latexit sha1_base64="E8odiej6R+uKF6NaIRN4nteXfrw=">AAADqHicfVLbjtMwEPU2XJZw2QuPvIyoIiEkqqSLxD4uLEhICCgSbRc11cpxp62pY0e2s6XK9g944BX+jL/BTbOiF5aREo1n5pw5Hk+SCW5sGP7eqXk3bt66vXvHv3vv/oO9/YPDjlG5ZthmSih9llCDgktsW24FnmUaaZoI7CaT00W+e4HacCU/21mG/ZSOJB9yRq0LdeKPKY7o+X49bISlwbYTVU6dVNY6P6h9jweK5SlKywQ1pheFme0XVFvOBM79ODeYUTahI+w5V9IUTb8o5c4hcJEBDJV2n7RQRlcRBU2NmaWJq0ypHZvN3CL4r1wvt8PjfsFllluUbNlomAuwChZ3hwHXyKyYOYcyzZ1WYGOqKbNuQn4Aq32ksuWIjKN5PwM1lVCl1vUk6dz3gwBeafpsghY+XOEgCPxY4pSpNKVyUMSJpq5g3mv2i1hQORII9Qguod6EWJdn1+o1d3IgqciuRGwRzXvROouDLiRcgyj7OsTlovZvM3j3vx6sRB1tq3W/o1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzpVtYNFxzBm2+Ze7OlwuvG7PY32tzWbafTbERhI/r0vH5yXG3yLnlEHpMnJCIvyAl5S1qkTRj5Sn6Qn+SX99RreV3vy7K0tlNhHpI185I/kIMpDw==</latexit><latexit sha1_base64="E8odiej6R+uKF6NaIRN4nteXfrw=">AAADqHicfVLbjtMwEPU2XJZw2QuPvIyoIiEkqqSLxD4uLEhICCgSbRc11cpxp62pY0e2s6XK9g944BX+jL/BTbOiF5aREo1n5pw5Hk+SCW5sGP7eqXk3bt66vXvHv3vv/oO9/YPDjlG5ZthmSih9llCDgktsW24FnmUaaZoI7CaT00W+e4HacCU/21mG/ZSOJB9yRq0LdeKPKY7o+X49bISlwbYTVU6dVNY6P6h9jweK5SlKywQ1pheFme0XVFvOBM79ODeYUTahI+w5V9IUTb8o5c4hcJEBDJV2n7RQRlcRBU2NmaWJq0ypHZvN3CL4r1wvt8PjfsFllluUbNlomAuwChZ3hwHXyKyYOYcyzZ1WYGOqKbNuQn4Aq32ksuWIjKN5PwM1lVCl1vUk6dz3gwBeafpsghY+XOEgCPxY4pSpNKVyUMSJpq5g3mv2i1hQORII9Qguod6EWJdn1+o1d3IgqciuRGwRzXvROouDLiRcgyj7OsTlovZvM3j3vx6sRB1tq3W/o1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzpVtYNFxzBm2+Ze7OlwuvG7PY32tzWbafTbERhI/r0vH5yXG3yLnlEHpMnJCIvyAl5S1qkTRj5Sn6Qn+SX99RreV3vy7K0tlNhHpI185I/kIMpDw==</latexit><latexit sha1_base64="E8odiej6R+uKF6NaIRN4nteXfrw=">AAADqHicfVLbjtMwEPU2XJZw2QuPvIyoIiEkqqSLxD4uLEhICCgSbRc11cpxp62pY0e2s6XK9g944BX+jL/BTbOiF5aREo1n5pw5Hk+SCW5sGP7eqXk3bt66vXvHv3vv/oO9/YPDjlG5ZthmSih9llCDgktsW24FnmUaaZoI7CaT00W+e4HacCU/21mG/ZSOJB9yRq0LdeKPKY7o+X49bISlwbYTVU6dVNY6P6h9jweK5SlKywQ1pheFme0XVFvOBM79ODeYUTahI+w5V9IUTb8o5c4hcJEBDJV2n7RQRlcRBU2NmaWJq0ypHZvN3CL4r1wvt8PjfsFllluUbNlomAuwChZ3hwHXyKyYOYcyzZ1WYGOqKbNuQn4Aq32ksuWIjKN5PwM1lVCl1vUk6dz3gwBeafpsghY+XOEgCPxY4pSpNKVyUMSJpq5g3mv2i1hQORII9Qguod6EWJdn1+o1d3IgqciuRGwRzXvROouDLiRcgyj7OsTlovZvM3j3vx6sRB1tq3W/o1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzpVtYNFxzBm2+Ze7OlwuvG7PY32tzWbafTbERhI/r0vH5yXG3yLnlEHpMnJCIvyAl5S1qkTRj5Sn6Qn+SX99RreV3vy7K0tlNhHpI185I/kIMpDw==</latexit>
+ 
+<latexit sha1_base64="nu9rZhS/7267RpKPYVvsc7A9ybY=">AAADqHicfVLbbtNAEN3GXIq5tIVHXkZElhASkZ0i0ccCRUKqQEEiSVEcVevNJFmy3rV21w2Rmz/ggVf4s/4NG8cVuVBGsjU7M+fM2dlJMsGNDcOrnZp36/adu7v3/PsPHj7a2z943DEq1wzbTAmlzxJqUHCJbcutwLNMI00Tgd1k8m6R716gNlzJL3aWYT+lI8mHnFHrQp34BIWl5/v1sBGWBttOVDl1Ulnr/KD2Ix4olqcoLRPUmF4UZrZfUG05Ezj349xgRtmEjrDnXElTNP2ilDuHwEUGMFTafdJCGV1FFDQ1ZpYmrjKldmw2c4vgv3K93A6P+gWXWW5RsmWjYS7AKljcHQZcI7Ni5hzKNHdagY2ppsy6CfkBrPaRypYjMo7m4wzUVEKVWteTpHPfDwJ4q+nLCVr4dI2DIPBjiVOm0pTKQREnmrqCea/ZL2JB5Ugg1CO4hHoTYl2eXasT7uRAUpFdi9gimveidRYHXUi4AVH2dYjLRe3fZnD6vx6sRB1uq3W/w1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzjVtYNFxzB+++Ze7OlwpvG7PY32tzWbafTbERhI/r8qn58VG3yLnlKnpHnJCKvyTH5QFqkTRj5Rn6SX+S398JreV3v67K0tlNhnpA185I/k5kpEA==</latexit><latexit sha1_base64="nu9rZhS/7267RpKPYVvsc7A9ybY=">AAADqHicfVLbbtNAEN3GXIq5tIVHXkZElhASkZ0i0ccCRUKqQEEiSVEcVevNJFmy3rV21w2Rmz/ggVf4s/4NG8cVuVBGsjU7M+fM2dlJMsGNDcOrnZp36/adu7v3/PsPHj7a2z943DEq1wzbTAmlzxJqUHCJbcutwLNMI00Tgd1k8m6R716gNlzJL3aWYT+lI8mHnFHrQp34BIWl5/v1sBGWBttOVDl1Ulnr/KD2Ix4olqcoLRPUmF4UZrZfUG05Ezj349xgRtmEjrDnXElTNP2ilDuHwEUGMFTafdJCGV1FFDQ1ZpYmrjKldmw2c4vgv3K93A6P+gWXWW5RsmWjYS7AKljcHQZcI7Ni5hzKNHdagY2ppsy6CfkBrPaRypYjMo7m4wzUVEKVWteTpHPfDwJ4q+nLCVr4dI2DIPBjiVOm0pTKQREnmrqCea/ZL2JB5Ugg1CO4hHoTYl2eXasT7uRAUpFdi9gimveidRYHXUi4AVH2dYjLRe3fZnD6vx6sRB1uq3W/w1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzjVtYNFxzB+++Ze7OlwpvG7PY32tzWbafTbERhI/r8qn58VG3yLnlKnpHnJCKvyTH5QFqkTRj5Rn6SX+S398JreV3v67K0tlNhnpA185I/k5kpEA==</latexit><latexit sha1_base64="nu9rZhS/7267RpKPYVvsc7A9ybY=">AAADqHicfVLbbtNAEN3GXIq5tIVHXkZElhASkZ0i0ccCRUKqQEEiSVEcVevNJFmy3rV21w2Rmz/ggVf4s/4NG8cVuVBGsjU7M+fM2dlJMsGNDcOrnZp36/adu7v3/PsPHj7a2z943DEq1wzbTAmlzxJqUHCJbcutwLNMI00Tgd1k8m6R716gNlzJL3aWYT+lI8mHnFHrQp34BIWl5/v1sBGWBttOVDl1Ulnr/KD2Ix4olqcoLRPUmF4UZrZfUG05Ezj349xgRtmEjrDnXElTNP2ilDuHwEUGMFTafdJCGV1FFDQ1ZpYmrjKldmw2c4vgv3K93A6P+gWXWW5RsmWjYS7AKljcHQZcI7Ni5hzKNHdagY2ppsy6CfkBrPaRypYjMo7m4wzUVEKVWteTpHPfDwJ4q+nLCVr4dI2DIPBjiVOm0pTKQREnmrqCea/ZL2JB5Ugg1CO4hHoTYl2eXasT7uRAUpFdi9gimveidRYHXUi4AVH2dYjLRe3fZnD6vx6sRB1uq3W/w1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzjVtYNFxzB+++Ze7OlwpvG7PY32tzWbafTbERhI/r8qn58VG3yLnlKnpHnJCKvyTH5QFqkTRj5Rn6SX+S398JreV3v67K0tlNhnpA185I/k5kpEA==</latexit><latexit sha1_base64="nu9rZhS/7267RpKPYVvsc7A9ybY=">AAADqHicfVLbbtNAEN3GXIq5tIVHXkZElhASkZ0i0ccCRUKqQEEiSVEcVevNJFmy3rV21w2Rmz/ggVf4s/4NG8cVuVBGsjU7M+fM2dlJMsGNDcOrnZp36/adu7v3/PsPHj7a2z943DEq1wzbTAmlzxJqUHCJbcutwLNMI00Tgd1k8m6R716gNlzJL3aWYT+lI8mHnFHrQp34BIWl5/v1sBGWBttOVDl1Ulnr/KD2Ix4olqcoLRPUmF4UZrZfUG05Ezj349xgRtmEjrDnXElTNP2ilDuHwEUGMFTafdJCGV1FFDQ1ZpYmrjKldmw2c4vgv3K93A6P+gWXWW5RsmWjYS7AKljcHQZcI7Ni5hzKNHdagY2ppsy6CfkBrPaRypYjMo7m4wzUVEKVWteTpHPfDwJ4q+nLCVr4dI2DIPBjiVOm0pTKQREnmrqCea/ZL2JB5Ugg1CO4hHoTYl2eXasT7uRAUpFdi9gimveidRYHXUi4AVH2dYjLRe3fZnD6vx6sRB1uq3W/w1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzjVtYNFxzB+++Ze7OlwpvG7PY32tzWbafTbERhI/r8qn58VG3yLnlKnpHnJCKvyTH5QFqkTRj5Rn6SX+S398JreV3v67K0tlNhnpA185I/k5kpEA==</latexit><latexit sha1_base64="nu9rZhS/7267RpKPYVvsc7A9ybY=">AAADqHicfVLbbtNAEN3GXIq5tIVHXkZElhASkZ0i0ccCRUKqQEEiSVEcVevNJFmy3rV21w2Rmz/ggVf4s/4NG8cVuVBGsjU7M+fM2dlJMsGNDcOrnZp36/adu7v3/PsPHj7a2z943DEq1wzbTAmlzxJqUHCJbcutwLNMI00Tgd1k8m6R716gNlzJL3aWYT+lI8mHnFHrQp34BIWl5/v1sBGWBttOVDl1Ulnr/KD2Ix4olqcoLRPUmF4UZrZfUG05Ezj349xgRtmEjrDnXElTNP2ilDuHwEUGMFTafdJCGV1FFDQ1ZpYmrjKldmw2c4vgv3K93A6P+gWXWW5RsmWjYS7AKljcHQZcI7Ni5hzKNHdagY2ppsy6CfkBrPaRypYjMo7m4wzUVEKVWteTpHPfDwJ4q+nLCVr4dI2DIPBjiVOm0pTKQREnmrqCea/ZL2JB5Ugg1CO4hHoTYl2eXasT7uRAUpFdi9gimveidRYHXUi4AVH2dYjLRe3fZnD6vx6sRB1uq3W/w1WWdc1TbsegMtTUuhfmEhK0U8QNfnqBm3dYYXzjVtYNFxzB+++Ze7OlwpvG7PY32tzWbafTbERhI/r8qn58VG3yLnlKnpHnJCKvyTH5QFqkTRj5Rn6SX+S398JreV3v67K0tlNhnpA185I/k5kpEA==</latexit>
+1
+3
+2
+0 100 200 300 400
+0
+100
+200
+300
+400
+Adjacency matrix
+FIG. 8. (a) Vertex renumbering to reduce the graph band-
+width. Top panel: an example of vertex renumbering for a
+5-vertex graph. Bottom panel: distribution of graph band-
+widths for 1000 random 3-regular graphs with N = 400
+each. The blue (orange) bars are the bandwidth before (af-
+ter) vertex renumbering. Inset shows the sparsity pattern
+of the adjacency matrix before and after vertex renumbering
+for one particular graph. (b) A protocol to use Rydberg-
+blockade controlled gate to implement the interaction term
+exp(−iγσziσzj ). By choosing a proper gate time for the second
+step
+(
+t = 2π/
+√
+Ω2 + ∆2), one does not accumulate popula-
+tion on the Rydberg level|r⟩. With tunable coupling strength
+Ω and detuning ∆, one can control the interaction timeγ.
+NP-hard, but good heuristic algorithms have been devel-
+oped to reduce the graph bandwidth. Fig. 8(a) shows a
+simple example of bandwidth reduction. The top panel
+illustrates the vertex renumbering with a5-vertex graph.
+The bottom panel shows the histogram of graph band-
+widths for 1000 random 3-regular graphs of N = 400
+each. Using the Cuthill-McKee algorithm [50], the graph
+bandwidth can be reduced to aroundB≈ 100. While
+this still requires quite a long interaction range in 1D,
+the bandwidth problem can also be generalized to higher
+dimensions. In 2D arrangements, we then expect the di-
+ameter of interaction to beB2D ∼
+√
+100 for N = 400
+3-regular graphs [51], which seems within reach for near-
+term quantum devices. A detailed study of the 2D band-
+width problem is beyond the scope of this work. Alter-
+natively, one can make use of a general construction to
+encode any long-range interactions to local ﬁelds [52], al-
+though it requires additional physical qubits and gauge
+constraints. Apart from implementing arbitrary graphs
+in full generality, one can also restrict to special graphs
+that exhibit some geometric structures. For example,
+unit disk graphs are geometric graphs in the 2D plane,
+where vertices are connected by an edge only if they are
+within a unit distance. These graphs can be more natu-
+rally encoded into 2D physical implementations, and the
+MaxCutproblemisstillNP-hardonunitdiskgraphs[53].
+2. Example Implementation with Rydberg Atoms
+The above discussion has been experimental-platform
+independent, and is applicable to any state-of-the-art
+platforms, such as neutral Rydberg atoms [18, 19, 54–56],
+
+=== PDF PAGE 12 ===
+12
+trapped ions [7, 57–59], and superconducting qubits [5,
+6, 60, 61]. As an example, we brieﬂy describe a feasible
+implementation of QAOA with neutral atoms interact-
+ing via Rydberg excitations, where high-ﬁdelity entangle-
+ment has been recently demonstrated [62]. We can use
+the hyperﬁne ground states in each atom to encode the
+qubit states|0⟩ and|1⟩, and the|1⟩ state can be excited
+to the Rydberg level|r⟩to induce interactions. The qubit
+rotating term, exp
+(
+−iβ∑Nj=1σxj), can be implemented
+straightforwardly by a global driving beam with tunable
+durations. The interaction terms∑⟨i,j⟩σziσzj can be im-
+plemented stroboscopically for general graphs; this can
+be realized by a Rydberg-blockade controlled gate [19],
+as illustrated in Fig. 8(b). By controlling the coupling
+strength Ω, detuning∆, and the gate time, together with
+single-qubit rotations, one can implementexp(−iγσziσzj ),
+which can then be repeated for each interacting pair.
+An additional major advantage of the Rydberg-blockade
+mechanism is its ability to perform multi-qubit collective
+gates in parallel [19, 63]. This can reduce the number
+of two-qubit operation steps from the number of edges
+to the number of vertices,N, which means a factor of
+N reduction for dense graphs with∼N 2 edges. While
+the falloﬀ of Rydberg interactions may limit the distance
+two qubits can interact, MaxCut problems of interesting
+sizes can still be implemented by vertex renumbering or
+focusing on unit disk graphs, as discussed above.
+For generic problems of 400-vertex 3-regular graphs,
+we expect the necessary interaction range to be5 atoms
+in 2D; assuming minimum inter-atom separation of 2µm,
+this means an interaction radius of 10µm, which is re-
+alizable with high Rydberg levels [19]. Given realistic
+estimates of coupling strength Ω ∼ 2π× 10-100 MHz
+and single-qubit coherence timeτ∼ 200 µs (limited by
+Rydberg level lifetime), we expect with high-ﬁdelity con-
+trol, the error per two-qubit gate can be made roughly
+(Ωτ)−1∼ 10−3-10−4. For 400-vertex 3-regular graphs, we
+can implement QAOA of levelp≃ Ωτ/N∼ 25 with a 2D
+array of neutral atoms. We note that these are conser-
+vative estimates since we do not consider advanced con-
+trol techniques such as pulse-shaping, and require less
+than one error in the entire quantum circuit; it is pos-
+sible that QAOA is not sensitive to some of the imper-
+fections. Hence, we envision that soon, QAOA can be
+benchmarked against classical [24, 48, 49] and semiclas-
+sical[64–66]solversonlargeproblemsizeswithnear-term
+quantum devices.
+VII. CONCLUSION AND OUTLOOK
+In summary, we have studied the performance, non-
+adiabatic mechanism, and practical implementation of
+QAOA applied to MaxCut problems. Our results provide
+important insights into the performance of QAOA, and
+suggest promising strategies for its practical realization
+on near term quantum devices. Based on the observed
+patterns in the QAOA optimal parameters, we developed
+heuristic strategies for initializing optimization so as to
+eﬃciently ﬁnd quasi-optimal parameters in O(poly(p))
+time. In contrast, optimization with the standard ran-
+dom initialization strategy that explores the entire pa-
+rameter space needs 2O(p) runs to obtain an equally
+good solution. We benchmarked, using these heuristic
+optimization strategies, the performance of QAOA up
+to p≤ 50. On average, the performance characterized
+by the approximation ratio was observed to improve ex-
+ponentially (or stretched-exponentially) for random un-
+weighted (or weighted) graphs. Focusing on hard graph
+instanceswhereadiabaticQAfailsduetoextremelysmall
+spectral gaps, we found that QAOA could learn via op-
+timization a diabatic path to achieve signiﬁcantly higher
+success probabilities to ﬁnd the MaxCut solution. A met-
+rictakingintoaccountofboththesuccessprobabilityand
+theruntimeindicatesQAOAmaynotbelimitedbysmall
+spectral gaps. Finally, we provided a detailed resource
+analysis for experimental implementation of QAOA on
+MaxCut and proposed a neutral-atom realization where
+problem sizes of a few hundred atoms are feasible in the
+near future.
+As we have benchmarked via random MaxCut in-
+stances, our simple heuristic optimization strategies work
+very well. Nevertheless, more sophisticated methods
+could be developed to improve the performance and ro-
+bustness. One possibility would be using machine learn-
+ing techniques to automatically learn and make use of the
+optimalparameterpatternstodevelopevenmoreeﬃcient
+parametrization and strategies (see e.g., [67]). Another
+important but unsettled problem is assessing a reliable
+system-size scaling for QAOA. On average, we observed
+(stretched) exponential improvement with levelp, up to
+N = 22. It remains open whether the same scaling will
+persist for larger system size. For the hard instances
+we generated that have exceedingly small spectral gaps,
+QAOA is able to overcome the adiabatic limitations in all
+cases examined; it remains to be seen how this behavior
+could extrapolate to larger problems. An experimental
+implementation with near-term quantum devices will be
+able to push the limit of our understanding and serve
+as a litmus test for genuine quantum speedup in solving
+practical problems.
+Besides MaxCut, another interesting optimization
+problem is the Maximum Independent Set (MIS) prob-
+lem, which is also NP-hard and has many real-world ap-
+plications [68, 69]. In a separate work [45], we show
+that the MIS problem can be naturally encoded into the
+groundstateofneutralatomsinteractingviaRydbergex-
+citations, with minimal overhead on the hardware. The
+methodology we have developed here for QAOA on Max-
+Cut can be directly adapted to the MIS problem, where
+we observe similar parameter patterns and non-adiabatic
+mechanisms of QAOA; this is discussed in more detail in
+Appendix H. With such rapid development in near-term
+quantum computer, we will soon be able to witness ex-
+perimental tests of the capability of quantum algorithms
+
+=== PDF PAGE 13 ===
+13
+to solve practically interesting problems.
+ACKNOWLEDGMENTS
+We thank Edward Farhi, Aram Harrow, Peter Zoller,
+Ignacio Cirac, Jeﬀrey Goldstone, Sam Gutmann, Wen
+Wei Ho, and Dries Sels for fruitful discussions. S.-
+T.W. in addition would like to thank Daniel Lidar,
+Matthias Troyer, and Johannes Otterbach for insightful
+discussions and suggestions during the Aspen Winter
+Conference on Advances in Quantum Algorithms and
+Computation. This work was supported through the
+National Science Foundation (NSF), the Center for
+Ultracold Atoms, the Air Force Oﬃce of Scientiﬁc
+Research via the MURI, the Vannevar Bush Faculty
+Fellowship, DOE, and Google Research Award. S.C.
+acknowledges support from the Miller Institute for Basic
+Research in Science. H.P. is supported by the NSF
+through a grant for the Institute for Theoretical Atomic,
+Molecular, and Optical Physics at Harvard University
+and the Smithsonian Astrophysical Observatory. Some
+of the computations in this paper were performed on
+the Odyssey cluster supported by the FAS Division
+of Science, Research Computing Group at Harvard
+University.
+Note added.—After the completion of this work, we be-
+came aware of a related work appearing in Ref. [70]. In
+the preprint, they trained the QAOA variational parame-
+ters on a batch of graph instances and compared QAOA’s
+performance with the classical Goemans-Williamson al-
+gorithm on small-size MaxCut problems. Similar param-
+eter shapes were found, but Ref. [70] did not make use of
+any observed patterns to design optimization strategies.
+We, in addition, discovered non-adiabatic mechanisms of
+QAOA, which is not studied in Ref. [70].
+[1] JohnPreskill,“QuantumComputingintheNISQeraand
+beyond,” Quantum2, 79 (2018).
+[2] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann, “A
+quantum approximate optimization algorithm,” (2014),
+arXiv:1411.4028.
+[3] Alberto Peruzzo, Jarrod McClean, Peter Shadbolt, Man-
+Hong Yung, Xiao-Qi Zhou, Peter J. Love, Alán Aspuru-
+Guzik, and Jeremy L. O’Brien, “A variational eigenvalue
+solver on a photonic quantum processor,” Nature Com-
+munications 5, 4213 (2014).
+[4] Nikolaj Moll, Panagiotis Barkoutsos, Lev S Bishop,
+JerryMChow, AndrewCross, DanielJEgger, StefanFil-
+ipp, Andreas Fuhrer, Jay M Gambetta, Marc Ganzhorn,
+Abhinav Kandala, Antonio Mezzacapo, Peter Müller,
+Walter Riess, Gian Salis, John Smolin, Ivano Tavernelli,
+and Kristan Temme, “Quantum optimization using varia-
+tional algorithms on near-term quantum devices,” Quan-
+tum Science and Technology3, 030503 (2018).
+[5] Abhinav Kandala, Antonio Mezzacapo, Kristan Temme,
+Maika Takita, Markus Brink, Jerry M. Chow, and
+Jay M. Gambetta, “Hardware-eﬃcient variational quan-
+tum eigensolver for small molecules and quantum mag-
+nets,” Nature549, 242 (2017).
+[6] J. S. Otterbach, R. Manenti, N. Alidoust, A. Best-
+wick, M. Block, B. Bloom, S. Caldwell, N. Didier,
+E. Schuyler Fried, S. Hong, P. Karalekas, C. B. Os-
+born, A. Papageorge, E. C. Peterson, G. Prawiroat-
+modjo, N. Rubin, C. A. Ryan, D. Scarabelli, M. Scheer,
+E. A. Sete, P. Sivarajah, R. S. Smith, A. Staley, N. Tezak,
+W. J. Zeng, A. Hudson, B. R. Johnson, M. Reagor,
+M. P. da Silva, and C. Rigetti, “Unsupervised Machine
+Learning on a Hybrid Quantum Computer,” (2017),
+arXiv:1712.05771.
+[7] C. Kokail, C. Maier, R. van Bijnen, T. Brydges, M. K.
+Joshi, P. Jurcevic, C. A. Muschik, P. Silvi, R. Blatt, C. F.
+Roos, and P. Zoller, “Self-Verifying Variational Quan-
+tum Simulation of the Lattice Schwinger Model,” (2018),
+arXiv:1810.03421.
+[8] Xiaogang Qiang, Xiaoqi Zhou, Jianwei Wang, Callum M.
+Wilkes, Thomas Loke, Sean O’Gara, Laurent Kling, Gra-
+ham D. Marshall, Raﬀaele Santagati, Timothy C. Ralph,
+JingboB.Wang, JeremyL.O’Brien, MarkG.Thompson,
+and Jonathan C. F. Matthews, “Large-scale silicon quan-
+tumphotonicsimplementingarbitrarytwo-qubitprocess-
+ing,” Nature Photonics12, 534–539 (2018).
+[9] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann, “A
+Quantum Approximate Optimization Algorithm Applied
+to a Bounded Occurrence Constraint Problem,” (2014),
+arXiv:1412.6062.
+[10] Edward Farhi and Aram W Harrow, “Quantum
+supremacy through the quantum approximate optimiza-
+tion algorithm,” (2016), arXiv:1602.07674.
+[11] M. B. Hastings, “Classical and Quantum Bounded Depth
+Approximation Algorithms,” , arXiv:1905.07047 (2019),
+arXiv:1905.07047.
+[12] Sergey Bravyi, Alexander Kliesch, Robert Koenig, and
+Eugene Tang, “Obstacles to state preparation and varia-
+tional optimization from symmetry protection,” (2019),
+arXiv:1910.08980.
+[13] JarrodR.McClean, SergioBoixo, VadimN.Smelyanskiy,
+Ryan Babbush, and Hartmut Neven, “Barren plateaus
+in quantum neural network training landscapes,” Nature
+Communications 9, 4812 (2018).
+[14] Elizabeth Crosson, Edward Farhi, Cedric Yen-Yu Lin,
+Han-Hsuan Lin, and Peter Shor, “Diﬀerent Strategies for
+Optimization Using the Quantum Adiabatic Algorithm,”
+(2014), arXiv:1401.7320.
+[15] Siddharth Muthukrishnan, Tameem Albash, and
+Daniel A. Lidar, “Tunneling and speedup in quantum op-
+timization for permutation-symmetric problems,” Phys.
+Rev. X6, 031010 (2016).
+[16] Layla Hormozi, Ethan W. Brown, Giuseppe Carleo, and
+Matthias Troyer, “Nonstoquastic hamiltonians and quan-
+tum annealing of an ising spin glass,” Phys. Rev. B95,
+184416 (2017).
+[17] Tameem Albash and Daniel A. Lidar, “Adiabatic quan-
+tum computation,” Rev. Mod. Phys.90, 015002 (2018).
+[18] Hannes Bernien, Sylvain Schwartz, Alexander Keesling,
+
+=== PDF PAGE 14 ===
+14
+Harry Levine, Ahmed Omran, Hannes Pichler, Soon-
+won Choi, Alexander S. Zibrov, Manuel Endres, Markus
+Greiner, VladanVuletić, andMikhailD.Lukin,“Probing
+many-body dynamics on a 51-atom quantum simulator,”
+Nature 551, 579 (2017).
+[19] M. Saﬀman, T. G. Walker, and K. Mølmer, “Quantum
+information with rydberg atoms,” Rev. Mod. Phys.82,
+2313–2363 (2010).
+[20] Christos H Papadimitriou and Kenneth Steiglitz,Com-
+binatorial optimization: algorithms and complexity
+(Courier Corporation, 1998).
+[21] Bernhard Korte, Jens Vygen, B Korte, and J Vygen,
+Combinatorial optimization, Vol. 2 (Springer, 2012).
+[22] Johan Håstad, “Some optimal inapproximability results,”
+J. ACM48, 798–859 (2001).
+[23] Piotr Berman and Marek Karpinski, “On Some
+TighterInapproximabilityResults(ExtendedAbstract),”
+(Springer, Berlin, Heidelberg, 1999) pp. 200–209.
+[24] Michel X. Goemans and David P. Williamson, “Improved
+approximation algorithms for maximum cut and satis-
+ﬁability problems using semideﬁnite programming,” J.
+ACM 42, 1115–1145 (1995).
+[25] Eran Halperin, Dror Livnat, and Uri Zwick, “MAX
+CUT in cubic graphs,” Journal of Algorithms53, 169–
+185 (2004).
+[26] Zhihui Wang, Stuart Hadﬁeld, Zhang Jiang, and
+Eleanor G. Rieﬀel, “Quantum approximate optimization
+algorithm for maxcut: A fermionic view,” Phys. Rev. A
+97, 022304 (2018).
+[27] Dave Wecker, Matthew B. Hastings, and Matthias
+Troyer, “Training a quantum optimizer,” Phys. Rev. A
+94, 022309 (2016).
+[28] Zhi-Cheng Yang, Armin Rahmani, Alireza Shabani,
+HartmutNeven, andClaudioChamon,“Optimizingvari-
+ational quantum algorithms using pontryagin’s minimum
+principle,” Phys. Rev. X7, 021027 (2017).
+[29] W. W. Ho and T. H. Hsieh, “Eﬃcient unitary
+preparation of non-trivial quantum states,” (2018),
+arXiv:1803.00026.
+[30] Zhang Jiang, Eleanor G. Rieﬀel, and Zhihui Wang,
+“Near-optimal quantum circuit for grover’s unstructured
+search using a transverse ﬁeld,” Phys. Rev. A95, 062317
+(2017).
+[31] E. R. Anschuetz, J. P. Olson, A. Aspuru-Guzik, and
+Y. Cao, “Variational Quantum Factoring,” (2018),
+arXiv:1808.08927.
+[32] The approximation ratior = (2p + 1)/(2p + 2) is found
+for an inﬁnite ring. For a ﬁnite ring with N vertices,
+numerical calculations show that forp <⌊N/2⌋ one has
+r = (2p + 1)/(2p + 2)for evenN andr = (2p+1)(N +1)(2p+2)N for
+odd N, and forp≥⌊N/2⌋ one hasr = 1.
+[33] C. G. Broyden, “The convergence of a class of double-
+rank minimization algorithms 1. general considerations,”
+IMA Journal of Applied Mathematics6, 76–90 (1970);
+R. Fletcher, “A new approach to variable metric al-
+gorithms,” The Computer Journal 13, 317–322 (1970);
+Donald Goldfarb, “A family of variable-metric methods
+derived by variational means,” Mathematics of Compu-
+tation 24, 23–23 (1970); D. F. Shanno, “Condition-
+ing of quasi-Newton methods for function minimization,”
+Mathematics of Computation24, 647–647 (1970).
+[34] The initial pointsβ0i are drawn uniformly from[−π4, π4 ),
+and γ0i are drawn uniformly [−π2, π2 ) for u3R graphs or
+[−2π, 2π) for w3R graphs. Althoughγ0i can meaningfully
+take values beyond the restricted rangeγ0i ∈ [−2π, 2π)
+for w3R graph, we ﬁnd that broadening the range does
+not improve performance. The ranges of the output pa-
+rameters are not restricted in our unconstrained opti-
+mization routine.
+[35] We denote the best of all local optima optimized from
+k random initial points (seeds) to be (⃗γB[k],⃗βB[k]).
+When the same optimum (⃗γB[k],⃗βB[k]) is found from
+many diﬀerent seeds and continues to yield the best
+Fp(⃗γB[k],⃗βB[k]) as we increase the number of seedsk, we
+then claim that it is a global optimum, i.e.,(⃗γ∗,⃗β∗) =
+limk→∞(⃗γB[k],⃗βB[k]).
+[36] J A Nelder and R Mead, “A Simplex Method for Func-
+tion Minimization,” The Computer Journal 7, 308–313
+(1965).
+[37] Peter I. Frazier, “A Tutorial on Bayesian Optimization,”
+(2018), arXiv:1807.02811.
+[38] Landau and L. D., “Zur Theorie der Energieubertragung
+II,” Z. Sowjetunion 2, 46–51 (1932); C. Zener, “Non-
+Adiabatic Crossing of Energy Levels,” Proc. R. Soc. Lon-
+don, Ser. A137, 696–702 (1932).
+[39] Tadashi Kadowaki and Hidetoshi Nishimori, “Quantum
+annealing in the transverse ising model,” Phys. Rev. E
+58, 5355–5363 (1998).
+[40] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann, Joshua
+Lapan, Andrew Lundgren, and Daniel Preda, “A quan-
+tum adiabatic evolution algorithm applied to random in-
+stances of an np-complete problem,” Science292, 472–
+475 (2001).
+[41] Sergio Boixo, Troels F. Rønnow, Sergei V. Isakov, Zhihui
+Wang, David Wecker, Daniel A. Lidar, John M. Martinis,
+and Matthias Troyer, “Evidence for quantum annealing
+with more than one hundred qubits,” Nature Physics10,
+218 (2014).
+[42] Troels F. Rønnow, Zhihui Wang, Joshua Job, Sergio
+Boixo, Sergei V. Isakov, David Wecker, John M. Mar-
+tinis, Daniel A. Lidar, and Matthias Troyer, “Deﬁning
+and detecting quantum speedup,” Science345, 420–424
+(2014).
+[43] To be consistent with the language of QA, here we use
+the terminology of ground state and low excited states
+of−HC instead of referring to them as highest excited
+states in the MaxCut language.
+[44] This could change with diﬀerent normalizations of the
+HamiltoniansHC andHB, but our qualitative results re-
+main the same. The physical limitation in the experiment
+is typically the interaction strength inHC.
+[45] H. Pichler, S.-T. Wang, L. Zhou, S. Choi, and M. D.
+Lukin, “Quantum Optimization for Maximum Inde-
+pendent Set Using Rydberg Atom Arrays,” (2018),
+arXiv:1808.10816.
+[46] H. Pichler, S.-T. Wang, L. Zhou, S. Choi, and M. D.
+Lukin, “Computational complexity of the Rydberg block-
+ade in two dimensions,” (2018), arXiv:1809.04954.
+[47] G. Giacomo Guerreschi and M. Smelyanskiy, “Practical
+optimization for hybrid quantum-classical algorithms,”
+(2017), arXiv:1701.01450.
+[48] Franz Rendl, Giovanni Rinaldi, and Angelika Wiegele,
+“Solving max-cut to optimality by intersecting semidef-
+inite and polyhedral relaxations,” Mathematical Pro-
+gramming 121, 307 (2008).
+[49] Una Benlic and Jin-Kao Hao, “Breakout local search for
+
+=== PDF PAGE 15 ===
+15
+the max-cutproblem,” Engineering Applications of Arti-
+ﬁcial Intelligence26, 1162 – 1173 (2013).
+[50] E. Cuthill and J. McKee, “Reducing the bandwidth of
+sparse symmetric matrices,” in Proceedings of the 1969
+24th National Conference , ACM ’69 (ACM, New York,
+NY, USA, 1969) pp. 157–172.
+[51] Lan Lin and Yixun Lin, “Square-root rule of two-
+dimensional bandwidth problem,” RAIRO - Theoretical
+Informatics and Applications45, 399–411 (2011).
+[52] Wolfgang Lechner, Philipp Hauke, and Peter Zoller, “A
+quantum annealing architecture with all-to-all connectiv-
+ity from local interactions,” Science Advances1 (2015).
+[53] Josep Díaz and Marcin Kamiński, “Max-cut and max-
+bisection are np-hard on unit disk graphs,” Theoretical
+Computer Science377, 271 – 276 (2007).
+[54] Henning Labuhn, Daniel Barredo, Sylvain Ravets, Syl-
+vain de Léséleuc, Tommaso Macrì, Thierry Lahaye, and
+Antoine Browaeys, “Tunable two-dimensional arrays of
+single rydberg atoms for realizing quantum ising mod-
+els,” Nature534, 667 (2016).
+[55] A. Keesling, A. Omran, H. Levine, H. Bernien, H. Pich-
+ler, S. Choi, R. Samajdar, S. Schwartz, P. Silvi,
+S. Sachdev, P. Zoller, M. Endres, M. Greiner, V. Vuletic,
+and M. D. Lukin, “Probing quantum critical dynam-
+ics on a programmable Rydberg simulator,” (2018),
+arXiv:1809.05540.
+[56] Aishwarya Kumar, Tsung-Yao Wu, Felipe Giraldo, and
+David S. Weiss, “Sorting ultracold atoms in a three-
+dimensional optical lattice in a realization of maxwell’s
+demon,” Nature561, 83–87 (2018).
+[57] H. Häﬀner, C.F. Roos, and R. Blatt, “Quantum com-
+puting with trapped ions,” Physics Reports469, 155 –
+203 (2008).
+[58] S. Debnath, N. M. Linke, C. Figgatt, K. A. Landsman,
+K. Wright, and C. Monroe, “Demonstration of a small
+programmable quantum computer with atomic qubits,”
+Nature 536, 63 (2016).
+[59] J. Zhang, G. Pagano, P. W. Hess, A. Kyprianidis,
+P. Becker, H. Kaplan, A. V. Gorshkov, Z. X. Gong,
+and C. Monroe, “Observation of a many-body dynami-
+cal phase transition with a 53-qubit quantum simulator,”
+Nature 551, 601 (2017).
+[60] R. Barends, A. Shabani, L. Lamata, J. Kelly, A. Mezza-
+capo, U. Las Heras, R. Babbush, A. G. Fowler, B. Camp-
+bell, Yu Chen, Z. Chen, B. Chiaro, A. Dunsworth, E. Jef-
+frey, E. Lucero, A. Megrant, J. Y. Mutus, M. Neeley,
+C. Neill, P. J. J. O’Malley, C. Quintana, P. Roushan,
+D. Sank, A. Vainsencher, J. Wenner, T. C. White,
+E. Solano, H. Neven, and John M. Martinis, “Digitized
+adiabatic quantum computing with a superconducting
+circuit,” Nature534, 222 (2016).
+[61] C. Neill, P. Roushan, K. Kechedzhi, S. Boixo, S. V.
+Isakov, V. Smelyanskiy, A. Megrant, B. Chiaro,
+A. Dunsworth, K. Arya, R. Barends, B. Burkett,
+Y. Chen, Z. Chen, A. Fowler, B. Foxen, M. Giustina,
+R. Graﬀ, E. Jeﬀrey, T. Huang, J. Kelly, P. Klimov,
+E. Lucero, J. Mutus, M. Neeley, C. Quintana, D. Sank,
+A. Vainsencher, J. Wenner, T. C. White, H. Neven, and
+J. M. Martinis, “A blueprint for demonstrating quantum
+supremacy with superconducting qubits,” Science 360,
+195–199 (2018).
+[62] Harry Levine, Alexander Keesling, Ahmed Omran,
+Hannes Bernien, Sylvain Schwartz, Alexander S. Zibrov,
+Manuel Endres, Markus Greiner, Vladan Vuletić, and
+Mikhail D. Lukin, “High-ﬁdelity control and entangle-
+ment of rydberg-atom qubits,” Phys. Rev. Lett. 121,
+123603 (2018).
+[63] L. Isenhower, M. Saﬀman, and K. Mølmer, “Multibit C
+k NOT quantum gates via Rydberg blockade,” Quantum
+Information Processing10, 755–770 (2011).
+[64] Takahiro Inagaki, Yoshitaka Haribara, Koji Igarashi,
+Tomohiro Sonobe, Shuhei Tamate, Toshimori Honjo,
+Alireza Marandi, Peter L. McMahon, Takeshi Umeki,
+Koji Enbutsu, Osamu Tadanaga, Hirokazu Takenouchi,
+Kazuyuki Aihara, Ken-ichi Kawarabayashi, Kyo Inoue,
+Shoko Utsunomiya, and Hiroki Takesue, “A coherent
+ising machine for 2000-node optimization problems,” Sci-
+ence (2016).
+[65] Peter L. McMahon, Alireza Marandi, Yoshitaka Harib-
+ara, Ryan Hamerly, Carsten Langrock, Shuhei Ta-
+mate, Takahiro Inagaki, Hiroki Takesue, Shoko Ut-
+sunomiya, Kazuyuki Aihara, Robert L. Byer, M. M. Fe-
+jer, Hideo Mabuchi, and Yoshihisa Yamamoto, “A fully-
+programmable 100-spin coherent ising machine with all-
+to-all connections,” Science (2016).
+[66] Ryan Hamerly, Takahiro Inagaki, Peter L. McMa-
+hon, Davide Venturelli, Alireza Marandi, Tatsuhiro On-
+odera, Edwin Ng, Carsten Langrock, Kensuke Inaba,
+Toshimori Honjo, Koji Enbutsu, Takeshi Umeki, Ry-
+oichi Kasahara, Shoko Utsunomiya, Satoshi Kako, Ken-
+ichi Kawarabayashi, Robert L. Byer, Martin M. Fejer,
+Hideo Mabuchi, Dirk Englund, Eleanor Rieﬀel, Hiroki
+Takesue, and Yoshihisa Yamamoto, “Experimental in-
+vestigation of performance diﬀerences between Coher-
+ent Ising Machines and a quantum annealer,” (2018),
+arXiv:1805.05217.
+[67] Marin Bukov, Alexandre G. R. Day, Dries Sels, Phillip
+Weinberg, Anatoli Polkovnikov, and Pankaj Mehta, “Re-
+inforcement learning in diﬀerent phases of quantum con-
+trol,” Phys. Rev. X8, 031086 (2018).
+[68] Alireza Vahdatpour, FoadDabiri, MaryamMoazeni, and
+Majid Sarrafzadeh, “Theoretical Bound and Practical
+Analysis of Connected Dominating Set in Ad Hoc and
+Sensor Networks,” in Distributed Computing (Springer,
+Berlin, Heidelberg, Berlin, Heidelberg, 2008) pp. 481–
+495.
+[69] PankajKAgarwal, MarcvanKreveld, andSubhashSuri,
+“Label placement by maximum independent set in rect-
+angles,” Computational Geometry11, 209–218 (1998).
+[70] G. E. Crooks, “Performance of the Quantum Approx-
+imate Optimization Algorithm on the Maximum Cut
+Problem,” (2018), arXiv:1811.08419.
+[71] C. Moler and C. Van Loan, “Nineteen dubious ways to
+compute the exponential of a matrix, twenty-ﬁve years
+later,” SIAM Review45, 3–49 (2003).
+[72] Roger B. Sidje, “Expokit: A software package for com-
+puting matrix exponentials,” ACM Trans. Math. Softw.
+24, 130–156 (1998).
+[73] Awad H Al-Mohy and Nicholas J Higham, “Computing
+the Action of the Matrix Exponential, with an Applica-
+tion to Exponential Integrators,” SIAM Journal on Sci-
+entiﬁc Computing33, 488–511 (2011).
+[74] Navin Khaneja, Timo Reiss, Cindie Kehlet, Thomas
+Schulte-Herbrüggen, and Steﬀen J. Glaser, “Optimal
+control of coupled spin dynamics: design of nmr pulse se-
+quences by gradient ascent algorithms,” Journal of Mag-
+netic Resonance172, 296 – 305 (2005).
+
+=== PDF PAGE 16 ===
+16
+Appendix A: Optimal parameter pattern for
+weighed graphs
+Here, we illustrate the pattern of optimal QAOA pa-
+rameters for both weighted 3-regular (w3R) graphs and
+weighted complete graphs. The weight of each edge is
+randomly drawn from uniform distribution on the inter-
+val [0, 1]. In Fig. 9, we illustrate the pattern by simulta-
+neously plotting the optimal parameters for 40 instances.
+In both cases, we see a pattern analogous to what was
+found for unweighted 3-regular (u3R) graphs in Fig. 2(b),
+where γ∗i tend to increase smoothly andβ∗i tend to de-
+crease smoothly withi = 1, 2,...,p . The optimal param-
+eter of graphs from the same class also appears to cluster
+together in the same range.
+We observe that the spread of⃗γ∗ for w3R graphs in
+Fig. 9(a) is wider than that for u3R graphs in Fig. 2(b).
+This is because the random weights eﬀectively increase
+thenumberofsubgraphtypes. Moreover, thelargervalue
+for ⃗γ∗ for w3R compared to u3R graphs can be under-
+1 2 3
+0
+0.1
+0.2
+0.3
+0.4 p=3
+1 2 3
+0
+0.05
+0.1
+0.15
+0.2
+p=3
+1 2 3 4
+0
+0.1
+0.2
+0.3
+0.4 p=4
+1 2 3 4
+0
+0.05
+0.1
+0.15
+0.2
+p=4
+1 2 3 4 5
+0
+0.1
+0.2
+0.3
+0.4 p=5
+1 2 3 4 5
+0
+0.05
+0.1
+0.15
+0.2
+p=5
+1 2 3
+0
+0.5
+1
+p=3
+1 2 3
+0
+0.05
+0.1
+0.15
+0.2
+p=3
+1 2 3 4
+0
+0.5
+1
+p=4
+1 2 3 4
+0
+0.05
+0.1
+0.15
+0.2
+p=4
+1 2 3 4 5
+0
+0.5
+1
+p=5
+1 2 3 4 5
+0
+0.05
+0.1
+0.15
+0.2
+p=5
+FIG. 9. Optimal QAOA parameters(⃗γ∗,⃗β∗) for 40 instances
+of 16-vertex (a) weighted 3-regular (w3R) graphs and (b)
+weighted complete graphs, for3≤ p≤ 5. Each dashed line
+connects parameters for one particular graph instance. For
+each instance and eachp, the BFGS routine is used to opti-
+mize from104 random initial points, and the best parameters
+are kept as(⃗γ∗,⃗β∗).
+stoodviatheeﬀectivemean-ﬁeldstrengththateachqubit
+experiences.
+For complete graphs in Fig. 9(b), we observe that⃗γ∗
+for diﬀerent weighted graphs have a narrower spread as
+well as smaller value compared to both u3R and w3R
+graphs. This is because there is only one type of sub-
+graph that every edge sees. The non-zero spread is at-
+tributed to the fact that there are random weights on the
+edges. We also expect this spread to vanish as problem
+size N increases, when for a typical instance, the distri-
+bution of weights on theN− 1 edges incident to each
+qubits converges. The smaller value of ⃗γ∗ can also be
+understood via the eﬀective mean-ﬁeld strength picture,
+as each qubit interacts with allN− 1 other qubits.
+Appendix B: Details of heuristic optimization
+strategies
+In the main text, we have proposed two classes of
+heuristic strategies called INTERP and FOURIER for
+generating initial points in optimizing QAOA parame-
+ters. Both INTERP and FOURIER strategies work well
+for all the instances we have examined. We have chosen
+to use FOURIER for the results in the main text due to
+theslightedgeinitsperformanceinﬁndingbetteroptima
+when random perturbations are introduced. We now ex-
+plain how these strategies work in details, and compare
+their performances.
+1. Interpolation-based strategy
+In the optimization strategy that we call INTERP, we
+use linear interpolation to produce a good initial point
+for optimizing QAOA as one iteratively increases the
+level p. This is based on the observation that the shape
+of parameters (⃗γ∗(p+1),⃗β∗(p+1)) closely resembles that of
+(⃗γ∗(p),⃗β∗(p)).
+The strategy works as follows: For a given instance,
+we iteratively optimize QAOA starting fromp = 1, and
+incrementp after obtaining a local optimum(⃗γL(p),⃗βL(p)).
+In order to optimize parameters for levelp + 1, we take
+the optimized parameters from levelpand produce initial
+points (⃗γ0(p+1),⃗β0(p+1)) according to:
+[
+⃗γ0(p+1)
+]
+i
+= i−1p
+[
+⃗γL(p)
+]
+i−1
++ p−i+1p
+[
+⃗γL(p)
+]
+i
+(B1)
+for i = 1 , 2,...,p + 1. Here, we denote [⃗γ]i ≡ γi
+as the i-th element of the parameter vector ⃗γ, and
+[⃗γL(p)]0 ≡ [⃗γL(p)]p+1 ≡ 0. The expression for ⃗β0(p+1) is
+the same as above after replacing γ → β. Starting
+from (⃗γ0(p+1),⃗β0(p+1)), we then optimize (e.g., using the
+BFGSroutine)toobtainalocaloptimum (⃗γL(p+1),⃗βL(p+1))
+for the (p + 1)-level QAOA. Finally, we incrementp by
+
+=== PDF PAGE 17 ===
+17
+one and repeat the same process until a target level is
+reached.
+2. Details of FOURIER[q,R] strategy
+We now provide the details of our second heuristic
+strategy for optimizing QAOA that we call FOURIER.
+As described in the Sec. IIIB main text, here we use a
+new representation of thep-level QAOA parameters as
+(⃗u,⃗v)∈ R2q where
+γi =
+q∑
+k=1
+uk sin
+[(
+k− 12)(i− 12)πp],
+βi =
+q∑
+k=1
+vk cos
+[(
+k− 12)(i− 12)πp]. (B2)
+Roughly speaking, the FOURIER strategy works by
+starting with levelp = 1, optimize, and then reuse the
+optimum at levelp in (⃗u,⃗v)-representation to generate a
+good initial point for levelp + 1.
+In fact, we propose several variants of the FOURIER
+strategy for optimizing p-level QAOA: they are called
+FOURIER[q,R], characterized by two integer parame-
+ters q and R. The ﬁrst integer q labels the maximum
+frequency component we allow in the amplitude param-
+eters (⃗u,⃗v). When we set q = p, the full power ofp-
+level QAOA can be utilized, in which case we simply
+denote the strategy as FOURIER[∞,R], since q grows
+unbounded withp. Nevertheless, the smoothness of the
+optimal parameters (⃗γ,⃗β) implies that only the low-
+frequency components are important. Thus, we can also
+consider the case whereq is a ﬁxed constant independent
+of p, so the number of parameters is bounded even as
+the QAOA circuit depth increases. The second integer
+R is the number of random perturbations we add to the
+parameters so that we can sometimes escape a local opti-
+mum towards a better one. For the results shown in the
+main text, we use the FOURIER[∞, 10] strategy, mean-
+ing we setq =p and R = 10, unless otherwise stated.
+In the basic FOURIER[∞, 0] variant of this strategy,
+we generate a good initial point for levelp + 1by adding
+a higher frequency component, initialized at zero ampli-
+tude, to the optimum at levelp. More concretely, we
+take parameters from a local optimum(⃗uL(p),⃗vL(p))∈ R2p
+at levelp, and generate a initial point(⃗u0(p+1),⃗v0(p+1))∈
+R2(p+1) according to
+⃗u0(p+1) = (⃗uL(p), 0), ⃗v0(p+1) = (⃗vL(p), 0). (B3)
+Using (⃗u0(p+1),⃗v0(p+1)) as a initial point, we perform
+BFGS optimization routine to obtain a local optimum
+(⃗uL(p+1),⃗vL(p+1)) for the levelp + 1.
+We also consider an improved variant of the strategy,
+FOURIER[∞,R > 0], which is sketched alongside the
+R = 0 variant in Fig. 10. This is motivated by our obser-
+vation that the basic FOURIER[∞, 0] strategy can some-
+times get stuck at a sub-optimal local optimum, whereas
+perturbing its initial point can improve the performance
+of QAOA. Here, in addition to optimizing according to
+the basic strategy, we optimize(p + 1)-level QAOA from
+R + 1 extra initial points,R of which are generated by
+adding random perturbations to the best of all local op-
+tima (⃗uB(p),⃗vB(p)) found at levelp. Speciﬁcally, for each
+instance at (p + 1)-level QAOA, and forr = 0, 1,...,R ,
+we optimize starting from
+⃗u0,r(p+1) =
+{
+(⃗uB(p), 0), r = 0
+(⃗uB(p) +α⃗uP,r(p), 0), 1≤r≤R
+⃗v0,r(p+1) =
+{
+(⃗vB(p), 0), r = 0
+(⃗vB(p) +α⃗vP,r(p), 0), 1≤r≤R
+(B4)
+where ⃗uP,r(p) and ⃗vP,r(p) contain random numbers drawn
+from normal distributions with mean 0 and variance
+FOURIER
+FOURIER
+Initial Points Local Optima
+LevelLevel
+best of 
+FIG. 10. Schematics of the two variants of FOURIER[q,R]
+heuristic strategy for optimizing QAOA, whenR = 0 and
+R> 0. Optimized parameters (green) at levelp− 1 are used
+to generate good initial points (blue) for optimizing at level
+p; the same process is repeated to optimize forp + 1. When
+generating initial points, black dashed arrows indicate ap-
+pending a higher frequency component [Eq. (B3)], and pink
+dashed arrows correspond to adding random perturbations
+[Eq. (B4)]. In the R > 0 variant, two local optima (green)
+are kept in parallel at each levelp for generating good ini-
+tial points: (⃗uL(p),⃗vL(p)) is the same optimum obtained from
+FOURIER[q, 0] strategy, and(⃗uB(p),⃗vB(p)) is the best ofR + 2
+local optima, R of which are obtained from perturbed ini-
+tial points. We ﬁnd that keeping the (⃗uL(p),⃗vL(p)) optimum
+improves the stability of the heuristic, as random perturba-
+tions can sometimes lead to erratic and non-smooth optimal
+parameters.
+
+=== PDF PAGE 18 ===
+18
+given by⃗uB(p) and ⃗vB(p):
+[
+⃗uP,r(p)
+]
+k
+∼ Normal
+(
+0,
+[
+⃗uB(p)
+]2
+k
+)
+,
+[
+⃗vP,r(p)
+]
+k
+∼ Normal
+(
+0,
+[
+⃗vB(p)
+]2
+k
+)
+.
+(B5)
+There is a free parameterαcorresponding to the strength
+of the perturbation. Based on our experience from trial
+and error, settingα = 0.6 has consistently yielded good
+results. This choice ofα is assumed for the results in this
+paper.
+We remark that while the INTERP strategy can also
+get stuck in a local optimum, we ﬁnd that adding per-
+turbations to INTERP does not work as well as to
+FOURIER. We attribute this to the fact that the op-
+timal parameters are smooth, and adding perturbations
+in the (⃗u,⃗v)-space modify (⃗γ,⃗β) in a correlated way,
+which could enable the optimization to escape local op-
+tima more easily. Hence, we consider here FOURIER
+with perturbations, but not INTERP.
+Finally, we also consider variants of the FOURIER
+strategy where the number of frequency componentsq
+is ﬁxed. These variants are the same as aforementioned
+strategies where q = p, except we truncated each of
+the ⃗u and ⃗v parameters to keep only the ﬁrstq com-
+ponents. For example, when optimizing QAOA at level
+p≥ q with the FOURIER[q, 0] strategy, we stop adding
+higher frequency components and use the initial point
+⃗u0(p+1) =⃗uL(p)∈ Rq.
+3. Comparison between heuristics
+We now examine the diﬀerence in the performance
+among the various heuristic strategies we proposed. For
+our example instance in Fig. 11, we note that INTERP
+and FOURIER[∞, 0] strategies have essentially identical
+performance (except for small variations barely visible at
+large p). This is expected since both strategies generate
+initial points for optimizing levelp + 1 based on smooth
+deformation of the optimum at level p. In any case,
+theFOURIER[∞, 10]strategyoutperformsINTERPand
+FOURIER[∞, 0] beginning at levelp & 20. Interestingly,
+even when restricting the number of QAOA parameters
+to 2q = 10, the FOURIER[5,10] strategy closely matches
+the performance of other heuristics at lowp and beats
+the R = 0 heuristic at largep. This suggests that the
+optimal QAOA parameters may in fact live in a small-
+dimensional manifold. Therefore, optimization for inter-
+mediatep-level QAOA can be dramatically simpliﬁed by
+using our new parameterization(⃗u,⃗v).
+0 10 20 30 40 5010-3
+10-2
+10-1
+INTERP
+FOURIER[ ,0]
+FOURIER[ ,10]
+FOURIER[5,10]
+FIG. 11. The fractional error achieved by optimizing using
+our various heuristics on an example instance of 14-vertex
+w3R graph. This is the same instance shown in Fig. 6(b).
+Appendix C: Time-to-solution (TTS) for example
+graph instance
+In Sec. VB, we focused on a representative graph
+instance where the adiabatic minimum gap is small
+[Fig. 6(b)]. The low energy spectrum for the graph along
+the QA path can be seen in Fig. 12(a). We remark that
+only eigenstates that are invariant under the parity op-
+eratorP = ∏Ni=1σxi are shown, since the Hamiltonian
+HQA(s) commutes with P and the initial state is P-
+invariant:P|ψ(0)⟩ =|ψ(0)⟩.
+Fig. 12(b) and Fig. 12(c) illustrate TTS QA and
+TTSQAOA for the same graph. For QA, one can see
+that non-adiabatic evolution withT ≈ 20 yields orders
+of magnitude shorter TTS than the adiabatic evolution.
+We also see that TTS in the adiabatic limit is indepen-
+dent of the annealing timeT, following the Landau-Zener
+formula pGS = 1− exp
+(
+−cT ∆2min). For QAOA, we use
+our FOURIER[∞, 10] heuristic strategy to perform the
+numerical simulation up to pmax = 50 , and compute
+TTSQAOA(p) and TTSoptQAOA (up top≤ pmax). For this
+particulargraph, wenotethatalthoughTTS optQAOAoccurs
+at p = 49, in practice it may be better to run QAOA at
+p = 4 or p = 5 due to optimization overhead and error
+accumulation at deeper circuit depths. The apparent dis-
+continuousjumpinTTS QAOAisduetothecorresponding
+jump inpGS(p), which can be explained by two reasons:
+ﬁrst, our heuristic strategy is not guaranteed to ﬁnd the
+global optimum, and random perturbations may help the
+algorithm escape a local optimum, resulting in a jump in
+ground state population; second, even when the global
+optimum is found for all levelp, there can still be discon-
+tinuities inpGS, since the objective function of QAOA is
+energy instead of ground state population.
+
+=== PDF PAGE 19 ===
+19
+1 5 10 15 20 25 30 35 40 45 50
+0
+200
+400
+600
+800
+1000
+1200
+TTSQAOA
+TTSQAOA
+TTSQAOAopt
+100 101 102 103 104 105 106
+103
+104
+105
+106
+107
+TTSQA
+TTSQA
+TTSQAopt
+Landau-Zener
+(a)
+<latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit>
+(b)
+<latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit>
+0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+E - EGS
+1E
+2E
+3E
+4E
+5E
+6E
+7E
+0.7 0.8 0.9 1
+10-3
+10-2
+10-1
+E - EGS
+(c)
+<latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit><latexit sha1_base64="zgnrvYOUpsvIxW07PeqD5QuG8Gc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7rFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPy/zKr0=</latexit>
+FIG. 12. (a) Energy spectrum of low excited states (measured
+from the ground state energyEGS) along the annealing path
+for the graph instance given in Fig. 6(b). Only states that
+can couple to the ground state are shown, i.e., states that are
+invariant under the parity operatorP =∏Ni=1σxi . The inset
+shows the energy gap from the ground state in logarithmic
+scale. (b) Time-to-solution for the linear-ramp quantum an-
+nealing protocol, TTSQA, for the same graph instance. TTS
+in the long time limit follows a line predicted by the Landau-
+Zener formula, which is independent of the annealing timeT.
+(c) TTS for QAOA at each iteration depthp.
+Appendix D: Eﬀective few-level understanding of
+the diabatic bump
+In this Appendix, we elucidate the mechanism of the
+diabatic bump observed in Fig. 6(c) via an eﬀective few-
+level dynamics. To study the intermediate dynamics dur-
+ing quantum annealing, we can work in the basis of in-
+stantaneous eigenstates|ϵl(t)⟩, where
+HQA(t)|ϵl(t)⟩ =ϵl(t)|ϵl(t)⟩. (D1)
+Expandingthetime-evolvedstateinthisbasisas |ψ(t)⟩ =∑
+lal(t)|ϵl(t)⟩, the Schrodinger equation can be written
+as
+i
+∑
+l
+(˙al|ϵl⟩ +al|˙ϵl⟩) =
+∑
+l
+ϵlal|ϵl⟩, (D2)
+where ℏ = 1 and the time dependence in the notations
+is dropped for convenience. Multiplying the equation by
+0.5 0.6 0.7 0.8 0.9 1
+0
+0.2
+0.4
+0.6
+0.8
+1
+instantaneous eigenstate
+population
+GS
+1E
+2E
+3E
+4E
+0.5 0.6 0.7 0.8 0.9 110-2
+10-1
+100
+101
+102
+(a)
+<latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit><latexit sha1_base64="v9gznLfdlpMQ0lcV8svmr+U6dWI=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7tFn1dlOu9vp1gabTtg4bdLY4dlu63s8UKzIUFomqDFR2M1tUlJtORNY+XFhMKdsQkcYOVfSDE1S1pIrCFxkAEOl3Sct1NFlREkzY2ZZ6iozasdmPTcP/isXFXb4Oim5zAuLki0aDQsBVsH8/jDgGpkVM+dQprnTCmxMNWXWTckPYLmPVLYek3E0n2egphKa1KqeNKt8PwjgrabPJ2jhyxUOgsCPJU6ZyjIqB2WcauoKqqiXlLGgciQQ2iFcQrsHsa7PrtV77uRA2pBdidggqqJwlcVB5xKuQdR9HeJyXvu3GXz6Xw9Wo/Y31brf/jLLquYpt2NQOWpq3QtzCSnaKeIaPz3H9TssMb5xa+uGC47gw0Xu3myh8Loxu/0N17d10znudULnf33RPnjZbPI2eUKekj0SklfkgHwkh6RPGJHkB/lJfnkd78iLvGRR2tpqMI/JinnDPylxKrs=</latexit>
+(b)
+<latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit><latexit sha1_base64="xJhQfSRWOt81v8if+ax/EPyOVFc=">AAADrHicfVLbbtNAEN3GXIq5tfDIy4jIUnkgilMEPJabhIRARWraCtuq1ptJssp619pdN41c/wGPvMJ/8TdsHFfkQhnJ1uzMnDNnZyfNBTe22/291fJu3Lx1e/uOf/fe/QcPd3YfHRtVaIZ9poTSpyk1KLjEvuVW4GmukWapwJN08m6ePzlHbbiSR3aWY5LRkeRDzqh1oW+xxQtb7qXPqrOddrfTrQ02nbBx2qSxw7Pd1vd4oFiRobRMUGOisJvbpKTaciaw8uPCYE7ZhI4wcq6kGZqkrCVXELjIAIZKu09aqKPLiJJmxsyy1FVm1I7Nem4e/FcuKuzwdVJymRcWJVs0GhYCrIL5/WHANTIrZs6hTHOnFdiYasqsm5IfwHIfqWw9JuNoPs9ATSU0qVU9aVb5fhDAW02fT9DClyscBIEfS5wylWVUDso41dQVVFEvKWNB5UggtEO4hHYPYl2fXav33MmBtCG7ErFBVEXhKouDziVcg6j7OsTlvPZvM/j0vx6sRu1vqnW//WWWVc1TbsegctTUuhfmElK0U8Q1fnqO63dYYnzj1tYNFxzBh4vcvdlC4XVjdvsbrm/rpnPc64TO//qiffCy2eRt8oQ8JXskJK/IAflIDkmfMCLJD/KT/PI63pEXecmitLXVYB6TFfOGfwAssiq8</latexit>
+FIG. 13. (a) Instantaneous eigenstate populations along the
+linear-ramp quantum annealing path given by Eq. (9) for the
+example graph in Fig. 6(b). The annealing time is chosen to
+be T = T∗ = 40, which corresponds to the time where the
+diabatic bump occurs in Fig. 6(c). (b) Coupling between the
+instantaneous ground states and the ﬁrst few excited states.
+The plotted quantities measure the degree of adiabaticity [as
+explained in Eq. (D5)].
+⟨ϵk|, the Schrodinger equation becomes
+i˙ak =ϵkak−i
+∑
+l⁄=k
+al⟨ϵk|˙ϵl⟩, (D3)
+where⟨ϵk|˙ϵk⟩ = 0 is taken by absorbing the phase into
+the eigenvector|ϵk⟩. Written in a matrix form, we have
+i
+
+
+˙a0
+˙a1
+˙a2
+...
+
+=
+
+
+0 −i⟨ϵ0|˙ϵ1⟩ −i⟨ϵ0|˙ϵ2⟩···
+−i⟨ϵ1|˙ϵ0⟩ ∆10 −i⟨ϵ1|˙ϵ2⟩···
+−i⟨ϵ2|˙ϵ0⟩ −i⟨ϵ2|˙ϵ1⟩ ∆20 ···... ... ... ...
+
+
+
+
+a0
+a1
+a2
+...
+
+,
+(D4)
+where we take the ground state energyϵ0 = 0 (by absorb-
+ing it into the phase of the coeﬃcients) and∆i0 =ϵi−ϵ0
+is the instantaneous energy gap from theith excited state
+to the ground state. The time evolution starts from the
+initial ground state witha0 = 1 andai = 0 fori⁄= 0, and
+the adiabatic condition to prevent coupling to excited
+states is
+|⟨ϵ0|˙ϵi⟩|
+∆i0
+=
+⏐⏐⏐⟨ϵ0|dHQAdt |ϵi⟩⏐⏐⏐
+∆2i0 =
+⏐⏐⏐⟨ϵ0|dHQAds |ϵi⟩⏐⏐⏐
+∆2i0T ≪ 1. (D5)
+
+=== PDF PAGE 20 ===
+20
+0 5 10 15
+0
+0.1
+0.2
+0.3
+0.4
+0.5 Bayesian OptimizationFOURIER
+INTERP
+RI best of 50
+RI avg of 50
+0 5 10 15
+0
+0.1
+0.2
+0.3
+0.4
+0.5 Nelder Mead
+0 5 10 15
+0
+0.1
+0.2
+0.3
+0.4
+0.5 BFGS
+FIG. 14. Comparison of three diﬀerent optimization routines applied to 10 instances of 14-vertex w3R graphs. The initial
+point of optimization is generated with either our heuristics (FOURIER or INTERP) or random initialization (RI). We plot
+the fractional error, 1−r, averaged over instances, for each optimization routine and each initialization strategy at eachp.
+The error bars are sample standard deviations from the 10 instances. For our heuristic strategy, the optimization starts with a
+single initial point generated using our FOURIER[∞, 0] or INTERP heuristics as described in Appendix B. For the RI strategy,
+we generate 50 random initial points uniformly in the parameter space, and optimize from each initial point; both the best and
+the average of 50 RI runs are plotted.
+TheﬁrstequalitycanbederivedfromEq.(D1). Thispro-
+duces the standard adiabatic conditionT =O(1/∆2min).
+As we discussed in section VB, the minimum gap for
+some graphs can be exceedingly small, so the adiabatic
+limit is not practical. However, it may be possible to
+choose an appropriate run timeT, which breaks adia-
+baticity, but is long enough such that only few excited
+states are eﬀectively involved in the dynamics. This is
+the regime where the diabatic bump operates and one
+can understand the dynamics by truncating Eq. (D4) to
+the ﬁrst few basis states.
+As an example, we plot in Fig. 13(a) the instantaneous
+eigenstate populations of the ﬁrst few states. It is simu-
+lated with the full Hilbert space, but eﬀectively the same
+dynamics will be generated if the simulation is restricted
+to the ﬁrst few basis states in Eq. (D4). Fig. 13(b) shows
+the strength of the couplings between the instantaneous
+ground state and the low excited states. By comparing
+Fig. 13(a) and Fig. 13(b), one can see thatT =T∗ = 40
+allows the time evolution to break the adiabatic con-
+dition before the anticrossing: population leaks to the
+ﬁrst excited state, which becomes the ground state af-
+ter the anticrossing. Thus, the time scale ofT∗ for the
+diabatic bump represents a delicate balance between al-
+lowing population to leak out of the ground state and
+suppressing excessive population leakage, which explains
+why it happens at a certain range of time scale.
+Appendix E: Comparing diﬀerent classical
+optimization routines
+In this appendix, we compare three diﬀerent classical
+routines that can be used to optimize QAOA parame-
+ters: Bayesian Optimization [37], Nelder-Mead [36], and
+BFGS [33]. This comparison is done by a numerical
+experiment where we apply these optimization routines
+to 10 instances of 14-vertex weighted 3-regular (w3R)
+graphs. To compare them on equal footing, we termi-
+nate each optimization run after a budget of20p objec-
+tive function evaluations is used. In the gradient-based
+routine, BFGS, we include the cost of gradient estima-
+tion via the ﬁnite-diﬀerence method into the budget of
+20p objective function evaluations. For each routine, we
+start atp = 1 and gradually incrementp, and perform
+optimization where the initial point is generated using
+either our heuristic strategies (FOURIER and INTERP)
+or the standard strategy of random initialization (RI).
+We use the versions of these optimization routines imple-
+mented in MATLAB R2017b asbayesopt, fminsearch,
+and fminunc, respectively. The objective function at
+each set of parameter is evaluated to ﬂoating point pre-
+cision. The tolerance in both objective function value
+and step size in parameter space, as well as the ﬁnite-
+diﬀerence-gradient step size, are chosen to be 0.01.
+The result of our numerical experiment is plotted in
+Fig. 14. Similar to Fig. 3(a), we see that the average
+quality of local optimum found from 50 RI runs is much
+worse than the best, indicating the diﬃculty of optimiz-
+ing in the QAOA parameter landscape without a good
+initial point. We also see, regardless of the classical rou-
+tines chosen, one run of optimization from an initial point
+
+=== PDF PAGE 21 ===
+21
+generated from our heuristic strategies is generally bet-
+ter than the best out of 50 runs from randomly generated
+initial points. This indicates that our heuristic strategies
+work much better than RI and can be integrated with
+a variety of classical optimization routines. Moreover,
+we ﬁnd that Bayesian Optimization typically does not
+do as well as Nelder-Mead or BFGS for largerp, which
+is consistent with the folklore that this routine is better
+suited for low-dimensional parameter space [37]. On the
+other hand, it seems both Nelder-Mead and BFGS have
+comparable performance, even when the cost of gradient
+evaluation is taken into account. The slight diﬀerence we
+observe between the two in Fig. 14 is inconclusive and
+can be attributed to sub-optimal choices of tolerance and
+step size parameters and the deliberately limited budget
+of objective function evaluations.
+Appendix F: Details of Simulation with
+Measurement Projection Noise
+When running QAOA on actual quantum devices, the
+objective function is evaluated by averaging over many
+measurement outcomes, and consequently its precision
+is limited by the so-called measurement projection noise
+from quantum ﬂuctuations. We account for this eﬀect by
+performing full Monte-Carlo simulations of actual mea-
+surements, where the simulated quantum processor only
+outputs approximate values of the objective function ob-
+tained by averagingM measurements:
+¯Fp,M = 1M
+M∑
+i=1
+C(zp,i), (F1)
+wherezp,i is a random variable corresponding to theith
+measurement outcome obtained by measuring|ψp(⃗γ,⃗β)⟩
+in the computational basis, and C(z) is the classical
+objective function. Note when M → ∞, we obtain
+¯Fp,M → Fp =⟨ψp(⃗γ,⃗β)|HC|ψp(⃗γ,⃗β)⟩. In the simula-
+tion, we achieve ﬁnite precision| ¯Fp,M−Fp| ≲ξ by sam-
+pling measurements until the cumulative standard error
+of the mean falls below the target precision levelξ. In
+other words, for each evaluation ofFp requested by the
+classical optimizer, the number of measurementsM per-
+formed is set by the following criterion:
+vuu√ 1
+M(M− 1)
+M∑
+i=1
+[C(zp,i)− ¯Fp,M]2≤ξ. (F2)
+Roughly, we expectM≈ Var(Fp)/ξ2. To address issues
+with ﬁnite sample sizes, we also require that at least 10
+measurements be performed (M≥ 10) for each objective
+function evaluation.
+We now provide some details on the classical opti-
+mization algorithm used to optimize QAOA parame-
+ters. Generally, classical optimization algorithms itera-
+tively uses information from some given parameter point
+(⃗γ,⃗β) to ﬁnd a new parameter point(⃗γ′,⃗β′) that hope-
+fully produces a larger value of the objective function
+Fp(⃗γ′,⃗β′)≥Fp(⃗γ,⃗β). In order for the algorithm to ter-
+minate, we need to set some stopping criteria. Here,
+we specify two: First, we set an objective function tol-
+erance ϵ, such that if the change in objective function
+| ¯Fp,M ′(⃗γ′,⃗β′)− ¯Fp,M(⃗γ,⃗β)| ≤ϵ, the algorithm termi-
+nates. We also set a step-toleranceδ, so that the algo-
+rithm terminates if the new parameter point is very close
+tothepreviousone |⃗γ′−⃗γ|2+|⃗β′−⃗β|2≤δ2. Forgradient-
+based optimization algorithms such as BFGS, we also
+use δ as the increment size for estimating gradients via
+the ﬁnite-diﬀerence method:∂Fp/∂γi≃ [ ¯Fp,M ′(γi +δ)−¯Fp,M(γi)]/δ. In our simulations, we use the BFGS algo-
+rithm implemented asfminunc in the standard library of
+MATLAB R2017b.
+Using the approach described above, we simulate ex-
+periments of optimizing QAOA with measurement pro-
+jection noise for a few example instances, with various
+choices of precision parameters(ϵ,ξ,δ ) and initial points.
+For the representative instance studied in Fig. 7, we set
+ϵ = 0.1, ξ = 0.05, and δ = 0.01. In each run of the
+simulated experiment, we start with QAOA of level ei-
+ther p = 1 or p = 5 , and optimize increasing levels
+of QAOA using our FOURIER[∞, 0] heuristic strategy.
+The initial point of QAOA optimization is either ran-
+domly selected (when starting atp = 1) or chosen based
+on an educated guess using optimal parameters from
+small-sized instances (at p = 1 and p = 5 ). Speciﬁ-
+cally, the educated guess for the initial points we use are
+(⃗u0,⃗v0) = (1.4849, 0.5409) at levelp = 1, and
+⃗u0 = (1.9212, 0.2891, 0.1601, 0.0564, 0.0292), (F3)
+⃗v0 = (0.6055,−0.0178, 0.0431,−0.0061, 0.0141) (F4)
+at level p = 5 . For each such run, we keep track of
+the history of all the measurements, so that the largest
+cut Cuti found after thei-th measurement can be cal-
+culated. We repeat each experiment for 500 times with
+diﬀerent pseudo-random number generation seeds, and
+average over their histories.
+Appendix G: Techniques to speed up numerical
+simulation
+In this Appendix, we discuss a number of techniques
+we exploited to speed up the numerical simulation for
+both QAOA and QA.
+First, we make use of the symmetries present in the
+Hamiltonian. For general graphs, the only symmetry op-
+erator that commutes with bothHC andHB is the parity
+operatorP =∏Ni=1σxi : [HC,P] = 0, [HB,P] = 0, and so
+does [HQA(s),P] = 0, whereHQA(s) is the quantum an-
+nealing Hamiltonian in Eq. (9). The parity operator has
+two eigenvalues,+1 and−1, each with half of the entire
+
+=== PDF PAGE 22 ===
+22
+Hilbert space. The initial state for both QAOA and QA
+is in the positive sector, i.e.,P|+⟩⊗N =|+⟩⊗N. Thus,
+any dynamics remain in the positive parity sector. We
+can rewriteHC and HB in the basis of the eigenvectors
+ofP, and reduce the Hilbert space from2N to 2N−1 by
+working in the positive parity sector.
+For QA, dynamics involving the time-dependent
+Hamiltonian can be simulated by dividing the total sim-
+ulation timeT into suﬃciently small discrete timeτ and
+implement each time step sequentially. At each small
+step, one can evolve the state without forming the full
+evolution operator [71], either using Krylov subspace pro-
+jection method [72] or a truncated Taylor series approx-
+imation [73]. In our simulation, we used a scaling and
+squaring method with a truncated Taylor series approx-
+imation [73] as it appears to run slightly faster than the
+Krylov subspace method for small time steps.
+For QAOA, the dynamics can be implemented in a
+moreeﬃcientwayduetothespecialformoftheoperators
+HC and HB. We work in the standardσz basis. Thus,
+HC =∑⟨i,j⟩ wij2 (1−σziσzj ) can be written as a diagonal
+matrix and the action ofe−iγHC can be implemented as
+vector operations. ForHB, the time evolution operator
+can be simpliﬁed as
+e−iβHB =
+N∏
+j=1
+e−iβσ xj = N∏
+j=1
+(
+1 cosβ−iσxj sinβ). (G1)
+Therefore, the action of e−iβHB can also be imple-
+mented as N sequential vector operations without ex-
+plicitly forming the sparse matrixHB, which both im-
+proves simulation speed and saves memory. In addition,
+in the optimization of variational parameters, we calcu-
+lated the gradient analytically, instead of using ﬁnite-
+diﬀerence methods. Techniques similar to the gradi-
+ent ascent pulse engineering (GRAPE) method [74] were
+used, which reduces the cost of computing the gradient
+from O(p2) to O(p), for ap-level QAOA. Lastly, in our
+FOURIER strategy, we need to calculate the gradient of
+the objective function with respect to the new param-
+eters (⃗u,⃗v). Since ⃗γ = AS⃗u and ⃗β = AC⃗v for some
+matrices AS and AC, their gradients are also related via
+∇⃗u =AS∇⃗γ and∇⃗v =AS∇⃗β.
+Appendix H: QAOA for Maximum Independent Set
+In this Appendix, we brieﬂy illustrate the generality of
+our results by applying QAOA to another class of com-
+binatorial optimization problems called Maximum Inde-
+pendent Set (MIS). Given a graphG = (V,E ), the MIS
+problem concerns ﬁnding the largest independent set—a
+subset of vertices where no two of which share an edge.
+In other words, the problem Hamiltonian is
+HP =PIS
+(∑
+i
+ˆni
+)
+PIS (H1)
+where ˆn =|1⟩⟨1| = ( 1−σz)/2, andPIS is the projec-
+tion (or restriction) onto the subspace of independent set
+states span{|ψ⟩ : ˆniˆnj|ψ⟩ = 0∀(i,j )∈ E}. The p-level
+QAOA for MIS, ﬁrst suggested by [2], involves the prepa-
+ration of the following variational wavefunction
+|ψp(⃗γ,⃗β)⟩ =e−iβpHQ
+p−1∏
+k=1
+e−iγkHPe−iβkHQ|0⟩⊗N, (H2)
+where
+HQ =PIS
+(∑
+i
+σxi
+)
+PIS. (H3)
+Similar to the case of MaxCut, here QAOA works
+by repeatedly measuring the system in the compu-
+tational basis to obtain an estimate of Gp(⃗γ,⃗β) =
+⟨ψp(⃗γ,⃗β)|HP|ψp(⃗γ,⃗β)⟩, and using a classical computer
+to search for the best variational parameters(⃗γ∗,⃗β∗) so
+as to maximizeGp. We note the evolution can be imple-
+mented using the following physical Hamiltonian
+H MISphysical(t) =∑
+i
+[∆(t)ˆni + Ω(t)σxi ] +∑
+⟨i,j⟩
+U ˆniˆnj. (H4)
+In the U ≫ |∆|,|Ω| limit, the system is constraint to
+the manifold where ˆniˆnj = 0 for all edges⟨i,j⟩ (since
+the initial state is|0⟩⊗N), and the QAOA circuit can be
+performed by setting appropriate waveforms of∆(t) and
+Ω(t). See Ref. [45] for an implementation scheme of MIS
+with a platform of neutral atoms interacting via Rydberg
+excitations.
+After performing exhaustive search of QAOA param-
+eters using randomly initialized optimization for many
+instances of MIS, we discover a similar pattern. This
+is illustrated in Fig. 15(a), where we see that the opti-
+mal parameters at p = 3 tend to cluster in two visu-
+ally distinct groups. For one of the groups, the smooth
+curve underlying the parameters exhibit resemblance to
+a quantum annealing protocol, using a time-dependent
+Hamiltonian:
+H MISQA (t) =fP (t)HP +fQ(t)HQ. (H5)
+For example, if we choose (fP,fQ) such that fP (0) >
+0 and fP (T ) < 0, and fQ(0) = fQ(T ) = 0 , then we
+can initialize the system in|0⟩⊗N, which is the ground
+state ofH MISQA (t = 0), and evolve adiabatically to reach
+the ground state of H MISQA (t = T ) ∝ −HP (i.e. state
+encoding the MIS solution). The HamiltonianHQ, which
+is turned on in the middle of the time evolution, induces
+couplings between diﬀerent independent-set basis states
+and opens a spectral gap between the ground state and
+excited states. For concreteness of discussion, we focus
+on the following choice of annealing schedule:
+fcP (ξ) = 6(1− 2ξ), fcQ(ξ) = sin2(πξ), ξ(t) =t/T. (H6)
+
+=== PDF PAGE 23 ===
+23
+1 2
+-2
+0
+2
+p=3
+1 2 3
+0
+0.5
+1
+1.5
+p=3
+0.6 0.65 0.7 0.75
+0
+0.5
+1
+1.5
+2
+100 101 102 103 104 105 106 107
+0
+0.5
+1
+0 0.2 0.4 0.6 0.8 1
+0
+0.2
+0.4
+0.6
+0.8
+1
+instantaneous
+eigenstate population
+0 0.2 0.4 0.6 0.8 1
+0
+0.5
+1
+FIG. 15. (a) Pattern in the optimal QAOA parameters at levelp = 3 for 20 random instances of Maximum Independent Set
+(MIS). Each dashed line connects parameters for one particular graph instance. (b) The energy diﬀerence relative to the ground
+state in the quantum annealing protocol of Eq. (H6) for an example 32-vertex MIS instance. The annealing protocol progresses
+as the parameterξ increases from 0 to 1. The minimum spectral gap between the ground state (GS) and the ﬁrst excited state
+(1E) is∆min = 0.0012 atξ = 0.6666. (c) Comparing performance of quantum annealing and QAOA on the example instance, in
+terms the ground state population at the end of the quantum evolution. The equivalent evolution time for QAOA is calculated
+viaTQAOA =∑p−1i=1|γi| +∑pi=1|βi|. (d) The eﬀective annealing schedule converted from optimized 25-level QAOA parameters
+for the example MIS instance. (e) The population of the system in the instantaneous eigenstates, during the eﬀective annealing
+schedule that approximates the dynamics under 25-level QAOA. Here, we observe that the algorithm attempts to transport
+the system to the ﬁfth excited state, keeping it there before it undergoes a series of anti-crossings towards the ground state.
+We further analyze the performance and mechanism
+of QAOA for MIS by focusing on example instances
+that are diﬃcult for adiabatic quantum annealing due
+to small spectral gaps. In Fig. 15(b), we show the
+level-crossing structure for such an example instance,
+where the minimum spectral gap is ∆min = 0 .0012.
+The same instance is studied in Ref. [45]. To study
+the performance of QAOA in deeper-depth circuits, we
+use the interpolation-based heuristic strategy outlined in
+Appendix B1 to optimize QAOA parameters for this
+example instance starting at level p = 3 . The per-
+formance of QAOA and quantum annealing are then
+compared in Fig. 15(c), where we see that QAOA is
+able to obtain a much larger ground state population
+in much shorter time compared to the adiabatic time
+scale of 1/∆2min≈ 106. We then study the mechanism
+of QAOA by converting its parameters at levelp = 25
+to a smooth annealing path(f QAOAP ,f QAOAQ ) in a similar
+procedure as in Sec. VB. This annealing path is visual-
+ized in Fig. 15(d), where we plot the eﬀectiveξeﬀ(t) de-
+ﬁned byfcP (ξeﬀ(t))/fcQ(ξeﬀ(t)) =f QAOAP (t)/f QAOAQ (t) for
+the QAOA-like schedule. We then monitor populations
+in the instantaneous eigenstates during the evolution to
+gain insights into the mechanism of QAOA. As shown in
+Fig. 15(e), QAOA is able to learn to navigate a very com-
+plicated level-crossing structure by a combination of adi-
+abatic and non-adiabatic operations: the system diabat-
+ically couples to the excited states, lingers to maximize
+population in the ﬁfth excited state, and then exploits a
+series of anti-crossings to return to the ground state. Our
+results here demonstrate that the non-adiabatic mecha-
+nisms observed in QAOA for MaxCut can play a signiﬁ-
+cant role in more general problems, such as diﬃcult MIS
+instances.

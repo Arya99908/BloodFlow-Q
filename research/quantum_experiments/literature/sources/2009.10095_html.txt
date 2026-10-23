@@ -1,0 +1,2238 @@
+ 
+
+ Warm-starting quantum optimization 
+
+ Skip to main content 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Contents 
+
+ Reading mode 
+
+ Colour theme 
+
+ Abstract 
+
+ 1 Introduction 
+
+ 2 Warm-start Quantum Optimization 
+
+ 2.1 Preliminaries 
+
+ 2.2 Continuous warm-start QAOA 
+
+ 2.3 Rounded warm-start QAOA 
+
+ 2.4 Further variants of warm-starting quantum optimization 
+
+ 2.5 Discussion of warm-starting quantum optimization 
+
+ 3 Simulations with Continuous-Valued Warm-start 
+
+ 4 Simulations with Rounded Warm-Start 
+
+ 5 Discussion and Conclusion 
+
+ A The Unique Games Conjecture 
+
+ B Goemans-Williamson Algorithm 
+
+ C Extensions towards QUBO 
+
+ D A Stochastic-Analysis Viewpoint 
+
+ E Recursive QAOA 
+
+ F Depth-one RQAOA 
+
+ G MAXCUT reduction 
+
+ H Portfolio data 
+
+ I WS-QAOA for MAXCUT with the warm-start mixer 
+
+ References 
+
+ License: CC BY 4.0
+
+arXiv:2009.10095v4 [quant-ph] 16 Jun 2021
+
+ Warm-starting quantum optimization
+
+ Daniel J. Egger
+
+ Email: deg@zurich.ibm.com 
+
+ Affiliation: IBM Quantum, IBM Research – Zurich, Säumerstrasse 4, 8803 Rüschlikon, Switzerland
+
+ Jakub Mareček
+
+ Email: jakub.marecek@fel.cvut.cz 
+
+ Affiliation: Czech Technical University, Karlovo nam. 13, Prague 2, the Czech Republic
+
+ Stefan Woerner
+
+ Email: wor@zurich.ibm.com 
+
+ Affiliation: IBM Quantum, IBM Research – Zurich, Säumerstrasse 4, 8803 Rüschlikon, Switzerland
+
+ Abstract
+
+ There is an increasing interest in quantum algorithms for problems of integer programming and combinatorial optimization.
+Classical solvers for such problems employ relaxations, which replace binary variables with continuous ones, for instance in the form of higher-dimensional matrix-valued problems (semidefinite programming).
+Under the Unique Games Conjecture, these relaxations often provide the best performance ratios available classically in polynomial time.
+Here, we discuss how to warm-start quantum optimization with an initial state corresponding to the solution of a relaxation of a combinatorial optimization problem and how to analyze properties of the associated quantum algorithms.
+In particular, this allows the quantum algorithm to inherit the performance guarantees of the classical algorithm.
+We illustrate this in the context of portfolio optimization, where our results indicate that warm-starting the Quantum Approximate Optimization Algorithm (QAOA) is particularly beneficial at low depth.
+Likewise, Recursive QAOA for MAXCUT problems shows a systematic increase in the size of the obtained cut for fully connected graphs with random weights, when Goemans-Williamson randomized rounding is utilized in a warm start.
+It is straightforward to apply the same ideas to other randomized-rounding schemes and optimization problems.
+
+ 1 Introduction
+
+ Gate-based quantum computers are expected to help solve problems in quantum chemistry [ 1 , 2 , 3 ] , machine learning [ 4 , 5 ] , financial simulation [ 6 , 7 , 8 , 9 , 10 , 11 , 12 , 13 ] and combinatorial optimization [ 14 , 15 ] .
+The quantum approximate optimization algorithm (QAOA) [ 16 , 17 , 18 ] , inspired by a Trotterization of adiabatic quantum computing [ 19 , 20 , 21 ] , runs on gate-based quantum computers [ 22 , 23 ] .
+This algorithm encodes a combinatorial optimization problem in a Hamiltonian H ^ C \hat{H}_{C} whose ground state is the optimum solution.
+The QAOA first creates an initial state which is the ground state of a mixer Hamiltonian H ^ M \hat{H}_{M} .
+A common choice of H ^ M \hat{H}_{M} and initial state is − ∑ i = 0 n − 1 X ^ i -\sum_{i=0}^{n-1}\hat{X}_{i} and | + ⟩ ⊗ n \ket{+}^{\otimes n} , respectively.
+Next, in a QAOA with depth p p , a quantum circuit applies exp ⁡ ( − i ​ β k ​ H ^ M ) ​ exp ⁡ ( − i ​ γ k ​ H ^ C ) \exp{(-i\beta_{k}\hat{H}_{M})}\exp{(-i\gamma_{k}\hat{H}_{C})} at each layer k = 1 , … , p k=1,...,p to create a trial state | ψ ⁡ ( 𝜷 , 𝜸 ) ⟩ \ket{\psi(\boldsymbol{\beta},\boldsymbol{\gamma})} .
+A classical optimizer seeks the optimal values of 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} to create a trial state which minimizes the energy of the Hamiltonian H ^ C \hat{H}_{C} .
+This algorithm has lacked theoretical guarantees on its performance ratio and for certain problem instances of MAXCUT it cannot, with constant depth, outperform the classical Goemans-Williamson randomized rounding approximation [ 24 , 25 ] .
+
+ Recent work has improved the original QAOA, for instance, by aggregating only the best sampled candidate solutions [ 15 ] and carefully choosing the mixer operator to improve convergence [ 26 , 27 , 28 , 29 ] , empirically.
+Reinforcement learning [ 30 , 31 ] , multi-start methods [ 32 ] , and local optimization [ 33 ] help navigate the QAOA optimization landscape.
+Algorithms such as the Hamiltonian Variational Ansatz produce optimization landscapes that are easier to navigate [ 34 ] .
+Furthermore, optimal 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} values concentrate on all typical instances generated by some reasonable distributions which may allow optimization strategies with fewer calls to the quantum computer [ 35 ] .
+Certain local classical algorithms match the performance of QAOA for Ising-like cost functions with multi-spin interactions [ 36 ] which has motivated the development of Recursive-QAOA (RQAOA) [ 24 , 37 ] .
+RQAOA iteratively reduces the problem size and outperforms QAOA on certain forms of Ising Hamiltonians [ 24 ] .
+Implementing QAOA on noisy quantum hardware is challenging as the number of gates can be high for current gate fidelities [ 38 , 39 ] .
+The circuits become especially deep when large p p is required or when the native hardware connectivity does not match the problem structure, thence requiring SWAP gates [ 40 ] .
+Therefore, in the near term, quantum computers will most likely only run low-depth QAOA.
+Low-depth QAOA results are improved by robust control [ 41 ] and by mapping 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} to parameters of the control pulses [ 42 , 43 ] , a method available to cloud-based quantum computers [ 44 ] with pulse-level control [ 45 , 46 ] .
+
+ Recently, there has been substantial progress [ 47 ] in the study of continuous relaxations of NP-Hard combinatorial optimization problems.
+The best-known continuous relaxations of MAXCUT and many other problems take the form of semidefinite programs [ 48 ] .
+These can be solved efficiently both in theoretical models of computation [ 49 ] , where a real-number arithmetic operation can be performed in unit time, and in practice 1 1 
+ 1 
+
+ Notice that the analysis of [ 50 ] shows the situation is less trivial in the Turing machine and one may need to consider the dimension or the number of constraints a constant, as it often is for a particular relaxation. [ 51 ] .
+Subsequently, the solution of a continuous relaxation of a combinatorial optimization problem is transformed into a good solution of the discrete-valued problem by randomized rounding [ 52 ] .
+For instance, the celebrated Goemans-Williamson (GW) random hyperplane rounding [ 53 , 54 ] for MAXCUT finds cuts whose expected value is an α \alpha fraction of the global optimum, for 0.87856 < α < 0.87857 0.87856<\alpha<0.87857 , with the expectation over the randomization in the rounding procedure.
+The Unique Games Conjecture [ 55 , 56 , 57 ] , introduced in Appendix A , suggests that GW randomized rounding has the best possible
+polynomial-time performance on MAXCUT.
+
+ Our work is motivated by the desire to provide at least as good guarantees for QAOA as there are for classical approximations.
+For example, we show that for MAXCUT a warm-start can preserve the GW approximation ratio at any depth p p [ 58 ] . Further, if the Unique Games Conjecture were to be false even stronger guarantees may be available, improving upon those for randomized rounding.
+In simulations, our variant of QAOA consistently performs as well as the GW algorithm or better.
+
+ We discuss how to warm-start quantum optimization in Sec. 2.2 .
+We explore warm-starting QAOA (WS-QAOA) numerically in Sec. 3 by relaxing Quadratic Unconstrained Binary Optimization problems to continuous ones which provide QAOA with a good initial solution.
+In Sec. 4 we use the GW algorithm [ 53 ] to warm-start RQAOA.
+We discuss our results and conclude in Sec. 5 .
+
+ 2 Warm-start Quantum Optimization
+
+ 2.1 Preliminaries
+
+ Quadratic Unconstrained Binary Optimization (QUBO) has been studied in Combinatorial Optimization since the 1960s [ 59 ] . A common formulation is
+
+ min x ∈ { 0 , 1 } n ⁡ x T ​ Σ ​ x + μ T ​ x , \displaystyle\min_{x\in\{0,1\}^{n}}x^{T}\Sigma x+\mu^{T}x, 
+
+ (QUBO) 
+
+ where x x is a vector of n n binary decision variables, Σ ∈ ℝ n × n \Sigma\in\mathbb{R}^{n\times n} a symmetric matrix, and μ ∈ ℝ n \mu\in\mathbb{R}^{n} a vector.
+Since for binary variables x i 2 = x i x_{i}^{2}=x_{i} , μ \mu can be added to the diagonal of Σ \Sigma , and in the following, we only add μ \mu when it simplifies the notation in the given context.
+Considering that any mixed-integer linear program can be encoded in a QUBO [ 60 ] , QUBO is NP-Hard. Indeed, even checking local optimality is NP-Hard [ 61 ] , and hence only very special cases
+ [ 62 , 63 ] 
+can be solved in polynomial time.
+
+ If Σ \Sigma is positive semidefinite, the trivial continuous relaxation of QUBO
+
+ min x ∈ [ 0 , 1 ] n ⁡ x T ​ Σ ​ x , \displaystyle\min_{x\in[0,1]^{n}}x^{T}\Sigma x, 
+
+ (QP) 
+
+ is a convex quadratic program and the optimal solution c ∗ c^{*} of the continuous relaxation is easily obtainable with classical optimizers [ 64 ] .
+
+ If Σ \Sigma is not positive semidefinite, one can apply the well-known recipe [ 65 ] to obtain another continuous-valued relaxation, known as semidefinite programming (SDP):
+
+ max Y ∈ 𝕊 n ⁡ tr ⁡ ( Σ ​ Y ) \displaystyle\max_{Y\in\mathbb{S}^{n}}\tr(\Sigma Y) 
+
+ (SDP) 
+
+ diag ⁡ ( Y ) = e \displaystyle\diag(Y)=e 
+
+ Y ⪰ 0 , \displaystyle Y\succeq 0, 
+
+ where 𝕊 n × n \mathbb{S}^{n\times n} denotes the set of n × n n\times n symmetric matrices, e e is an n n -vector of ones, and Y ⪰ 0 Y\succeq 0 denotes that Y Y must be positive semidefinite.
+Given the optimal solution Y ∗ Y^{*} to ( SDP ), there exist several approaches to generating solutions of the corresponding ( QUBO ), often with approximation guarantees, as discussed later in this section and Appendix B .
+A classical laptop can solve instances of ( SDP ) relaxations of QUBO, where Σ \Sigma has 10 13 10^{13} entries [ 51 ] .
+Furthermore, quantum computers offer the prospect of some speed-ups in solving SDPs [ 66 , 67 ] , although recent quantum-inspired algorithms for SDPs may reduce the potential speedup [ 68 ] .
+
+ 2.2 Continuous warm-start QAOA 
+
+ Figure 1: Intial state R ^ Y ​ ( θ i ) ​ | 0 ⟩ \hat{R}_{Y}(\theta_{i})\ket{0} (red point) on the Bloch sphere.
+The dashed blue line from | 0 ⟩ \ket{0} to | 1 ⟩ \ket{1} is the interval [ 0 , 1 ] [0,1] .
+The red line is the solution c i ∗ c_{i}^{*} to the relaxed problem.
+The regularization parameter ε \varepsilon restricts the range of allowed rotation angles.
+The orange path shows the evolution of the quantum state starting at | 0 ⟩ \ket{0} for c i ∗ = 0 c_{i}^{*}=0 , ε = 0.25 \varepsilon=0.25 and β = π / 2 \beta=\pi/2 with the rotations R ^ Y ​ ( − θ i ) ​ R ^ Z ​ ( − 2 ​ β ) ​ R ^ Y ​ ( 2 ​ θ i ) \hat{R}_{Y}(-\theta_{i})\hat{R}_{Z}(-2\beta)\hat{R}_{Y}(2\theta_{i}) . 
+
+ The solutions of either continuous-valued relaxation ( QP or SDP ) can be used to initialize quantum-classical hybrid algorithms, which is known as warm-starting them [ 69 ] .
+In particular, we focus on warm-starting QAOA.
+
+ In QAOA, each decision variable x i x_{i} of the discrete optimization problem corresponds to a qubit by the relation x i = ( 1 − z i ) / 2 x_{i}=(1-z_{i})/2 .
+Each z i z_{i} is replaced by a spin operator Z ^ i \hat{Z}_{i} to transform the cost function to a cost Hamiltonian H ^ C \hat{H}_{C} [ 70 , 71 ] .
+Note that the final measurement in QAOA can be considered as a randomized rounding.
+In the simplest variant of WS-QAOA, we replace the initial equal superposition state | + ⟩ ⊗ n \ket{+}^{\otimes n} with a state
+
+ | ϕ ∗ ⟩ = ⨂ i = 0 n − 1 R ^ Y ​ ( θ i ) ​ | 0 ⟩ n , \displaystyle\ket{\phi^{*}}=\bigotimes_{i=0}^{n-1}\hat{R}_{Y}(\theta_{i})\ket{0}_{n}, 
+
+ (1) 
+
+ which corresponds to the solution c ∗ c^{*} of the relaxed Problem ( QP ).
+Here, R ^ Y ​ ( θ i ) \hat{R}_{Y}(\theta_{i}) is a rotation around the Y-axis of qubit i i with angle θ i = 2 ​ arcsin ⁡ ( c i ∗ ) \theta_{i}=2\arcsin\left(\sqrt{c_{i}^{*}}\right) and c i ∗ ∈ [ 0 , 1 ] c_{i}^{*}\in[0,1] is the i i -th coordinate of the optimum of the continuous-valued relaxation ( QP ).
+The probability to measure | 1 ⟩ \ket{1} in qubit i i is thus c i ∗ c^{*}_{i} , see the geometric representation in Fig. 1 .
+
+ We also replace the mixer Hamiltonian H ^ M = − ∑ i = 0 n − 1 X ^ i \hat{H}_{M}=-\sum_{i=0}^{n-1}\hat{X}_{i} with H ^ M ( w ​ s ) = ∑ i = 0 n − 1 H ^ M , i ( w ​ s ) \hat{H}_{M}^{(ws)}=\sum_{i=0}^{n-1}\hat{H}_{M,i}^{(ws)} where
+
+ H ^ M , i ( w ​ s ) = ( 2 ​ c i ∗ − 1 − 2 ​ c i ∗ ​ ( 1 − c i ∗ ) − 2 ​ c i ∗ ​ ( 1 − c i ∗ ) 1 − 2 ​ c i ∗ ) \displaystyle\hat{H}_{M,i}^{(ws)}=\begin{pmatrix}2c_{i}^{*}-1&-2\sqrt{c_{i}^{*}(1-c_{i}^{*})}\\
+-2\sqrt{c_{i}^{*}(1-c_{i}^{*})}&1-2c_{i}^{*}\end{pmatrix} 
+
+ (2) 
+
+ and has R ^ Y ​ ( θ i ) ​ | 0 ⟩ \hat{R}_{Y}(\theta_{i})\ket{0} as ground state with eigenvalue of − 1 -1 .
+The ground state of H ^ M ( w ​ s ) \hat{H}^{(ws)}_{M} is thus | ϕ ∗ ⟩ \ket{\phi^{*}} with eigenvalue − n -n [ 16 ] .
+Therefore, WS-QAOA applies at layer k k a mixing gate which is given by the time-evolved mixing Hamiltonian exp ⁡ ( − i ​ β k ​ H ^ M ( w ​ s ) ) \exp(-i\beta_{k}\hat{H}_{M}^{(ws)}) , see Fig. 2 .
+Since H ^ M , i ( w ​ s ) = − sin ⁡ ( θ i ) ​ X ^ − cos ⁡ ( θ i ) ​ Z ^ \hat{H}_{M,i}^{(ws)}=-\sin(\theta_{i})\hat{X}-\cos(\theta_{i})\hat{Z} the time-evolved mixing Hamiltonian is a rotation around the axis n → = [ − sin ⁡ ( θ i ) , 0 , − cos ⁡ ( θ i ) ] \vec{n}=[-\sin(\theta_{i}),0,-\cos(\theta_{i})] on the Bloch-sphere of qubit i i and can be implemented using the single-qubit rotations R ^ Y ​ ( θ i ) ​ R ^ Z ​ ( − 2 ​ β ) ​ R ^ Y ​ ( − θ i ) \hat{R}_{Y}(\theta_{i})\hat{R}_{Z}(-2\beta)\hat{R}_{Y}(-\theta_{i}) .
+
+ Figure 2: 
+Quantum circuit for WS-QAOA.
+The first R ^ Y \hat{R}_{Y} rotations prepare the initial state | ϕ ∗ ⟩ \ket{\phi^{*}} .
+The mixer operator, i.e. R ^ Y ​ ( θ i ) ​ R ^ Z ​ ( − 2 ​ β k ) ​ R ^ Y ​ ( − θ i ) \hat{R}_{Y}(\theta_{i})\hat{R}_{Z}(-2\beta_{k})\hat{R}_{Y}(-\theta_{i}) , is applied after the time-evolved problem Hamiltonian H ^ C \hat{H}_{C} .
+
+ If a coordinate in the optimal solution of a continuous relaxation is c i ∗ = 0 c_{i}^{*}=0 or c i ∗ = 1 c_{i}^{*}=1 , qubit i i would be initialized in state | 0 ⟩ \ket{0} or | 1 ⟩ \ket{1} , respectively.
+In such cases, the qubit will remain in its initial state throughout the QAOA optimization when H ^ C \hat{H}_{C} contains only Z ^ i ​ Z ^ j \hat{Z}_{i}\hat{Z}_{j} and identity spin-operators.
+This creates a reachability issue when the optimal continuous and discrete solutions do not overlap, i.e., d i ∗ = 1 d_{i}^{*}=1 and c i ∗ = 0 c_{i}^{*}=0 or d i ∗ = 0 d_{i}^{*}=0 and c i ∗ = 1 c_{i}^{*}=1 , where d ∗ d^{*} is the solution to the ( QUBO ).
+
+ To mitigate this effect, we introduce a variant of WS-QAOA that utilizes a regularization parameter ε ∈ [ 0 , 0.5 ] \varepsilon\in[0,0.5] and changes the rotation angle creating the initial state according to
+
+ θ i = \displaystyle\theta_{i}= 
+  2 ​ arcsin ⁡ ( c i ∗ ) \displaystyle\,2\arcsin\left(\sqrt{c_{i}^{*}}\right) 
+
+ if c i ∗ ∈ [ ε , 1 − ε ] , \displaystyle\quad\text{if}\quad c_{i}^{*}\in[\varepsilon,1-\varepsilon], 
+
+ θ i = \displaystyle\theta_{i}= 
+  2 ​ arcsin ⁡ ( ε ) \displaystyle\,2\arcsin\left(\sqrt{\varepsilon}\right) 
+
+ if c i ∗ ≤ ε , \displaystyle\quad\text{if}\quad c_{i}^{*}\leq\varepsilon, 
+
+ θ i = \displaystyle\theta_{i}= 
+  2 ​ arcsin ⁡ ( 1 − ε ) \displaystyle\,2\arcsin\left(\sqrt{1-\varepsilon}\right) 
+
+ if c i ∗ ≥ 1 − ε . \displaystyle\quad\text{if}\quad c_{i}^{*}\geq 1-\varepsilon. 
+
+ The mixer Hamiltonian is adjusted accordingly.
+The parameter ε \varepsilon provides a continuous mapping between WS-QAOA and standard QAOA since at ε = 0.5 \varepsilon=0.5 the initial state is the equal superposition state and the mixer Hamiltonian is the X X operator.
+If all c i ∗ ∈ ( 0 , 1 ) c_{i}^{*}\in(0,1) or ε > 0 \varepsilon>0 , WS-QAOA converges to the optimal solution of ( QUBO ) as the depth p p approaches infinity as does standard QAOA [ 16 ] .
+This directly follows from the adiabatic theorem and the fact that we start in the ground state of the mixer which overlaps with all computational basis states including the optimal solution.
+For large enough p p , (WS-)QAOA therefore reproduces the adiabatic evolution transforming the ground state of the mixer into the ground state of H ^ C \hat{H}_{C} .
+The speed of the adiabatic evolution is limited by the spectral gap of the intermediate Hamiltonians.
+If the evolution is too fast transitions to excited states occur which may not result in the optimal solution.
+The speed of the evolution can be related to p p , where a slow evolution, i.e., longer total evolution time, implies a larger p p .
+The idea of (WS-)QAOA is to speed-up this evolution by optimizing the parameters instead of following a fixed annealing schedule.
+
+ Table 1: An overview of design choices in warm-starting a quantum optimization algorithm for ( QUBO ).
+Under “What to round?”, columns are ordered left to right to suggest the increasing strength of the relaxations, although this is necessarily fraught in the case of hierarchies of relaxations [ 72 , 73 , 74 ] , where one column represents a potentially infinite number of relaxations.
+Similarly, under “How to round?”, we order the options approximately by their performance.
+
+ Variant 
+ What to round? 
+ When to round? 
+ How to round? 
+
+ ( QP ) Relaxation
+
+ SOCP Relaxations [ 74 ] 
+
+ ( SDP ) Relaxation [ 65 , 53 , 75 ] 
+
+ Entropy-penalized SDP [ 76 ] 
+
+ Sparse Moment SDP [ 73 ] 
+
+ Moment SDP [ 72 ] 
+
+ Classical pre-processing
+
+ Quantum circuit (QC)
+
+ 0.5-Approximation [ 77 , 78 ] 
+
+ Random hyperplane [ 53 , 75 ] 
+
+ Iterative [ 79 , 80 ] 
+
+ Iterative [ 81 ] 
+
+ Measurement in a QC
+
+ WS-QAOA 
+
+ WS-RQAOA 
+
+ 2.3 Rounded warm-start QAOA
+
+ Further variants of WS-QAOA randomly round the optimum of the continuous-valued relaxation before using it as the initial state.
+This is appealing to quantum hardware with limited qubit numbers as even for convex relaxations in dimensions that scale super-linearly with the number n n of binary variables in ( QUBO ), such as ( SDP ) with dimension n ⁡ ( n + 1 ) / 2 n(n+1)/2 , the representation of the rounded solution to ( QUBO ) requires only O ⁡ ( n ) O(n) qubits.
+Two notable examples are the random-hyperplane rounding of SDP relaxations for MAXCUT [ 53 ] , see Appendix B , and iterative rounding of SDP relaxations for a wider variety of problems, see Appendix D .
+Both of these examples provide initial states that already have the best approximation guarantee available classically in polynomial time.
+
+ We now elaborate on the example of Goemans-Williamson random-hyperplane rounding of ( SDP ).
+For a given GW cut we generate an initial state using Y Y -rotations with a ε ∈ ( 0 , 0.5 ) \varepsilon\in(0,0.5) , as discussed in Sec. 2.2 .
+To warm-start QAOA such that we can
+retain the GW bound on MAXCUT, we wish create a quantum circuit that can both represent solutions of the random-hyperplane rounding as well as deviate from them.
+We therefore modify the mixer such that its time-evolution is R ^ Y ​ ( − θ i ) ​ R ^ Z ​ ( − 2 ​ β ) ​ R ^ Y ​ ( θ i ) \hat{R}_{Y}(-\theta_{i})\hat{R}_{Z}(-2\beta)\hat{R}_{Y}(\theta_{i}) instead of R ^ Y ​ ( θ i ) ​ R ^ Z ​ ( − 2 ​ β ) ​ R ^ Y ​ ( − θ i ) \hat{R}_{Y}(\theta_{i})\hat{R}_{Z}(-2\beta)\hat{R}_{Y}(-\theta_{i}) , i.e., we multiply the off-diagonal elements in ( 2 ) by − 1 -1 .
+With this modification, the value of the regularization parameter ε \varepsilon can be set to 0.25 0.25 to generate states that differ from the GW rounding as well as retain it by choosing β 1 = π / 2 \beta_{1}=\pi/2 and γ 1 = 0 \gamma_{1}=0 .
+At these values the depth-one variational form reduces to
+
+ R ^ Y ​ ( − θ i ) ​ R ^ Z ​ ( − π ) ​ R ^ Y ​ ( 2 ​ θ i ) ​ | 0 ⟩ , \displaystyle\hat{R}_{Y}(-\theta_{i})\hat{R}_{Z}(-\pi)\hat{R}_{Y}(2\theta_{i})\ket{0}, 
+
+ (3) 
+
+ for each qubit, and creates the states − i ​ | 1 ⟩ -i\ket{1} and − i ​ | 0 ⟩ -i\ket{0} when c i ∗ = ε c_{i}^{*}=\varepsilon and 1 − ε 1-\varepsilon , respectively.
+Thus, the variational form can recover the solution given by the GW rounding, considering that z z and 1 − z 1-z represent the same cut, see the orange path in Fig. 1 as example.
+Therefore, WS-QAOA is at least as good as GW rounding.
+This adjustment also comes with a drawback. Since the prepared initial state is no longer an eigenstate of the mixer (otherwise we would not be able to deviate from it) we cannot use the same arguments as in [ 16 ] to derive the convergence of the algorithm to the global optimum with increasing depth p p .
+We will analyze this numerically in Sec. 4 .
+
+ Notice that measuring an initial state provided by a randomized rounding of the semidefinite programming relaxation ( SDP ) yields the best approximation guarantees available classically in polynomial time under the Unique Games Conjecture [ 55 , 56 , 57 ] .
+Therefore, any quantum circuit that preserves or improves the performance ratio would preserve or improve the overall performance guarantees.
+
+ Rounding in the classical pre-processing readily leads to the warm-started recursive QAOA (WS-RQAOA), illustrated in Fig. 3 and demonstrated in Sec. 4 .
+For MAXCUT of a graph G n G_{n} , we leverage a GW pre-solver G ​ W ​ ( G n , N , M ) GW(G_{n},N,M) to generate N N good cuts of which we retain the M < N M<N best unique cuts.
+These M M cuts therefore initialize M M WS-QAOA optimizers with ε ∈ ( 0 , 0.5 ) \varepsilon\in\,(0,0.5) .
+Each QAOA solver produces an optimized variational state | ψ ∗ ⟩ l = ∑ i = 0 2 n − 1 α i ​ l ​ | i ⟩ \ket{\psi^{*}}_{l}=\sum_{i=0}^{2^{n}-1}\alpha_{il}\ket{i} for l = 1 , … , M l=1,...,M .
+We then aggregate these M M variational states by averaging the probability of sampling each bit-string | i ⟩ \ket{i} , i.e. p ¯ i = M − 1 ​ ∑ l = 1 M | α i ​ l | 2 \bar{p}_{i}=M^{-1}\sum_{l=1}^{M}|\alpha_{il}|^{2} , and use these average probabilities to create the correlation matrix ℳ \mathcal{M} needed by RQAOA [ 24 , 37 ] , see Appendix E and F .
+At each iteration, RQAOA removes one decision variable z i z_{i} from the problem by replacing it with sign ​ ( ℳ i ​ j ) ​ z j \text{sign}(\mathcal{M}_{ij})z_{j} , where ( i , j ) = arg ⁡ max ( i , j ) ​ | ℳ i ​ j | (i,j)=\arg\max_{(i,j)}|\mathcal{M}_{ij}| .
+This generates a new MAXCUT problem with a new graph G n − 1 G_{n-1} , see Appendix G , for which we repeat this procedure, illustrated in Fig. 3 , until the reduced graph reaches a certain size n stop n_{\text{stop}} .
+The graph G n stop G_{n_{\text{stop}}} is solved by diagonalizing the Hamiltonian H ^ C \hat{H}_{C} or by applying classical optimizers.
+
+ Figure 3: WS-RQAOA for MAXCUT.
+At each iteration we run several WS-QAOAs that are initialized with different solutions from the GW randomized rounding.
+The resulting samples are aggregated to compute the combined correlation matrix ℳ \mathcal{M} needed by RQAOA to eliminate a decision variable. 
+
+ 2.4 Further variants of warm-starting quantum optimization
+
+ In Sec. 2.2 and 2.3 , we gave first examples of how to warm-start QAOA using a continuous relaxation and a randomized rounding.
+The key algorithm-design questions in warm-starting quantum optimization are: what to round, when to round it, and how to round it.
+For each of these questions, there are multiple options available, as suggested in the previous discussion and summarized in Tab. 1 .
+
+ First, there are many options for what to round, outside of the ( QP ) relaxation and the ( SDP ) relaxation.
+For example, the ( QP ) relaxation can be seen as a second-order cone programming (SOCP) relaxation, and could be strengthened iteratively [ 74 ] , until its objective-function value coincides with the objective-function value of the non-convex ( QUBO ), albeit at the cost of an exponential growth of the relaxation.
+Similarly, one could strengthen the ( SDP ) relaxation either by using an entropy-penalizing term [ 76 ] or by using the Moment/SOS hierarchy [ 72 ] and its sparse variant [ 73 ] .
+
+ Second, there are two options for when to round:
+either in the classical pre-processing — within the initial state preparation which leads to the WS-RQAOA discussed in Sec. 2.3 on the example of the ( SDP ) relaxation — or within the quantum circuit.
+In its simplest form, the latter can be a quantum measurement, as discussed in Sec. 2.2 on the example of the ( QP ) relaxation.
+
+ Third, there are several options for the rounding procedure. Even the simplest rounding mechanisms often perform well: on MAXCUT, for example, disregarding the relaxation and coordinate-wise assigning a value uniformly at random achieves a 0.5 approximation ratio [ 77 ] and can be derandomized [ 78 , Chapter 6] .
+The random-hyperplane rounding of GW [ 53 ] , as explained in Appendix B ,
+improves the performance ratio on MAXCUT to α = 2 π ​ min 0 ≤ θ ≤ π ​ θ 1 − cos ⁡ θ ≈ 0.878 \alpha={\frac{2}{\pi}}\min_{0\leq\theta\leq\pi}{\frac{\theta}{1-\cos\theta}}\approx 0.878 .
+The same ratio can also be obtained with an iterative procedure that rounds coordinates that are close to being integral to integers [ 79 , 80 ] and removes them from further processing 2 2 
+ 2 
+
+ Notice that when the WS-QAOA leverages both a classical optimization routine with a classical conditional statement and a noisy quantum computer, such a rounding procedure can also be considered. , as explained in Appendix D .
+Plausibly, the same ratio could also be achieved with a number of novel and very different iterative procedures, such as [ 81 ] .
+
+ 2.5 Discussion of warm-starting quantum optimization
+
+ On noisy quantum hardware it seems appealing to use the WS-RQAOA with the strongest available relaxations [ 72 , 73 , 74 ] in the classical pre-processing.
+However, higher-order relaxations within these hierarchies [ 72 , 73 , 74 ] require a run-time of the classical SDP solver which is super-polynomial in the number n n of integral decision variables in ( QUBO ) and the order in the hierarchy [ 72 , 73 , 74 ] .
+Therefore, we limit ourselves to the use of WS-RQAOA with the basic ( SDP ) relaxation, whose value can be approximated classically to any fixed precision in polynomial time.
+
+ In contrast, one could extend the use of the continuous-valued solution c ∗ c^{*} of the ( QP ) relaxation to either the solution Y ∗ Y^{*} of the basic ( SDP ) relaxation, or its strengthened variants [ 73 , 72 ] , when preparing the initial state.
+However, this may require more qubits than would be practical in the near-term.
+For example, a naïve approach to prepare the initial state would utilize Θ ⁡ ( n 2 ) \Theta(n^{2}) and Ω ⁡ ( n 2 ) \Omega(n^{2}) qubits to represent the optimum Y ∗ Y^{*} of the basic ( SDP ) relaxation and its strengthened variants, respectively 3 3 
+ 3 
+
+ While more elaborate representations of the matrix have been proposed [ 66 , 67 ] , it is not yet clear how to implement the related oracles in practice. .
+At the same time, strong performance guarantees would be readily available for such variants of warm-started quantum optimization.
+For example, consider representing the matrix-valued solution of a ( SDP ) relaxation in a O ⁡ ( n 2 ) O(n^{2}) -qubit initial state, applying a parametrized quantum circuit that allows for the identity in the unitary representation, at least for some choice of its parameters, and then, measuring the qubit register.
+This can be seen as a randomized-rounding algorithm, and one can hence analyze the quality of the measured output.
+
+ A recently-proposed [ 79 ] avenue for the analysis of such randomized-rounding algorithms utilizes
+the Sticky Brownian Motion [ 82 ] , a well-known concept in Stochastic Analysis, possibly with a slowdown due to the use of a speed-function [ 79 ] , as explained in Appendix D .
+In the case of a ( SDP ) warm start,
+one can obtain approximation guarantees for rounded solutions that match the best guarantees available classically in polynomial time, see Appendix D .
+
+ A particularly important question is whether any of these variants would strictly improve upon the guarantees of GW [ 53 ] .
+Under the Unique Games Conjecture [ 83 , 84 ] ,
+it is strictly impossible to improve upon the guarantees of GW using either quantum or classical algorithms unless a quantum computer can solve NP-Hard problems in polynomial time, which is not believed to be the case [ 85 ] , or if P = NP {\rm P}={\rm NP} .
+However, a richer picture emerges if this conjecture were to be false and it may be possible to improve approximation ratios using both classical and quantum algorithms.
+
+ 3 Simulations with Continuous-Valued Warm-start
+
+ As a first computational illustration of WS-QAOA, we solve combinatorial-optimization problems framed as a financial-portfolio optimization with a budget constraint [ 15 ] .
+An optimal portfolio minimizes risk and maximizes return by exploiting imperfect correlations in a covariance matrix Σ \Sigma between n n assets with expected returns μ \mu [ 86 ] .
+Selecting B B assets out of n n with equal weights thus requires solving
+
+ min x ∈ { 0 , 1 } n ⁡ q ​ x T ​ Σ ​ x − μ T ​ x \displaystyle\min_{x\in\{0,1\}^{n}}qx^{T}\Sigma x-\mu^{T}x 
+
+ (4) 
+
+ such that 𝟏 T ​ x = B , \displaystyle\text{such that}\quad\boldsymbol{1}^{T}x=B, 
+
+ (5) 
+
+ where q q controls the risk-return trade-off.
+
+ Figure 4: (a) Probability to sample the optimal state | d ∗ ⟩ \ket{d^{*}} from the optimized trial state | ψ ∗ ⟩ \ket{\psi^{*}} and (b) energy of | ψ ∗ ⟩ \ket{\psi^{*}} for warm-start and standard QAOA at different depths for n = 6 n=6 assets and q = 2 q=2 .
+The optimal discrete and continuous solutions are d ∗ = ( 0 , 0 , 1 , 1 , 1 , 0 ) d^{*}=(0,0,1,1,1,0) and c ∗ ≃ ( 0.17 , 0 , 0.97 , 0.73 , 1.0 , 0.14 ) c^{*}\simeq(0.17,0,0.97,0.73,1.0,0.14) , respectively.
+QAOA is run ten times with different initial random guesses for ( 𝜷 , 𝜸 ) (\boldsymbol{\beta},\boldsymbol{\gamma}) chosen uniformly from ± 2 ​ π \pm 2\pi .
+The thick lines show the median of the ten runs while the shaded areas indicate the 25% and 75% quantiles.
+The gray dashed line shows E 0 E_{0} .
+
+ We create random instances of this problem with n = 6 n=6 assets by simulating the time-series of the asset prices and computing the covariance matrix and returns, see Appendix H .
+We enforce a budget constraint B = 3 B=3 with a large quadratic penalty term λ ​ ( 𝟏 T ​ x − B ) 2 \lambda(\boldsymbol{1}^{T}x-B)^{2} where we chose λ = 3 \lambda=3 as it is much larger than Σ \Sigma and μ \mu .
+Each instance is mapped to an Ising Hamiltonian H ^ C \hat{H}_{C} .
+To measure the performance of standard and warm-start QAOA we compute the energy of the optimized trial state ⟨ ψ ⁡ ( 𝜷 ∗ , 𝜸 ∗ ) | H ^ C | ψ ⁡ ( 𝜷 ∗ , 𝜸 ∗ ) ⟩ \braket{\psi(\boldsymbol{\beta}^{*},\boldsymbol{\gamma}^{*})|\hat{H}_{C}|\psi(\boldsymbol{\beta}^{*},\boldsymbol{\gamma}^{*})} labeled as E cold ∗ E^{*}_{\text{cold}} and E warm ∗ E^{*}_{\text{warm}} , respectively.
+We normalize E cold ∗ E^{*}_{\text{cold}} and E warm ∗ E^{*}_{\text{warm}} to the minimum energy E 0 E_{0} found by diagonalizing H ^ C \hat{H}_{C} .
+Since the state-vector simulator in Qiskit [ 87 ] evaluates the quantum circuits the only source of randomness is the initial guess for 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} chosen uniformly from ± 2 ​ π \pm 2\pi given to the COBYLA optimizer we use to find 𝜷 ∗ \boldsymbol{\beta}^{*} and 𝜸 ∗ \boldsymbol{\gamma}^{*} .
+The optimal solution c ∗ c^{*} of the continuous relaxation of the problem used to warm-start QAOA is found with IBM ® {}^{\text{\textregistered}} ILOG ® {}^{\text{\textregistered}} CPLEX ® {}^{\text{\textregistered}} 12.10.0 (CPLEX).
+The probability of sampling the optimal binary solution d ∗ d^{*} is more than 5 times higher with WS-QAOA then standard QAOA for the simulated depths 1 ≤ p ≤ 5 1\leq p\leq 5 , see Fig. 4 (a).
+Furthermore, the quality of the solution found by WS-QAOA is better than standard QAOA since E warm ∗ E^{*}_{\text{warm}} is closer to E 0 E_{0} than E cold ∗ E^{*}_{\text{cold}} , see Fig. 4 (b).
+At depth p ≥ 4 p\geq 4 standard QAOA has enough free parameters to satisfy the budget constraint, as shown by the low energy in Fig. 4 (b), but still fails to produce a trial state which contains the optimal solution with high probability.
+
+ Figure 5: Improvement of depth-one WS-QAOA over standard QAOA for 250 random portfolio instances with q = 2 q=2 .
+(a) Histogram of the energy of the optimized trial states | ψ ⁡ ( 𝜷 ∗ , 𝜸 ∗ ) ⟩ \ket{\psi(\boldsymbol{\beta}^{*},\boldsymbol{\gamma}^{*})} with (orange) and without (blue) warm-start normalized to E 0 E_{0} .
+We found | ψ ⁡ ( 𝜷 ∗ , 𝜸 ∗ ) ⟩ \ket{\psi(\boldsymbol{\beta}^{*},\boldsymbol{\gamma}^{*})} with COBYLA seeded with random initial guesses for β \beta and γ \gamma chosen uniformly from ± 2 ​ π \pm 2\pi .
+The minimum energy E 0 E_{0} is found by direct diagonalization.
+(b) Energy difference of WS-QAOA with the optimal solution, i.e. Δ warm = E warm ∗ − E 0 \Delta_{\text{warm}}=E^{*}_{\text{warm}}-E_{0} , normalized to the energy difference obtained with standard QAOA, i.e. Δ cold = E cold ∗ − E 0 \Delta_{\text{cold}}=E^{*}_{\text{cold}}-E_{0} , as a function of the overlap between the optimal solution of the problem with binary weights and continuous weights.
+ Δ warm / Δ cold < 1 \Delta_{\text{warm}}/\Delta_{\text{cold}}<1 implies that WS-QAOA improved the energy of the trial state and Δ warm / Δ cold = 0 \Delta_{\text{warm}}/\Delta_{\text{cold}}=0 implies that WS-QAOA found the optimal portfolio.
+
+ We investigate the role of the warm-start mixer operator H ^ M ( w ​ s ) \hat{H}_{M}^{(ws)} by replacing it with the standard mixer − ∑ i = 0 n − 1 X ^ i -\sum_{i=0}^{n-1}\hat{X}_{i} while using the initial state given by the continuous solution c ∗ c^{*} .
+Under these conditions the energy of the optimized state does not converge to the minimum energy, see blue triangles in Fig. 4 (b).
+The probability of sampling the optimal discrete solution is between warm-start and standard QAOA but depends heavily on the initial point given to COBYLA, see Fig. 4 (a).
+These results further justify the use of the modified mixer in WS-QAOA.
+
+ To further illustrate the advantage of a warm-start at low depth we solve 250 random portfolio instances with warm-start and standard QAOA, both at depth p = 1 p=1 .
+Here, the standard QAOA produces variational states that poorly approximate the ground state, see the histogram of E cold ∗ E^{*}_{\text{cold}} in Fig. 5 (a).
+However, WS-QAOA produces optimized variational states that are much closer to the minimum energy of each problem Hamiltonian.
+Furthermore, we find that WS-QAOA tends to produce better solutions when the overlap d ∗ T ​ c ∗ / B d^{*T}c^{*}/B between the optimal solutions to the discrete and relaxed problems is closer to 1, see Fig. 5 (b).
+
+ Figure 6: Energy of the quantum state normalized to [ min ⁡ ( H ^ C ) , max ⁡ ( H ^ C ) ] [\min(\hat{H}_{C}),\max(\hat{H}_{C})] after Trotterized annealing for the warm-start mixer (a) and the equal superposition mixer (b). The triangles in (a) and (b) indicate the points for which the time-resolved energy in (c) was obtained. 
+
+ We now illustrate the advantage of a warm-start in the context of quantum annealing.
+We simulate annealing by Trotterizing the time-evolution starting form the ground state of the mixer Hamiltonian.
+At time step k ∈ { 0 , … , N } k\in\{0,...,N\} we apply the operator
+ exp ⁡ ( − i ​ β k ​ H ^ M ) ​ exp ⁡ ( − i ​ γ k ​ H ^ C ) \exp(-i\beta_{k}\hat{H}_{\text{M}})\exp(-i\gamma_{k}\hat{H}_{\text{C}}) where the annealing schedules are β k = 2 ​ δ ​ t ​ ( 1 − i / N ) \beta_{k}=2\delta t(1-i/N) and γ k = 2 ​ i ​ δ t / N \gamma_{k}=2i\delta_{t}/N with δ ​ t = T / N \delta t=T/N .
+We compute the energy as function of T T , which controls the total annealing time, and N N using the equal-superposition mixer ∑ i = 0 n − 1 X ^ i \sum_{i=0}^{n-1}\hat{X}_{i} and the warm-start mixer H ^ M ( w ​ s ) \hat{H}_{M}^{(ws)} .
+Warm start requires less annealing time T T and a smaller number of steps N N than the equal superposition mixer to minimize the energy, as can be seen by comparing (a) and (b) in Fig. 6 .
+This is further confirmed by computing the energy at each time step for T = 40 T=40 and N = 60 N=60 .
+When the warm-start mixer H ^ M ( w ​ s ) \hat{H}_{M}^{(ws)} is used, the initial and final energies are lower than when the equal superposition mixer is used.
+These data emphasize, from an annealing point of view, that WS-QAOA converges faster than QAOA.
+
+ 4 Simulations with Rounded Warm-Start
+
+ Next, we discuss warm-starting QAOA for MAXCUT.
+The maximum cut of an edge-weighted graph G = ( V , E ) G=(V,E) with nodes V V , edges E E , and weights ω i ​ j , { i , j } ∈ E \omega_{ij},\{i,j\}\in E is a partitioning of the set of nodes V V in two such that the sum of the edge weights ω i ​ j \omega_{ij} where i i and j j are in different parts is maximized.
+This is cast as
+
+ max ⁡ 1 2 ​ ∑ ( i , j ) ∈ E ω i ​ j ​ ( 1 − z i ​ z j ) \displaystyle\max\frac{1}{2}\sum_{(i,j)\in E}\omega_{ij}(1-z_{i}z_{j}) 
+
+ (6) 
+
+ such that z ∈ { − 1 , 1 } | V | , \displaystyle\text{such that}\quad z\in\{-1,1\}^{|V|}, 
+
+ where the binary variable z i z_{i} indicates which side of the cut node i i is on.
+In the case of positive edge weights ω i ​ j \omega_{ij} , for any ϵ \epsilon , the problem cannot be approximated within the ratio of 16 / 17 − ϵ 16/17-\epsilon classically in polynomial time [ 88 ] , unless P = NP.
+In the case of the real-valued edge-weights ω i ​ j \omega_{ij} , the hardness factor is 11 / 13 − ϵ 11/13-\epsilon [ 75 ] .
+In both cases, under the Unique Games Conjecture [ 55 , 56 , 57 ] , the best guarantees obtainable classically in polynomial time are those of the random-hyperplane rounding [ 53 , 54 , 75 ] , as we detail in Appendices B and C .
+
+ Since we cannot relax MAXCUT to a ( QP ) with a positive semi-definite matrix, without a projection
+onto the cone of positive-semidefinite matrices, we now warm-start QAOA with a binary solution obtained using the GW rounding.
+Here, the variational form can only produce states different from the initial GW cut when the regularization parameter ε > 0 \varepsilon>0 .
+We study the effect of ε \varepsilon by minimizing the energy of depth-one WS-QAOAs applied to ten fully connected graphs with 30 nodes and edge weights uniformly chosen from { − 10 , − 9 , … , 0 , … , 9 , 10 } \{-10,-9,...,0,...,9,10\} .
+For each graph we generate ten GW cuts and study the five best cuts with WS-QAOA.
+To find the optimal β 1 \beta_{1} and γ 1 \gamma_{1} we seed COBYLA with an initial point obtained as follows.
+We perform a grid search in γ 1 \gamma_{1} with 25 equally spaced values from − 2 ​ π -2\pi to 2 ​ π 2\pi .
+For each value of γ 1 \gamma_{1} we evaluate the energy for the two points β 1 ∈ { 3 ​ π / 4 , 3 ​ π / 8 } \beta_{1}\in\{3\pi/4,3\pi/8\} and fit the result to a ​ sin ⁡ ( 2 ​ β 1 ) + b ​ sin ⁡ ( 4 ​ β 1 ) a\sin(2\beta_{1})+b\sin(4\beta_{1}) to find the β 1 \beta_{1} that minimizes the energy without having to perform a two-dimensional grid scan.
+The ( β 1 , γ 1 ) (\beta_{1},\gamma_{1}) with the lowest energy is given as initial point to COBYLA.
+At ε = 0 \varepsilon=0 the median energy, normalized to the energy of the maximum cut, is 0.907 and corresponds to the energy of the GW cuts used to warm-start QAOA, see Fig. 7 .
+As ε \varepsilon increases, the normalized energy decreases.
+However, around ε = 0.15 \varepsilon=0.15 the median energy starts to increase, and for ε = 0.25 \varepsilon=0.25 rises beyond the energy of the GW cut to 0.929, which suggests that warm-starting quantum optimization may lead to algorithms which can outperform the GW randomized rounding.
+This increase in ε \varepsilon is not observed when the mixer from Eq. ( 2 ) is used, see Appendix I .
+
+ Next, we illustrate the WS-RQAOA algorithm outlined in Sec. 2.3 at depth one by searching for the maximum cut of arbitrary graphs with n = 20 n=20 , and n = 30 n=30 nodes.
+Two types of graphs are solved, one where each edge appears with a p E = 1 / 2 p_{E}=1/2 probability and has a 1 / 2 1/2 probability of having a positive or negative unit weight.
+The second type of graphs are fully connected with uniformly distributed edge weights sampled from { − 10 , − 9 , … , 0 , … , 9 , 10 } \{-10,-9,...,0,...,9,10\} .
+We expect that finding the maximum cut for the fully connected graphs will be harder than those with p E = 1 / 2 p_{E}=1/2 [ 89 ] and that the resulting QAOA circuits will be deeper as they have more edges [ 90 ] .
+For each graph size and type we randomly generate 100 graphs.
+At each iteration a GW pre-solver generates N = 10 N=10 cuts of which we select the best M = 5 M=5 unique cuts to warm-start five QAOA solvers with a depth p = 1 p=1 and ε = 0.25 \varepsilon=0.25 , chosen based on the results from Fig. 7 .
+We chose a low N N to avoid systematically giving QAOA the maximum cut, see Appendix B .
+This only holds for the small graphs with which we illustrate WS-RQAOA.
+For larger graphs we would, however, choose a much larger N N as GW cuts can be efficiently generated.
+The standard and warm-start depth-one RQAOA algorithms are efficiently simulated by computing the correlations
+ ⟨ Z ^ i ​ Z ^ j ⟩ \langle\hat{Z}_{i}\hat{Z}_{j}\rangle 
+at each iteration, see Appendix F .
+The parameters β 1 \beta_{1} and γ 1 \gamma_{1} are optimized with COBYLA which is initialized with a good initial point obtained from a grid search, as discussed above, to avoid local-minima.
+When a graph reaches n stop = n / 2 n_{\text{stop}}=n/2 nodes we diagonalize the corresponding Hamiltonian to find the maximum cut of this reduced problem.
+Together with the replacements from RQAOA we obtain an approximation of the maximum cut of the original graph with n n nodes.
+We compare WS-RQAOA with standard RQAOA.
+
+ Figure 7: Energy, normalized to the energy of the maximum cut, as a function of ε \varepsilon for ten graphs each solved five times with different GW cuts.
+The shaded area indicates the 25% to 75% quantiles and the line shows the median.
+Each small dot is the energy from one WS-QAOA.
+The dotted line shows the median normalized energy at ε = 0.25 \varepsilon=0.25 . 
+
+ Figure 8: Histograms of cut sizes, relative to the maximum cut found by CPLEX, for the best out of ten cuts generated by GW on the initial graph (blue), standard RQAOA (orange), WS-RQAOA (red), and the recursive classical solver based on GW (black).
+(a) and (b) correspond to random graphs with 20 and 30 nodes, respectively, p E = 1 / 2 p_{E}=1/2 and edge weights in { − 1 , 1 } \{-1,1\} .
+(c) and (d) correspond to fully-connected graphs with 20 and 30 nodes, respectively, with edge weights uniformly distributed in { − 10 , − 9 , … , 0 , … , 10 } \{-10,-9,...,0,...,10\} .
+The number of maximum cuts found is shown in the gray shaded sub-plots and not the main plot.
+The dashed line shows the hardness factor 11 / 13 11/13 .
+
+ Figure 9: (a) The graph used to study the energy-landscape as a function of β 1 \beta_{1} and γ 1 \gamma_{1} for depth-one (b) and depth-three (c) WS-QAOA.
+The initial cut is 001111 and ε = 0.25 \varepsilon=0.25 .
+Edge and node colors indicate the edge weight and maximum cut with value 27, respectively.
+(d) Ten highest probability cuts in the optimized depth-three trial state.
+The numbers indicate the cut-size.
+In (c) the values of β i \beta_{i} and γ i \gamma_{i} for i = 2 , 3 i=2,3 are given by COBYLA after minimizing the energy E ⁡ ( 𝜷 , 𝜸 ) E(\boldsymbol{\beta},\boldsymbol{\gamma}) and correspond to the best point in Fig. 10 .
+The inset in (d) is a zoom of (c) around the optimal point (orange dot) found by COBYLA. 
+
+ Our simulations indicate that WS-RQAOA outperforms standard RQAOA, see Fig. 8 , and that the number of maximum cuts found decreases with graph size.
+Fully connected graphs with 30 nodes are the hardest to solve among the graphs we consider.
+Still, for the graphs in Fig. 8 , we observe that the optimal β 1 ∗ \beta^{*}_{1} and γ 1 ∗ \gamma^{*}_{1} are systematically found.
+This indicates that when warm-start and standard RQAOA fail, it is because the depth-one variational form
+is not versatile enough to capture the correlations in the maximum cut.
+At ε = 0.25 \varepsilon=0.25 we often observed that β 1 ∗ = π / 2 \beta^{*}_{1}=\pi/2 and γ 1 ∗ = 0 \gamma^{*}_{1}=0 , see Fig. 9 .
+We therefore benchmark WS-RQAOA against a classical recursive optimization procedure, where the average correlation matrix of the five best GW cuts is used to eliminate decision variables in each iteration,
+similarly to RQAOA,
+see black bars in Fig. 8 .
+This classical algorithm performs better than standard RQAOA, but slightly worse than WS-RQAOA.
+
+ We now investigate WS-QAOA for p > 1 p>1 in a non-recursive setting.
+Since the efficient algorithm outlined in Appendix F is not valid for p > 1 p>1 we solve a small, fully connected graph with six nodes and edge weights uniformly distributed in { − 10 , − 9 , … , 0 , … , 10 } \{-10,-9,...,0,...,10\} , see Fig. 9 (a).
+The maximum cut of this graph has size 27.
+By comparing the energy landscape E ⁡ ( β 1 , γ 1 ) E(\beta_{1},\gamma_{1}) of a depth-one and depth-three WS-QAOA initialized with the cut 001111, of size 23, we observe that the optimal trial state of deeper variational forms is no-longer the initial GW cut, see Fig. 9 (b-d).
+We study the probability of sampling the maximum cut as a function of p p by running 30 WS-QAOAs each with a random initial 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} chosen uniformly from [ 0 , 2 ​ π ] [0,2\pi] and ± 2 ​ π \pm 2\pi , respectively, for depths p = 1 , … , 6 p=1,...,6 .
+The probability to sample the maximum cut for this graph increases with p p while the energy of the optimized trial state decreases, see Fig. 10 .
+This matches our expectations from theory since the circuit at depth p + 1 p+1 can reproduce all states of the depth p p variational form while being more flexible.
+Since the energy landscape is non-convex and contains many local minima it is challenging to find globally optimal parameters starting from random guesses of 𝜷 \boldsymbol{\beta} and 𝜸 \boldsymbol{\gamma} [ 91 , 32 , 92 , 93 ] .
+Even at depth-one with random initial guesses for β 1 \beta_{1} and γ 1 \gamma_{1} COBYLA does not always find the optimal β 1 = π / 2 \beta_{1}=\pi/2 and γ 1 = 0 \gamma_{1}=0 , see Fig. 9 and Fig. 10 (b).
+The complexity of the energy landscape, even for this six-node graph, may therefore explain why the energy of the optimized trial state decreases slowly with p p .
+
+ Figure 10: (a) Probability of sampling the maximum cut of the six-node graph shown in Fig. 9 (a) from the optimized trial state and (b) its energy as a function of QAOA depth p p .
+The shaded areas indicate the 25% and 75% quantiles of 30 runs represented as small dots.
+Their medians are the large dots.
+The green triangle is the energy of the depth-one trial state with β 1 = π / 2 \beta_{1}=\pi/2 and γ 1 = 0 \gamma_{1}=0 . 
+
+ 5 Discussion and Conclusion
+
+ We hope to have contributed towards a framework for the design of quantum optimization algorithms with a warm start, and towards reasoning about their properties.
+Currently, these algorithms can achieve the same guarantees as the classical relaxations upon which they are based.
+If the Unique Games Conjecture is true, these guarantees cannot be improved upon by classical or quantum algorithms running in polynomial time, unless we can solve NP-Hard problems in polynomial time.
+However, if this conjecture is false then both quantum and classical algorithms may be able to improve the existing performance guarantees.
+
+ An implementation of WS-QAOA is available in Qiskit [ 94 ] ,
+the open-source software development kit
+for working with quantum computers.
+Our simulations show that warm-starting quantum heuristics provides an advantage at low depth.
+This is particularly important for dense optimization problems intended to be solved on noisy quantum hardware that struggles to implement deep quantum circuits.
+The portfolio optimization simulations indicate that WS-QAOA finds better solutions than standard QAOA.
+Here, future work could investigate tying budget constraints into the quantum circuit of WS-QAOA [ 95 ] .
+
+ We have also demonstrated how to continuously transform WS-QAOA to conventional QAOA using the regularization parameter ε \varepsilon .
+We also showed how to improve QAOA for MAXCUT using the GW algorithm to warm-start RQAOA, albeit by introducing an inconsistency between the mixer and the initial state.
+By using a grid scan at depth one, we mitigated the effect of local optima.
+We applied WS-RQAOA at depths p > 1 p>1 on a single graph.
+The results suggest that the algorithm provides better solutions as p p increases.
+Future work may extend these simulations to more graphs with different sizes.
+Further work could also exploit other possible warm-starts, e.g., based on polynomially-solvable special cases [ 62 , 63 ] , where one could for example consider low-rank approximations of Σ \Sigma or the SDP [ 96 ] as well as analysis of the convergence properties when using a modified mixer that does not have the initial state as eigenstate.
+One may also investigate RQAOA in the context of the continuous warm-start discussed in Sec. 3 .
+Furthermore, we may also warm-start quantum optimization algorithms from candidate solutions obtained with classical solvers such as CPLEX or GUROBI with a time-limit termination criterion.
+
+ We expect warm-start to be applicable to other problems within Combinatorial Optimization and Integer Programming, for which a good solution can be found through randomized rounding [ 52 ] ,
+possibly following an encoding into a QUBO [ 70 , 97 , 71 ] ,
+a mixed-integer linear optimization problem [ 60 ] ,
+or a polynomial unconstrained binary optimization problem [ 90 ] .
+Indeed, both the recipe to obtain SDP relaxations [ 65 ] and the analytical tools of Appendix D are applicable to linearly constrained problems equally well.
+For example, the particle-hole representation for VQE can be seen as a form of warm-start [ 98 ] .
+We anticipate that WS-QAOA is also applicable to other binary optimization problems for which an approximate solution can easily be found using relaxed versions of the problem, without the use of randomized rounding, albeit more research needs to be done in this direction.
+
+ Acknowledgements
+
+ The authors acknowledge useful discussions with Libor Caha, Donny Greenberg, Sergey Bravyi and Giacomo Nannicini.
+IBM, the IBM logo, and ibm.com are trademarks of International Business Machines Corp., registered in many jurisdictions worldwide. Other product and service names might be trademarks of IBM or other companies. The current list of IBM trademarks is available at https://www.ibm.com/legal/copytrade.
+Jakub Mareček’s research has been supported by the OP RDE project CZ.02.1.01/0.0/0.0/16_019/0000765 Research Center for Informatics.
+One month after releasing our work Ref. [ 96 ] appeared on the arXiv.
+
+ Appendix A The Unique Games Conjecture
+
+ We now summarize the Unique Games Conjecture (UGC) without presenting any original material.
+Inapproximability results suggest that finding an approximate solution of a certain problem-dependent approximation ratio is no easier than finding the optimal solution.
+The PCP theorem [ 99 , 100 , 101 ] shows
+that in a constraint satisfaction problem, the fraction of satisfiable constraints is NP-Hard to approximate within some constant factor.
+In particular, for a constraint satisfaction problem with at most k k variables per constraint, it suggests
+there is a constant 0 < α < 1 0<\alpha<1 , such that it is NP-Hard to decide whether either all constraints are simultaneously satisfiable or whether every assignment satisfies fewer than an α \alpha fraction of the constraints.
+We refer to [ 102 , Chapters 18 and 19] for an excellent overview.
+
+ By building on the PCP theorem Khot suggested the Unique Games Conjecture [ 103 ] which can be formulated with two-prover one-round games as well as unique label cover problems.
+Here, we state the UGC with the unique label cover problem as it relates to MAXCUT [ 55 ] .
+In a unique label cover problem there is a bipartite graph G = ( V , W , E ) G=(V,W,E) with partition V V , W W and edges E E , an alphabet M M , and a bijection π e : M → M \pi_{e}\colon M\rightarrow M for every edge e ∈ E e\in E .
+We denote this by ℒ ⁡ ( V , W , E , M , { π e } E ) {\mathcal{L}}(V,W,E,M,\{\pi_{e}\}_{E}) .
+Given the assignments 𝒜 V : V → M {\mathcal{A}}_{V}:V\to M and 𝒜 W : W → M {\mathcal{A}}_{W}:W\to M ,
+an edge e = ( v , w ) ∈ E e=(v,w)\in E is satisfied if and only if π e ​ ( 𝒜 W ​ ( w ) ) = 𝒜 V ​ ( v ) \pi_{e}({\mathcal{A}}_{W}(w))={\mathcal{A}}_{V}(v) .
+Now let opt ⁡ ( ℒ ) \opt(\mathcal{L}) be the maximum weight of edges satisfied by any assignment.
+The Unique Label Cover problem with parameter δ \delta , denoted ULC ( δ ) (\delta) , is the problem of deciding, given an instance ℒ ⁡ ( V , W , E , M , { π e } E ) {\mathcal{L}}(V,W,E,M,\{\pi_{e}\}_{E}) , whether
+ opt ⁡ ( ℒ ) ≥ 1 − δ \opt({\mathcal{L}})\geq 1-\delta or opt ⁡ ( ℒ ) ≤ δ \opt({\mathcal{L}})\leq\delta , see examples in Fig. 11 . Then:
+
+ Conjecture 1 (Unique Games Conjecture [ 103 ] ) . 
+
+ For arbitrarily small constants ζ , δ > 0 \zeta,\delta>0 , there exists a constant k = k ⁡ ( ζ , δ ) k=k(\zeta,\delta) such that it is NP-Hard to determine whether a unique label cover instance with the label set size k k , i.e. k = | M | k=|M| , has optimum at least 1 − ζ 1-\zeta or at most δ \delta . 
+
+ Figure 11: Unique label cover. (a) and (c) are examples of unique label cover problems with a graph with four nodes and four edges denoted ℒ a \mathcal{L}_{a} and ℒ c \mathcal{L}_{c} , respectively.
+The alphabet has two colors: orange and blue.
+(b) An assignment of node colors for ℒ a \mathcal{L}_{a} where all edges are satisfied, i.e. opt ⁡ ( ℒ a ) = 1 \opt(\mathcal{L}_{a})=1 .
+(d) An assignment of node colors for ℒ c \mathcal{L}_{c} where one edge is not satisfied.
+We have opt ⁡ ( ℒ c ) = 3 / 4 \opt(\mathcal{L}_{c})=3/4 . 
+
+ Under the UGC a canonical semidefinite programming relaxation of a constraint satisfaction problem provides the best possible approximation ratio [ 55 , 104 , 105 ] .
+Nevertheless, the UGC itself has been neither proven nor disproven, despite much effort.
+The closest to proving the UGC, namely Khot et al. [ 106 ] , essentially proved the so-called 2-to-2-Games Conjecture, which is a specialisation of the UGC to finite fields on two elements.
+Independently, [ 107 , 108 ] have shown that there is a
+subexponential time approximation for the original Unique Games problem,
+which utilizes a hierarchy of LP [ 108 ] or SDP [ 107 ] relaxations.
+This seems to point to the full UGC being true, but does not prove it yet.
+
+ Research in quantum complexity is still ongoing.
+The EPR paradox [ 109 ] and the Tsirelson problem [ 110 ] can be seen as two-prover one-round games in which the provers may share entanglement while the verifier and all communication are classical.
+In this spirit, Kempe et al. [ 84 ] showed that the “unique games with entangled provers” is false by rounding an SDP relaxation of the value of a unique game with entangled provers and with more than two possible answers, in polynomial time.
+The “games quantum PCP conjecture”, where one wishes to distinguish between the cases when the provers of a game with a classical verifier have a strategy using entanglement that succeeds with probability 1, or when no such strategy succeeds with probability larger than 1/2, has been shown to be true under randomized reductions [ 111 ] .
+By contrast, the “constraint satisfaction” variant of the quantum PCP conjecture [ 112 ] , which considers constant-factor approximations to the minimal energy of a local Hamiltonian normalized to 1, remains open.
+
+ Appendix B Goemans-Williamson Algorithm
+
+ The GW algorithm [ 53 ] first solves the continuous relaxation of MAXCUT
+
+ max ⁡ 1 2 ​ ∑ i < j ω i ​ j ​ ( 1 − v i T ​ v j ) \displaystyle\max\frac{1}{2}\sum_{i<j}\omega_{ij}(1-v_{i}^{T}v_{j}) 
+
+ (7) 
+
+ with positive edge weights ω i ​ j \omega_{ij} ,
+where the decision variables v i v_{i} are n n -dimensional vectors with unit Euclidean norm instead of binary variables z i ∈ { − 1 , 1 } z_{i}\in\{-1,1\} .
+We denote this v i ∈ S n v_{i}\in S^{n} with S S in plain font, in contrast to 𝕊 n \mathbb{S}^{n} for symmetric matrices.
+The relaxation ( 7 ) is efficiently solvable as a semidefinite programming problem [ 48 ] to get the optimal vectors v i ∗ v_{i}^{*} .
+
+ Next, the GW algorithm generates a cut by selecting a vector r r uniformly at random on the unit sphere and
+assigning z i = sign ⁡ ( r T ​ v i ∗ ) z_{i}=\sgn(r^{T}v_{i}^{*}) for each node, where the sign \sgn function returns 1 1 for non-negative inputs and -1 elsewhere.
+That is, the rounding depends on which side of the hyperplane (defined by r r ) passing through the origin the node lies.
+
+ Informally speaking, cuts generated in this way are guaranteed to be on average 87.9 % 87.9\% of the size of the maximum cut [ 53 ] , when averaging over the choice of the random hyperplane in the case of the positive edge weights. Formally,
+
+ Proposition 2 (Based on Theorem 3.1 in [ 53 ] ) . 
+
+ The expected value, with respect to the random hyper-plane defined by the vector r r ,
+of the cut size W W generated by rounding of the MAXCUT SDP relaxation ( 7 ) is: 
+
+ 𝔼 ⁡ [ W ] = \displaystyle\mathbb{E}\big[W\big]\;= 
+ ∑ 1 ≤ i < j ≤ n ω i ​ j Prob [ sign ( r T v i ) ≠ sign ( r T v j ) ] \displaystyle\sum_{1\leq i<j\leq n}\omega_{ij}\Prob[\sgn(r^{T}v_{i})\not=\sgn(r^{T}v_{j})] 
+
+ = \displaystyle=\; 
+ 1 π ​ ∑ 1 ≤ i < j ≤ n ω i ​ j ​ arccos ⁡ ( v i T ​ v j ) \displaystyle\frac{1}{\pi}\sum_{1\leq i<j\leq n}\omega_{ij}\arccos(v_{i}^{T}v_{j}) 
+
+ ≥ \displaystyle\geq\; 
+ α ​ W ∗ , \displaystyle\alpha W^{*}, 
+
+ (8) 
+
+ where W ∗ W^{*} denotes the value of the maximum cut and the hardness factor is 
+
+ α = 2 π ​ min 0 ≤ θ ≤ π ​ θ 1 − cos ⁡ θ ≈ 0.878 . \displaystyle\alpha={\frac{2}{\pi}}\min_{0\leq\theta\leq\pi}{\frac{\theta}{1-\cos\theta}}\approx 0.878. 
+
+ (9) 
+
+ Further, conditional on the Unique Games Conjecture [ 55 , 56 , 57 ] , this is the best possible guarantee that can be obtained by any classical algorithm in polynomial time.
+
+ Figure 12: (a) and (b) show the size of GW cuts relative to the maximum cut for the graphs in Fig. 8 (b) and (d), respectively.
+For each graph, N N GW cuts are generated and the averages, minima, and maxima of the per-graph objective-function values are computed.
+These averages, minimums, and maximums are then averaged over the 100 graphs.
+The dotted-dashed green line shows the fraction of graphs for which the maximum cut was found.
+It is harder to find the maximum cut on fully connected uniform random graphs than random graphs with p E = 1 / 2 p_{E}=1/2 .
+
+ Appendix C Extensions towards QUBO 
+
+ MAXCUT is a special case of ( QUBO ) 4 4 
+ 4 
+
+ Consider the matrix Σ \Sigma , where for each edge weight ω i ​ j \omega_{ij} there is an entry Σ i ​ j = Σ j ​ i = − ω i ​ j \Sigma_{ij}=\Sigma_{ji}=-\omega_{ij} , and for all other values there are zeros. .
+The GW performance ratio is valid only for MAXCUT, as the special case of ( QUBO ) [ 75 ] , and likewise the constants in the inapproximability results.
+
+ One can, however, encode most problems in combinatorial optimization into a so-called constraint satisfaction problem [ 75 , 113 , 104 ] , for which there is an well-known SDP relaxation and a subsequent rounding procedure [ 75 , 113 , 104 ] . Likewise, one can derive optimal inapproximability results conditional on the Unique Games Conjecture [ 55 , 56 , 57 ] . See, for example, Figure 2 of [ 56 ] .
+
+ For example, for MAXCUT with real-valued edge weights [ 75 ] , which actually generalises the QUBO we have presented, as it does not assume Σ \Sigma is symmetric, we have:
+
+ Proposition 3 (Based on Lemma 6 in [ 75 ] ) . 
+
+ Let w w stand for
+the total weight of edges in a MAXCUT instance,
+where it is NP-Hard to decide whether the optimal cut is larger or equal than k k or less than α ​ k \alpha k , where α \alpha is the hardness factor ( 9 ) for MAXCUT.
+Then for every ϵ > 0 \epsilon>0 it is NP-Hard to distinguish instances of QUBO with optimum greater or equal to 2 ​ k − w 2k-w from instances of QUBO whose optimum is at most 2 ​ α ​ k − w 2\alpha k-w .
+The ratio of these two bounds on the optimum is 
+
+ 2 ​ α ​ k − w 2 ​ k − w = α + w ​ α − 1 2 ​ k − w . \displaystyle\frac{2\alpha k-w}{2k-w}=\alpha+w\frac{\alpha-1}{2k-w}. 
+
+ (10) 
+
+ Moreover, the optimum hardness factor is achieved by the randomized rounding of an SDP relaxation [ 75 ] . 
+
+ This can be used to prove the inapproximability results for MAXCUT with real weights [ 75 ] , both conditional and independent of the Unique Games Conjecture.
+
+ We illustrate the performance of GW on the random graphs with 30 nodes used in Sec. 4 .
+For each graph we generate N N cuts with GW and normalize them to the maximum cut which is found with CPLEX.
+We next calculate the minimum, maximum, and average size of these N N cuts for each graph.
+Finally, we average the minimum, maximum, and average of the 100 graphs, see Fig. 12 .
+The average is stable at 85.2 % 85.2\% and 83.7 % 83.7\% for the random graphs with p E = 1 / 2 p_{E}=1/2 and the fully connected graphs, respectively, see Fig. 12 (a) and (b).
+These averages are slightly below the GW approximation ratio 5 5 
+ 5 
+
+ This could be seen as an instance of a phase transition [ 114 ] , beyond which the problem becomes computationally difficult for classical algorithms running in polynomial time. Notice that the MAX-2-SAT of [ 114 ] is closely related to MAXCUT [ 115 ] . .
+When N > 100 N>100 the maximum cut for more than 80 of the 100 graphs in Fig. 12 (a) is found which is why we chose N = 10 N=10 in Sec. 4 .
+When the graphs are fully connected the GW algorithm does not find as many maximum cuts.
+For instance, 61 maximum cuts are found at N = 10 5 N=10^{5} for fully connected graphs, see Fig. 12 (b).
+
+ Appendix D A Stochastic-Analysis Viewpoint
+
+ Many randomized rounding procedures can be seen from the viewpoint of stochastic analysis: one obtains random unit vectors u 1 , … , u n ∈ S n u_{1},\ldots,u_{n}\in S^{n} and produces signs σ 1 , … , σ n ∈ { − 1 , 1 } \sigma_{1},\ldots,\sigma_{n}\in\{-1,1\} .
+In a natural view of [ 79 ] , the sign is extracted when an associated stochastic process { u i T ​ B ​ ( t ) } t ≥ 0 \{u_{i}^{T}B(t)\}_{t\geq 0} first reaches { − 1 , 1 } \{-1,1\} ,
+where { B ⁡ ( t ) } t ≥ 0 \{B(t)\}_{t\geq 0} is a Brownian motion in ℝ n \mathbb{R}^{n} adapted to the filtration { ℱ t } t ≥ 0 \{\mathcal{F}_{t}\}_{t\geq 0} .
+The corresponding Sticky Brownian Motion
+ ∀ i ∈ { 1 , … , n } \forall\,i\in\{1,\ldots,n\} is
+
+ σ i := u i T ​ B ​ ( T i ) , \sigma_{i}:=u_{i}^{T}B(T_{i}), 
+
+ (11) 
+
+ where
+
+ T i := min ⁡ { t ≥ 0 : | u i T ​ B ​ ( t ) | = 1 } . T_{i}:=\min\{t\geq 0:\ |u_{i}^{T}B(t)|=1\}. 
+
+ (12) 
+
+ This can be extended to “Slowed-down” Sticky Brownian Motion [ 79 , 80 ] . Considering first a speed function φ : [ − 1 , 1 ] → [ 0 , ∞ ) \varphi:[-1,1]\to[0,\infty) that satisfies
+
+ lim s → 1 − φ ⁡ ( s ) = lim s → − 1 + φ ⁡ ( s ) = 0 \lim_{s\to 1^{-}}\varphi(s)=\lim_{s\to-1^{+}}\varphi(s)=0 
+
+ (13) 
+
+ and
+
+ ∀ s ∈ ( − 1 , 1 ) , φ ⁡ ( s ) > 0 \forall\,s\in(-1,1),\quad\varphi(s)>0 
+
+ (14) 
+
+ and second a stochastic process { W u φ ​ ( t ) } ( u , t ) ∈ ℝ n × [ 0 , ∞ ) \{W_{u}^{\varphi}(t)\}_{(u,t)\in\mathbb{R}^{n}\times[0,\infty)} that satisfies:
+
+ ∀ ( u , t ) ∈ ℝ n × [ 0 , ∞ ) , W u φ ​ ( 0 ) = 0 , \forall(u,t)\in\mathbb{R}^{n}\times[0,\infty),\quad W_{u}^{\varphi}(0)=0, 
+
+ (15) 
+
+ and
+
+ d ​ W u φ ​ ( t ) = φ ⁡ ( W u φ ​ ( t ) ) ​ u T ​ d ​ B ​ ( t ) , \mathrm{d}W_{u}^{\varphi}(t)=\varphi\big(W_{u}^{\varphi}(t)\big)u^{T}\mathrm{d}B(t), 
+
+ (16) 
+
+ one obtains, under mild assumptions [ 79 , 80 ] ,
+
+ σ u φ := lim t → ∞ W u φ ​ ( t ) ∈ { − 1 , 1 } ​  a.s. \sigma^{\varphi}_{u}:=\lim_{t\to\infty}W_{u}^{\varphi}(t)\in\{-1,1\}\textrm{ a.s.} 
+
+ (17) 
+
+ For the “Slowed-down” Sticky Brownian Motion [ 79 , 80 ] , one can show:
+
+ Proposition 4 (Based on [ 79 ] ) . 
+
+ For u ∈ ℝ n u\in\mathbb{R}^{n} and t ≥ 0 t\geq 0 write W u ξ ​ ( t ) = W u ​ ( t ) W_{u}^{\xi}(t)=W_{u}(t) and σ u ξ = σ u ∈ { − 1 , 1 } \sigma_{u}^{\xi}=\sigma_{u}\in\{-1,1\} , where 
+
+ ∀ s ∈ [ − 1 , 1 ] , ξ ⁡ ( s ) = ( 1 − s 2 ) α , \forall\,s\in[-1,1],\quad\xi(s)=(1-s^{2})^{\alpha}, 
+
+ (18) 
+
+ for α > 0 \alpha>0 . Then, 
+
+ ∀ u , v ∈ S d − 1 , 𝔼 ⁡ [ σ u ​ σ v ] ≈ 0.878 . \forall\,u,v\in S^{d-1},\quad\mathbb{E}\big[\sigma_{u}\sigma_{v}\big]\approx 0.878. 
+
+ (19) 
+
+ We note that the constant in ( 19 ) is not exactly the constant of the Goemans-Williamson [ 53 ] work. (See also Appendix B .)
+However, one can consider a different speed-function ξ \xi to obtain the GW constant.
+In particular, by seeing the processes as Krivine diffusions, one can obtain:
+
+ Proposition 5 (Based on [ 80 ] ) . 
+
+ For u ∈ ℝ n u\in\mathbb{R}^{n} and t ≥ 0 t\geq 0 write W u ξ ​ ( t ) = W u ​ ( t ) W_{u}^{\xi}(t)=W_{u}(t) and σ u ξ = σ u ∈ { − 1 , 1 } \sigma_{u}^{\xi}=\sigma_{u}\in\{-1,1\} , where 
+
+ ∀ s ∈ [ − 1 , 1 ] , ξ ⁡ ( s ) = 2 π ​ e − 1 2 ​ Φ − 1 ​ ( 1 − s 2 ) 2 , \forall\,s\in[-1,1],\quad\xi(s)=\frac{\sqrt{2}}{\sqrt{\pi}}e^{-\frac{1}{2}\Phi^{-1}\big(\frac{1-s}{2}\big)^{2}}, 
+
+ (20) 
+
+ where Φ : ℝ → ℝ \Phi:\mathbb{R}\to\mathbb{R} is the standard Gaussian cumulative distribution function, i.e., 
+
+ ∀ x ∈ ℝ , Φ ⁡ ( x ) = 1 2 ​ π ​ ∫ ∞ x e − s 2 2 ​ 𝑑 s . \forall\,x\in\mathbb{R},\quad\Phi(x)=\frac{1}{\sqrt{2\pi}}\int_{\infty}^{x}e^{-\frac{s^{2}}{2}}\,\mathrm{d}s. 
+
+ (21) 
+
+ Then, 
+
+ ∀ u , v ∈ S d − 1 , 𝔼 ⁡ [ σ u ​ σ v ] = 2 π ​ arcsin ⁡ ( u T ​ v ) . \forall\,u,v\in S^{d-1},\quad\mathbb{E}\big[\sigma_{u}\sigma_{v}\big]=\frac{2}{\pi}\arcsin(u^{T}v). 
+
+ (22) 
+
+ Compare this to the statement of Proposition 2 , noting that
+ arccos ⁡ ( t ) + arcsin ⁡ ( t ) = π / 2 \arccos(t)+\arcsin(t)=\pi/2 for
+ − 1 ≤ t ≤ 1 -1\leq t\leq 1 .
+The proof relies in seeing the process as discrete-time Krivine diffusions [ 80 ] and applying Theorem 3 of [ 80 ] .
+
+ Appendix E Recursive QAOA
+
+ RQAOA [ 24 ] is a recursive algorithm to find the ground state of an Ising Hamiltonian H ^ n = ∑ i , j J i , j ​ Z ^ i ​ Z ^ j + ∑ k J k ​ Z ^ k \hat{H}_{n}=\sum_{i,j}J_{i,j}\hat{Z}_{i}\hat{Z}_{j}+\sum_{k}J_{k}\hat{Z}_{k} with J i , j , J k J_{i,j},J_{k} as arbitrary real coefficients and n n decision variables.
+At each step of the recursion a standard QAOA is run to find the state | ψ ∗ ⟩ = U ^ ​ ( 𝜷 ∗ , 𝜸 ∗ ) ​ | + ⟩ ⊗ n \ket{\psi^{*}}=\hat{U}(\boldsymbol{\beta}^{*},\boldsymbol{\gamma}^{*})\ket{+}^{\otimes n} that minimizes the energy ⟨ ψ ∗ | H ^ n | ψ ∗ ⟩ \braket{\psi^{*}|\hat{H}_{n}|\psi^{*}} .
+For each edge ( i , j ) ∈ E (i,j)\in E the correlator ℳ i , j = ⟨ ψ ∗ | Z ^ i ​ Z ^ j | ψ ∗ ⟩ \mathcal{M}_{i,j}=\braket{\psi^{*}|\hat{Z}_{i}\hat{Z}_{j}|\psi^{*}} is computed.
+Next, the decision variable z i z_{i} for which | ℳ i ​ j | |\mathcal{M}_{ij}| is largest is replaced with sign ⁡ ( ℳ i , j ) ​ z j {\rm sign}(\mathcal{M}_{i,j})z_{j} to generate a new Ising Hamiltonian H ^ n − 1 \hat{H}_{n-1} with n − 1 n-1 decision variables.
+The recursion stops once the number of variables is below a threshold n stop n_{\text{stop}} .
+The remaining problem is solved with a classical solver.
+We refer to Appendix C of [ 24 ] for the pseudocode and detailed discussion.
+
+ Appendix F Depth-one RQAOA
+
+ Figure 13: Quantum circuit used to compute the correlator ⟨ Z ^ i ​ Z ^ j ⟩ \langle\hat{Z}_{i}\hat{Z}_{j}\rangle .
+The gates highlighted in red do not need to be taken into account. 
+
+ Depth-one RQAOA can efficiently be simulated classically [ 91 ] .
+Here, we show the algorithm we used to efficiently simulate depth-one WS-RQAOA.
+To evaluate the correlator
+ ⟨ Z ^ i ​ Z ^ j ⟩ = Tr ⁡ { ρ i , j ​ Z ^ i ​ Z ^ j } \langle\hat{Z}_{i}\hat{Z}_{j}\rangle={\rm Tr}\{\rho_{i,j}\hat{Z}_{i}\hat{Z}_{j}\} 
+we only need the density matrix ρ i , j \rho_{i,j} of qubits i i and j j , see the circuit in Fig. 13 .
+Qubits i i and j j are first prepared in the state ( 1 − c i ∗ ​ | 0 i ⟩ + c i ∗ ​ | 1 i ⟩ ) ⊗ ( 1 − c j ∗ ​ | 0 j ⟩ + c j ∗ ​ | 1 j ⟩ ) (\sqrt{1-c^{*}_{i}}\ket{0_{i}}+\sqrt{c_{i}^{*}}\ket{1_{i}})\otimes(\sqrt{1-c^{*}_{j}}\ket{0_{j}}+\sqrt{c_{j}^{*}}\ket{1_{j}}) .
+For each qubit k ≠ i , j k\neq i,j , the cost Hamiltonian applies the gate U ^ i , k ⊗ U ^ j , k \hat{U}_{i,k}\otimes\hat{U}_{j,k} , where U ^ i , k \hat{U}_{i,k} is
+
+ U ^ 1 ​ ( γ ​ ω i , k ) ⊗ U ^ 1 ​ ( γ ​ ω i , k ) ⋅ C-Phase ​ ( − 2 ​ γ ​ ω i , k ) . \displaystyle\hat{U}_{1}(\gamma\omega_{i,k})\otimes\hat{U}_{1}(\gamma\omega_{i,k})\cdot\text{C-Phase}(-2\gamma\omega_{i,k}). 
+
+ (23) 
+
+ Here, the single-qubit gate U ^ 1 ​ ( ϕ ) \hat{U}_{1}(\phi) is diag ⁡ ( 1 , e i ​ ϕ ) {\rm diag}(1,e^{i\phi}) .
+Since the controlled-phase gate C-Phase ​ ( ϕ ) = diag ⁡ ( 1 , 1 , 1 , e i ​ ϕ ) \text{C-Phase}(\phi)={\rm diag}(1,1,1,e^{i\phi}) commutes with the U ^ 1 \hat{U}_{1} gate we move all U ^ 1 \hat{U}_{1} gates to the front of the circuit an apply the phases U ^ 1 ​ ( γ ​ ∑ k ≠ i , j ω i , k ) \hat{U}_{1}(\gamma\sum_{k\neq i,j}\omega_{i,k}) and U ^ 1 ​ ( γ ​ ∑ k ≠ i , j ω j , k ) \hat{U}_{1}(\gamma\sum_{k\neq i,j}\omega_{j,k}) to qubits i i and j j , respectively.
+Next, we include the effect of the controlled-phase gate of each qubit k ≠ i , j k\neq i,j , initially in the state 1 − c k ∗ ​ | 0 ⟩ + c k ∗ ​ | 1 ⟩ \sqrt{1-c_{k}^{*}}\ket{0}+\sqrt{c_{k}^{*}}\ket{1} , on the density matrix ρ i , j \rho_{i,j} by computing ( 1 − c k ∗ ) ​ ρ i , j + c k ∗ ​ U ^ i ​ j ​ k ​ ρ i , j ​ U ^ i ​ j ​ k † (1-c_{k}^{*})\rho_{i,j}+c_{k}^{*}\hat{U}_{ijk}\rho_{i,j}\hat{U}_{ijk}^{\dagger} where U ^ i ​ j ​ k = diag ⁡ ( 1 , e − 2 ​ i ​ γ ​ ω i , k ) ⊗ diag ⁡ ( 1 , e − 2 ​ i ​ γ ​ ω j , k ) \hat{U}_{ijk}={\rm diag}(1,e^{-2i\gamma\omega_{i,k}})\otimes{\rm diag}(1,e^{-2i\gamma\omega_{j,k}}) .
+Then we apply the two-qubit operation from the ω i , j ​ Z ^ i ​ Z ^ j \omega_{i,j}\hat{Z}_{i}\hat{Z}_{j} term, i.e. U ^ i , j = diag ⁡ ( 1 , e i ​ γ ​ ω i , j , e i ​ γ ​ ω i , j , 1 ) \hat{U}_{i,j}={\rm diag}(1,e^{i\gamma\omega_{i,j}},e^{i\gamma\omega_{i,j}},1) , and finally apply the mixer operator before measuring.
+This is summarized in Alg. 1 .
+
+ Algorithm 1 Depth-one RQAOA 
+
+ Initialization: qubit i i and j j in state | 0 ⟩ \ket{0} .
+
+ Output: Correlator
+ ⟨ Z ^ i ​ Z ^ j ⟩ \langle\hat{Z}_{i}\hat{Z}_{j}\rangle 
+
+ Apply R ^ Y ​ ( θ i ) \hat{R}_{Y}(\theta_{i}) and R ^ Y ​ ( θ j ) \hat{R}_{Y}(\theta_{j}) to qubit i i and j j .
+
+ Apply U ^ 1 ​ ( γ ​ ∑ k ≠ i , j ω i , k ) \hat{U}_{1}(\gamma\sum_{k\neq i,j}\omega_{i,k}) to qubit i i . 
+
+ Apply U ^ 1 ​ ( γ ​ ∑ k ≠ i , j ω j , k ) \hat{U}_{1}(\gamma\sum_{k\neq i,j}\omega_{j,k}) to qubit j j . 
+
+ for k ≠ i , j k\neq i,j do 
+
+       ρ i , j ← ( 1 − c k ∗ ) ​ ρ i , j + c k ∗ ​ U ^ i ​ j ​ k ​ ρ i , j ​ U ^ i ​ j ​ k † \rho_{i,j}\leftarrow(1-c_{k}^{*})\rho_{i,j}+c_{k}^{*}\hat{U}_{ijk}\rho_{i,j}\hat{U}_{ijk}^{\dagger} 
+
+ end for
+
+ Apply ρ i , j ← U ^ i , j ​ ρ i , j ​ U ^ i , j † \rho_{i,j}\leftarrow\hat{U}_{i,j}\rho_{i,j}\hat{U}_{i,j}^{\dagger} 
+
+ Apply mixer e − i ​ β ​ ( H ^ M , i ( w ​ s ) ⊗ H ^ M , j ( w ​ s ) ) ​ ρ i , j ​ e i ​ β ​ ( H ^ M , i ( w ​ s ) ⊗ H ^ M , j ( w ​ s ) ) e^{-i\beta(\hat{H}_{M,i}^{(ws)}\otimes\hat{H}_{M,j}^{(ws)})}\rho_{i,j}e^{i\beta(\hat{H}_{M,i}^{(ws)}\otimes\hat{H}_{M,j}^{(ws)})} 
+
+ Measure correlator ⟨ Z ^ i ​ Z ^ j ⟩ = Tr ⁡ { ρ i , j ​ Z ^ i ​ Z ^ j } \langle\hat{Z}_{i}\hat{Z}_{j}\rangle={\rm Tr}\{\rho_{i,j}\hat{Z}_{i}\hat{Z}_{j}\} 
+
+ Appendix G MAXCUT reduction
+
+ Here we show that replacing Z ^ i \hat{Z}_{i} by ± Z ^ j \pm\hat{Z}_{j} in a MAXCUT problem results in a new MAXCUT problem with one node less.
+Without loss of generality we label the nodes from 1 1 to n n such that the spin operator Z ^ n \hat{Z}_{n} of node n n will be replaced by Z ^ n = α ​ Z ^ k \hat{Z}_{n}=\alpha\hat{Z}_{k} with α = ± 1 \alpha=\pm 1 and k < n k<n .
+The MAXCUT Hamiltonian of the weighted graph is
+
+ H ^ = \displaystyle\hat{H}= 
+ 1 4 ​ ∑ i , j = 1 n ω i , j ​ ( 1 − Z ^ i ​ Z ^ j ) \displaystyle\frac{1}{4}\sum_{i,j=1}^{n}\omega_{i,j}\left(1-\hat{Z}_{i}\hat{Z}_{j}\right) 
+
+ (24) 
+
+ = \displaystyle= 
+ 1 4 ​ ∑ i , j = 1 n − 1 ω i , j ​ ( 1 − Z ^ i ​ Z ^ j ) + 1 2 ​ ∑ i = 1 n − 1 ω i , n ​ ( 1 − Z ^ i ​ Z ^ n ) \displaystyle\frac{1}{4}\sum_{i,j=1}^{n-1}\omega_{i,j}\left(1-\hat{Z}_{i}\hat{Z}_{j}\right)+\frac{1}{2}\sum_{i=1}^{n-1}\omega_{i,n}\left(1-\hat{Z}_{i}\hat{Z}_{n}\right) 
+
+ We now replace Z ^ n = α ​ Z ^ k \hat{Z}_{n}=\alpha\hat{Z}_{k} in the last term
+and, since ω i , n ​ ( 1 − α ​ Z ^ i ​ Z ^ k ) = α ​ ω i , n ​ ( 1 − Z ^ i ​ Z ^ k ) + ω i , n ​ ( 1 − α ) \omega_{i,n}\left(1-\alpha\hat{Z}_{i}\hat{Z}_{k}\right)=\alpha\omega_{i,n}\left(1-\hat{Z}_{i}\hat{Z}_{k}\right)+\omega_{i,n}(1-\alpha) , we may write
+
+ ∑ i = 1 n − 1 ω i , n ​ ( 1 − Z ^ i ​ Z ^ n ) \displaystyle\sum_{i=1}^{n-1}\omega_{i,n}\left(1-\hat{Z}_{i}\hat{Z}_{n}\right) 
+ = ∑ i = 1 n − 1 ω i , n ​ ( 1 − α ) \displaystyle=\sum_{i=1}^{n-1}\omega_{i,n}(1-\alpha) 
+
+ + ∑ i = 1 n − 1 α ω i , n ( 1 − Z ^ i Z ^ k ) . \displaystyle+\sum_{i=1}^{n-1}\alpha\omega_{i,n}\left(1-\hat{Z}_{i}\hat{Z}_{k}\right). 
+
+ (25) 
+
+ We neglect the first sum since it is an energy offset that does not affect the optimization.
+The Hamiltonian of the reduced problem is therefore
+
+ H ^ n − 1 = \displaystyle\hat{H}_{n-1}= 
+ 1 4 ​ ∑ i , j = 1 n − 1 ω i , j ​ ( 1 − Z ^ i ​ Z ^ j ) \displaystyle\frac{1}{4}\sum_{i,j=1}^{n-1}\omega_{i,j}\left(1-\hat{Z}_{i}\hat{Z}_{j}\right) 
+
+ + \displaystyle+ 
+ 1 2 ​ ∑ i = 1 n − 1 α ​ ω i , n ​ ( 1 − Z ^ i ​ Z ^ k ) \displaystyle\frac{1}{2}\sum_{i=1}^{n-1}\alpha\omega_{i,n}\left(1-\hat{Z}_{i}\hat{Z}_{k}\right) 
+
+ (26) 
+
+ This Hamiltonian corresponds to a new graph E ′ E^{\prime} in which the weights ω i , j ′ \omega^{\prime}_{i,j} with i , j = 1 , … , n − 1 i,j=1,...,n-1 have been updated according to
+
+ ω i ​ j ′ = { ω i , j if j ≠ k , ω i , j + α ​ ω i , n if j = k . \displaystyle\omega^{\prime}_{ij}=\left\{\begin{array}[]{cc}\omega_{i,j}&\text{if}\quad j\neq k,\\
+\omega_{i,j}+\alpha\omega_{i,n}&\text{if}\quad j=k.\end{array}\right. 
+
+ Figure 14: Energy, normalized to the energy of the maximum cut, as a function of ε \varepsilon for a depth one WS-QAOA. The graphs are the same as those in Fig. 7 but we used the mixer from Eq. ( 2 ) which cannot reproduce the GW at ε = 0.25 \varepsilon=0.25 and depth one. 
+
+ Appendix H Portfolio data
+
+ The return vectors and covariance matrices used in Sec. 3 are obtained by simulating the price of each asset following a Geometric Brownian motion for N = 250 N=250 days.
+The price of asset i i on the k th k^{\text{th}} day is
+
+ S i , k = S i , 0 ​ exp ⁡ [ ( μ i − σ i 2 / 2 ) ​ k / N + σ i ​ W k ] . \displaystyle S_{i,k}=S_{i,0}\exp\left[(\mu_{i}-\sigma_{i}^{2}/2)k/N+\sigma_{i}W_{k}\right]. 
+
+ (29) 
+
+ Without loss of generality we set the initial price S i , 0 = 1 S_{i,0}=1 .
+We randomly chose each mean μ i \mu_{i} and standard deviation σ i \sigma_{i} uniformly form [ − 5 % , 5 % ] [-5\%,5\%] and [ − 20 % , 20 % ] [-20\%,20\%] , respectively.
+The Brownian motion is given by W k = ∑ l = 0 j z l / N W_{k}=\sum_{l=0}^{j}z_{l}/\sqrt{N} where z l z_{l} is drawn from the normal distribution.
+The return of asset i i on the k th k^{\text{th}} day is r i , k = S i , k / S i , k − 1 − 1 r_{i,k}=S_{i,k}/S_{i,k-1}-1 .
+The average of r i , k r_{i,k} gives the mean return of asset i i and the covariance of asset i i and j j is obtained from r i , k r_{i,k} and r j , k r_{j,k} where k = 1 , … , N k=1,...,N .
+
+ Figure 15: 
+Histograms of cut sizes, relative to the maximum cut found by CPLEX, for WS-RQAOA with the modified mixer (red, same data as in Fig. 8 ), and the WS-QAOA with the mixer from Eq. ( 2 ).
+The dashed line shows the hardness factor 11 / 13 11/13 . 
+
+ Appendix I WS-QAOA for MAXCUT with the warm-start mixer
+
+ In the main text we modified the WS mixer to retain the GW cut.
+Here, we explore WS-QAOA for MAXCUT with the mixer of Eq. ( 2 ).
+By repeating the analysis done in Fig. 7 we observe that the energy, normalized to the maximum, decreases as a function of ε \varepsilon and does not recover at ε = 0.25 \varepsilon=0.25 , see Fig. 14 .
+
+ In addition, we repeat the analysis done in Fig. 8 but with the mixer of Eq. ( 2 ) and compare it to WS-RQAOA with the modified mixer.
+Both algorithms have a similar performance, see Fig. 15 , which suggests that the amount of correlation between the variables at each iteration, e.g. as in Fig. 14 , is still sufficient for WS-RQAOA to produce good results even though the GW cut cannot be sampled with certainty at each iteration.
+As the size and complexity of the graphs is increased the performance of WS-RQAOA with the mixer from Eq. ( 2 ) decreases compared to WS-RQAOA with the modified mixer and indicates the importance of being able to retain the GW cut.
+
+ References
+
+ [1] 
+
+Nikolaj Moll, Panagiotis Barkoutsos, Lev S. Bishop, Jerry M. Chow, Andrew
+Cross, Daniel J. Egger, Stefan Filipp, Andreas Fuhrer, Jay M. Gambetta, Marc
+Ganzhorn, and et al. 
+
+ Quantum optimization using variational algorithms on near-term
+quantum devices.
+
+ Quantum Sci. Technol. , 3(3):030503, 2018.
+
+ doi: 10.1088/2058-9565/aab822 .
+
+ [2] 
+
+Abhinav Kandala, Kristan Temme, Antonio D. Corcoles, Antonio Mezzacapo,
+Jerry M. Chow, and Jay M. Gambetta.
+
+ Error mitigation extends the computational reach of a noisy quantum
+processor.
+
+ Nature , 567:491–495, 2018.
+
+ doi: 10.1038/s41586-019-1040-7 .
+
+ [3] 
+
+Marc Ganzhorn, Daniel J. Egger, Panagiotis Kl. Barkoutsos, Pauline Ollitrault,
+Gian Salis, Nikolaj Moll, Andreas Fuhrer, Peter Mueller, Stefan Woerner,
+Ivano Tavernelli, and Stefan Filipp.
+
+ Gate-efficient simulation of molecular eigenstates on a quantum
+computer.
+
+ Phys. Rev. Applied , 11:044092, Apr 2019.
+
+ doi: 10.1103/PhysRevApplied.11.044092 .
+
+ [4] 
+
+Jacob Biamonte, Peter Wittek, Nicola Pancotti, Patrick Rebentrost, Nathan
+Wiebe, and Seth Lloyd.
+
+ Quantum machine learning.
+
+ Nature , 549(7671):195–202, 2017.
+
+ doi: 10.1038/nature23474 .
+
+ [5] 
+
+Vojtech Havlicek, Antonio D. Corcoles, Kristan Temme, Aram W. Harrow, Abhinav
+Kandala, Jerry M. Chow, and Jay M. Gambetta.
+
+ Supervised learning with quantum-enhanced feature spaces.
+
+ Nature , 567:209 – 212, 2019.
+
+ doi: 10.1038/s41586-019-0980-2 .
+
+ [6] 
+
+Daniel J. Egger, Claudio Gambella, Jakub Mareček, Scott McFaddin,
+Martin Mevissen, Rudy Raymond, Aandrea Simonetto, Sefan Woerner, and
+Elena Yndurain.
+
+ Quantum computing for finance: State-of-the-art and future prospects.
+
+ IEEE Trans. on Quantum Eng. , 1:1–24, 2020.
+
+ doi: 10.1109/TQE.2020.3030314 .
+
+ [7] 
+
+Stefan Woerner and Daniel J. Egger.
+
+ Quantum risk analysis.
+
+ npj Quantum Inf. , 5:15, 2019.
+
+ doi: 10.1038/s41534-019-0130-6 .
+
+ [8] 
+
+Patrick Rebentrost, Brajesh Gupt, and Thomas R. Bromley.
+
+ Quantum computational finance: Monte Carlo pricing of financial
+derivatives.
+
+ Phys. Rev. A , 98:022321, Aug 2018.
+
+ doi: 10.1103/PhysRevA.98.022321 .
+
+ [9] 
+
+Nikitas Stamatopoulos, Daniel J. Egger, Yue Sun, Christa Zoufal, Raban Iten,
+Ning Shen, and Stefan Woerner.
+
+ Option pricing using quantum computers.
+
+ Quantum , 4:291, 2020.
+
+ doi: 10.22331/q-2020-07-06-291 .
+
+ [10] 
+
+Ana Martin, Bruno Candelas, Ángel Rodríguez-Rozas, José D.
+Martín-Guerrero, Xi Chen, Lucas Lamata, Román Orús, Enrique Solano,
+and Mikel Sanz.
+
+ Toward pricing financial derivatives with an ibm quantum computer.
+
+ Phys. Rev. Research , 3:013167, Feb 2021.
+
+ doi: 10.1103/PhysRevResearch.3.013167 .
+
+ [11] 
+
+Roman Orus, Samuel Mugel, and Enrique Lizaso.
+
+ Quantum computing for finance: Overview and prospects.
+
+ Rev. Phys. , 4:100028, 2019.
+
+ doi: 10.1016/j.revip.2019.100028 .
+
+ [12] 
+
+Daniel J. Egger, Ricardo G. Gutierrez, Jordi Cahue Mestre, and Stefan Woerner.
+
+ Credit risk analysis using quantum computers.
+
+ IEEE Trans. Comput. , 1:1–1, Nov 2020.
+
+ doi: 10.1109/TC.2020.3038063 .
+
+ [13] 
+
+Almudena Carrera Vazquez and Stefan Woerner.
+
+ Efficient state preparation for quantum amplitude estimation.
+
+ Phys. Rev. Applied , 15:034027, Mar 2021.
+
+ doi: 10.1103/PhysRevApplied.15.034027 .
+
+ [14] 
+
+Lee Braine, Daniel J. Egger, Jennifer Glick, and Stefan Woerner.
+
+ Quantum algorithms for mixed binary optimization applied to
+transaction settlement.
+
+ IEEE Trans. on Quantum Eng. , 2:1–8, 2021.
+
+ doi: 10.1109/TQE.2021.3063635 .
+
+ [15] 
+
+Panagiotis Kl. Barkoutsos, Giacomo Nannicini, Anton Robert, Ivano Tavernelli,
+and Stefan Woerner.
+
+ Improving variational quantum optimization using cvar.
+
+ Quantum , 4:256, Apr 2020.
+
+ doi: 10.22331/q-2020-04-20-256 .
+
+ [16] 
+
+Edward Farhi, Jeffrey Goldstone, and Sam Gutmann.
+
+ A quantum approximate optimization algorithm, 2014a.
+
+ URL https://arxiv.org/abs/1411.4028 .
+
+ [17] 
+
+Edward Farhi, Jeffrey Goldstone, and Sam Gutmann.
+
+ A quantum approximate optimization algorithm applied to a bounded
+occurrence constraint problem, 2014b.
+
+ URL https://arxiv.org/abs/1412.6062 .
+
+ [18] 
+
+Zhi-Cheng Yang, Armin Rahmani, Alireza Shabani, Hartmut Neven, and Claudio
+Chamon.
+
+ Optimizing variational quantum algorithms using pontryagin’s minimum
+principle.
+
+ Phys. Rev. X , 7:021027, May 2017.
+
+ doi: 10.1103/PhysRevX.7.021027 .
+
+ [19] 
+
+Mark W. Johnson, Mohammad HS Amin, Suzanne Gildert, Trevor Lanting, Firas
+Hamze, Neil Dickson, Richard Harris, Andrew J. Berkley, Jan Johansson, Paul
+Bunyk, and et al. 
+
+ Quantum annealing with manufactured spins.
+
+ Nature , 473(7346):194–198, May 2011.
+
+ doi: 10.1038/nature10012 .
+
+ [20] 
+
+Glen Bigan Mbeng, Rosario Fazio, and Giuseppe Santoro.
+
+ Quantum annealing: a journey through digitalization, control, and
+hybrid quantum variational schemes, 2019.
+
+ URL https://arxiv.org/abs/1906.08948 .
+
+ [21] 
+
+Michael Juenger, Elisabeth Lobe, Petra Mutzel, Gerhard Reinelt, Franz Rendl,
+Giovanni Rinaldi, and Tobias Stollenwerk.
+
+ Performance of a quantum annealer for Ising ground state
+computations on chimera graphs, 2019.
+
+ URL https://arxiv.org/abs/1904.11965 .
+
+ [22] 
+
+Rami Barends, Alireza Shabani, Lucas Lamata, Julian Kelly, Antonio Mezzacapo,
+Urtzi Las Heras, Ryan Babbush, Austin G. Fowler, Brooks Campbell, Yu Chen,
+and et al. 
+
+ Digitized adiabatic quantum computing with a superconducting circuit.
+
+ Nature , 534(7606):222–226, Jun 2016.
+
+ doi: 10.1038/nature17658 .
+
+ [23] 
+
+Madita Willsch, Dennis Willsch, Fengping Jin, Hans De Raedt, and Kristel
+Michielsen.
+
+ Benchmarking the quantum approximate optimization algorithm.
+
+ Quantum Inf. Process. , 19(7):197, Jun
+2020.
+
+ doi: 10.1007/s11128-020-02692-8 .
+
+ [24] 
+
+Sergey Bravyi, Alexander Kliesch, Robert Koenig, and Eugene Tang.
+
+ Obstacles to variational quantum optimization from symmetry
+protection.
+
+ Phys. Rev. Lett. , 125:260505, Dec
+2020a.
+
+ doi: 10.1103/PhysRevLett.125.260505 .
+
+ [25] 
+
+Gavin E. Crooks.
+
+ Performance of the quantum approximate optimization algorithm on the
+maximum cut problem, 2018.
+
+ URL https://arxiv.org/abs/1811.08419 .
+
+ [26] 
+
+Edward Farhi, Jeffrey Goldstone, Sam Gutmann, and Hartmut Neven.
+
+ Quantum algorithms for fixed qubit architectures, 2017.
+
+ URL https://arxiv.org/abs/1703.06199 .
+
+ [27] 
+
+Stuart Hadfield, Zhihui Wang, Bryan O’Gorman, Eleanor Rieffel, Davide
+Venturelli, and Rupak Biswas.
+
+ From the quantum approximate optimization algorithm to a quantum
+alternating operator ansatz.
+
+ Algorithms , 12(2):34, Feb 2019.
+
+ doi: 10.3390/a12020034 .
+
+ [28] 
+
+Linghua Zhu, Ho Lun Tang, George S. Barron, Nicholas J. Mayhall, Edwin Barnes,
+and Sophia E. Economou.
+
+ An adaptive quantum approximate optimization algorithm for solving
+combinatorial problems on a quantum computer, 2020.
+
+ URL https://arxiv.org/abs/2005.10258 .
+
+ [29] 
+
+Zhihui Wang, Nicholas C. Rubin, Jason M. Dominy, and Eleanor G. Rieffel.
+
+ XY mixers: Analytical and numerical results for the quantum
+alternating operator ansatz.
+
+ Phys. Rev. A , 101:012320, Jan 2020.
+
+ doi: 10.1103/PhysRevA.101.012320 .
+
+ [30] 
+
+Sami Khairy, Ruslan Shaydulin, Lukasz Cincio, Yuri Alexeev, and Prasanna
+Balaprakash.
+
+ Learning to optimize variational quantum circuits to solve
+combinatorial problems.
+
+ Proceedings of the AAAI Conference on Artificial Intelligence ,
+34(03):2367–2375, Apr 2020.
+
+ doi: 10.1609/aaai.v34i03.5616 .
+
+ [31] 
+
+Matteo M. Wauters, Emanuele Panizon, Glen B. Mbeng, and Giuseppe E. Santoro.
+
+ Reinforcement-learning-assisted quantum optimization.
+
+ Phys. Rev. Research , 2:033446, Sep 2020.
+
+ doi: 10.1103/PhysRevResearch.2.033446 .
+
+ [32] 
+
+Ruslan Shaydulin, Ilya Safro, and Jeffrey Larson.
+
+ Multistart methods for quantum approximate optimization.
+
+ 2019 IEEE High Performance Extreme Computing Conference
+(HPEC) , pages 1–8, Sep 2019.
+
+ doi: 10.1109/HPEC.2019.8916288 .
+
+ [33] 
+
+Ruslan Shaydulin and Yuri Alexeev.
+
+ Evaluating quantum approximate optimization algorithm: A case study.
+
+ In 2019 Tenth International Green and Sustainable Computing
+Conference (IGSC) , pages 1–6, 2019.
+
+ doi: 10.1109/IGSC48788.2019.8957201 .
+
+ [34] 
+
+Roeland Wiersema, Cunlu Zhou, Yvette de Sereville, Juan Felipe Carrasquilla,
+Yong Baek Kim, and Henry Yuen.
+
+ Exploring entanglement and optimization within the hamiltonian
+variational ansatz.
+
+ PRX Quantum , 1:020319, Dec 2020.
+
+ doi: 10.1103/PRXQuantum.1.020319 .
+
+ [35] 
+
+Fernando G. S. L. Brandao, Michael Broughton, Edward Farhi, Sam Gutmann, and
+Hartmut Neven.
+
+ For fixed control parameters the quantum approximate optimization
+algorithm’s objective function value concentrates for typical instances,
+2018.
+
+ URL https://arxiv.org/abs/1812.04170 .
+
+ [36] 
+
+Matthew B. Hastings.
+
+ Classical and quantum bounded depth approximation algorithms, 2019.
+
+ URL https://arxiv.org/abs/1905.07047 .
+
+ [37] 
+
+Sergey Bravyi, Alexander Kliesch, Robert Koenig, and Eugene Tang.
+
+ Hybrid quantum-classical algorithms for approximate graph coloring,
+2020b.
+
+ URL https://arxiv.org/abs/2011.13420 .
+
+ [38] 
+
+Mahabubul Alam, Abdullah Ash-Saki, and Swaroop Ghosh.
+
+ Analysis of quantum approximate optimization algorithm under
+realistic noise in superconducting qubits, 2019.
+
+ URL https://arxiv.org/abs/1907.09631 .
+
+ [39] 
+
+Vishwanathan Akshay, Hariphan Philathong, Mauro E. S. Morales, and Jacob D.
+Biamonte.
+
+ Reachability deficits in quantum approximate optimization.
+
+ Phys. Rev. Lett. , 124:090504, Mar
+2020a.
+
+ doi: 10.1103/PhysRevLett.124.090504 .
+
+ [40] 
+
+Matthew P. Harrigan, Kevin J. Sung, Matthew Neeley, Kevin J. Satzinger, Frank
+Arute, Kunal Arya, Juan Atalaya, Joseph C. Bardin, Rami Barends, Sergio
+Boixo, and et al. 
+
+ Quantum approximate optimization of non-planar graph problems on a
+planar superconducting processor.
+
+ Nat. Phys. , 17(3):332–336, Mar 2021.
+
+ doi: 10.1038/s41567-020-01105-y .
+
+ [41] 
+
+Yulong Dong, Xiang Meng, Lin Lin, Robert Kosut, and K. Birgitta Whaley.
+
+ Robust control optimization for quantum approximate optimization
+algorithms.
+
+ IFAC-PapersOnLine , 53(2):242–249, 2020.
+
+ doi: 10.1016/j.ifacol.2020.12.130 .
+
+ 21th IFAC World Congress.
+
+ [42] 
+
+Nathan Lacroix, Christoph Hellings, Christian Kraglund Andersen, Agustin
+Di Paolo, Ants Remm, Stefania Lazar, Sebastian Krinner, Graham J. Norris,
+Mihai Gabureac, Johannes Heinsoo, and et al. 
+
+ Improving the performance of deep quantum optimization algorithms
+with continuous gate sets.
+
+ PRX Quantum , 1:110304, Oct 2020.
+
+ doi: 10.1103/PRXQuantum.1.020304 .
+
+ [43] 
+
+Nathan Earnest, Caroline Tornow, and Daniel J. Egger.
+
+ Pulse-efficient circuit transpilation for quantum applications on
+cross-resonance-based hardware, 2021.
+
+ URL https://arxiv.org/abs/2105.01063 .
+
+ [44] 
+
+Pranav Gokhale, Ali Javadi-Abhari, Nathan Earnest, Yunong Shi, and Frederic T.
+Chong.
+
+ Optimized quantum compilation for near-term algorithms with
+openpulse, 2020.
+
+ URL https://www.microarch.org/micro53/papers/738300a186.pdf .
+
+ [45] 
+
+David C. McKay, Thomas Alexander, Luciano Bello, Michael J. Biercuk, Lev
+Bishop, Jiayin Chen, Jerry M. Chow, Antonio D. Córcoles, Daniel J. Egger,
+Stefan Filipp, and et al. 
+
+ Qiskit backend specifications for OpenQASM and OpenPulse
+experiments, 2018.
+
+ URL https://arxiv.org/abs/1809.03452 .
+
+ [46] 
+
+Thomas Alexander, Naoki Kanazawa, Daniel J. Egger, Lauren Capelluto,
+Christopher J. Wood, Ali Javadi-Abhari, and David C. McKay.
+
+ Qiskit pulse: programming quantum computers through the cloud with
+pulses.
+
+ Quantum Sci. Technol. , 5(4):044006, Aug
+2020.
+
+ doi: 10.1088/2058-9565/aba404 .
+
+ [47] 
+
+Anirudha Majumdar, Georgina Hall, and Amir Ali Ahmadi.
+
+ Recent scalability improvements for semidefinite programming with
+applications in machine learning, control, and robotics.
+
+ Annu. Rev. Control Robot. Auton. Syst. , 3:331–360,
+2020.
+
+ doi: 10.1146/annurev-control-091819-074326 .
+
+ [48] 
+
+Miguel F. Anjos and Jean B. Lasserre.
+
+ Handbook on semidefinite, conic and polynomial optimization ,
+volume 166.
+
+ Springer Science & Business Media, 2011.
+
+ doi: 10.1007/978-1-4614-0769-0 .
+
+ [49] 
+
+Lenore Blum, Felipe Cucker, Michael Shub, and Steve Smale.
+
+ Complexity and real computation .
+
+ Springer Science & Business Media, 2012.
+
+ doi: 10.1007/978-1-4612-0701-6 .
+
+ [50] 
+
+Lorant Porkolab and Leonid Khachiyan.
+
+ On the complexity of semidefinite programs.
+
+ J. Glob. Optim. , 10(4):351–365, 1997.
+
+ doi: 10.1023/A:1008203903341 .
+
+ [51] 
+
+Alp Yurtsever, Joel A. Tropp, Olivier Fercoq, Madeleine Udell, and Volkan
+Cevher.
+
+ Scalable semidefinite programming.
+
+ SIAM J. Math. Data Sci. , 3(1):171–200,
+2021.
+
+ doi: 10.1137/19M1305045 .
+
+ [52] 
+
+Prabhakar Raghavan and Clark D. Tompson.
+
+ Randomized rounding: A technique for provably good algorithms and
+algorithmic proofs.
+
+ Combinatorica , 7(4):365–374, Dec 1987.
+
+ doi: 10.1007/BF02579324 .
+
+ [53] 
+
+Michel X. Goemans and David P. Williamson.
+
+ Improved approximation algorithms for maximum cut and satisfiability
+problems using semidefinite programming.
+
+ J. ACM , 42(6):1115–1145, nov 1995.
+
+ doi: 10.1145/227683.227684 .
+
+ [54] 
+
+Howard Karloff.
+
+ How good is the Goemans–Williamson MAX CUT algorithm?
+
+ SIAM J. Comput. , 29(1):336–350, 1999.
+
+ doi: 10.1137/S0097539797321481 .
+
+ [55] 
+
+Subhash Khot, Guy Kindler, Elchanan Mossel, and Ryan O’Donnell.
+
+ Optimal inapproximability results for MAX-CUT and other 2-variable
+CSPs?
+
+ SIAM J. Comput. , 37(1):319–357, 2007.
+
+ doi: 10.1137/S0097539705447372 .
+
+ [56] 
+
+Subhas Khot.
+
+ On the unique games conjecture (invited survey).
+
+ In 2012 IEEE 27th Conference on Computational Complexity ,
+pages 99–121, Los Alamitos, CA, USA, jun 2010. IEEE Computer Society.
+
+ doi: 10.1109/CCC.2010.19 .
+
+ [57] 
+
+Subhash A. Khot and Nisheeth K. Vishnoi.
+
+ The unique games conjecture, integrality gap for cut problems and
+embeddability of negative-type metrics into l1.
+
+ J. ACM , 62(1):1–39, 2015.
+
+ doi: 10.1145/2629614 .
+
+ [58] 
+
+Kunal Marwaha.
+
+ Local classical MAX-CUT algorithm outperforms p = 2 p=2 QAOA on
+high-girth regular graphs.
+
+ Quantum , 5:437, April 2021.
+
+ doi: 10.22331/q-2021-04-20-437 .
+
+ [59] 
+
+Peter L. Hammer and Sergiu Rudeanu.
+
+ Boolean methods in operations research and related areas .
+
+ Springer Science & Business Media, 1968.
+
+ doi: 10.1007/978-3-642-85823-9 .
+
+ [60] 
+
+Jean B. Lasserre.
+
+ A MAX-CUT formulation of 0/1 programs.
+
+ Oper. Res. Lett. , 44(2):158 – 164, 2016.
+
+ doi: 10.1016/j.orl.2015.12.014 .
+
+ [61] 
+
+Panos M. Pardalos and Georg Schnitger.
+
+ Checking local optimality in constrained quadratic programming is
+np-hard.
+
+ Oper. Res. Lett. , 7(1):33–35, 1988.
+
+ doi: 10.1016/0167-6377(88)90049-1 .
+
+ [62] 
+
+Kim Allemand, Komei Fukuda, Thomas M Liebling, and Erich Steiner.
+
+ A polynomial case of unconstrained zero-one quadratic optimization.
+
+ Math. Program. , 91(1):49–52, 2001.
+
+ doi: 10.1007/s101070100233 .
+
+ [63] 
+
+Milan Hladík, Michal Černý, and Miroslav Rada.
+
+ A new polynomially solvable class of quadratic optimization problems
+with box constraints.
+
+ arXiv:1911.10877 , 2019.
+
+ URL https://arxiv.org/abs/1911.10877 .
+
+ [64] 
+
+Jacek Gondzio and Andreas Grothey.
+
+ Solving nonlinear financial planning problems with 10 9 10^{9} decision
+variables on massively parallel architectures.
+
+ WIT Trans Modelling Simul. , 43:11, 2006.
+
+ doi: 10.2495/CF060101 .
+
+ [65] 
+
+Svatopluk Poljak, Franz Rendl, and Henry Wolkowicz.
+
+ A recipe for semidefinite relaxation for (0, 1)-quadratic
+programming.
+
+ J. Glob. Optim. , 7(1):51–73, 1995.
+
+ doi: 10.1007/BF01100205 .
+
+ [66] 
+
+Joran Van Apeldoorn, András Gilyén, Sander Gribling, and Ronald
+de Wolf.
+
+ Quantum SDP-solvers: Better upper and lower bounds.
+
+ Quantum , 4:230, 2020.
+
+ doi: 10.22331/q-2020-02-14-230 .
+
+ [67] 
+
+Fernando G. S. L. Brandão, Amir Kalev, Tongyang Li, Cedric Yen-Yu Lin,
+Krysta M. Svore, and Xiaodi Wu.
+
+ Quantum SDP Solvers: Large Speed-Ups, Optimality, and Applications
+to Quantum Learning.
+
+ In 46th International Colloquium on Automata, Languages, and
+Programming (ICALP 2019) , volume 132 of Leibniz International
+Proceedings in Informatics (LIPIcs) , pages 27:1–27:14, Dagstuhl, Germany,
+2019. Schloss Dagstuhl–Leibniz-Zentrum für Informatik.
+
+ ISBN 978-3-95977-109-2.
+
+ doi: 10.4230/LIPIcs.ICALP.2019.27 .
+
+ [68] 
+
+Nai-Hui Chia, Tongyang Li, Han-Hsuan Lin, and Chunhao Wang.
+
+ Quantum-Inspired Sublinear Algorithm for Solving Low-Rank
+Semidefinite Programming.
+
+ In 45th International Symposium on Mathematical Foundations of
+Computer Science (MFCS 2020) , volume 170 of Leibniz International
+Proceedings in Informatics (LIPIcs) , pages 23:1–23:15, Dagstuhl, Germany,
+2020. Schloss Dagstuhl–Leibniz-Zentrum für Informatik.
+
+ ISBN 978-3-95977-159-7.
+
+ doi: 10.4230/LIPIcs.MFCS.2020.23 .
+
+ [69] 
+
+Jacek Gondzio.
+
+ Warm start of the primal-dual method applied in the cutting-plane
+scheme.
+
+ Math. Program. , 83(1-3):125–143, 1998.
+
+ doi: 10.1007/BF02680554 .
+
+ [70] 
+
+Andrew Lucas.
+
+ Ising formulations of many NP problems.
+
+ Front. Phys. , 2:5, 2014.
+
+ doi: 10.3389/fphy.2014.00005 .
+
+ [71] 
+
+Bas Lodewijks.
+
+ Mapping np-hard and NP-complete optimisation problems to quadratic
+unconstrained binary optimisation problems.
+
+ arXiv:1911.08043 , 2019.
+
+ URL https://arxiv.org/abs/1911.08043 .
+
+ [72] 
+
+Jean B. Lasserre.
+
+ Global optimization with polynomials and the problem of moments.
+
+ SIAM J. Optim. , 11(3):796–817, 2001.
+
+ doi: 10.1137/S1052623400366802 .
+
+ [73] 
+
+Jean B. Lasserre.
+
+ Convergent SDP-relaxations in polynomial optimization with
+sparsity.
+
+ SIAM J. Optim. , 17(3):822–843, 2006.
+
+ doi: 10.1137/05064504X .
+
+ [74] 
+
+Bissan Ghaddar, Juan C. Vera, and Miguel F. Anjos.
+
+ Second-order cone relaxations for binary quadratic polynomial
+programs.
+
+ SIAM J. Optim. , 21(1):391–414, 2011.
+
+ doi: 10.1137/100802190 .
+
+ [75] 
+
+Moses Charikar and Anthony Wirth.
+
+ Maximizing quadratic programs: Extending Grothendieck’s inequality.
+
+ In 45th Annual IEEE Symposium on Foundations of Computer
+Science , pages 54–60. IEEE, 2004.
+
+ doi: 10.1109/FOCS.2004.39 .
+
+ [76] 
+
+Mikhail Krechetov, Jakub Mareček, Yury Maximov, and Martin Takáč.
+
+ Entropy-penalized semidefinite programming.
+
+ In Proceedings of the Twenty-Eighth International Joint
+Conference on Artificial Intelligence , 2019.
+
+ doi: 10.24963/ijcai.2019/157 .
+
+ [77] 
+
+Sartaj Sahni and Teofilo Gonzalez.
+
+ P-complete approximation problems.
+
+ J. ACM , 23(3):555–565, 1976.
+
+ doi: 10.1145/321958.321975 .
+
+ See Lemma A2.
+
+ [78] 
+
+Michael Mitzenmacher and Eli Upfal.
+
+ Probability and computing: Randomization and probabilistic
+techniques in algorithms and data analysis .
+
+ Cambridge university press, 2017.
+
+ [79] 
+
+Sepehr Abbasi-Zadeh, Nikhil Bansal, Guru Guruganesh, Aleksandar Nikolov, Roy
+Schwartz, and Mohit Singh.
+
+ Sticky brownian rounding and its applications to constraint
+satisfaction problems.
+
+ In Proceedings of the Fourteenth Annual ACM-SIAM Symposium on
+Discrete Algorithms , pages 854–873. SIAM, 2020.
+
+ doi: 10.1137/1.9781611975994.52 .
+
+ [80] 
+
+Ronen Eldan and Assaf Naor.
+
+ Krivine diffusions attain the goemans–williamson approximation
+ratio.
+
+ arXiv:1906.10615 , 2019.
+
+ URL https://arxiv.org/abs/1906.10615 .
+
+ [81] 
+
+Jamie Morgenstern, Samira Samadi, Mohit Singh, Uthaipon Tantipongpipat, and
+Santosh Vempala.
+
+ Fair dimensionality reduction and iterative rounding for SDPs.
+
+ arXiv:1902.11281 , 2019.
+
+ URL https://arxiv.org/abs/1902.11281v1 .
+
+ [82] 
+
+Samuel Karlin and Howard E. Taylor.
+
+ A second course in stochastic processes .
+
+ Elsevier, 1981.
+
+ p. 257 and the following.
+
+ [83] 
+
+Julia Kempe, Oded Regev, and Ben Toner.
+
+ The unique games conjecture with entangled provers is false.
+
+ In Algebraic Methods in Computational Complexity , 2007.
+
+ [84] 
+
+Julia Kempe, Oded Regev, and Ben Toner.
+
+ Unique games with entangled provers are easy.
+
+ SIAM J. Comput. , 39(7):3207–3229, 2010.
+
+ doi: 10.1137/090772885 .
+
+ [85] 
+
+Charles H. Bennett, Ethan Bernstein, Gilles Brassard, and Umesh Vazirani.
+
+ Strengths and weaknesses of quantum computing.
+
+ SIAM J. Comput. , 26(5):1510–1523, 1997.
+
+ doi: 10.1137/S0097539796300933 .
+
+ [86] 
+
+Harry Markowitz.
+
+ Portfolio selection.
+
+ J. Finance , 7(1):77–91, 1952.
+
+ doi: 10.2307/2975974 .
+
+ [87] 
+
+H. Abraham et al.
+
+ Qiskit: An open-source framework for quantum computing, 2019.
+
+ URL https://doi.org/10.5281/zenodo.2562111 .
+
+ [88] 
+
+Johan Håstad.
+
+ Some optimal inapproximability results.
+
+ J. ACM , 48(4):798–859, 2001.
+
+ doi: 10.1145/502090.502098 .
+
+ [89] 
+
+Vishwanathan Akshay, Hariphan Philathong, Igor Zacharov, and Jacob D. Biamonte.
+
+ Reachability deficits implicit in google’s quantum approximate
+optimization of graph problems, 2020b.
+
+ URL https://arxiv.org/abs/2007.09148 .
+
+ [90] 
+
+Rebekah Herrman, James Ostrowski, Travis S. Humble, and George Siopsis.
+
+ Lower bounds on circuit depth of the quantum approximate optimization
+algorithm.
+
+ Quantum Inf. Process. , 20(2):59, Feb 2021.
+
+ doi: 10.1007/s11128-021-03001-7 .
+
+ [91] 
+
+Zhihui Wang, Stuart Hadfield, Zhang Jiang, and Eleanor G. Rieffel.
+
+ Quantum approximate optimization algorithm for maxcut: A fermionic
+view.
+
+ Phys. Rev. A , 97:022304, Feb 2018.
+
+ doi: 10.1103/PhysRevA.97.022304 .
+
+ [92] 
+
+Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes Pichler, and Mikhail D. Lukin.
+
+ Quantum approximate optimization algorithm: Performance, mechanism,
+and implementation on near-term devices.
+
+ Phys. Rev. X , 10:021067, Jun 2020.
+
+ doi: 10.1103/PhysRevX.10.021067 .
+
+ [93] 
+
+Jason Larkin, Matías Jonsson, Daniel Justice, and Gian Giacomo Guerreschi.
+
+ Evaluation of quantum approximate optimization algorithm based on the
+approximation ratio of single samples, 2020.
+
+ URL https://arxiv.org/abs/2006.04831 .
+
+ [94] 
+
+qiskit-optimization.
+
+ https://github.com/Qiskit/qiskit-optimization .
+
+ Accessed: 25. 04. 2021.
+
+ [95] 
+
+Andreas Bärtschi and Stephan Eidenbenz.
+
+ Grover mixers for qaoa: Shifting complexity from mixer design to
+state preparation.
+
+ In 2020 IEEE International Conference on Quantum Computing and
+Engineering (QCE) , pages 72–82, 2020.
+
+ doi: 10.1109/QCE49297.2020.00020 .
+
+ [96] 
+
+Reuben Tate, Majid Farhadi, Creston Herold, Greg Mohler, and Swati Gupta.
+
+ Bridging classical and quantum with SDP initialized warm-starts for
+QAOA, 2020.
+
+ URL https://arxiv.org/abs/2010.14021 .
+
+ [97] 
+
+Iain Dunning, Swati Gupta, and John Silberholz.
+
+ What works best when? a systematic evaluation of heuristics for
+Max-Cut and QUBO.
+
+ INFORMS J. Comput. , 30(3):608–624, 2018.
+
+ doi: 10.1287/ijoc.2017.0798 .
+
+ [98] 
+
+Panagiotis Kl. Barkoutsos, Jerome F. Gonthier, Igor Sokolov, Nikolaj Moll, Gian
+Salis, Andreas Fuhrer, Marc Ganzhorn, Daniel J. Egger, Matthias Troyer,
+Antonio Mezzacapo, and et al. 
+
+ Quantum algorithms for electronic structure calculations:
+Particle-hole hamiltonian and optimized wave-function expansions.
+
+ Phys. Rev. A , 98:022322, Aug 2018.
+
+ doi: 10.1103/PhysRevA.98.022322 .
+
+ [99] 
+
+Sanjeev Arora and Shmuel Safra.
+
+ Probabilistic checking of proofs: A new characterization of np.
+
+ J. ACM , 45(1):70–122, 1998.
+
+ doi: 10.1145/273865.273901 .
+
+ [100] 
+
+Sanjeev Arora, Carsten Lund, Rajeev Motwani, Madhu Sudan, and Mario Szegedy.
+
+ Proof verification and the hardness of approximation problems.
+
+ J. ACM , 45(3):501–555, 1998.
+
+ doi: 10.1145/278298.278306 .
+
+ [101] 
+
+Irit Dinur.
+
+ The PCP theorem by gap amplification.
+
+ J. ACM , 54(3):12–es, jun 2007.
+
+ doi: 10.1145/1236457.1236459 .
+
+ [102] 
+
+Sanjeev Arora and Boaz Barak.
+
+ Computational complexity: a modern approach .
+
+ Cambridge University Press, 2009.
+
+ [103] 
+
+Subhash Khot.
+
+ On the power of unique 2-prover 1-round games.
+
+ In Proceedings of the Thiry-Fourth Annual ACM Symposium on
+Theory of Computing , STOC ’02, pages 767–775, New York, NY, USA, 2002.
+Association for Computing Machinery.
+
+ doi: 10.1145/509907.510017 .
+
+ [104] 
+
+Prasad Raghavendra.
+
+ Optimal algorithms and inapproximability results for every CSP?
+
+ In Proceedings of the fortieth annual ACM symposium on Theory
+of computing , pages 245–254, 2008.
+
+ doi: 10.1145/1374376.1374414 .
+
+ [105] 
+
+Prasad Raghavendra and David Steurer.
+
+ How to round any CSP.
+
+ In 2009 50th Annual IEEE Symposium on Foundations of Computer
+Science , pages 586–594, 2009.
+
+ doi: 10.1109/FOCS.2009.74 .
+
+ [106] 
+
+Subhash Khot, Dor Minzer, and Muli Safra.
+
+ Pseudorandom sets in grassmann graph have near-perfect expansion.
+
+ In Proceedings of the fifty-ninth Annual Symposium on
+Foundations of Computer Science (FOCS) , pages 592–601, 2018.
+
+ doi: 10.1109/FOCS.2018.00062 .
+
+ [107] 
+
+Boaz Barak, Prasad Raghavendra, and David Steurer.
+
+ Rounding semidefinite programming hierarchies via global correlation.
+
+ In Proceedings of the fiftysecond annual symposium on
+foundations of computer science , pages 472–481. IEEE, 2011.
+
+ doi: 10.1109/FOCS.2011.95 .
+
+ [108] 
+
+Samuel B. Hopkins, Tselil Schramm, and Luca Trevisan.
+
+ Subexponential LPs approximate max-cut.
+
+ In Proceedings of the sixtyfirst Annual Symposium on
+Foundations of Computer Science (FOCS) , pages 943–953. IEEE, 2020.
+
+ doi: 10.1109/FOCS46700.2020.00092 .
+
+ [109] 
+
+Albert Einstein, Boris Podolsky, and Nathan Rosen.
+
+ Can quantum-mechanical description of physical reality be considered
+complete?
+
+ Phys. Rev. , 47(10):777, 1935.
+
+ doi: 10.1103/PhysRev.47.777 .
+
+ [110] 
+
+Boris S. Cirel’son.
+
+ Quantum generalizations of Bell’s inequality.
+
+ Lett. Math. Phys. , 4(2):93–100, 1980.
+
+ doi: 10.1007/BF00417500 .
+
+ [111] 
+
+A. Natarajan and T. Vidick.
+
+ Low-degree testing for quantum states, and a quantum entangled games
+PCP for QMA.
+
+ In Proceedings of the fiftyninth Annual Symposium on
+Foundations of Computer Science (FOCS) , pages 731–742, 2018.
+
+ doi: 10.1109/FOCS.2018.00075 .
+
+ [112] 
+
+Dorit Aharonov, Itai Arad, Zeph Landau, and Umesh Vazirani.
+
+ The detectability lemma and quantum gap amplification.
+
+ In Proceedings of the Forty-First Annual ACM Symposium on
+Theory of Computing , STOC ’09, pages 417–426, New York, NY, USA, 2009.
+Association for Computing Machinery.
+
+ ISBN 9781605585062.
+
+ doi: 10.1145/1536414.1536472 .
+
+ [113] 
+
+Moses Charikar, Konstantin Makarychev, and Yury Makarychev.
+
+ Near-optimal algorithms for unique games.
+
+ In Proceedings of the thirty-eighth annual ACM symposium on
+Theory of computing , pages 205–214, 2006.
+
+ doi: 10.1145/1132516.1132547 .
+
+ [114] 
+
+Dimitris Achlioptas, Assaf Naor, and Yuval Peres.
+
+ Rigorous location of phase transitions in hard optimization problems.
+
+ Nature , 435(7043):759–764, 2005.
+
+ doi: 10.1038/nature03602 .
+
+ [115] 
+
+Don Coppersmith, David Gamarnik, Mohammad T. Hajiaghayi, and Gregory B. Sorkin.
+
+ Random MAX SAT, random MAX CUT, and their phase transitions.
+
+ Random Struct. Algorithms , 24(4):502–545,
+2004.
+
+ doi: 10.1002/rsa.20015 .
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+

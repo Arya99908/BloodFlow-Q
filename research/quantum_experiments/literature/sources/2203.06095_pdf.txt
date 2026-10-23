@@ -1,0 +1,1297 @@
+=== PDF PAGE 1 ===
+Constraint preserving mixers for QAOA
+Franz G. Fuchs†, Kjetil Olsen Lye †, Halvor Møll Nilsen †, Alexander J. Stasik †, and
+Giorgio Sartor†
+†SINTEF AS, Department of Mathematics and Cybernetics, Oslo, Norway
+June 23, 2022
+Abstract
+The quantum approximate optimization algorithm/quantum alternating operator ansatz (QAOA)
+is a heuristic to ﬁnd approximate solutions of combinatorial optimization problems. Most literature is
+limited to quadratic problems without constraints. However, many practically relevant optimization
+problems do have (hard) constraints that need to be fulﬁlled. In this article, we present a framework
+for constructing mixing operators that restrict the evolution to a subspace of the full Hilbert space
+given by these constraints; We generalize the “XY”-mixer designed to preserve the subspace of “one-
+hot” states to the general case of subspaces given by a number of computational basis states. We
+expose the underlying mathematical structure which reveals more of how mixers work and how one
+can minimize their cost in terms of number of CX gates, particularly when Trotterization is taken
+into account. Our analysis also leads to valid Trotterizations for an “XY”-mixer with fewer CX gates
+than is known to date. In view of practical implementations, we also describe algorithms for eﬃcient
+decomposition into basis gates. Several examples of more general cases are presented and analyzed.
+1 Introduction
+The quantum approximate optimization algorithm (QAOA) [6], and its generalization, the quantum
+alternating operator ansatz (also abbreviated as QAOA) [11] is a meta-heuristic for solving combina-
+torial optimization problems that can utilize gate based quantum computers and possibly outperform
+purely classical heuristic algorithms. Typical examples that can be tackled are quadratic (binary)
+optimization problems of the form
+x∗ = arg min
+x∈{0,1}n, g(x)=0
+f(x), f (x) =xTQfx +cf, g (x) =xTQgx +cg (1)
+where Qf,Qg ∈ Rn×n are symmetric n×n matrices. For binary variables x∈{ 0, 1}, any linear
+part can be absorbed into the diagonal of Qf and Qg. In this article we focus on the case where the
+constraint is given by a feasible subspace as deﬁned in the following:
+Deﬁnition 1 (Constraints given by indexed computational basis states). LetH = (C2)⊗n the Hilbert
+space for n qubits, which is spanned by all computational basis states |zj⟩, i.e., H = span{|zj⟩, 1≤
+j≤ 2n,zj∈{ 0, 1}n}. Let
+B ={|zj⟩, j ∈J, zj∈{ 0, 1}n}, (2)
+the subset of all computational basis states deﬁned by an index set J. This corresponds to
+g(x) =
+∏
+j∈J
+n∑
+i=1
+(xi− (zj)i)2, (3)
+which is a quadratic constraint.
+1
+arXiv:2203.06095v5  [quant-ph]  22 Jun 2022
+
+=== PDF PAGE 2 ===
+There is a well-established connection of quadratic (binary) optimization problems to Ising models,
+see e.g. [17], that allows one to directly translate these problems to the QAOA. The general form of
+QAOA is given by
+|γ,β⟩ =UM(βp)UP (γp)··· UM(β1)UP (γ1)|φ0⟩, (4)
+where one alternates the application of phase separating and mixing operator p times. Here, UP (γ)
+is a phase separating operator that depends on the objective function f. As deﬁned in [11] the
+requirements for the mixing operator UM(β) are as follows
+• UM does not commute with UP , i.e., [UM(β),UP (γ)]⁄= 0, for almost all γ,β ∈ R,
+• UM preserves the feasible subspace as given in Deﬁnition 1, i.e., Sp(B) is an invariant subspace
+of UM,
+UM(β)|v⟩∈ Sp(B), ∀|v⟩∈ Sp(B),∀β∈ R, (5)
+• UM provides transitions between all pairs of feasible states, i.e., for each pair x,y ∃β∗∈ R and
+∃r∈ N∩{ 0} , such that
+|⟨x|UM(β∗)··· UM(β∗)| {z }
+r times
+|y⟩| > 0,∀ comp. basis states |x⟩,|y⟩∈ B. (6)
+If both UM and UP correspond to the time evolution under some Hamiltonians HM,HP , i.e., UM =
+e−iβHM and UP =e−iγHP , the approach can be termed “Hamiltonian-based QAOA” (H-QAOA). If
+the Hamiltonians HM,HP are the sum of (polynomially many) local terms it represents a sub-class
+termed “local Hamiltonian-based QAOA” (LH-QAOA).
+In practice, it is not possible to implement UM or UP directly. It is necessary to decompose the
+evolution into smaller pieces, which means that instead of applying e−it(H1+H2) one can only apply
+e−itH1 and e−itH2. This process is typically referred to as “Trotterization”. As an example, the
+simplest Suzuki-Trotter decomposition, or the exponential product formula [13, 20] is given by
+ex(H1+H2) =exH1exH2 +O(x2) (7)
+where x is a parameter and H1,H 2 are two operators with some commutation relation [H1,H 2]⁄= 0.
+Higher order formulas can be found for instance in [13].
+Practical algorithms need to be deﬁned using a few operators from a universal gate set, e.g.,
+{U3,CX}, where
+U3(θ,φ,λ ) =
+Ç
+cos(θ/2) −eiλ sin(θ/2)
+eiφ sin(θ/2) ei(φ+λ) cos(θ/2)
+å
+, CX =
+Ü1 0 0 0
+0 1 0 0
+0 0 0 1
+0 0 1 0
+ê
+. (8)
+A good (and simple) indicator for the complexity of a quantum algorithm is given by the number of
+required CX gates. Overall, the most eﬃcient algorithm is the one that provides the best accuracy
+in a given time [ kronsjo1987algorithms].
+Remark 1 (Repeated mixers). If UM is the exponential of a Hermitian matrix, the parameter r in
+Equation (6) does not matter as it can be absorbed as a re-scaling of β. However, if UM is Trotterized
+this can lead to missing transitions. In this case r > 1 can again provide these transitions. It is
+therefore suggested in [11] to repeat mixers within one mixing step. For this reason, we will consider
+the cost of Trotterized mixers including the necessary repetitions to provide transitions for all feasible
+states.
+2 Related work
+The QAOA was introduced by [6] where it was applied to the Max-Cut problem. The authors in [9]
+compared the QAOA to the classical AKMAXSAT solver extrapolate from small instances to large
+instances and estimate that a quantum speed-up can be obtained with (several) hundreds of qubits. A
+general overview of variational quantum algorithms, including challenges and how to overcome them,
+is provided in [3, 18]. Key challenges are that it is in general hard to ﬁnd good parameters. It has been
+shown that the training landscapes are in general NP-hard [1]. Another obstacle are so-called barren
+2
+
+=== PDF PAGE 3 ===
+plateaus, i.e. regions in the training landscape where the loss function is eﬀectively constant [18]. This
+phenomenon can be caused by random initializations, noise, and over-expressablity of the ansatz[22,
+24]
+Since its inception, several extensions/variants of the QAOA have been proposed. ADAPT-
+QAOA [25] is an iterative, problem-tailored version of QAOA that can adapt to speciﬁc hardware
+constraints. A non-local version, referred to as R-QAOA [2] recursively removes variables from the
+Hamiltonian until the remaining instance is small enough to be solved classically. Numerical evidence
+shows that this procedure signiﬁcantly outperforms standard QAOA for frustrated Ising models on
+random 3-regular graphs for the Max-Cut problem. WS-QAOA [5] takes into account solutions of
+classical algorithms to a warm-starting QAOA. Numerical evidence shows an advantage at low depth,
+in the form of a systematic increase in the size of the obtained cut for fully connected graphs with
+random weights.
+There are two principal ways to take constraints into account when solving Equation (1) with the
+QAOA. The standard, simple approach is to penalize unsatisﬁed constraints in the objective function
+with the help of a so called Lagrange multiplier λ, leading to
+x∗ = arg min
+x∈{0,1}n
+(f(x) +λg(x)). (9)
+This approach is popular, since it is straightforward to deﬁne a phase separating Hamiltonian for
+f(x)+λg(x). Some applications include the tail-assignment problem [21], the Max-k-cut problem [7],
+graph coloring problems, and the traveling sales person problem [12]. A downside of this approach
+is that infeasible solutions are also possible outcomes, especially for approximate solvers like QAOA.
+This also makes the search space much bigger and the entire approach less eﬃcient. In addition, the
+quality of the results turns out to be very sensitive to the chosen value of the hyper parameter λ.
+On one hand, λ should be chosen large enough such that the lowest eigenstates of HP correspond
+to feasible solutions. On the other hand, too large values of λ mean that the resulting optimization
+landscape in the γ has very high frequencies, which makes the problem hard to solve in practice. In
+general, it can be very challenging to ﬁnd (the problem dependent) value for λ that best balances the
+trade oﬀ between optimality and feasibility in the objective function [23].
+For QAOA, a second approach is to deﬁne mixers that have zero probability to go from a feasi-
+ble state to an infeasible one, making the hyper parameter λ of the previous approach unncessary.
+However, it is generally more challenging to devise mixers that take into account constraints. The
+most prominent example in the literature is the XY -mixer [12, 11, 23] which constrains evolution to
+states with non-zero overlap with “one-hot” states. One-hot states are computational basis states
+with exactly one entry equal to one. For instance |0001⟩ and|010000⟩ are one-hot states, while |00⟩
+and|110⟩ are not. The name XY mixer comes from the related XY -Hamiltonian [16]. The mixers
+derived in the literature follow the intuition of physicists to use “hopping” terms. A performance
+analysis of the XY-mixer applied to the maximum k-vertex cover shows a heavy dependence on the
+initial states as well as the chosen Trotterization [4].
+QAOA can be viewed as a discretized version of quantum annealing. In quantum annealing
+enforcing constraints via penalty terms is particularly “harmful” since they often require all-to-all
+connectivity of the qubits [14]. The authors in [15] therefore introduce driver Hamiltonians that
+commute with the constraints of the problem. This bears similarities with and actually inspired the
+approaches in [12, 11].
+The main contributions of this article are:
+• A general framework to construct mixers restricted to a set of computational basis states, see
+Section 3.1.
+• An analysis of the underlying mathematical structure, which is largely independent of the actual
+states, see Section 3.2.
+• Eﬃcient algorithms for decomposition into basis gates, see Section 3.3 and 3.5.
+• Valid Trotterizations, which is not completely understood in the literature, see Section 3.5.
+• We prove that it is always possible to realize a valid Trotterization, see Theorem 3.
+• Improved eﬃciency of Trotterized mixers for “one-hot” states in Section 5.1.
+• Discussion of the general case, exempliﬁed in Section 5.2.
+We start by describing the general framework.
+3
+
+=== PDF PAGE 4 ===
+C2n C2n
+C|J| C|J|
+HM,B
+ET
+T
+E
+(a) The action of the Hamiltonian HM,B can be un-
+derstood as the transition matrix T acting upon the
+feasible basis states of B ={|xj⟩, j ∈J}.
+C2n
+Sp(B)
+0
+C2n
+Sp(B)
+0
+HM,B
+(b) The Hamiltonian HM,B : C2n→ C2n maps every-
+thing outside Sp(B) to 0 and Sp(B) onto itself.
+Figure 1: Illustration of properties of Hamiltonians constructed with Theorem 1.
+3 Construction of constraint preserving mixers
+In the following we will derive a general framework for mixers that are restricted to a subspace,
+given by certain basis states. For example, one may want to construct a mixer for ﬁve qubits that
+is restricted to the subspace Sp( |01001⟩,|11001⟩,|11110⟩) of C25, where Sp( B) denotes the linear
+span of B. In this section we will describe the conditions for a Hamiltonian-based QAOA mixer to
+preserve the feasible subspace, and for providing transitions between all pairs of feasible states. We
+also provide eﬃcient algorithms to decompose these mixers into basis gates.
+3.1 Conditions on the mixer Hamiltonian
+Theorem 1 (Mixer Hamiltonians for subspaces). Given a feasible subspace B as in Deﬁnition 1 and
+a real-valued transition matrix T∈ R|J|×|J|. Then, for the mixer constructed via
+UM(β) =e−iβHM, whereHM = ∑
+j,k∈J
+(T )j,k|xj⟩⟨ xk|, (10)
+the following statements hold.
+• IfT is symmetric, the mixer is well deﬁned and preserves the feasible subspace, i.e. condition (5)
+is fulﬁlled.
+• If T is symmetric and for all 1≤j,k ≤|J| there exists an r∈ N∪{ 0} (possibly depending on
+the pair) such that
+(Tr)j,k⁄= 0, (11)
+then UM provides transitions between all pairs of feasible states, i.e. condition (6) is fulﬁlled.
+Proof. Well deﬁnedness.
+Almost trivially HM is Hermitian if T is symmetric,
+H†M = ∑
+j,k∈J
+(T )j,k|xk⟩⟨ xj| =
+∑
+j,k∈J
+(T )k,j|xk⟩⟨ xj| =HM. (12)
+Since HM is a Hermitian (and therefore normal) matrix there exists a diagonal matrix D, with the
+entries of the diagonal as the (real valued) eigenvalues of HM, and a matrix U, with columns given
+by the corresponding orthonormal eigenvectors. The mixer is therefore well deﬁned through the
+convergent series
+e−itHM =
+∞∑
+m=0
+(−it)mHmM
+m! =Ue−itDU†. (13)
+Reformulations.
+We can rewrite HM in the following way
+HM : |y⟩↦→
+∑
+j,k∈J
+(T )j,k⟨xj|y⟩| xk⟩ =ETET|y⟩, |y⟩∈ C2n, (14)
+4
+
+=== PDF PAGE 5 ===
+where the columns of the matrix E∈ R2n×|J| consist of the feasible computational basis states, i.e.,
+E = [xj]j∈J, see Figure 1 for an illustration. Using that ETE =I∈ R|J|×|J| is the identity matrix,
+we have that
+HmM =ETmET = ∑
+j,k∈J
+(Tm)j,k|xj⟩⟨xk|, m∈ N, (15)
+and Equation (13) can be written as
+e−itHM =E
+( ∞∑
+m=0
+(−it)mTm
+m!
+)
+ET. (16)
+Preservation of the feasible subspace.
+Let|v⟩∈ Sp(B). Using Equation (15) we know that
+HmM|v⟩ = ∑
+j,k∈J
+(Tm)j,k|xj⟩⟨xk|v⟩ = ∑
+j∈J
+cj|xj⟩∈ Sp(B),
+with coeﬃcients cj∈ C. Therefore, also e−itHM|v⟩∈ Sp(B),t∈ R, since it is a sum of these terms.
+Transition between all pairs of feasible states.
+For any pair of feasible computational basis states |xj∗⟩,|xk∗⟩∈ B we have that
+f(t) =⟨xj∗|UM(t)|xk∗⟩ =⟨xj∗|
+∞∑
+m=0
+Ñ
+(−it)m
+m!
+∑
+j,k∈I
+(Tm)j,k|xj⟩⟨xk|
+é
+|xk∗⟩
+=
+∞∑
+m=0
+(−it)m
+m! (Tm)j∗,k∗
+(17)
+It is enough to show that f(t) is not the zero function. Since f(t) : R→ C is an analytic function it
+has a unique extension to C. Assume that f is indeed the zero function on R, then the extension to
+C would also be the zero function and all coeﬃcients of its Taylor series would be zero. However, we
+assumed the existence of an r∈ N∪{ 0} such that|(Tr)j∗,k∗|> 0, and hence there exists a non-zero
+coeﬃcient, which is a contradiction to f being the zero function.
+A natural question is how the statements in Theorem 1 depend on the particular ordering of the
+elements of B.
+Corollary 1 (Independence of the ordering ofB.). Statements in Theorem 1 that hold for a particular
+ordering of computational basis states for a given B, hold also for any permutation π :{1,··· ,|J|}→
+{1,··· ,|J|}, i.e., they are independent of the ordering of elements. For each ordering, the transition
+matrix T changes according to Tπ =PTπTPπ, where Pπ is the permutation matrix associated with π.
+Proof. We start by pointing out that the inverse matrix of Pπ exists and can be written as P−1π =
+Pπ−1 =PTπ .
+The resulting matrix HM is unchanged. Following the derivation in Equation (14), we have that
+HMπ = EπTπETπ, where the columns of the matrix E∈ R2n×|J| consists of the permuted feasible
+computational basis states, i.e., Eπ ={xπ(j)}j∈J. Inserting T = PTπTPπ we have indeed HMπ =
+EπTπETπ = (EπPTπ )T (PπETπ ) =ETET =HM.
+Tπ is symmetric if T is. Assuming that TT =T we have that also
+(Tπ)T = (PTπTPπ)T =PTπTTPπ =PTπTPπ =Tπ.
+If the condition in Equation (11) holds for T than it also holds for Tπ. Using Trπ = PTπTrPπ we can
+show that Equation (11) holds for the permuted index pair (π(j),π (k)) for Tπ if it holds for (j,k ) for
+T .
+In the following, if nothing else is remarked, computational basis states are ordered with respect
+to increasing integer value, e.g.,|001⟩,|010⟩,|111⟩.
+Apart form special cases, there is a lot of freedom to choose the transition matrix T that fulﬁlls
+the conditions of Theorem 1. The entries of T will heavily inﬂuence the circuit complexity, which
+will be investigated in Section 3.3. In addition, we have the following property which adds additional
+ﬂexibility to develop eﬃcient mixers.
+5
+
+=== PDF PAGE 6 ===
+C2n
+Sp(C)
+Sp(B)
+C2n
+Sp(B)
+HM,B +HM,C
+Figure 2: Corollary 2 shows that adding a mixer with support outside Sp( B) is also a valid mixer for B.
+Corollary 2 (Properties of mixers) . For a given feasible subspace Sp(B) let UM,B the mixer given
+by Theorem 1. For any subspace Sp(C) with Sp(B)∩ Sp(C) ={0} or equivalently B∩C = ∅, also
+UM =UM,BUM,C is a valid mixer for B satisfying the conditions of Equations (5) and (6), see also
+Figure 2.
+Proof. Any|v⟩∈ B is in the null space ofHM,C, i.e.,HM,C|v⟩ = 0 and henceUM,C|v⟩ =I. Therefore,
+UM,BUM,C|v⟩ =UM,B|v⟩∈ B, and UM,CUM,B|v⟩ =UM,C|w⟩ =|w⟩ with|w⟩∈ B which means the
+feasible subspace is preserved. Condition (6) follows similarly form the fact that UM,C|v⟩ =I for any
+|v⟩∈ B.
+Corollary 2 naturally holds as well for any linear combination of mixers, i.e., HM,B + ∑iaiHM,Ci
+is a mixer for the feasible subspace Sp( B) as long as Sp( Ci)∩ Sp(B) = {0},∀i. At ﬁrst, it might
+sound counter intuitive that adding more terms to the mixer results in more eﬃcient decomposition
+into basis gates. However, as we will see in Section 5, it can lead to cancellations due to symmetry
+considerations.
+Next, we describe the structure of the eigensystem of UM.
+Corollary 3 (Eigensystem of mixers). Given the setting in Theorem 1 with a symmetric transition
+matrix T . Let (λ,v ) an eigenpair of T , then (λ,Ev ) is an eigenpair of HM and (e−itλ,Ev ) an
+eigenpair of UM, where E ={|xj⟩}j∈J as deﬁned in Equation (14).
+Proof. Let (λ,v ) an eigenpair of T . Then, HMEv = ETETEv = ETv = λEv, so ( λ,Ev ) is an
+eigenpair ofHM. The connection between HM andUM is general knowledge from linear algebra.
+An example illustrating Corollary 3 is provided by the transition matrix T ∈ R4×4 with zero
+diagonal and all other entries equal to one. A unit eigenvector of T, which fulﬁlls Theorem 1, is
+v = 1/2(1, 1, 1, 1)T . For any B ={|z1⟩,|z2⟩,|z3⟩,|z4⟩} the uniform superpositions of these states is
+an eigenvector, since
+1
+‖v‖2
+Ev = 12(|z1⟩,|z2⟩,|z3⟩,|z4⟩)(1, 1, 1, 1)T = 12(|z1⟩ +|z2⟩ +|z3⟩ +|z4⟩).
+This result holds irrespective of what the states are and which dimension they have.
+Theorem 2 (Products of mixers for subspaces) . Given the same setting as in Theorem 1. For any
+decomposition ofT into a sum of Q symmetric matrices Tq, in the following sense
+T =
+Q∑
+q=1
+Tq, (Tq)i,j = (Tq)j,i =
+®
+either (T )ij,
+or 0, (18)
+we construct the mixing operator via
+UM(β) =
+N∏
+n=1
+qn∈{1,2,···,Q}
+e−iβTqn. (19)
+6
+
+=== PDF PAGE 7 ===
+0 π 2π 3π 4π
+0
+0.2
+0.4
+0.6
+0.8
+1
+β
+|⟨z0|UM(β)|z3⟩|2
+|z0⟩↔| z3⟩
+0 π 2π 3π 4π
+0
+0.2
+0.4
+0.6
+0.8
+1
+β
+|⟨z2|UM(β)|z3⟩|2
+|z2⟩↔| z3⟩
+THam(1)
+T∆
+T∆,c
+TA
+0 π 2π 3π 4π
+0
+0.2
+0.4
+0.6
+0.8
+1
+β
+|⟨z0|UM(β)|z3⟩|2
+|z0⟩↔| z3⟩
+0 π 2π 3π 4π
+0
+0.2
+0.4
+0.6
+0.8
+1
+β
+|⟨z2|UM(β)|z3⟩|2
+|z2⟩↔| z3⟩
+T2↔3
+Trand
+Trand
+Trand
+Figure 3: Examples of the squared overlap between two states for the case |B| = 4. The squared overlap
+is independent of what the states in B ={|z0⟩,|z1⟩,|z2⟩,|z3⟩} are. The comparison for diﬀerent T show
+that there exists a β such that the overlap is nonzero, except for T2↔3 which, as expected, does not
+provide transitions between|z0⟩ and|z3⟩.
+If all entries of T are positive, then UM provides transitions between all pairs of feasible states, i.e.
+condition (6) is fulﬁlled, if for all 1≤j,k ≤|J| there exist rm∈ N∪{ 0} (possibly depending on the
+pair) such that
+( M∏
+m=1
+qm∈Q
+Trmqm
+)
+j,k
+⁄= 0. (20)
+Proof. Combining Equations (15) and (16) we have
+⟨xj|UM(β)|xk⟩ =
+∞∑
+j1=0,j2=0,···,jM=0
+(−it)j1+j2+···+jm(Tj1q1Tj2q2··· TjMqM )j,k
+j1!j2!··· jm!
+=
+∞∑
+j=1
+(−it)j
+j!
+∑
+j1,···,jM s.t. (∑Mm=1jm)=j
+(Tj1q1Tj2q2··· TjMqM )j,k.
+(21)
+Using that T only has positive entries and the condition in Equation (20), the same argument as in
+Theorem 1 can be used to show thatUM(β) is not the zero function and therefore we have transitions
+between all pairs of feasible states.
+As Theorem 1 leaves a lot of freedom for choosing valid transition matrices we will continue by
+describing important examples for T .
+3.2 Transition matrices for mixers
+Theorem 1 provides conditions for the construction of mixer Hamiltonians that preserve the feasible
+subspace and provide transitions between all pairs of feasible computational basis states, namely
+1. T∈ R|J|×|J| is symmetric, and
+7
+
+=== PDF PAGE 8 ===
+(a) THam(1),|J| = 24.
+ (b) THam(2),|J| = 24.
+ (c) THam(1),|J| = 28.
+ (d) THam(4),|J| = 28.
+Figure 4: Examples of the structure of THam(d). The black color represents non-vanishing entries equal
+to one, representing pairs with the speciﬁed Hamming distance.
+2. for all 1 ≤j,k≤|J| there exists an rj,k∈ N∪{ 0} such that (Tr)j,k⁄= 0.
+Remarkably, these conditions depend only on the dimension of the feasible subspace|J| =dim(Sp(B)) =
+|B|, and are independent of the speciﬁc states thatB consists of. In addition, Corollary 1 shows that
+these conditions are robust with respect to reordering of rows if in addition columns are reordered
+in the same way. Moreover, Equation (17) shows also that the overlap between computational basis
+states|xj⟩,|xk⟩∈ B is independent of the speciﬁc states that B consists of and only depends on T,
+since the right hand side of the expression
+⟨xj|UM(t)|xk⟩ =
+∞∑
+m=0
+(−it)m
+m! (Tm)j,k, (22)
+is independent of the elements in B. This allows us to describe and analyze valid transition matrices
+by only knowing the number of feasible states, i.e., |B|. What these speciﬁc states are is irrelevant,
+unless one wants to look at what an optimal mixer is, which we will come back to in Section 3.4.
+Figure 3 provides a comparison of some mixers described in the following with respect to the overlap
+between diﬀerent states.
+In the following, we denote the matrix for pairs of indices whose binary representation have
+Hamming distance equal to d as
+THam(d), with (THam(d))i,j =
+®
+1, if dHamming(bin(i), bin(j)) =d,
+0, else, (23)
+Examples of the structure of THam(d) can be found in Figure 4. Furthermore, it will be useful to
+denote the matrix which has two non-zero entries at ( k,l ) and (l,k ) as
+Tk↔l, with (Tk↔l)i,j =
+®
+1, if (i,j ) = (k,l ) or (i,j ) = (l,k ),
+0, else. (24)
+Before we start, we point out that the diagonal entries of T can be chosen to be zero, because
+|(T 0)j,j| = 1⁄= 0 for all j∈J. Although trivial, we will repeatedly use that v = 1√|J|(1, 1,··· , 1)T is
+an eigenvector of a matrix F∈ C|J|×|J| if the sum of all rows are a multiple of v.
+3.2.1 Hamming distance one mixer THam(1)
+The matrix THam(1)∈ R|J|×|J| fulﬁlls Theorem 1 when|J| = 2n,n∈ N. The symmetry of THam(1)) is
+due to the fact that the Hamming distance is a symmetric function. Using the identity
+THam(k)THam(1) =THam(1)THam(k) = (n− (k− 1))THam(k−1) + (k + 1)THam(k+1) (25)
+it can be shown that
+TkHam(1) =
+k−1∑
+j=1
+ckTHam(j) +k!THam(k), (26)
+8
+
+=== PDF PAGE 9 ===
+where ck are real coeﬃcients. Therefore, it is clear that TkHam(1) reaches all states with Hamming
+distance K. Furthermore, v = 1√2n (1, 1,··· , 1)T is a unit eigenvector of THam(1) since the sum ofeach row is n. This is because there are exactly n other states with Hamming distance one for each
+bitstring.
+3.2.2 All-to-all mixer TA
+We denote the matrix with all but the diagonal entries equal to one as
+TA, with (TA)i,j =
+®
+1, if i⁄=j,
+0, else. (27)
+Trivially,TA∈ R|J|×|J| fulﬁlles Theorem 1 and v = 1√|J|(1, 1,··· , 1)T is a unit eigenvector of TA
+since the sum of each row is |J|− 1.
+3.2.3 (Cyclic) Nearest integer mixer T∆/T∆,c
+Inspired by the stencil of ﬁnite-diﬀerence methods we introduce T∆,T∆,c∈ R|J|×|J| as matrices with
+oﬀ-diagonal entries equal to one
+T∆, with (T∆)i,j =
+®
+1, if i =j + 1∨i =j− 1,
+0, else,
+T∆,c, with (T∆,c)i,j =
+®
+1, if i = (j + 1) modn∨i = (j− 1) modn,
+0, else.
+(28)
+Both matrices fulﬁll Theorem 1. Symmetry holds by deﬁnition and it is easy to see that the k-th
+oﬀ-diagonal of Tk∆ and Tk∆,c is nonzero for 1≤k≤|J|.
+For the nearest integer mixer T∆ it is known that
+vk = (sin(c), sin(2c),··· , sin(|J|c)), c= kπ|J| + 1 (29)
+are eigenvectors for 1≤k≤|J|. For the cyclic nearest integer mixer, we have that the sum of each
+row/column ofT∆,c is equal to two (except forn = 1 when it is one). Therefore,v = 1√|J|(1, 1,··· , 1)T
+is a unit eigenvector.
+3.2.4 Products of mixers and TE,TO
+In some cases, it will be necessary to use Theorem 2 to implement mixer unitaries. When splitting
+transitions matrices into odd and even entries the following deﬁnition is useful. Denote the matrix
+with entries in the d-th oﬀ-diagonal for even rows equal to one
+TE(d), with (TE(d))i,j =
+®
+1, if i =j +d∨i =j−d, and i even,
+0, else, (30)
+and accordingly TO(d) for odd rows. In addition, we will use TO(1),c to be the cyclic version in the
+same way as in Equation (28). As an example, this allows one to decompose T∆,c =T1 +T2∈ Rn×n
+with T1 =TO(1) +TO(n−1) =TO(1),c and T2 =TE(1).
+3.2.5 Random mixer Trand
+Finally, the upper triangular entries of the mixerTrand are drawn from a continuous uniform distribu-
+tion on the interval [0, 1], and the lower triangular entries are chosen such thatT becomes symmetric.
+Since the probability of getting a zero entry is zero, such a random mixer fulﬁlles Theorem 1 with
+probability 1.
+9
+
+=== PDF PAGE 10 ===
+5 6 7 8 9 10 11 12 13 14 15
+1× (T1+T2)
+2× (T1+T2)
+3× (T1+T2)
+(T1+T2) +TO(3)+TE(3)
+(T1+T2) +TO(4)+TE(4)
+(T1+T2) +∑i∈I(TO(i)+TE(i))
+I ={3, 5},{3, 6},{5, 6},{4, 7}
+Figure 5: Valid (white) and invalid (black) transitions between pairs of states, as deﬁned in Theorem 2 for
+Trotterized mixer Hamiltonians. The ﬁrst row shows that forT1 =TO(1),c andT2 =TE(1), the mixerU =
+e−iβT1e−iβT2 does not provide transitions between all pairs of feasible states, although U =e−iβ(T1+T2)
+does.
+3.3 Decomposition of (constraint) mixers into basis gates
+Given a set of feasible (computational basis) states B ={|xj⟩, j ∈J, xj∈{ 0, 1}n}, we can use
+Theorem 1 to deﬁne a suitable mixer Hamiltonian. The next question is how to (eﬃciently) decompose
+the resulting mixer into basis gates. In order to do so we ﬁrst decompose the Hamiltonian HM into a
+weighted sum of Pauli-strings. A Pauli-stringP is a Hermitian operator of the formP =P1⊗···⊗ Pn
+where Pi∈{I,X,Y,Z }. Pauli-strings form a basis of the real vector space of all n-qubit Hermitian
+operators. Therefore, we can write
+HM =
+4∑
+i1,···,in=1
+ci1,···,in σi1⊗···⊗ σin, c i1,···,in∈ R, (31)
+with real coeﬃcients ci1,···,in, where σ1 = I,σ 2 = X,σ 3 = Y,σ 4 = Z. After using a standard
+Trotterization scheme[13, 20] (which is exact for commuting Paul-strings),
+UM(t) =e−itHM≈
+4∏
+i1,···,in=1
+|ci1,···,in|>0
+e−itci1,···,in σi1⊗···⊗σin, (32)
+it is well-established how to implement each of the terms of the product using basis gates, see Equa-
+tion (33). We will discuss the eﬀects of Trotterization in more detail in Section 3.5, as there are
+10
+
+=== PDF PAGE 11 ===
+several important aspects to consider for a valid mixer.
+e−itP = ... ...U U†
+Rz(2t)
+, (33)
+Ui =
+
+
+
+H, if Pi =X,
+SH, if Pi =Y,
+I, if Pi =Z,
+(U†)i =
+
+
+
+H, if Pi =X,
+HS†, if Pi =Y,
+I, if Pi =Z.
+Here, S is the S or Phase gate and H is the Hadamard gate. The standard way to compute the
+coeﬃcients ci1,···,in is given in Algorithm 1. For n qubits this requires to compute 4n coeﬃcients, as
+Algorithm 1: Decompose HM given by Equation (10) into Pauli-strings via trace
+Data: Feasible statesB and transition matrix T fulﬁlling Theorem 1
+Result: Coeﬃcients ci1,···,in of Pauli-strings, Equation (31)
+for i1 = 1,..., 4 do
+...
+for in = 1,..., 4 do
+ci1,···,in = 12n tr (σi1⊗···⊗ σinHM)
+end
+...
+end
+well as multiplication of 2n× 2n matrices. However, most of these terms are expected to vanish. We
+therefore describe an alternative way to produce this decomposition, using the language of quantum
+mechanics [19]. In the following we use the ladder operators used in the creation and annihilation
+operators from the second quantization formulation in quantum chemistry deﬁned by
+a† = 12(X−iY ),a = 12(X +iY ). (34)
+Since a|0⟩ = 0,a|1⟩ =|0⟩, where 0 is the zero vector, we have that |0⟩⟨ 1| = a. Since a†|0⟩ =
+|1⟩,a†|1⟩ = 0, we have that|1⟩⟨ 0| =a†, and ﬁnally a†a|0⟩ = 0,a†a|1⟩ =|1⟩,aa†|0⟩ =|0⟩,aa†|1⟩ =
+0, means that|0⟩⟨ 0| =aa† and|1⟩⟨ 1| =a†a. Note that
+a†a = 12 (I−Z), aa † = 12 (I +Z). (35)
+As an example, consider the matrix M =|01⟩⟨ 10| =|0⟩⟨ 1|⊗| 1⟩⟨ 0| which can be expressed with
+ladder operators as M =a1a†2. Another example is given by M =|01⟩⟨ 11| =a1a†2a2. This approach
+clearly extends to the general case and leads to Algorithm 2.
+A comparison of the complexity of the two algorithms is given in Table 1. The naive algorithm
+needs to perform a matrix-matrix multiplication with matrices of size 2 n× 2n for each of the 4 n
+coeﬃcients. This quickly becomes prohibitive for larger n. The algorithm based on ladder operators
+requires resources that scale with the number of non-zero entries of the transition matrix T , which is
+much more favourable. In the end a symbolic mathematics library is used to simplify the expressions
+in order to create the list of non-zero Pauli-strings.
+11
+
+=== PDF PAGE 12 ===
+Algorithm 2: Decompose HM given by Equation (10) into Pauli-strings directly
+Data: Feasible statesB and transition matrix T fulﬁlling Theorem 1
+Result: Non-vanishing coeﬃcients ci1,···,in of Pauli-strings, Equation (31)
+S=0
+for all 1≤j,k≤|J|, s.t. (T )j,k⁄= 0 do
+Deﬁne xL =xJj,xR =xJk
+for 1≤i≤n do
+(Pj,k)i =
+
+
+
+1
+2(X +iY ), if (xL)i = 0∧ (xR)i = 1,
+1
+2(X−iY ), if (xL)i = 1∧ (xR)i = 0,
+1
+2 (I +Z), if (xL)i = 0∧ (xR)i = 0,
+1
+2 (I−Z), if (xL)i = 1∧ (xR)i = 1.
+end
+S =S + (T )j,kPj,k
+end
+simplify S (e.g., using a library for symbolic mathematics)
+this deﬁnes the non-vanishing coeﬃcients ci1,···,in
+3.4 Optimality of mixers
+On current NISQ devices, the noise level of two-qubit gate (CX) times and error rates are one
+order of magnitude higher than for single qubit gates ( U3). In addition, most devices lack all-to-all
+connectivity. CX gates between these require SWAP operations, which consist of additional CX
+gates. An optimal mixer will therefore contain as few CX gates as possible. Since Pauli-strings are
+implemented according to Equation (33) we deﬁne the cost to implement e−itHM as
+Cost(HM) =
+4∑
+i1,···,in=1
+|ci1,···,in|>0
+len(σi1⊗···⊗σin)>1
+2(len(σi1⊗···⊗ σin)− 1), (36)
+where len(P ) is the length of a Pauli-string P deﬁned as the number of literals that are not the
+identity. For instance P = IXIIY = I1X2I3I4Y5 = X2Y5 has len(P ) = 2. The Cost( HM) speciﬁes
+the number of CX gates that are required to implement the mixer. A lower cost means fewer and/or
+shorter Pauli-strings. There are four interconnected factors that inﬂuence the cost to implement the
+mixer for a given B.
+3.4.1 T ransition matrix T
+The larger|B| the more freedom we have in choosing the transition matrix T that fulﬁlls Theorem 1.
+The combination of T and the speciﬁc states of B deﬁne the cost of the Hamiltonian. Unless one can
+ﬁnd a way to utilize the structure of the states of B to eﬃciently compute an optimal T , we expect
+this problem to be NP-hard. In practice, a careful analysis of the speciﬁc states of B is required to
+determine T such that the cost becomes low. We will revisit optimality for both unrestricted and
+restricted mixers in Sections 4 and 5.
+3.4.2 Adding mixers
+Corollary 2 allows one to add mixers with a kernel that contains Sp( B). In general, also this is
+a combinatorial optimization problem which we do not expect to solve exactly with an eﬃcient
+algorithm. However, we will provide a heuristic that can be used to reduce the cost of mixers in
+certain cases. We will provide more details in Section 5 where we discuss constrained mixers on some
+examples in detail.
+12
+
+=== PDF PAGE 13 ===
+3.4.3 Non-commuting Pauli-strings
+Depending on the mixer – which depends on the transition matrix and addition of mixers outside the
+feasible subspace – one can inﬂuence the commutativity pattern of the resulting Pauli-strings. This
+is an intricate topic, which we discuss next.
+3.5 Trotterizations
+Algorithms 1 and 2 produce a weighted sum of Pauli-strings equal to the mixer Hamiltonian HM
+deﬁned in Theorem 1. A further complication arises when the non-vanishing Pauli-strings of the
+mixer Hamiltonian HM do not all commute. In that case one can not realize UM exactly but has
+to ﬁnd a suitable approximation/Trotterization, see Equation (32). Two Pauli-strings commute, i.e.,
+[PA,PB] =PAPB−PBPA = 0 if, and only if, they fail to commute on an even number of indices [8].
+An example is given in Figure 6.
+This problem is similar to a problem for observables; how does one divide the Pauli-strings into
+groups of commuting families [8, 10] to maximize eﬃciency and increase accuracy? In order to
+minimize the number of measurements required to estimate a given observable one wants to ﬁnd a
+“min-commuting-partition”; given a set of Pauli-strings from a Hamiltonian, one seeks to partition
+the strings into commuting families such that the total number of partitions is minimized. This
+problem is NP-hard in general [8]. However, based on Theorem 3 we expect our problem to be much
+more tractable.
+For our case, it turns out that not all Trotterizations are suitable as mixing operators ;
+they can either fail to preserve the feasible subspace, i.e., Equation (5), or fail to provide transitions
+between all pairs of feasible states, i.e., Equation (6). An example is given byB ={|001⟩,|010⟩,|100⟩}
+with the mixer HM = 12(XIX +YIY ) + 12(XXI +YYI ) associated with T∆ = T1↔2 +T2↔3, see
+Section 5.1. Looking at Figure 6, these terms can be grouped into commuting families in two ways,
+which represent two (of many) diﬀerent ways to realize the mixer unitary with basis gates.
+1. The ﬁrst possible Trotterization is given byU1(β) =e−iβ(XXI +IXX ) andU2(β) =e−iβ(YYI +IYY ).
+However, it turns out that ∃β∈ R such that|⟨ 111|U1(β)U2(β)|z⟩| > 0 for all |z⟩∈ B. This
+means that this Trotterization does not preserve the feasible subspace and does not represent a
+valid mixer Hamiltonian. The underlying reason for this is that the terms XXI and YYI are
+generated from the entry T1↔2, but are split in this Trotterization. The same holds true for
+IXX and IYY which are generated via T2↔3.
+2. The second possible Trotterization is given byU1(β) =e−iβ(XIX +YIY ) andU2(β) =e−iβ(XXI +YYI ),
+which splits terms with respect to T1↔2 andT2↔3 In this case, we have that|⟨ 100|U1(β)U2(β)
+|001⟩| = 0, so it does not provide an overlap between all feasible computational basis states.
+This can be understood via Theorem 2. We have that ( Tn11↔2Tn22↔3)3,1 = 0 for all n1,n 2∈ N, so
+one can not “reach”|100⟩ from|001⟩. The opposite is not true; we have that (T1↔2T2↔3)1,3 = 1,
+so∃β such that|⟨ 001|U1(β)U2(β)|100⟩| > 0.
+We have just learned that it is a bad idea to Trotterize terms that belong to a non-zero entry of
+T, i.e. to Tj↔i. Therefore, we need to show that all non-vanishing Pauli-strings of |xj⟩⟨xi| +|xi⟩⟨xj|
+commute; otherwise there might exist subspaces for which we can not realize the mixer constructed
+in Theorem 1. Luckily, the following Theorem shows that it is always possible to realize a mixer by
+Trotterizing according to non-zero entries of T = ∑i,j∈J,i<jTj↔i.
+Theorem 3 (Pauli strings forTj↔i commute). Let|z⟩,|w⟩ be two computational basis states in C2n.
+Then all non-vanishing Pauli-strings σi1⊗···⊗ σin of the decomposition
+|z⟩⟨w| +|w⟩⟨z| =
+4∑
+i1,···,in=1
+ci1,···,in σi1⊗···⊗ σin, c i1,···,in∈ R, (37)
+commute.
+Proof. We will prove the following more general assertion by induction. Let P1+,1,P 1+,2 be two non-
+vanishing Pauli-strings of the decomposition of|z⟩⟨w|+|w⟩⟨z|, andPi−,1,Pi−,2 be two non-vanishing
+Pauli-strings of the decomposition of i(|z⟩⟨w|−| w⟩⟨z|). Then [ P1+,1,P 1+,2] = 0, [Pi−,1,Pi−,2] = 0
+and [P1+,·,Pi−,·]⁄= 0. We will use that two Pauli-strings commute if, and only if, theyfail to commute
+on an even number of indices [8].
+13
+
+=== PDF PAGE 14 ===
+Forn = 1 we have the following cases.
+A1 =|z⟩⟨w|+|w⟩⟨z| =
+
+
+
+I +Z, if (z,w)=(0,0),
+X, if (z,w)=(0,1),
+X, if (z,w)=(1,0),
+I−Z, if (z,w)=(1,1),
+B1 = i(|z⟩⟨w|−|w⟩⟨z|) =
+
+
+
+0, if(z,w)=(0,0),
+−Y, if(z,w)=(0,1),
++Y, if(z,w)=(1,0),
+0, if(z,w)=(1,1).
+(38)
+It is trivially true that [P1+,1,P 1+,2] = 0 and [Pi−,1,Pi−,2] = 0 since the maximum number of Pauli-
+strings is two, and in that case one of the Pauli-strings is the identity. Moreover, Pi−,· is nonzero
+only when z⁄=w. In that case [ P1+,·,Pi−,·] = [X,±Y ]⁄= 0.
+n→n + 1. The assumptions hold for An = (|z⟩⟨w| +|w⟩⟨z|),Bn =i(|z⟩⟨w|−| w⟩⟨z|). We have the
+following four cases
+An+1 =|zx⟩⟨wy| +|wy⟩⟨zx| =12
+
+
+
+An⊗ (I +Z), if (x,y ) = (0, 0),
+An⊗X +Bn⊗Y, if (x,y ) = (0, 1),
+An⊗X−Bn⊗Y, if (x,y ) = (1, 0),
+An⊗ (I−Z), if (x,y ) = (1, 1),
+Bn+1 =i(|zx⟩⟨wy|−| wy⟩⟨zx|) =12
+
+
+
+Bn⊗ (I +Z), if (x,y ) = (0, 0),
+Bn⊗X−An⊗Y, if (x,y ) = (0, 1),
+Bn⊗X +An⊗Y, if (x,y ) = (1, 0),
+Bn⊗ (I−Z), if (x,y ) = (1, 1).
+(39)
+Case x = y. The number of indices where two Pauli-strings commute does not change when going
+from An to An⊗ (I±Z). The same holds for Bn and Bn⊗ (I±Z). This means that the assertion
+is true for x =y.
+Case x⁄= y. First, we prove that all non-vanishing Pauli-strings of An+1 commute, and the same
+for Bn+1. This is easy to see, since non-vanishing Pauli strings of An⊗X±Bn⊗Y must have an
+even number of indices where they fail to commute. The same is true for Bn⊗X±An⊗Y . Finally,
+we prove that non-vanishing Pauli-strings of An+1 do not commute with non-vanishing Pauli-strings
+of Bn+1. Using our assumptions of non-vanishing Pauli strings of An and Bn it is easy to show
+that non-vanishing Pauli-strings of the following pairs fail to commute on an odd number of indices
+(An⊗X,Bn⊗X), (An⊗X,±An⊗Y ), (±Bn⊗Y,Bn⊗X), and hence do not commute. This shows
+that also non-vanishing Pauli strings of An+1 and Bn+1 do not commute.
+The proof in Theorem 3 inspires the following algorithm to decompose HM into Pauli-strings. For
+each item in the list S that the algorithm produces, all Pauli-strings commute.
+Algorithm 3: Decompose HM given by Equation (10) into Pauli-strings directly
+Data: Feasible statesB, transition matrix T (zero diagonal) fulﬁlling Theorem 1
+Result: Non-vanishing coeﬃcients ci1,···,in of Pauli-strings, Equation (31)
+S=[ ]
+for all 1≤j <k≤|J|, s.t. (T )j,k⁄= 0 do
+Recursively compute An and Bn for|w⟩ =
+⏐⏐xJj⟩ and|z⟩ =xJk via Equation (39)
+Append (T )j,kAn to S
+end
+check for cancellations and return S
+We can illustrate the diﬀerence between Algorithms 2 and 3 for B ={|01⟩,|10⟩} andT1↔2. With
+Algorithm 2 we have P1,2 = 14(X−iY )(X +iY ) and P2,1 = 14(X +iY )(X−iY ) which can be
+simpliﬁed to S = P1,2 +P2,1 = 12(XX +YY ). With Algorithm 3 we have A1 = X,B 1 = Y and
+S =A2 = 12(A1X +B1Y ) = 12(XX +YY ) without the need to simplify the expression.
+As shown above, Trotterizations can also lead to missing transitions. It is suggested in [11] that it is
+useful to repeat mixers within one mixing step, which corresponds tor> 1 in Equation (6). However,
+as we see in Figure 5, there can be more eﬃcient ways to get mixers which provide transitions between
+14
+
+=== PDF PAGE 15 ===
+Algorithm 1 Algorithm 2 Algorithm 3
+runtime O(25n) O(nγ) O(nγ)
+memory O(22n) O(nγ) O(nγ)
+Table 1: Comparison of the complexity of the two algorithms for n qubits. Here, γ is the number of
+nonzero entries of T .
+all pairs of feasible states. One way to do so is to construct an exact Trotterization (restricted to
+the feasible subspace) as described in [23]. However, the ultimate goal is not to avoid Trotterization
+errors, but rather to provide transitions between all pairs of feasible states. We will revisit the topic
+of Trotterizations in Section 5 in more detail for each case and show that there are more eﬃcient
+ways to do so.
+4 Full/Unrestricted mixer
+We start by applying the proposed algorithm to the case without constraints, i.e., for the case g = 0
+in Equation (1), in order to check for consistency and new insight. We will see that the presented
+approach is able to reproduce the “standard” X mixer as one possibility, but provides a more general
+framework. For this case B ={|xj⟩,j ∈ J,xj∈{ 0, 1}n}, J ={i, 1≤ i≤ 2n} which means that
+Sp(B) =H. Furthermore, using Equation (14) we have that HM,B =T , since E is the identity.
+4.1 THam(1) aka “standard” full mixer
+The Hamiltonian of the standard full mixer for n qubits can be written as
+HM =
+∑
+j∈J
+Xj
+=
+∑
+j∈J
+(|0⟩⟨ 0| +|1⟩⟨ 1|)⊗(j−1)⊗ (|0⟩⟨ 1| +|1⟩⟨ 0|)⊗ (|0⟩⟨ 0| +|1⟩⟨ 1|)⊗(n−j)
+=
+∑
+j,k∈J
+(THam(1))j,k|xj⟩⟨ xk|.
+(40)
+The last identity in Equation (40) shows that HM is created by the transition matrix given by
+THam(1). This assumes that the feasible states in B are ordered from the smallest to the largest
+integer representation.
+4.2 All-to-all full mixer
+For|J| = 2n the full mixer TA can be written as TA = ∑nj=1THam(j). For the case THam(2) the
+resulting Hamiltonian HM does not provide transitions between all pairs of feasible states, but we
+observe that HM = ∑j,k∈J(THam(2))j,k|xj⟩⟨ xk| = ∑nj1 ∑nj2=j1+1Xj1Xj2, i.e., HM consists of allÅn
+2
+ã
+possible pairs of Pauli-strings which contain exactly two Xs. For m≤ n this can be further
+generalized to
+HM =
+∑
+j,k∈J
+(THam(m))j,k|xj⟩⟨ xk| = n∑
+j1=1
+n∑
+j2=j1+1
+···
+n∑
+jm=jm−1+1
+Xj1··· Xjm, (41)
+which consists of all
+Ån
+m
+ã
+possible pairs of Pauli-strings with exactly m Xs. The resulting mixer
+Hamiltonian is therefore given by
+HM =
+n∑
+j1=1
+Å
+Xj1 +
+n∑
+j2=j1+1
+Å
+Xj1Xj2 +... +
+n∑
+jn=jn−1+1
+Xj1··· Xjn
+ãã
+. (42)
+15
+
+=== PDF PAGE 16 ===
+n 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6
+Ham(T ) # U3 #CX = Cost(HM)
+THam(1) 2 8 24 64 160 384 1 2 3 4 5 6 0 0 0 0 0 0
+TA 2 16 96 512 2560 12288 1 2 3 4 5 6 0 2 10 34 98 258
+T∆,c 2 12 28 60 124 252 1 1 1 1 1 1 0 2 12 44 132 356
+T∆ 2 8 22 52 114 240 1 1 1 1 1 1 0 4 20 68 196 516
+Trand 2 16 96 512 2560 12288 2 4 6 8 10 12 0 10 86 552 3260 17650
+Table 2: Full/unrestricted mixer case for n qubits, i.e., |B| = 2n. Comparison of the total Hamming
+distance of the transition matrix T as well as resulting requirements for implementations in terms of
+single- and two-qubit gates for diﬀerent T .
+This means that the mixer consists of the standard mixer plus
+Ån
+k
+ã
+applications of Pauli X-k strings
+for k from 2 to n, which is a large overhead compared to the standard X-mixer.
+4.3 (Cyclic) nearest integer full mixer
+The resulting mixer for T∆/T∆,c involve exponentially many Pauli-strings with increasing n. The
+following shows T∆ for 1≤n≤ 4.
+Hn=1M =X1,
+Hn=2M =I1⊗Hn=1M + 12(X1X2 +Y1Y2),
+Hn=3M =I1⊗Hn=2M + 14(X1X2X3−X1Y2Y3 +Y1X2Y3 +Y1Y2X3),
+Hn=4M =I1⊗Hn=3M + 18(X1X2X3X4−X1X2Y3Y4−X1Y2X3Y4−X1Y2Y3X4
++Y1X2X3Y4 +Y1X2Y3X4 +Y1Y2X3X4−Y1Y2Y3Y4).
+(43)
+4.4 Comparison and optimality of full mixers
+It would be convenient to have a condition on the transition matrix for the optimality of the resulting
+mixer. We deﬁne the total Hamming distance of T to be
+Ham(T ) =
+|J|∑
+j,k=1
+|(T)j,k|>0
+dHamming(bin(i), bin(j)), (44)
+wherebin(i) is the binary representation of an integer i. As a ﬁrst instinct one might suspect that the
+mixer with minimal Hamming distance, also minimizes the cost. However, this turns out to be false,
+because of cancellations when more terms in T are non-zero. Table 2 gives a comparison of the total
+Hamming distance and cost for diﬀerent full mixers. The standard full mixer has total Hamming
+distance Ham(T ) = (n− 1)2n, as there are 2 n states each with n− 1 states that have Hamming
+distance 1. The all to all full mixer has Ham( T ) = 2 n ∑nk=1k(nk). For the rest of the transition
+matrices it is not that straightforward to derive a general formula for Ham(T ), but the table gives
+an impression. Table 2 shows a dramatic diﬀerence between the diﬀerent mixers with regards to
+resource requirements. The standard mixer is the only one which does not require CX gates and is
+the most eﬃcient to implement. Furthermore, as the resulting Pauli terms for the full mixers given
+byTHam(1) andTA consist only ofI andX and therefore commute they can be implemented without
+Trotterization. For the mixers given by T∆,c,T ∆, and Trand on the other hand, not all Pauli-strings
+commute which results in the need for Trotterization. We continue with the case of constrained
+mixers.
+16
+
+=== PDF PAGE 17 ===
+IXX YYI
+XXI
+YIYXIX
+IYY
+XXI
+YYI
+XIX
+YIY
+IXX
+IYY
+IXX
+XIX
+XXI
+IYY
+YIY
+YYI
+Figure 6: In the commutation graph (middle) of the terms of the mixer given in Equation (47) an edge
+occurs if the terms commute. From this we can group terms into three (nodes connected by green edge)
+or two (nodes connected by red/blue edges) sets. Only the left/green grouping preserves the feasible
+subspace.
+5 Constrained mixers
+We start by describing what is known as the “XY”-mixer [7, 11, 23], before we explore more general
+cases. Our framework provides additional insights into this case and inspires further improvement
+of the algorithms above with respect to the optimality of the mixers, described in Section 3.4, by
+(possibly) reducing the length of Pauli-strings. For this case, we will analyze TA,T ∆, and T∆,c only.
+THam(1) only makes sense when n is a power of two, and Trand has in general high cost, see Table 2.
+5.1 “One-hot” aka “XY”-mixer
+We are concerned with the case given by all computational basis states with exactly one “1”, i.e.,
+B ={|x⟩, xj∈{ 0, 1}n, s.t.∑xj = 1}. These states are sometimes referred to as “one-hot”. We
+have that n =|B| is the number of qubits. After some motivating examples we present the general
+case for constructing mixers for any n> 2.
+5.1.1 Case n = 2
+The smallest, non-trivial case is given by B ={|01⟩,|10⟩}. For any b∈ R,|b| > 0 the transition
+matrix T =
+(d b
+b d
+)
+fulﬁlls Theorem 1 and leads to the mixer HM = b2(XX +YY ) + d2 (II−ZZ ).
+Since we want to minimize Cost( HM) given in Equation (36), we set d = 0, which results in the
+Cost(HM) = 4. However, by using Corollary 2 there is room for further reducing the cost. We can
+add the mixer for C ={|00⟩,|11⟩} since B∩C = ∅. Using the same T (setting d = 0) gives
+HM,B +HM,C =bXX, (45)
+which has Cost(HM) = 2. No Trotterization is needed in this case.
+5.1.2 Case n = 3
+We continue with B = {|001⟩,|010⟩,|100⟩}. For the transition matrix T = aT1↔2 + bT2↔3 +
+cT1↔3,a,b,c ∈ R this results in the mixer
+HM,B = a4 (XX +YY )(I +Z) + b4(I +Z)(XX +YY ) + c4(X(I +Z)X +Y (I +Z)Y ), (46)
+with associated cost Cost(HM) = 24 + 12c for a =b = 1,c∈{ 0, 1}. In this case Corollary 2 allows
+us to add the mixer for C ={|110⟩,|101⟩,|011⟩} since B∩C = ∅. The mixer
+HM =HM,B +HM,C = a2 (XXI +YYI ) + b2(XIX +YIY ) + c2(IXX +IYY ), (47)
+has cost Cost(HM) = 8 + 4c for a = b = 1,c ∈{ 0, 1}. However, this mixer can not be realized,
+since not all terms of HM commute. Figure 6 shows two ways to put the graph into commuting
+17
+
+=== PDF PAGE 18 ===
+n 3 4 5 6 7 8 9 10 15
+HM,B
+T∆ 12·2 32 ·3 80 ·4 192 ·5 448 ·6 1024 ·7 2304 ·8 5120 ·9 245760 ·14
+T∆,c 12·3 32 ·4 80 ·5 192 ·6 448 ·7 1024 ·8 2304 ·9 5120 ·10 245760 ·15
+TA 12·3 32 ·6 80 ·10 192 ·15 448 ·21 1024 ·28 2304 ·36 5120 ·45 245760 ·105
+HM,B +∑i HM,Ci
+T∆ 4·2 4 ·3 4 ·4 4 ·5 4 ·6 4 ·7 4 ·8 4 ·9 4 ·14
+T∆,c 4·3 4 ·4 4 ·5 4 ·6 4 ·7 4 ·8 4 ·9 4 ·10 4 ·15
+TA 4·3 4 ·6 4 ·10 4 ·15 4 ·21 4 ·28 4 ·36 4 ·45 4 ·105
+Table 3: Comparison of the cost #CX = Cost( HM) of mixers constrained to “one-hot” states. The
+Trotterized versions we deﬁne T1 =TO(1),c and T2 =TE(1). All Hamiltonians need to be Trotterized.
+Pauli-terms, with only one way to preserve the feasible subspace, as discussed in Section 3.5. For
+the Trotterization according to T =Tk11↔2 +Tk22↔3 we have that (T )3,1 = (T )1,3 = 0, ∀k1,k 2∈ N. To
+fulﬁll Theorem 2 we need to include the term T1↔3 as well. The Trotterized mixer with minimal cost
+is therefore given by T =T1↔2 +T2↔3 +T1↔3.
+5.1.3 The general case n> 2
+We start with the observation that for any symmetric T∈ Rn×n with zero diagonal we have
+HM,B =
+n∑
+j=1
+n∑
+k=j+1
+(T )j,k “Pj,k, (“Pj,k)l = 12n
+®
+(X +Y ), if l∈{j,k},
+(I +Z), if xl =zl = 0 (48)
+The cost for implementing one of the entries, i.e., e−iβ ˆPj,k is given by the recursive formula
+Cost(“Pj,k) =
+n∑
+l=2
+2(l− 1)fln, n> 2, f ln =fln−1 +fl−1n−1, f l2 =
+®
+2, if l = 2,
+0, else, (49)
+wherefln is Pascal’s triangle starting with 2 instead of 1. Examples of the resulting costs for diﬀerent
+transition matrices can be seen in Table 3.
+The cost of the mixers can be considerably reduced by adding mixers generalized from case n = 3.
+If the entries ( T )i↔j of T are non-zero, we can add mixers for each of the 2 n−2 pairs of states
+x∈{ 0, 1}n that fulﬁll that ( xi = 0∧xj = 1)∨ (xi = 1∧xj = 0). We can enumerate them with
+0≤l≤ 2n−2− 1 by ‹Bli,j ={|x⟩,x∈{ 0, 1}n, s.t. x−i,−j =bin(l)}, where x−i,−j removes the indices
+i and j of x. We have that B∩ ‹Bli,j = ∅. We observe that for n≥ 2 let|x⟩,|z⟩ with Ham(x,z ) = 2,
+i.e., the strings x,z diﬀer at exactly two positions we have that
+|x⟩⟨z| +|z⟩⟨x| = 12n−1
+
+
+
+(X +Y ), if xl⁄=zl,
+(I +Z), if xl =zl = 0,
+(I−Z), if xl =zl = 1.
+(50)
+Adding these mixers for each nonzero entries Tj↔k of T has the eﬀect of summing over all possible
+combinations of (I±Z)⊗2n−2 which is equal to the identity. Therefore, we get the mixer
+HM,B +
+∑
+i,j∈J
+2n−2∑
+l=0
+HM,Bli,j =
+n∑
+j=1
+n∑
+k=j+1
+(T )j,kPj,k, P j,k =XiXj +YiYj, (51)
+which reduces the cost of one term to Cost( Pj,k) = 4.
+18
+
+=== PDF PAGE 19 ===
+2 4 6 8 10 12 14 16
+0
+20
+40
+60
+n
+# (XX+YY)-terms
+n× (T1 +T2)
+(T1 +T2) +TO(3) +TE(3)
+(T1 +T2) +∑i=5,6(TO(i) +TE(i))
+sim. complete-graph
+Figure 7: Comparison of diﬀerent Trotterization mixers restricted to “one-hot” states. All markers
+represent cases when the resulting mixer provides transitions for all pairs of feasible states, see also
+Figure 5. All versions can be implemented in linear depth. The most eﬃcient Trotterizations are achieved
+by using sub-diagonal entries. The cost equals 4 times # (XX+YY)-terms.
+5.1.4 T rotterizations
+Not all Pauli-strings of the mixer in Equation (51) commute. This necessitates a suitable and eﬃcient
+Trotterization. We will use Theorem 2 and Theorem 3 to identify valid Trotterized mixers. As
+pointed out in [23] when n is a power of two one can realize a Trotterization which is exact in the
+feasible subspace B. Termed simultaneous complete-graph mixer, this involves all possible pairs (i,j )
+corresponding to a certain Trotterization of mixer for TA. We will see that there are more eﬃcient
+mixers that provide transitions between all pairs of feasible states.
+Another possibility is to Trotterize T∆,c or T∆ according to odd and even entries as described in
+Section 3.2.4. This is what is termed a parity-partitioned mixer in [23]. However, fewer and fewer
+feasible states can be reached asn increases, as we have seen in Figure 5. Repeated applications (r> 0
+in Equation (6)) are necessary and r increases with increasing n. Figure 7 shows a comparison of
+diﬀerent Trotterizations. As the cost of the mixer is dictated by the number of non-zero entries of the
+transition matrix, it is more eﬃcient to add mixers for oﬀ-diagonals according to ∑i∈I(TO(i)+TE(i))
+for some suitable index set I.
+5.2 General cases
+In this section we analyze some speciﬁc cases that go beyond unrestricted mixers and mixers restricted
+to one-hot states.
+5.2.1 Example 1
+We start by looking at the case B ={|100⟩,|010⟩,|011⟩}. Using T∆ = c1,2T1↔2 +c2,3T2↔3 and
+T∆,c =T∆ +c3,1T3↔1, this results in the mixer
+HM,B = c1,2
+1
+4(XX +YY )(I +Z)
++c2,3
+1
+4(I +Z)(I−Z)X
++c3,1
+1
+4(XXX +YXY +YYX −XYY )
+(52)
+with Cost(HM) = 12 c1,2 + 8c2,3 + 16c3,1. Here, ( c1,2,c 2,3,c 3,1) = (1 , 1, 0) corresponds to T∆ and
+(1, 1, 1) to T∆,c. There is a lot of freedom adding mixers, which is summarized in Table 4. Adding
+19
+
+=== PDF PAGE 20 ===
+C = T1↔2 T2↔3 T3↔1
+{} 12 8 16
+{|000⟩,|001⟩} 20 2 24
+{|000⟩,|101⟩} 24 20 28
+{|000⟩,|110⟩} 6 20 28
+{|000⟩,|111⟩} 28 24 8
+{|001⟩,|101⟩} 20 16 24
+{|001⟩,|110⟩} 28 24 8
+{|001⟩,|111⟩} 6 20 28
+{|101⟩,|110⟩} 24 20 28
+{|101⟩,|111⟩} 20 16 24
+{|110⟩,|111⟩} 20 2 24
+Table 4: Comparison of the Cost( HM,B + HM,C) for diﬀerent added mixers C for the case B =
+{|100⟩,|010⟩,|011⟩}. All 10 possible pairs are shown. We see that the cost can be both reduced and
+increased.
+more terms only increases the cost for this case. Overall, the most eﬃcient mixers for B is given by
+HM = c1,2
+2
+ïXXI +XXZ or
+XXI +YYZ
+ò
++ c2,3
+2
+ï(I +Z)IX or
+I(I−Z)X
+ò
++ c3,1
+2
+ïXXX−XYY or
+XXX +YXY
+ò
+, (53)
+with associated cost Cost(HM) = 6c1,2+2c2,3+8c3,1. A valid Trotterization is given through splitting
+according to Ti↔j.
+5.2.2 Example 2
+Finally, we investigate the case B = {|10010⟩,|01110⟩,|10011⟩,|11101⟩,|00110⟩,|01010⟩}, which
+restricts to 6 of the total 2 5 = 32 computational basis states for 5 qubits. It is not clear a priori if
+for any (distinct) pair Ti1,j1 and Ti2,j2 all pairs of non-vanishing Pauli strings commute. In order to
+fulﬁll Equation (6) for r = 1, this means that one needs to Trotterize according to all pairs of TA as
+shown in Table 5. The resulting cost for this Trotterized mixer is Cost( HM) = 1360. Since H∩ B is
+spanned by k = 2n−|B| = 26 computational basis states, there are
+Åk
+2
+ã
+= 325 diﬀerent pairs to add
+to each Ti↔j. As Table 5 shows this can reduce the cost of the resulting mixer to Cost( HM) = 568.
+Of course, there is the possibility to reduce the cost even further by adding more mixers for states
+in the kernel of HM,B. However, this quickly becomes computationally very demanding, when all
+possibilities are considered in a brute-force fashion.
+6 Availability of Data and Code
+All data and the python/jupyter notebook source code for reproducing the results obtained in this
+article are available at https://github.com/OpenQuantumComputing.
+7 Conclusion and Outlook
+While designing mixers with the presented framework is more or less straight forward, designing
+eﬃcient mixers turns out to be a diﬃcult task. An additional diﬃculty arises due to the need for
+Trotterization. Somewhat counter-intuitively, the more restricted the mixer, i.e., the smaller the
+subspace, the more design freedom one has to increase eﬃciency. More structure/symmetry of the
+restricted subspace seems to allow for a lower cost of the resulting mixer. For the case of “one-hot”
+states, we provide a deeper understanding of the requirements for Trotterizations. Compared to state
+of the art in the literature, this leads to a considerable reduction of the cost of the mixer, as deﬁned in
+Equation (36). The introduced framework reveals a rigorous mathematical analysis of the underlying
+20
+
+=== PDF PAGE 21 ===
+structure of mixer Hamiltonians and deepens the understanding of those. We believe the framework
+can serve as the backbone for further development of eﬃcient mixers.
+When adding mixers, in general the kernel of HM,B is spanned by k = 2n−|B| computational
+basis states. Therefore, one can add
+k∑
+i=2
+Åk
+2
+ã
+(54)
+diﬀerent mixers for each non-zero entryTi↔j ofT . Out of all these, one wants to ﬁnd the combination
+leading to the lowest overall cost. Clearly, brute-force optimization is computationally not tractable,
+even for a moderate number of qubits n when|B|≪ 2n. Further research should aim to carefully
+analyze the structure of the basis states in B in order to develop eﬃcient (heuristic) algorithms to
+ﬁnd low-cost mixers through adding mixers in the kernel of HM,B.
+References
+[1] Lennart Bittel and Martin Kliesch. “Training variational quantum algorithms is NP-
+hard – even for logarithmically many qubits and free fermionic systems”. In: Physical
+Review Letters 127.12 (Sept. 2021). arXiv: 2101.07267, p. 120502. issn: 0031-9007, 1079-
+7114.
+[2] Sergey Bravyi et al. “Obstacles to state preparation and variational optimization from
+symmetry protection”. In: arXiv preprint arXiv:1910.08980 (2019).
+[3] Marco Cerezo et al. “Variational quantum algorithms”. In: Nature Reviews Physics 3.9
+(2021), pp. 625–644.
+[4] Jeremy Cook, Stephan Eidenbenz, and Andreas B¨ artschi. “The quantum alternating
+operator ansatz on maximum k-vertex cover”. In: 2020 IEEE International Conference
+on Quantum Computing and Engineering (QCE) . IEEE. 2020, pp. 83–92.
+[5] Daniel J Egger, Jakub Marecek, and Stefan Woerner. “Warm-starting quantum opti-
+mization”. In: arXiv preprint arXiv:2009.10095 (2020).
+[6] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann. “A quantum approximate opti-
+mization algorithm”. In: arXiv preprint arXiv:1411.4028 (2014).
+[7] Franz G Fuchs et al. “Eﬃcient Encoding of the Weighted MAX k-CUT on a Quantum
+Computer Using QAOA”. In: SN Computer Science 2.2 (2021), pp. 1–14.
+[8] Pranav Gokhale et al. “Minimizing state preparations in variational quantum eigensolver
+by partitioning into commuting families”. In: arXiv preprint arXiv:1907.13623 (2019).
+[9] Gian Giacomo Guerreschi and AY Matsuura. “QAOA for Max-Cut requires hundreds
+of qubits for quantum speed-up”. In: Scientiﬁc reports 9.1 (2019), p. 6903.
+[10] Kaiwen Gui et al. “Term grouping and travelling salesperson for digital quantum sim-
+ulation”. In: arXiv preprint arXiv:2001.05983 (2020).
+[11] Stuart Hadﬁeld et al. “From the quantum approximate optimization algorithm to a
+quantum alternating operator ansatz”. In: Algorithms 12.2 (2019), p. 34.
+[12] Stuart Hadﬁeld et al. “Quantum approximate optimization with hard and soft con-
+straints”. In: Proceedings of the Second International Workshop on Post Moores Era
+Supercomputing. 2017, pp. 15–21.
+[13] Naomichi Hatano and Masuo Suzuki. “Finding exponential product formulas of higher
+orders”. In: Quantum annealing and other optimization methods. Springer, 2005, pp. 37–
+68.
+[14] Itay Hen and Marcelo S Sarandy. “Driver Hamiltonians for constrained optimization in
+quantum annealing”. In: Physical Review A 93.6 (2016), p. 062312.
+21
+
+=== PDF PAGE 22 ===
+[15] Itay Hen and Federico M Spedalieri. “Quantum annealing for constrained optimization”.
+In: Physical Review Applied 5.3 (2016), p. 034007.
+[16] Elliott Lieb, Theodore Schultz, and Daniel Mattis. “Two soluble models of an antifer-
+romagnetic chain”. In: Annals of Physics 16.3 (1961), pp. 407–466.
+[17] Andrew Lucas. “Ising formulations of many NP problems”. In: Frontiers in Physics 2
+(2014), p. 5.
+[18] Nikolaj Moll et al. “Quantum optimization using variational algorithms on near-term
+quantum devices”. In: Quantum Science and Technology 3.3 (June 2018), p. 030503.
+[19] Jun John Sakurai. Advanced quantum mechanics. Pearson Education India, 2006.
+[20] Hale F Trotter. “On the product of semi-groups of operators”. In: Proceedings of the
+American Mathematical Society 10.4 (1959), pp. 545–551.
+[21] Pontus Vikst˚ al et al. “Applying the Quantum Approximate Optimization Algorithm to
+the Tail-Assignment Problem”. In: Phys. Rev. Applied 14 (3 Sept. 2020), p. 034009.
+[22] Samson Wang et al. “Noise-induced barren plateaus in variational quantum algorithms”.
+In: Nature communications 12.1 (2021), pp. 1–11.
+[23] Zhihui Wang et al. “XY mixers: Analytical and numerical results for the quantum
+alternating operator ansatz”. In: Physical Review A 101.1 (Jan. 2020).
+[24] Hao-Kai Zhang et al. “Fundamental limitations on optimization in variational quan-
+tum algorithms”. In: arXiv:2205.05056 [cond-mat, physics:quant-ph] (May 2022). arXiv:
+2205.05056.
+[25] Linghua Zhu et al. “An adaptive quantum approximate optimization algorithm for solv-
+ing combinatorial problems on a quantum computer”. In:arXiv preprint arXiv:2005.10258
+(2020).
+22
+
+=== PDF PAGE 23 ===
+C = T1↔2T1↔3T1↔4T1↔5T1↔6T2↔3T2↔4T2↔5T2↔6T3↔4T3↔5T3↔6T4↔5T4↔6T5↔6
+{} 96 64 112 80 80 112 96 64 64 96 96 96 112 112 80
+{|00010⟩,|00011⟩} 160 24 176 144 144 176 160 128 128 160 160 160 176 176 144
+{|00010⟩,|01101⟩} 208 176 48 192 192 224 208 176 176 208 208 208 224 224 192
+{|00010⟩,|10001⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|00010⟩,|10101⟩} 208 176 224 192 192 224 208 176 176 208 208 208 224 48 192
+{|00010⟩,|11001⟩} 208 176 224 192 192 224 208 176 176 208 208 208 48 224 192
+{|00011⟩,|01101⟩} 192 160 208 176 176 208 192 160 160 40 192 192 208 208 176
+{|00011⟩,|10000⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|00100⟩,|01000⟩} 176 144 192 160 160 192 176 144 144 176 176 176 192 192 32
+{|00100⟩,|01100⟩} 160 128 176 144 144 176 160 24 128 160 160 160 176 176 144
+{|00100⟩,|10000⟩} 176 144 192 32 160 192 176 144 144 176 176 176 192 192 160
+{|00100⟩,|10001⟩} 192 160 208 176 176 208 192 160 160 192 40 192 208 208 176
+{|00100⟩,|10111⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|00101⟩,|10110⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|00111⟩,|01011⟩} 176 144 192 160 160 192 176 144 144 176 176 176 192 192 32
+{|00111⟩,|01111⟩} 160 128 176 144 144 176 160 24 128 160 160 160 176 176 144
+{|00111⟩,|10100⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01000⟩,|01100⟩} 160 128 176 144 144 176 160 128 24 160 160 160 176 176 144
+{|01000⟩,|10000⟩} 176 144 192 160 32 192 176 144 144 176 176 176 192 192 160
+{|01000⟩,|10001⟩} 192 160 208 176 176 208 192 160 160 192 192 40 208 208 176
+{|01000⟩,|11011⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01001⟩,|11010⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01011⟩,|01111⟩} 160 128 176 144 144 176 160 128 24 160 160 160 176 176 144
+{|01011⟩,|11000⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01100⟩,|10000⟩} 40 160 208 176 176 208 192 160 160 192 192 192 208 208 176
+{|01100⟩,|10001⟩} 208 176 224 192 192 48 208 176 176 208 208 208 224 224 192
+{|01100⟩,|11111⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01101⟩,|11110⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|01111⟩,|11100⟩} 192 160 208 176 176 208 48 160 160 192 192 192 208 208 176
+{|10000⟩,|10001⟩} 160 24 176 144 144 176 160 128 128 160 160 160 176 176 144
+{|10110⟩,|10111⟩} 160 24 176 144 144 176 160 128 128 160 160 160 176 176 144
+{|10110⟩,|11010⟩} 176 144 192 160 160 192 176 144 144 176 176 176 192 192 32
+{|10110⟩,|11110⟩} 160 128 176 144 144 176 160 24 128 160 160 160 176 176 144
+{|11010⟩,|11011⟩} 160 24 176 144 144 176 160 128 128 160 160 160 176 176 144
+{|11010⟩,|11110⟩} 160 128 176 144 144 176 160 128 24 160 160 160 176 176 144
+···
+{|00000⟩,|11111⟩} 224 192 240 208 208 240 224 192 192 224 224 224 240 240 208
+···
+Table 5: Comparison of the Cost(HM,B +HM,C) for diﬀerent added mixers C for the case B ={|10010⟩,
+|01110⟩,|10011⟩,|11101⟩,|00110⟩,|01010⟩}. There are 325 possible pairs in total. We see that the cost
+can be both reduced and increased.
+23

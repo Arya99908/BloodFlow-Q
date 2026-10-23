@@ -1,0 +1,70 @@
+{
+  "id": "transport_disruption",
+  "repr": "Scenario(id='transport_disruption', blood_groups=('O',), blood_banks=(BloodBank(id='bank_a', name='Bank A', location_id='LOC_BANK_A', inventory={'O': 5}),), hospitals=(Hospital(id='hospital_1', name='Hospital 1', location_id='LOC_HOSPITAL_1', demand={'O': 4}, urgency={'O': Urgency(category='high', priority_weight=3.0)}),), routes=(Route(source='bank_a', destination='hospital_1', travel_time_minutes=18.0, distance_km=7.2, transport_cost=4.5, status='blocked'),), compatibility={('O', 'O'): True}, synthetic=True)",
+  "qubits": 6,
+  "states": 64,
+  "feasible_states": 1,
+  "optimal_states": 1,
+  "penalty": 210,
+  "exact_objective": 140.0,
+  "ising_max_error": 0.0,
+  "classical": {
+    "exact": {
+      "objective": 140.0,
+      "seconds": 3.4249998861923814e-05
+    },
+    "milp": {
+      "objective": 140.0,
+      "seconds": 0.0009217920014634728
+    },
+    "greedy": {
+      "objective": 140.0,
+      "seconds": 2.129199856426567e-05
+    },
+    "lp": {
+      "seconds": 0.0006429169879993424,
+      "values": {
+        "allocation": {},
+        "unmet_demand": {
+          "('hospital_1', 'O')": 4.0
+        },
+        "slack": {
+          "('bank_a', 'O')": 5.0
+        }
+      }
+    }
+  },
+  "xy_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "max_feasible_state_leakage_beta_0_7": [
+    2.2496396739927853e-32,
+    63
+  ],
+  "optimal_weight_sectors": [
+    6
+  ]
+}

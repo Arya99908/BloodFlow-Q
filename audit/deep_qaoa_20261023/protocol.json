@@ -1,0 +1,33 @@
+{
+  "python": "3.14.7",
+  "versions": {
+    "qiskit": "2.6.0",
+    "qiskit-aer": "0.17.2",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "seeds": [
+    7,
+    11,
+    19,
+    23,
+    31
+  ],
+  "base_config": {
+    "p": 2,
+    "restarts": 2,
+    "max_iterations": 100,
+    "shots": 1024,
+    "warm_start_epsilon": 0.1,
+    "normalize_cost": true
+  },
+  "source_sha256": {
+    "quantum/qaoa_solver.py": "e7149a5762a11f56c8752921f1638ca809c18972d5075ec4cbadf0ed97d939dc",
+    "quantum/qubo.py": "2e26596a8dbb965e210908eef4cebf7305283a6b3ec9930a7a1a9b1aaf7f4bbe",
+    "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+    "optimization/milp.py": "a051bd7c3740a7e8280a5073fce62cb92fefe85bff5162af81fc0a9f3326048c",
+    "experiments/deep_qaoa_audit.py": "ae047e72090b93cefeceadb5417bb8c8d3e2367f4ce69998faa6dbbcc35d8ed3",
+    "tests/test_xy_credibility.py": "2e5f230fa5abf0afb71b3450b837342d7c4eebdad1e791243715d3b3e49ef1bc"
+  },
+  "scenarios": []
+}

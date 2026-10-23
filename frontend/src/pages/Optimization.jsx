@@ -5,6 +5,9 @@ import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
+import OptimizationJourney from '../components/OptimizationJourney';
+import GlideSelect from '../components/GlideSelect';
+import BorderGlow from '../components/BorderGlow';
 import {
   calculateObjectiveUpperBound,
   countScenarioQubits,
@@ -16,16 +19,21 @@ export default function Optimization({ initialRun, initialLoading, initialError,
   const [method, setMethod] = useState('greedy');
   const [inventoryPenalty, setInventoryPenalty] = useState('');
   const [demandPenalty, setDemandPenalty] = useState('');
-  const [localResult, setLocalResult] = useState(null);
+  const [localResult, setLocalResult] = useState(initialRun ?? null);
   const [localLoading, setLocalLoading] = useState(false);
-  const [localError, setLocalError] = useState('');
+  const [localError, setLocalError] = useState(initialError || '');
   const [comparison, setComparison] = useState(null);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [includeQAOA, setIncludeQAOA] = useState(false);
-  const result = localResult || initialRun;
+  const result = localResult;
   const loading = localLoading || initialLoading;
-  const error = localError || initialError;
+  const error = localError;
+
+  // A global Quick Optimization must replace any older page-local run.
+  useEffect(() => {
+    setLocalResult(initialRun ?? null); setLocalError(initialError || ''); setComparison(null);
+  }, [initialRun, initialLoading, initialError]);
 
   const candidateStates = useMemo(() => estimateCandidateStates(scenario), [scenario]);
   const isExactDisabled = candidateStates > 50000;
@@ -35,6 +43,23 @@ export default function Optimization({ initialRun, initialLoading, initialError,
   useEffect(() => {
     if (isExactDisabled && method === 'exact') setMethod('greedy');
   }, [isExactDisabled, method]);
+
+  useEffect(() => {
+    const targets = document.querySelectorAll('.page-optimization .optimization-reveal');
+    if (!('IntersectionObserver' in window)) {
+      targets.forEach((node) => { node.classList.remove('reveal-pending'); node.classList.add('is-visible'); });
+      return undefined;
+    }
+    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (entry.isIntersecting) { entry.target.classList.remove('reveal-pending'); entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+    }), { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+    targets.forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) node.classList.add('is-visible');
+      else { node.classList.remove('is-visible'); node.classList.add('reveal-pending'); observer.observe(node); }
+    });
+    return () => observer.disconnect();
+  }, [scenarioLoading, scenarioError, scenario, comparison, result]);
 
   const qaoaInstanceTooLarge = method === 'qaoa' && (
     /local QAOA limited to .* qubits/i.test(error) ||
@@ -96,25 +121,18 @@ export default function Optimization({ initialRun, initialLoading, initialError,
   };
 
   return <>
-    <PageHeader eyebrow="SOLVER WORKSPACE" title="Optimization" description="Inspect the active scenario, run an allocator, and compare methods when results are available." />
+    <div className="optimization-reveal"><PageHeader eyebrow="SOLVER WORKSPACE" title="Optimization" description="Inspect the active scenario, run an allocator, and compare methods when results are available." /></div>
     {scenarioLoading && <LoadingState label="Loading current scenario…" />}
-    {!scenarioLoading && scenarioError && <ErrorState message={scenarioError} onRetry={reloadScenario} />}
+    {!scenarioLoading && scenarioError && <div className="notice notice-info optimization-api-notice" role="status"><Activity size={16} /><span><strong>Backend not connected.</strong> Your solver settings are ready, but runs need the BloodFlow-Q API. Start it and use Retry when available.</span><button type="button" className="button button-secondary button-small" onClick={reloadScenario}>Retry</button></div>}
     {!scenarioLoading && !scenarioError && scenario?.synthetic === true && <ScenarioPreview scenario={scenario} variableCount={result?.qubo_variable_count} />}
     {!scenarioLoading && !scenarioError && scenario?.synthetic !== true && scenario && <div className="notice notice-error">The backend scenario is not marked synthetic. Optimization is disabled.</div>}
 
-    <div className="optimization-layout">
-      <section className="panel form-panel">
-        <div className="panel-heading"><div><h2>Configure a run</h2><p>Uses scenario <strong>{scenario?.id || '—'}</strong> returned by the backend.</p></div></div>
+    <div className="optimization-layout optimization-reveal">
+      <BorderGlow className="optimization-panel-glow" backgroundColor="var(--bg-surface)" borderRadius={16} glowRadius={12} glowColor="350 82 62" colors={['#ef233c','#8d99ae','#2b2d42']}><section className="panel form-panel">
+        <div className="panel-heading"><div><h2>Configure a run</h2><p>Active scenario <strong>{scenario?.id || 'Waiting for API'}</strong></p></div></div>
         <form onSubmit={submit} className="form-stack">
-          <label className="field-label" htmlFor="solver-method">Solver method</label>
-          <select id="solver-method" className="field-control" value={method} onChange={(event) => setMethod(event.target.value)}>
-            <option value="greedy">Greedy baseline</option>
-            <option value="milp">MILP (HiGHS classical optimal)</option>
-            <option value="exact" disabled={isExactDisabled}>
-              {isExactDisabled ? 'Exact (tiny instances only — unavailable for this scenario)' : 'Exact (tiny instances only)'}
-            </option>
-            <option value="qaoa">QAOA (local simulator; small instances)</option>
-          </select>
+          <label className="field-label" id="solver-method-label">Solver method</label>
+          <GlideSelect ariaLabel="Solver method" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP · HiGHS classical optimal'},{value:'exact',label:isExactDisabled ? 'Exact · unavailable for this scenario' : 'Exact · tiny instances only'},{value:'qaoa',label:'QAOA · local simulator'}]} value={method} onChange={setMethod} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="solver-glide-select" />
           {isExactDisabled && method === 'exact' && (
             <div className="notice notice-info" role="note">
               <TriangleAlert size={16} />
@@ -169,21 +187,21 @@ export default function Optimization({ initialRun, initialLoading, initialError,
               />
             </div>
           )}
-          <button className="button button-primary button-wide run-optimization-button" type="submit" disabled={loading || scenarioLoading || !scenario || scenario?.synthetic !== true}><Play size={16} fill="currentColor" />{loading ? 'OPTIMIZING…' : 'RUN OPTIMIZATION'}</button>
+          <button className="button button-primary button-wide run-optimization-button" type="submit" disabled={loading || (scenario && scenario.synthetic !== true)}><Play size={16} fill="currentColor" />{loading ? 'OPTIMIZING…' : 'RUN OPTIMIZATION'}</button>
         </form>
         <div className="optimization-note"><CheckCircle2 size={16} /><span>Returned candidates are classically validated. An infeasible QAOA sample stays visible and is never silently repaired.</span></div>
-      </section>
-      <section className="panel result-panel">
+      </section></BorderGlow>
+      <BorderGlow className="optimization-panel-glow" backgroundColor="var(--bg-surface)" borderRadius={16} glowRadius={12} glowColor="350 82 62" colors={['#ef233c','#8d99ae','#2b2d42']}><section className="panel result-panel">
         <div className="panel-heading"><div><h2>Run output</h2><p>Only values returned by the backend are shown.</p></div><RotateCcw size={16} className="muted-icon" /></div>
         {loading && <LoadingState label="The solver is working…" />}
         {!loading && error && <ErrorState message={error} />}
         {!loading && qaoaInstanceTooLarge && <div className="notice notice-info" role="note"><div><strong>The full scenario exceeds the local simulator limit.</strong><p>Use the compact, deterministic scenario in Demo mode to run the same real QUBO → QAOA → decoder → validator pipeline. The full-scenario request above was not replaced with a demo result.</p><button type="button" className="button button-secondary button-small" onClick={() => onNavigate?.('demo')}>Open compact QAOA demo</button></div></div>}
         {!loading && !error && result && <OptimizationResult result={result} scenario={scenario} />}
-        {!loading && !error && !result && <div className="result-placeholder"><Play size={22} /><strong>No result yet</strong><span>Choose a solver and start a run. Values unavailable before a run are shown as such.</span></div>}
-      </section>
+        {!loading && !error && !result && <div className="result-placeholder"><Play size={22} /><strong>No result yet</strong><span>{scenarioError ? 'Connect the backend to run this solver. Settings stay editable while it is offline.' : 'Choose a solver and start a run. Values unavailable before a run are shown as such.'}</span></div>}
+      </section></BorderGlow>
     </div>
 
-    <section className="panel comparison-panel">
+    <BorderGlow className="optimization-comparison-glow optimization-reveal" backgroundColor="var(--bg-surface)" borderRadius={16} glowRadius={12} glowColor="350 82 62" colors={['#ef233c','#8d99ae','#2b2d42']}><section className="panel comparison-panel">
       <div className="panel-heading">
         <div>
           <h2>Method comparison</h2>
@@ -266,7 +284,9 @@ export default function Optimization({ initialRun, initialLoading, initialError,
           <span>Click "RUN COMPARISON" above to benchmark all solvers against this scenario.</span>
         </div>
       )}
-    </section>
+    </section></BorderGlow>
+
+    <OptimizationJourney scenario={scenario} method={method} result={result} />
   </>;
 }
 
@@ -278,7 +298,7 @@ function ScenarioPreview({ scenario, variableCount }) {
   const demandTotal = hospitals.reduce((sum, hospital) => sum + Object.values(hospital.demand || {}).reduce((hospitalSum, units) => hospitalSum + units, 0), 0);
 
   return (
-    <section className="panel scenario-preview">
+    <section className="panel scenario-preview optimization-reveal">
       <div className="panel-heading">
         <div>
           <h2>Active scenario baseline</h2>

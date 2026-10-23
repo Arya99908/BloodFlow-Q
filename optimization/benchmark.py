@@ -202,7 +202,7 @@ def benchmark_solvers(
                 BenchmarkRecord(
                     scenario_id=scenario.id,
                     method=method,
-                    status="error",
+                    status="unsupported" if isinstance(error, QUBOInputError) else "error",
                     objective_value=None,
                     critical_unmet_demand=None,
                     total_unmet_demand=None,

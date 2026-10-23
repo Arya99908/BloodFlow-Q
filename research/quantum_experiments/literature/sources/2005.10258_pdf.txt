@@ -1,0 +1,1076 @@
+=== PDF PAGE 1 ===
+An Adaptive Quantum Approximate Optimization Algorithm for Solving
+Combinatorial Problems on a Quantum Computer
+Linghua Zhu,1,∗ Ho Lun Tang, 1 George S. Barron, 1 F. A. Calderon-Vargas, 1
+Nicholas J. Mayhall, 2 Edwin Barnes, 1 and Sophia E. Economou 1,†
+1Department of Physics, Virginia Tech, Blacksburg, V A 24061, U.S.A
+2Department of Chemistry, Virginia Tech, Blacksburg, V A 24061, U.S.A
+(Dated: July 11, 2022)
+The quantum approximate optimization algorithm (QAOA) is a hybrid variational quantum-
+classical algorithm that solves combinatorial optimization problems. While there is evidence sug-
+gesting that the ﬁxed form of the standard QAOA ansatz is not optimal, there is no systematic
+approach for ﬁnding better ans¨ atze. We address this problem by developing an iterative version of
+QAOA that is problem-tailored, and which can also be adapted to speciﬁc hardware constraints.
+We simulate the algorithm on a class of Max-Cut graph problems and show that it converges much
+faster than the standard QAOA, while simultaneously reducing the required number of CNOT gates
+and optimization parameters. We provide evidence that this speedup is connected to the concept
+of shortcuts to adiabaticity.
+I. INTRODUCTION
+Many important computationally hard combinatorial
+optimization problems such as Max-Cut, graph coloring,
+traveling salesman, and scheduling management [1–3] can
+be mapped to Ising Hamiltonians whose ground states
+provide the solutions. One can in principle solve these
+optimization problems on a quantum computer by ini-
+tializing the quantum device in the ground state of a
+Hamiltonian that is easy to prepare and adiabatically
+tuning the latter into the problem Hamiltonian. In a
+digital quantum computer, this translates into a trotter-
+ized version of the adiabatic evolution operator, which is
+the alternating product of the evolution operators cor-
+responding to the initial mixer and the problem (Ising)
+Hamiltonians. In the limit of an inﬁnite product, this
+trotterized form becomes exact.
+QAOA is a hybrid quantum-classical variational algo-
+rithm that uses a ﬁnite-order version of this evolution
+operator to prepare wavefunction ans¨ atze on a quantum
+processor [4–7]. QAOA is performed by variationally
+minimizing the expectation value of the Ising Hamilto-
+nian with respect to the parameters in the ansatz. The
+quantum processor is also used to measure energy ex-
+pectation values, while the optimization is done on a
+classical computer. There has been a lot of progress on
+QAOA recently on both the experimental and theoretical
+fronts [1, 8–14]. There is evidence suggesting that QAOA
+may provide a signiﬁcant quantum advantage over clas-
+sical algorithms [14–16], and that it is computationally
+universal [17, 18].
+Despite these advances, there are limitations and po-
+tential issues with this algorithm. The performance
+improves with the number of alternating layers in the
+ansatz, but the latter is limited by coherence times in
+∗ zlinghua18@vt.edu
+† economou@vt.edu
+existing and near-term quantum processors. Moreover,
+more layers implies more variational parameters, which
+introduces challenges for the classical optimizer [19]. Fur-
+thermore, Ref. [20] points out that the locality and sym-
+metry of QAOA can also severely limit its performance.
+These issues can be attributed to, or are at least exacer-
+bated by, the form of the QAOA ansatz. In particular,
+short-depth QAOA is not really the digitized version of
+the adiabatic problem, but rather an ad hoc ansatz, and
+as a result should not be expected to perform optimally,
+or even well. A short-depth ansatz that is further tai-
+lored to a given combinatorial problem could therefore
+address the issues with the standard QAOA ansatz. How-
+ever, identifying such an alternative is a highly nontrivial
+problem given the vast space of possible ans¨ atze.
+In this work, we propose an iterative version of QAOA
+termed Adaptive Derivative Assembled Problem Tai-
+lored - Quantum Approximate Optimization Algorithm
+(ADAPT-QAOA). Our algorithm grows the ansatz two
+operators at a time by using a gradient criterion to sys-
+tematically select the QAOA mixer from a pre-deﬁned
+operator pool. While ADAPT-QAOA is general and
+can be applied to any optimization problem, we focus
+on Max-Cut to quantify its performance. We ﬁnd that
+when entangling gates are included in the operator pool,
+there is a dramatically faster convergence compared to
+standard QAOA. Surprisingly, despite the introduction
+of entangling gates as mixers, these improvements come
+with a reduction in the numbers of both the optimization
+parameters and the CNOT gates by approximately 50%
+each compared to standard QAOA. We summarize the
+details of our algorithm and its performance in Sec. II
+and provide evidence that this improved performance is
+related to the concept of shortcuts to adiabaticity [21–24]
+in Sec. III. Finally, we conclude in Sec. IV with a look
+ahead.
+arXiv:2005.10258v3  [quant-ph]  7 Jul 2022
+
+=== PDF PAGE 2 ===
+2
+II. ADAPT-QAOA
+A. F ramework
+In QAOA [4, 5], the variational ansatz consists of p
+layers, each containing the cost Hamiltonian HC and a
+mixer, HM:
+⏐⏐⏐ψp(⃗ γ,⃗β)⟩ =( p∏
+k=1
+[
+e−iHMβke−iHCγk]
+)
+|ψref⟩, (1)
+where|ψref⟩ =|+⟩⊗n, n is the number of qubits, and
+⃗ γand ⃗β are sets of variational parameters. If these pa-
+rameters are chosen such that
+⟨
+ψp(⃗ γ,⃗β)
+⏐⏐⏐HC⏐⏐⏐ψp(⃗ γ,⃗β)⟩
+is minimized, then the resulting energy and state provide
+an approximate solution to the optimization problem en-
+coded in HC. The accuracy of the result and the eﬃ-
+ciency with which it can be obtained depend sensitively
+onHM. In the standard QAOA ansatz, the mixer is cho-
+sen to be a single-qubit X rotation applied to all qubits.
+A few papers have suggested modiﬁcations to the stan-
+dard QAOA ansatz for speciﬁc problems and hardware
+architectures [25–27]. These interesting results reveal the
+potential advantages of the QAOA ansatz but do not pro-
+vide a universal strategy for choosing mixers that works
+across a broad range of optimization problems.
+In this work, we replace the single, ﬁxed mixer HM
+by a set of mixers Ak that change from one layer to the
+next:
+⏐⏐⏐ψp(⃗ γ,⃗β)⟩ =( p∏
+k=1
+[
+e−iAkβke−iHCγk]
+)
+|ψref⟩. (2)
+We build up this ansatz iteratively, one layer at a time,
+in a way that is determined by HC. This iterative pro-
+cess is inspired by the variational quantum eigensolver
+algorithm, ADAPT-VQE [28, 29]. It can be summa-
+rized by three basic steps: First, deﬁne the operator set
+{Aj} (called the “mixer pool”, and where Aj = A†j)
+and select a suitable reference state to be the initial
+state:
+⏐⏐ψ(0)⟩ =|ψref⟩. Here, we choose |ψref⟩ =|+⟩⊗n
+as in the standard QAOA. We will return shortly to
+the question of how to choose the pool. Second, pre-
+pare the current ansatz
+⏐⏐ψ(k−1)⟩ on the quantum pro-
+cessor and measure the energy gradient with respect
+to the pool, the jth component of which is given by
+−i
+⟨
+ψ(k−1)⏐⏐eiHCγk[HC,Aj]e−iHCγk⏐⏐ψ(k−1)⟩, where the
+new variational parameterγk is set to a predeﬁned value
+γ0. For the measurement, we can decompose the commu-
+tator into linear combinations of Pauli strings and mea-
+sure the expectation values of the strings using general
+variational quantum algorithm methods [30]. If the norm
+of the gradient is below a predeﬁned threshold, then the
+algorithm stops, and the current state and energy esti-
+mate approximate the desired solution. If the gradient
+threshold is not met, modify the ansatz by adding the
+operator, A(k)max, associated with the largest component
+of the gradient:
+⏐⏐ψ(k)⟩ = e−iA(k)maxβke−iHCγk⏐⏐ψ(k−1)⟩,
+where βk is a new variational parameter. Third, op-
+timize all parameters currently in the ansatz, βm, γm,
+m = 1,...,k , such that
+⟨
+ψ(k)⏐⏐HC⏐⏐ψ(k)⟩ is minimized,
+and return to the second step. This algorithm, which we
+call ADAPT-QAOA, lies somewhere between standard
+QAOA and ADAPT-VQE in the sense that it possesses
+the alternating-operator structure of QAOA but enjoys
+additional ﬂexibility by allowing the mixers to vary over
+the course of the iterative construction.
+B. Operator Pool
+The ﬁrst step in running this algorithm is to de-
+ﬁne the mixer pool. Deﬁne Q to be the set of
+qubits. The pool corresponding to the standard QAOA
+contains only one operator, PQAOA =
+{∑
+i∈QXi
+}
+.
+Here, we introduce two qualitatively diﬀerent pools:
+one consisting entirely of single-qubit mixers, and one
+with both single-qubit and multi-qubit entangling gates:
+Psingle =∪i∈Q{Xi,Yi}∪
+{∑
+i∈QYi
+}
+∪PQAOA, Pmulti =
+∪i,j∈Q×Q{BiCj|Bi,Cj∈{X,Y,Z}}∪ Psingle. Because
+PQAOA⊂Psingle⊂Pmulti, we expect that Pmulti will pro-
+vide the best performance. The QAOA, single-qubit, and
+multi-qubit pools have O(1), O(n), and O(n2) elements,
+respectively.
+Max-Cut is a classic (NP-hard) quadratic uncon-
+strained binary optimization problem, and it can be used
+to solve other optimization problems. Thus, it is a use-
+ful benchmarking problem for QAOA and has been used
+as such in prior works [5, 7, 11]. It is deﬁned as fol-
+lows: Given a graph G = (V,E ), with weight wi,j for
+edge (i,j ), ﬁnd a cut S⊆ V such that S∪ ¯S = V , and∑
+iϵS,jϵ ¯S,i,jϵE wi,j is maximized. This problem can be
+encoded in the Ising Hamiltonian
+HC =−12∑i,j wi,j(I−ZiZj), (3)
+where the couplings are given by the edge weights. Each
+classical state (i.e., tensor product of Z eigenstates) rep-
+resents a possible cut. HC counts the sum of the weights
+of the edges connecting one subgraph to the other, and
+its ground state corresponds to the maximum cut. HC
+has aZ2 symmetry generated byF =⊗iXi. Only the Aj
+that commute with F have a nonzero gradient (see Ap-
+pendix A), so we retain only these Pauli strings (which
+have an even number of Y or Z operators) in our mixer
+pool.
+C. Performance and Resource Comparison
+We use the Max-Cut problem on regular graphs with
+n=6 vertices and degrees D=3 and D=5 to bench-
+mark the performance of ADAPT-QAOA. For each type
+
+=== PDF PAGE 3 ===
+3
+0 2 4 6 8 10 12 14
+Layer (p)
+10-10
+10 -8
+10 -6
+10 -4
+10 -2
+10 0
+Energy error (arb. units)
+QAOA
+ADAPT-Single
+ADAPT-Multi
+0 2 4 6 8 10 12 14
+Layer (p)
+10-10
+10-8
+10-6
+10-4
+10-2
+10 0
+Energy error (arb. units)
+(a) (b)
+FIG. 1. Comparison of the performance of standard QAOA (blue) with ADAPT-QAOA for the single-qubit (orange) and
+multi-qubit (green) pools. The algorithms are run on the Max-Cut problem for the regular graphs shown in the ﬁgure, which
+have n=6 vertices and are of degree D=3 (a) and D=5 (b). The energy error (the diﬀerence between the energy estimate
+obtained by the algorithm and the exact ground state energy of HC) is shown as a function of the number of layers in the
+ansatz. Results are shown for 20 diﬀerent instances of edge weights, which are randomly sampled from the uniform distribution
+U(0, 1). The shaded regions indicate 95% conﬁdence intervals.
+of graph, we analyze 20 instances of random edge
+weights, which are drawn from the uniform distribution
+U(0, 1) [31]. We use Nelder-Mead for the optimization of
+the variational parameters ⃗β and⃗ γ. The gradients used
+to select new operators are sensitive to the initial val-
+ues for ⃗ γ. It is natural to initialize these parameters at
+γ0 = 0 to avoid biasing the optimization. However, as we
+show in Appendix B, γ0 = 0 is a critical point of the cost
+function [32]. Moreover, the minimum of the energy in
+the ﬁrst layer of ADAPT-QAOA never occurs at γ0 = 0.
+Therefore, we shift the initial valueγ0 slightly away from
+zero (γ0 = 0.01) to avoid these issues.
+In Fig. 1 we show the error as a function of the number
+of ansatz layers for the standard QAOA and for ADAPT-
+QAOA using single-qubit and multi-qubit mixer pools.
+For both 3- and 5-regular graphs, we ﬁnd that using the
+single-qubit mixer pool provides a modest improvement
+over standard QAOA. On the other hand, the multi-qubit
+pool performs dramatically better, leading to a rapid con-
+vergence to the exact solution after only ∼3 layers. We
+also ﬁnd that for the degree-5 graphs, standard QAOA
+and ADAPT-QAOA with single-qubit mixers converge
+slower than the degree-3 case, whereas the performance
+of ADAPT-QAOA with the multi-qubit operator pool re-
+mains approximately the same. Note that the particular
+form of the two-qubit operators in the pool was chosen
+for its simplicity. In general, one can choose a hardware-
+tailored operator pool, in the spirit of Ref. [33]. In Ap-
+pendix C, we show similar results for n = 8 and n = 10
+graphs of degree D = 2, where ADAPT-QAOA with the
+multi-qubit pool substantially outperforms the standard
+QAOA again. Going to larger values of D or n is made
+challenging by a sharp increase in the number of layers
+needed to reach convergence, as reported for standard
+QAOA in Ref. [34].
+It is interesting to ask how much the ADAPT-QAOA
+ans¨ atze diﬀer from the standard QAOA ansatz. We ﬁnd
+that when the single-qubit mixer pool is used, the single-
+qubit operators Xi are chosen instead of the standard
+mixer approximately 36.6% of the time for n=6,D =3
+graphs and 25% of the time for n=6,D =5 graphs. For
+the multi-qubit mixer pool, the algorithm chooses oper-
+ators other than the standard mixer approximately 75%
+of the time forn=6,D =3 graphs and 80% of the time for
+n=6,D =5 graphs (see Appendix D). This trend supports
+the intuitive idea that a more connected graph requires
+more entanglement for a rapid convergence to the solu-
+tion.
+A crucial question, especially for near-term platforms,
+is how the diﬀerent mixer pools compare with respect to
+resource overhead. Fig. 2 shows the number of CNOTs
+and number of parameters for the three algorithms. The
+CNOT counts are determined by decomposing each two-
+qubit operator into two CNOT gates and one or two
+single-qubit gates. Surprisingly, we ﬁnd that both the
+standard QAOA and the single-qubit mixer ans¨ atze in
+fact have more CNOTs compared to that constructed
+from the entangling multi-qubit mixer pool. Moreover,
+on average, the standard QAOA algorithm uses more
+parameters and CNOTs to reach the same convergence
+threshold than either version of ADAPT-QAOA. About
+half as many CNOTs are required for the ADAPT-QAOA
+multi-qubit pool case, despite the fact that the mixers
+in the multi-qubit pool themselves introduce additional
+CNOT gates on top of those coming from HC. Ref. [25]
+proposed using a restricted form of entangling gates in
+
+=== PDF PAGE 4 ===
+4
+QAOA ADAPT-Single ADAPT-Multi
+0
+5
+10
+15
+20
+25
+30
+35Parameter Count
+0
+100
+200
+300
+400
+500
+CNOT Count
+Parameter Count
+CNOT Count
+QAOA ADAPT-Single ADAPT-Multi
+0
+5
+10
+15
+20
+25
+30
+35Parameter Count
+0
+100
+200
+300
+400
+500
+CNOT Count
+Parameter Count
+CNOT Count
+(a)
+(b)
+FIG. 2. Resource comparison of the standard QAOA,
+ADAPT-QAOA with the single-qubit mixer pool, and
+ADAPT-QAOA with the multi-qubit mixer pool for the Max-
+Cut problem on regular graphs withn=6 vertices and random
+edge weights. Panels (a) and (b) show the comparison for
+graphs of degree D=3 and D=5, respectively. For all cases
+except the standard QAOA applied to D = 5 graphs, we
+count the number of parameters and CNOTs needed to reach
+an energy error of δE = 10−3. As standard QAOA for D = 5
+graphs never reaches this error threshold, we instead count the
+CNOT gates and parameters at the end of the simulation (15
+layers). The dark (light) red bars show variational parameter
+(CNOT gate) counts. The error bars show variances obtained
+by sampling over 20 diﬀerent instances of edge weights.
+the ansatz to obtain better performance in combinato-
+rial problems at the cost of introducing more variational
+parameters. In contrast, ADAPT-QAOA provides a sys-
+tematic way to both improve performance and reduce the
+number of parameters and CNOTs.
+III. SHOR TCUTS TO ADIABA TICITY
+One may wonder whether there is a physically intuitive
+way to understand the strikingly better performance of
+ADAPT-QAOA. Considering that the standard QAOA
+ansatz has a structure dictated by the adiabatic theo-
+rem, a possible explanation is that the ADAPT algo-
+rithm is related to shortcuts to adiabaticity (STA). STA,
+also known as counterdiabatic or transitionless driving,
+was introduced for quantum systems by Demirplak and
+Rice [21] and later, independently, by Berry [22, 23]. STA
+has also been explored in the classical context [35, 36],
+including a recent application in biology [37]. The idea
+is that if we want to drive a system such that it re-
+mains in the instantaneous ground state at all times,
+then by adding a certain term HCD to the Hamilto-
+nian, we can achieve this without paying the price of a
+slow evolution. Although the instantaneous eigenstates
+of the original Hamiltonian only solve the time-dependent
+Schr¨ odinger equation in the adiabatic limit, they become
+exact solutions when the Hamiltonian is updated to in-
+cludeHCD. The advantage of STA is that the evolution
+can be achieved nonadiabatically. Below, we provide ev-
+idence that ADAPT-QAOA is indeed related to STA, a
+likely explanation for why it converges to the solution
+much faster than its adiabatic counterpart, the standard
+QAOA. Before we present this evidence, we must ﬁrst
+explain howHCD can be constructed using the concept
+of adiabatic gauge potentials.
+A. Approximate adiabatic gauge potentials
+Here we brieﬂy review the mathematical machinery
+of STA and adiabatic gauge potentials [38–40]. Let |ψ⟩
+be a state evolving under H(θ(t)), i∂t|ψ⟩ =H(θ(t))|ψ⟩,
+where θ is a continuous variable that parameterizes the
+Hamiltonian. A unitary transformation U(θ(t)) can be
+applied to move the Hamiltonian H(θ(t)) from the ini-
+tial basis to its instantaneous eigenbasis, where ˜H(θ) =
+U†(θ)H(θ)U(θ) is diagonal at all times. The Schr¨ odinger
+equation in the instantaneous eigenbasis is i∂t| ˜ψ⟩ =
+[ ˜H− ˙θ ˜Aθ]| ˜ψ⟩, where | ˜ψ⟩ = U†|ψ⟩, ˙θ = dθ/dt, and
+˜Aθ =iU†∂θU is the adiabatic gauge potential in the ro-
+tated frame. It is evident that the term− ˙θ ˜Aθ drives tran-
+sitions between the energy levels of the original Hamilto-
+nianH. Therefore, one can add the counterdiabatic term
+HCD = ˙θAθ toH(θ), with Aθ = U ˜AθU†, to eliminate
+such transitions in the rotated frame. This is the core of
+transitionless driving protocols.
+Now, the matrix elements of the adiabatic gauge po-
+tential in the instantaneous eigenbasis are
+⟨m(θ)|Aθ|n(θ)⟩ =⟨m(θ)|U ˜AθU†|n(θ)⟩
+=i⟨m(θ)|∂θUU†|n(θ)⟩
+=i⟨m(θ)|∂θn(θ)⟩,
+(4)
+where we used ˜Aθ =iU†∂θU and|n(θ)⟩ =U(θ)|n0⟩ with
+|n0⟩ being independent of θ. Moreover, the adiabatic
+gauge potentialAθ satisﬁes [22, 38]
+⟨m|Aθ|n⟩ =i⟨m|∂θn⟩ =i⟨m|∂θH|n⟩En−Em , (5)
+which is obtained by diﬀerentiating the eigenfunction
+H(θ)|n(θ)⟩ = En(θ)|n(θ)⟩ with respect to θ. Note that
+
+=== PDF PAGE 5 ===
+5
+increasing the size of the system can lead to divergent
+matrix elements due to exponentially small denomina-
+tors (En−Em). In this regard, Ref. [40] proposes an
+approximate gauge potential
+A(p)θ =i
+p∑
+k=1
+ak[H,∂θH]2k−1, (6)
+where [X,Y ]k+1 = [X, [X,Y ]]k and {a1,a 2,...,a p} is
+a set of coeﬃcients with p being the order of the ex-
+pansion. This set of coeﬃcients is found by minimizing
+Tr
+[
+G2(A(p)θ )], where G(A(p)θ ) = ∂θH− i[H,A(p)θ ] [40].
+In fact, Tr
+[
+G2(X )] is minimized whenX is equal to the
+exact adiabatic gauge potential Aθ [38, 39]. Using ma-
+trix calculus identities and properties of the trace, it is
+straightforward to show that
+∂ Tr
+[
+G2(X )]
+∂X = 2[H,i∂θH− [X,H]]. (7)
+Only adiabatic gauge potentials satisfy [ H,i∂θH −
+[Aθ,H]] = 0. This is easily proven by diﬀerentiating
+˜H(θ) =U†(θ)H(θ)U(θ) with respect to θ,
+∂θ ˜H =∂θU†UU†HU +U†∂θHU +U†HUU†∂θU, (8)
+and noting that ˜Aθ = −i∂θU†U = iU†∂θU andH =∑
+nEn(θ)|n(θ)⟩⟨n(θ)|, then
+[Aθ,H] =i(∂θH−
+∑
+n
+∂θEn(θ)|n(θ)⟩⟨n(θ)|). (9)
+Given that [H,∑n∂θEn(θ)|n(θ)⟩⟨n(θ)|] = 0, adiabatic
+gauge potentials clearly satisfy
+[H,i∂θH− [Aθ,H]] = 0. (10)
+B. Connection between ADAPT-QAOA and ST A
+To investigate the connection between ADAPT-QAOA
+and STA, we apply the above formalism using the Hamil-
+tonianH = f(t)HC + [1−f(t)]∑ni Xi with f(t) = t/T
+and, since there is no other continuous variable that pa-
+rameterizes the Hamiltonian, we simply set θ =t in the
+equations above. T is the duration of the evolution from
+the initial state |ψref⟩ =|+⟩⊗n to the ground state of
+the cost HamiltonianHC, which is given by Eq. (3). The
+counterdiabatic HamiltonianHCD is approximated using
+Eq. (6), where p is the order of the approximation.
+As a concrete example, we study the Max-Cut problem
+on 32 instances of regular graphs (n=6, D=3) with ran-
+dom edge weights. Fig. 3 shows the probability that an
+operator in the ADAPT-QAOA ansatz is also one of the
+dominant operators inHCD. For each of the 32 cases, we
+deﬁne a setO(i)CD (with i = 1,..., 32) comprised of the 5
+operators with the largest coeﬃcient in the time-averaged
+HCD [41]. The probability P in Fig. 3 is constructed by
+1st order
+2nd order
+3rd order
+4th order
+5th order
+6th order
+7th order
+8th order
+1 2 3 4 5
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Layer (p)
+P
+FIG. 3. Probability P of the operator at layer p of the
+ADAPT-QAOA ansatz to be among the Pauli strings with
+the largest coeﬃcient in HCD averaged over 32 graphs with
+n = 6, D = 3. The diﬀerent curves correspond to diﬀerent
+orders of the approximation.
+taking the total number of times the mixer operator at
+layerp is also an element of the corresponding set O(i)CD
+and dividing it by the total number of cases. In all cases,
+the mixer operator at the ﬁrst layer is also an element
+of the set O(i)CD. For higher layers, the probability of
+the mixer operator to be in O(i)CD is inversely propor-
+tional to the layer number. We attribute this to the fact
+thatHCD is computed for a speciﬁc mixer Hamiltonian
+(∑ni Xi), while information about this choice does not
+enter into ADAPT-QAOA, which only relies on the ini-
+tial state |+⟩⊗n [42]. Interestingly, from Fig. 3 we see
+that going to higher order in the HCD approximation
+increases the probability of ﬁnding the mixers in the set
+O(i)CD. It therefore appears that ADAPT-QAOA ﬁnds the
+appropriate rotation axes in Hilbert space for faster con-
+vergence to the solution, and that these axes may in some
+sense be universal across all possible choices ofH(t) that
+interpolate between the initial and target states. This
+suggests that STA can be used as a tool to construct
+operator pools for ADAPT-QAOA.
+IV. CONCLUSION
+In conclusion, we introduced ADAPT-QAOA, a new
+optimization algorithm that grows the ansatz iteratively
+in a way that is naturally tailored to a given problem.
+We tested several instances of random diagonal Hamil-
+tonians and found that ADAPT-QAOA always outper-
+forms the standard QAOA. Given its ﬂexibility with the
+choice of mixer pool, the algorithm can be tailored to
+the native gates, connectivities, and experimental con-
+straints of hardware. It would also be fruitful to em-
+ploy ADAPT-QAOA for optimization problems that use
+higher-dimensional Hilbert spaces, such as graph coloring
+[26, 27]. Finally, more work into the connection to STA
+
+=== PDF PAGE 6 ===
+6
+would be of both fundamental and practical interest.
+ACKNOWLEDGEMENTS
+We thank Bryan T. Gard and Ada Warren for help-
+ful discussions. S. E. E. acknowledges support from the
+US Department of Energy (Award No. DE-SC0019318).
+E.B. and N.J.M. acknowledge support from the US De-
+partment of Energy (Award No. DE-SC0019199).
+Appendix A: Ising symmetry and mixer pool
+operators
+In this work, we focus on Ising Hamiltonians of the
+form
+HC =−12∑i,j wi,j(I−ZiZj), (A.1)
+which have a Z2 symmetry associated with the operator
+F =⊗iXi. Since [ F,HC] = 0 and F|ψref⟩ =|ψref⟩, we
+can rewrite the gradient in the ﬁrst iteration as
+⟨ψref|eiHCγ1[HC,Aj]e−iHCγ1|ψref⟩
+=⟨ψref|eiHCγ1F [HC,Aj]Fe−iHCγ1|ψref⟩, (A.2)
+where Aj is an operator from the mixer pool. However,
+we also know that FAj =±AjF because F and Aj are
+Pauli strings (except when Aj is the standard QAOA
+mixer ∑i∈QXi or ∑i∈QYi, but the former commutes
+and the latter anticommutes with F ), so F [HC,Aj]F =
+±[HC,Aj]. Comparing this to Eq. (A.2), we see that to
+have a non-zero gradient, we need [F,Aj] = 0. This holds
+for all steps of the algorithm, because only operators that
+commute withF appear in the ans¨ atze, so a formula like
+Eq. (A.2) holds at every iteration. The Aj that commute
+with F are Pauli strings that have an even number of Y
+or Z operators, so we retain only these Pauli strings in
+our mixer pool.
+Appendix B: First Layer of ADAPT-QAOA ansatz
+Here we analyze the ADAPT-QAOA cost function in
+the ﬁrst layer, and the results show that the minimum
+of the energy in the ﬁrst layer of ADAPT-QAOA never
+occurs at γ = 0 for any operator included in the pool.
+We also show that γ = 0 is a critical point of the cost
+function.
+At level p of ADAPT-QAOA, the cost function is
+Ep(β,γ ) =⟨ψ(p−1)|e−iγHe−iβMHeiβMeiγH|ψ(p−1)⟩.
+(B.1)
+Where H is a linear combination of Pauli strings that
+are tensor products of the identity and Z. All the terms
+in H commute with each other. M is the mixer. If the
+mixers M are single-Pauli strings, we have
+e−iβMHeiβM =Hc + cos(2β)Ha−i sin(2β)MHa, (B.2)
+where Hc is the part of H that commutes with M, and
+Ha is the part ofH that anticommutes withM. We then
+have
+e−iγHe−iβMHeiβMeiγH
+=Hc + cos(2β)Ha−i sin(2β)e−iγHMeiγHHa
+=Hc + cos(2β)Ha−i sin(2β)MHae2iγHa. (B.3)
+We know thatEp(β,γ ) is periodic in β with period π.
+Therefore, we can restrictβ to the rangeβ∈ [−π/2,π/ 2]
+without loss of generality. Let’s deﬁne
+G(γ)≡−iMHae2iγHa. (B.4)
+The cost function is then
+Ep(β,γ ) =⟨Hc⟩ + cos(2β)⟨Ha⟩ + sin(2β)⟨G(γ)⟩, (B.5)
+where the expectation values are taken with respect to
+|ψ(p−1)⟩. Therefore,
+∂Ep
+∂β =−2 sin(2β)⟨Ha⟩ + 2 cos(2β)⟨G(γ)⟩ = 0
+⇒ tan(2β) =⟨G(γ)⟩⟨Ha⟩ , (B.6)
+and
+∂Ep
+∂γ = sin(2β)⟨G′(γ)⟩ = 0
+⇒β = 0,±π/2 or ⟨G′(γ)⟩ = 0. (B.7)
+For the ﬁrst layer, p = 1, the state is |ψ(0)⟩ =|+⟩⊗n,
+and so ⟨Ha⟩ = 0. From Eq. (B.6), we see that β =
+±π/4 assuming ⟨0|G(γ)|0⟩⁄ = 0. Eq. (B.7) then requires
+⟨G′(γ)⟩ = 0. Using Eq. (B.4), for p = 1 this is:
+⟨0|G′(γ)|0⟩= 2⟨0|MH 2ae2iγHa|0⟩
+= 2⟨0|H2ae2iγHa|0⟩ = 0. (B.8)
+Notice that γ = 0 is not a solution of this equation
+because ⟨0|H2a|0⟩ > 0, which follows from the fact that
+this is the norm of a nonzero state, Ha|+⟩⊗n. Numerics
+are needed to determine if there is a nonzero value of γ
+that satisﬁes ⟨0|G′(γ)|0⟩ = 0.
+On the other hand, if ⟨0|G(γ)|0⟩ = 0, then there is
+no constraint on β from ∂Ep∂β = 0. Notice that this hap-
+pens when γ = 0 since ⟨0|G(0)|0⟩ =−i⟨0|MHa|0⟩ = 0,
+which is true for regular graphs where Ha is a sum of
+terms like ZjZk, and M is a Pauli string that commutes
+with F = ⊗𝓁X𝓁. In this case, we must have β = 0
+or±π/2. There could be other values of γ that sat-
+isfy ⟨0|G(γ)|0⟩ = 0, but it seems unlikely that both this
+
+=== PDF PAGE 7 ===
+7
+condition and ⟨0|G′(γ)|0⟩ = 0 can be satisﬁed simulta-
+neously, so it is probably still true that β must be 0 or
+±π/2 in this case.
+In summary, there are two classes of possible solu-
+tions for p = 1: (i) β =±π/4 and γ = γ∗⁄= 0 where
+⟨0|G′(γ∗)|0⟩ = 0; (ii) γ = γ∗ where ⟨0|G(γ∗)|0⟩ = 0
+and either ⟨0|G′(γ∗)|0⟩ = 0 or β = 0,±π/2. To clar-
+ify whether these solutions are maxima or minima, we
+calculated the second derivatives:
+∂2Ep
+∂β2 =−4 cos(2β)⟨0|Ha|0⟩− 4 sin(2β)⟨0|G(γ)|0⟩,
+(B.9)
+∂2Ep
+∂γ2 = sin(2β)⟨0|G′′(γ)|0⟩, (B.10)
+∂2Ep
+∂β∂γ = 2 cos(2β)⟨0|G′(γ)|0⟩. (B.11)
+Let’s consider the class (i) extrema ﬁrst. In this case
+∂2Ep
+∂β2
+⏐⏐⏐⏐
+β=±π/4,γ=γ∗
+=∓4⟨0|G(γ∗)|0⟩, (B.12)
+and the Hessian is
+{
+∂2Ep
+∂β2
+∂2Ep
+∂γ2 −
+(∂2Ep
+∂β∂γ
+)2}⏐⏐⏐⏐
+β=±π/4,γ=γ∗
+=−4⟨0|G(γ∗)|0⟩⟨ 0|G′′(γ∗)|0⟩. (B.13)
+Thus, we need ⟨0|G(γ∗)|0⟩⟨ 0|G′′(γ∗)|0⟩ < 0, in which
+caseβ =π/4 is a maximum andβ =−π/4 is a minimum
+if ⟨0|G(γ∗)|0⟩ > 0, while β =−π/4 is a maximum and
+β =π/4 is a minimum if ⟨0|G(γ∗)|0⟩< 0.
+For type (ii) extrema, we have
+∂2Ep
+∂β2
+⏐⏐⏐⏐
+β=0,±π/2,γ=γ∗
+=±4⟨0|Ha|0⟩ = 0, (B.14)
+and the Hessian is
+{
+∂2Ep
+∂β2
+∂2Ep
+∂γ2 −
+(∂2Ep
+∂β∂γ
+)2}⏐⏐⏐⏐
+β=0,±π/2,γ=γ∗
+=−4⟨0|G′(γ∗)|0⟩2, (B.15)
+these extrema are saddle points. Notice that γ = 0 is one
+of these saddle points.
+We can see that the minimum of the energy in the
+ﬁrst layer of ADAPT-QAOA never occurs at γ = 0, and
+the only minima occur at β =±π/4 and γ = γ∗⁄= 0,
+which is consistent with our numerical simulation results.
+The fact that γ = 0 is a saddle point (at least in the
+ﬁrst layer) makes this a problematic choice for the ini-
+tial value of γ in the classical optimization subroutine
+of ADAPT-QAOA. For this reason, we instead choose
+the initial value, γ0, to be a small nonzero value, e.g.,
+γ0 = 0.01. Similar performance is achieved for any value
+of γ0 ≲ 0.1. Keeping γ0 close to zero is preferable to
+avoid biasing the optimization.
+Appendix C: Scalability of ADAPT-QAOA
+Here, we investigate the scalability of our algorithm.
+We perform simulations for degree D = 2 graphs with
+n = 8 and n = 10 qubits, with results shown in Figs. 4
+and 5. Clearly, even for larger system sizes and less con-
+nected graphs where D/n< 1/2, our algorithm exhibits
+substantially better performance compared to standard
+QAOA.
+2 4 6 8 10
+layer
+10 15
+10 13
+10 11
+10 9
+10 7
+10 5
+10 3
+10 1
+energy error
+QAOA
+ADAPT-Single
+ADAPT-Multi
+N8D2_Error
+FIG. 4. The performance of three algorithms for the Max-Cut
+problem on a n = 8 and D = 2 graph with randomly chosen
+edge weights.
+2 4 6 8 10 12 14 16
+layer
+10 5
+10 4
+10 3
+10 2
+10 1
+100
+energy error
+QAOA
+ADAPT-Single
+ADAPT-Multi
+N10D2_Error
+FIG. 5. The performance of three algorithms for the Max-Cut
+problem on a n = 10 and D = 2 graph with randomly chosen
+edge weights.
+
+=== PDF PAGE 8 ===
+8
+XIIIII IXIIII IIXIII IIIXII IIIIXI IIIIIX iXi
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7Probability
+(a)
+0.0 0.2 0.4 0.6 0.8
+Probability
+Single-qubit gates
+Original
+XIIIII IXIIII IIXIII IIIXII IIIIXI IIIIIX XiXj YiYj YiZj ZiYj
+i
+Xi
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30Probability
+(b)
+0.0 0.2 0.4 0.6 0.8
+Probability
+Single-qubit 
+ gates
+Entangling
+ gates 
+Original
+XIIIII IXIIII IIXIII IIIXII IIIIXI IIIIIX iXi
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7Probability
+(c)
+0.0 0.2 0.4 0.6 0.8
+Probability
+Single-qubit gates
+Original
+XIIIII IXIIII IIXIII IIIXII IIIIXI IIIIIX XiXj YiYj YiZj ZiYj iXi
+0.00
+0.05
+0.10
+0.15
+0.20Probability
+(d)
+0.0 0.2 0.4 0.6 0.8
+Probability
+Single-qubit 
+ gates
+Entangling
+ gates 
+Original
+FIG. 6. Probability of operators picked by the original QAOA, ADAPT-QAOA with the single-qubit mixer and ADAPT-QAOA
+with multi-qubit pool for the Max-Cut problem on regular graphs with n=6 vertices with degree D=3 (a)(b) and D=5 (c)(d)
+with random edge weights sampled from a uniform distribution U(0, 1). The blue bars show the probability of each particular
+operator used for ansatz, and green bars show the probability of the original mixer, sum over all single-qubit gates and sum
+over all entangling gates used in ansatz. The results from 20 instances of random edge weights.
+Appendix D: Role of entangling mixers versus
+entangling gates
+In Fig. 2, we compared the resources used by three
+diﬀerent algorithms for the Max-Cut problem on regular
+graphs. These resources include the number of CNOT
+gates and the number of optimization parameters. From
+the comparison we can see that including entangling mix-
+ers in the ansatz produces a dramatically faster con-
+vergence to the exact solution compared to the original
+QAOA. Surprisingly, despite the inclusion of these en-
+tangling mixers, the improvement in convergence comes
+with a simultaneous reduction in both the number of en-
+tangling gates in the compiled ansatz.
+To further investigate the role of entangling mixers,
+we consider the n = 6, D = 3 (in Fig. 6 (a), (b)) and
+n = 6, D = 5 graphs (in Fig. 6 (c), (d)) and show the
+probability for an operator to be picked by the original
+QAOA and by ADAPT-QAOA with a single-qubit mixer
+pool in Fig. S1. Similar results for ADAPT-QAOA with
+a multi-qubit mixer pool are also shown in Fig. 6(b),(d).
+We ﬁnd that when only the single-qubit mixer pool is
+used, the single-qubit operators Xi are chosen instead
+of the original mixer approximately 25% of the time.
+For the multi-qubit mixer pool, the algorithm chooses
+two-qubit entangling operators approximately 70% of the
+time. Clearly, entangling mixers play a central role in the
+improved performance of ADAPT-QAOA.
+Additionally, to understand the importance of CNOT
+gates in the compiled ansatz, in Fig. 7 we show the er-
+ror for the solution determined by each algorithm as a
+function of the number of CNOTs used in the ansatz for
+both n = 6, D = 3 and n = 6, D = 5 graphs. Based
+on the ﬁgure, we can see that ADAPT-QAOA with the
+
+=== PDF PAGE 9 ===
+9
+25 50 75 100 125 150 175 200
+CNOTs count
+10 11
+10 9
+10 7
+10 5
+10 3
+10 1
+error
+(a)
+50 100 150 200 250 300
+CNOTs count
+10 9
+10 7
+10 5
+10 3
+10 1
+error
+(b)
+algorithm
+QAOA
+ADAPT-Single
+ADAPT-Multi
+FIG. 7. Comparison of the performance of the original QAOA
+algorithm (blue) with the ADAPT-QAOA algorithm for the
+single-qubit (orange) and multi-qubit (green) pools run for the
+Max-Cut problem on graphs with n = 6 vertices with degree
+D = 3 (a) and D = 5 (b). The energy error is shown as a
+function of the number of total CNOTs used in the ansatz.
+multi-qubit mixer pool converges using a much smaller
+number of CNOTs compared to the original QAOA or
+to ADAPT-QAOA with the single-qubit mixer pool. On
+the other hand, the latter only provides a modest reduc-
+tion in CNOT count compared to the original QAOA. In-
+terestingly, we see that while entangling mixers are cru-
+cial for the dramatic improvement in the performance
+aﬀorded by ADAPT-QAOA with the multi-qubit mixer
+pool, at the same time far fewer entangling gates are
+needed in the ansatz. Thus, the role of entanglement in
+this algorithm is rather subtle.
+[1] Young-Hyun Oh, Hamed Mohammadbagherpoor,
+Patrick Dreher, Anand Singh, Xianqing Yu, and Andy J
+Rindos, “Solving multi-coloring combinatorial optimiza-
+tion problems using hybrid quantum algorithms,” arXiv
+preprint arXiv:1911.00595 (2019).
+[2] Gary Kochenberger, Jin-Kao Hao, Fred Glover, Mark
+Lewis, Zhipeng L¨ u, Haibo Wang, and Yang Wang, “The
+unconstrained binary quadratic programming problem: a
+survey,” Journal of Combinatorial Optimization 28, 58–
+81 (2014).
+[3] Andrew Lucas, “Ising formulations of many NP prob-
+lems,” Frontiers in Physics 2, 5 (2014).
+[4] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann, “A
+quantum approximate optimization algorithm,” arXiv
+preprint arXiv:1411.4028 (2014).
+[5] Edward Farhi, Jeﬀrey Goldstone, and Peter Shor, Design
+of Quantum Algorithms Using Physics Tools , Tech. Rep.
+(MASSACHUSETTS INST OF TECH CAMBRIDGE,
+2014).
+[6] Edward Farhi and Aram W Harrow, “Quantum
+supremacy through the quantum approximate optimiza-
+tion algorithm,” arXiv preprint arXiv:1602.07674 (2016).
+[7] Ruslan Shaydulin, Ilya Safro, and Jeﬀrey Larson, “Mul-
+tistart methods for quantum approximate optimization,”
+arXiv preprint arXiv:1905.08768 (2019).
+[8] G Pagano, A Bapat, P Becker, KS Collins, A De,
+PW Hess, HB Kaplan, A Kyprianidis, WL Tan,
+C Baldwin, et al. , “Quantum approximate optimization
+with a trapped-ion quantum simulator,” arXiv preprint
+arXiv:1906.02700 (2019).
+[9] Zhihui Wang, Stuart Hadﬁeld, Zhang Jiang, and
+Eleanor G Rieﬀel, “Quantum approximate optimization
+
+=== PDF PAGE 10 ===
+10
+algorithm for MaxCut: A fermionic view,” Physical Re-
+view A 97, 022304 (2018).
+[10] Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes
+Pichler, and Mikhail D Lukin, “Quantum approximate
+optimization algorithm: performance, mechanism, and
+implementation on near-term devices,” arXiv preprint
+arXiv:1812.01041 (2018).
+[11] Gavin E Crooks, “Performance of the quantum approxi-
+mate optimization algorithm on the maximum cut prob-
+lem,” arXiv preprint arXiv:1811.08419 (2018).
+[12] Zhi-Cheng Yang, Armin Rahmani, Alireza Shabani,
+Hartmut Neven, and Claudio Chamon, “Optimizing
+variational quantum algorithms using Pontryagin’s min-
+imum principle,” Physical Review X 7, 021027 (2017).
+[13] Zhang Jiang, Eleanor G Rieﬀel, and Zhihui Wang,
+“Near-optimal quantum circuit for Grover’s unstructured
+search using a transverse ﬁeld,” Physical Review A 95,
+062317 (2017).
+[14] Panagiotis Kl Barkoutsos, Giacomo Nannicini, Anton
+Robert, Ivano Tavernelli, and Stefan Woerner, “Improv-
+ing variational quantum optimization using cvar,” arXiv
+preprint arXiv:1907.04769 (2019).
+[15] Gian Giacomo Guerreschi and AY Matsuura, “QAOA for
+Max-Cut requires hundreds of qubits for quantum speed-
+up,” Scientiﬁc reports 9, 6903 (2019).
+[16] Murphy Yuezhen Niu, Sirui Lu, and Isaac L Chuang,
+“Optimizing QAOA: Success probability and run-
+time dependence on circuit depth,” arXiv preprint
+arXiv:1905.12134 (2019).
+[17] Mauro ES Morales, Jacob Biamonte, and Zolt´ an
+Zimbor´ as, “On the universality of the quantum ap-
+proximate optimization algorithm,” arXiv preprint
+arXiv:1909.03123 (2019).
+[18] Seth Lloyd, “Quantum approximate optimization is com-
+putationally universal,” arXiv preprint arXiv:1812.11075
+(2018).
+[19] David Wierichs, Christian Gogolin, and Michael Kas-
+toryano, “Avoiding local minima in variational quantum
+eigensolvers with the natural gradient optimizer,” arXiv
+preprint arXiv:2004.14666 (2020).
+[20] Sergey Bravyi, Alexander Kliesch, Robert Koenig, and
+Eugene Tang, “Obstacles to state preparation and vari-
+ational optimization from symmetry protection,” arXiv
+preprint arXiv:1910.08980 (2019).
+[21] Mustafa Demirplak and Stuart A Rice, “Adiabatic popu-
+lation transfer with control ﬁelds,” The Journal of Phys-
+ical Chemistry A 107, 9937–9945 (2003).
+[22] M. V. Berry, “Transitionless quantum driving,” J. Phys.
+A Math. Theor. 42, 365303 (2009).
+[23] D. Gu´ ery-Odelin, A. Ruschhaupt, A. Kiely, E. Tor-
+rontegui, S. Mart´ ınez-Garaot, and J. G. Muga, “Short-
+cuts to adiabaticity: Concepts, methods, and applica-
+tions,” Rev. Mod. Phys. 91, 045001 (2019).
+[24] Narendra N Hegade, Koushik Paul, Yongcheng Ding,
+Mikel Sanz, Francisco Albarr´ an-Arriagada, Enrique
+Solano, and Xi Chen, “Shortcuts to adiabaticity in dig-
+itized adiabatic quantum computing,” Physical Review
+Applied 15, 024038 (2021).
+[25] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann, and
+Hartmut Neven, “Quantum algorithms for ﬁxed qubit ar-
+chitectures,” arXiv preprint arXiv:1703.06199 (2017).
+[26] Stuart Hadﬁeld, Zhihui Wang, Bryan O’Gorman,
+Eleanor G Rieﬀel, Davide Venturelli, and Rupak Biswas,
+“From the quantum approximate optimization algorithm
+to a quantum alternating operator ansatz,” Algorithms
+12, 34 (2019).
+[27] Zhihui Wang, Nicholas C Rubin, Jason M Dominy, and
+Eleanor G Rieﬀel, “XY mixers: Analytical and numeri-
+cal results for the quantum alternating operator ansatz,”
+Physical Review A 101, 012320 (2020).
+[28] Harper R. Grimsley, Sophia E. Economou, Edwin
+Barnes, and Nicholas J. Mayhall, “An adaptive vari-
+ational algorithm for exact molecular simulations on a
+quantum computer,” Nat. Commun. 10, 3007 (2019).
+[29] Ho Lun Tang, V. O Shkolnikov, George S Barron,
+Harper R Grimsley, Nicholas J Mayhall, Edwin Barnes,
+and Sophia E Economou, “qubit-adapt-vqe: An adaptive
+algorithm for constructing hardware-eﬃcient ans¨ atze on
+a quantum processor,” PRX Quantum 2, 020310 (2021).
+[30] William J Huggins, Jarrod McClean, Nicholas Rubin,
+Zhang Jiang, Nathan Wiebe, K Birgitta Whaley, and
+Ryan Babbush, “Eﬃcient and noise resilient measure-
+ments for quantum chemistry on near-term quantum
+computers,” arXiv preprint arXiv:1907.13117 (2019).
+[31] Li Li, Minjie Fan, Marc Coram, Patrick Riley, and Stefan
+Leichenauer, “Quantum optimization with a novel Gibbs
+objective function and ansatz architecture search,” Phys-
+ical Review Research 2, 023074 (2020).
+[32] Ruslan Shaydulin, Ilya Safro, and Jeﬀrey Larson, “Mul-
+tistart methods for quantum approximate optimization,”
+in 2019 IEEE High Performance Extreme Computing
+Conference (HPEC) (IEEE, 2019) pp. 1–8.
+[33] Frank Arute, Kunal Arya, Ryan Babbush, Dave Bacon,
+Joseph C Bardin, Rami Barends, Sergio Boixo, Michael
+Broughton, Bob B Buckley, David A Buell,et al., “Quan-
+tum approximate optimization of non-planar graph prob-
+lems on a planar superconducting processor,” arXiv
+preprint arXiv:2004.04197 (2020).
+[34] V Akshay, H Philathong, MES Morales, and JD Bia-
+monte, “Reachability deﬁcits in quantum approximate
+optimization,” Physical Review Letters 124, 090504
+(2020).
+[35] Christopher Jarzynski, “Generating shortcuts to adia-
+baticity in quantum and classical dynamics,” Physical
+Review A 88, 040101(R) (2013).
+[36] Jiawen Deng, Qing-hai Wang, Zhihao Liu, Peter H¨ anggi,
+and Jiangbin Gong, “Boosting work characteristics and
+overall heat-engine performance via shortcuts to adia-
+baticity: Quantum and classical systems,” Physical Re-
+view E 88, 062122 (2013).
+[37] Shamreen Iram, Emily Dolson, Joshua Chiel, Julia
+Pelesko, Nikhil Krishnan, ¨Ozen¸ c G¨ ung¨ or, Benjamin
+Kuznets-Speck, Sebastian Deﬀner, Efe Ilker, Jacob G
+Scott, and Michael Hinczewski, “Controlling the speed
+and trajectory of evolution with counterdiabatic driv-
+ing,” Nat. Phys. (2020), 10.1038/s41567-020-0989-3.
+[38] Michael Kolodrubetz, Dries Sels, Pankaj Mehta, and
+Anatoli Polkovnikov, “Geometry and non-adiabatic re-
+sponse in quantum and classical systems,” Phys. Rep.
+697, 1–87 (2017).
+[39] Dries Sels and Anatoli Polkovnikov, “Minimizing irre-
+versible losses in quantum systems by local counterdia-
+batic driving,” Proc. Natl. Acad. Sci. 114, E3909–E3916
+(2017).
+[40] Pieter W Claeys, Mohit Pandey, Dries Sels, and Ana-
+toli Polkovnikov, “Floquet-Engineering Counterdiabatic
+Protocols in Quantum Many-Body Systems,” Phys. Rev.
+
+=== PDF PAGE 11 ===
+11
+Lett. 123, 090602 (2019).
+[41] We have seen in our simulations that only Pauli string
+operators are chosen by ADAPT-QAOA until deep into
+the layer number. Since we stop at layer 5, only Pauli
+strings are chosen in all 32 cases.
+[42] In principle, the mixer Hamiltonian in H(t) could be re-
+placed by any other Hamiltonian that has |+⟩⊗n as the
+ground state, but this would modify the counterdiabatic
+Hamiltonian and any resemblance to the ADAPT-QAOA
+ansatz would be reduced or even lost. Interestingly, using
+the mixer Hamiltonian ∑ni Xi involves the lowest possi-
+ble energetic cost [43, 44] of implementing the shortcut
+to adiabaticity.
+[43] Alan C. Santos and Marcelo S. Sarandy, “Superadiabatic
+Controlled Evolutions and Universal Quantum Compu-
+tation,” Sci. Rep. 5, 15775 (2015).
+[44] Yuanjian Zheng, Steve Campbell, Gabriele De Chiara,
+and Dario Poletti, “Cost of counterdiabatic driving and
+work output,” Physical Review A 94, 042132 (2016).

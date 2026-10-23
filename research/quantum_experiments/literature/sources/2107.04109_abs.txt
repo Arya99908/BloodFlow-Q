@@ -1,0 +1,238 @@
+ 
+
+ [2107.04109] Quantum Local Search with the Quantum Alternating Operator Ansatz 
+
+ Skip to main content 
+
+ Search 
+
+ Submit 
+ Donate 
+
+ Log in 
+
+ Search arXiv 
+
+ Press Enter to search · Advanced search 
+
+--> 
+
+ Quantum Physics
+
+ arXiv:2107.04109 (quant-ph)
+
+ [Submitted on 8 Jul 2021 ( v1 ), last revised 11 Aug 2022 (this version, v3)]
+
+ Title: Quantum Local Search with the Quantum Alternating Operator Ansatz
+
+ Authors: Teague Tomesh , Zain H. Saleem , Martin Suchara 
+ View a PDF of the paper titled Quantum Local Search with the Quantum Alternating Operator Ansatz, by Teague Tomesh and 2 other authors
+
+ View PDF 
+ HTML (experimental) 
+
+ Abstract: We present a new hybrid, local search algorithm for quantum approximate optimization of constrained combinatorial optimization problems. We focus on the Maximum Independent Set problem and demonstrate the ability of quantum local search to solve large problem instances on quantum devices with few qubits. This hybrid algorithm iteratively finds independent sets over carefully constructed neighborhoods and combines these solutions to obtain a global solution. We study the performance of this algorithm on 3-regular, Community, and Erdős-Rényi graphs with up to 100 nodes.
+
+ Comments: 
+ 13 pages, 8 figures 
+
+ Subjects: 
+
+ Quantum Physics (quant-ph) 
+
+ Cite as: 
+ arXiv:2107.04109 [quant-ph] 
+
+ (or 
+ arXiv:2107.04109v3 [quant-ph] for this version)
+
+ https://doi.org/10.48550/arXiv.2107.04109 
+
+ Focus to learn more 
+
+ arXiv-issued DOI via DataCite
+
+ Journal reference: 
+ Quantum 6, 781 (2022) 
+
+ Related DOI :
+
+ https://doi.org/10.22331/q-2022-08-22-781 
+
+ Focus to learn more 
+
+ DOI(s) linking to related resources
+
+ Submission history
+ From: Teague Tomesh [ view email ] [v1] 
+ Thu, 8 Jul 2021 21:06:58 UTC (871 KB) 
+ [v2] 
+ Mon, 14 Feb 2022 18:59:11 UTC (2,324 KB) 
+ [v3] 
+ Thu, 11 Aug 2022 19:02:09 UTC (2,419 KB) 
+
+ Full-text links: 
+ Access Paper:
+
+View a PDF of the paper titled Quantum Local Search with the Quantum Alternating Operator Ansatz, by Teague Tomesh and 2 other authors
+ View PDF 
+ HTML (experimental) 
+ TeX Source
+
+ view license 
+
+ Current browse context:
+
+ quant-ph
+
+ < prev 
+
+   |   
+ next > 
+
+ new 
+ | 
+ recent 
+ | 2021-07 
+
+ References & Citations
+
+ INSPIRE HEP 
+
+ SciX 
+ Google Scholar 
+
+ Semantic Scholar 
+
+ export BibTeX citation 
+ Loading... 
+
+ BibTeX formatted citation
+
+ × 
+
+ loading... 
+
+ Data provided by: 
+
+ Bookmark
+
+ Bibliographic Tools 
+
+ Bibliographic and Citation Tools
+
+ Bibliographic Explorer Toggle 
+
+ Bibliographic Explorer ( What is the Explorer? ) 
+
+ Connected Papers Toggle 
+
+ Connected Papers ( What is Connected Papers? ) 
+
+ Litmaps Toggle 
+
+ Litmaps ( What is Litmaps? ) 
+
+ scite.ai Toggle 
+
+ scite Smart Citations ( What are Smart Citations? ) 
+
+ Code, Data, Media 
+
+ Code, Data and Media Associated with this Article
+
+ alphaXiv Toggle 
+
+ alphaXiv ( What is alphaXiv? ) 
+
+ Links to Code Toggle 
+
+ CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) 
+
+ DagsHub Toggle 
+
+ DagsHub ( What is DagsHub? ) 
+
+ GotitPub Toggle 
+
+ Gotit.pub ( What is GotitPub? ) 
+
+ Huggingface Toggle 
+
+ Hugging Face ( What is Huggingface? ) 
+
+ ScienceCast Toggle 
+
+ ScienceCast ( What is ScienceCast? ) 
+
+ Demos 
+
+ Demos
+
+ Replicate Toggle 
+
+ Replicate ( What is Replicate? ) 
+
+ Spaces Toggle 
+
+ Hugging Face Spaces ( What is Spaces? ) 
+
+ Spaces Toggle 
+
+ TXYZ.AI ( What is TXYZ.AI? ) 
+
+ Related Papers 
+
+ Recommenders and Search Tools
+
+ Link to Influence Flower 
+
+ Influence Flower ( What are Influence Flowers? ) 
+
+ Core recommender toggle 
+
+ CORE Recommender ( What is CORE? ) 
+
+ Author 
+
+ Venue 
+
+ Institution 
+
+ Topic 
+
+ About arXivLabs
+
+ arXivLabs: experimental projects with community collaborators
+
+ arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+
+ Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+
+ Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+
+ Which authors of this paper are endorsers? |
+ Disable MathJax ( What is MathJax? )
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+
+ (opens in new tab) 
+
+ 

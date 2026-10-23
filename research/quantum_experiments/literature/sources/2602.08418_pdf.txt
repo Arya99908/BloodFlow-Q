@@ -1,0 +1,561 @@
+=== PDF PAGE 1 ===
+GROVER ADAPTIVE SEARCH WITH PROBLEM-SPECIFIC STATE
+PREPARATION
+Maximilian Hess∗,Lilly Palackal ∗, Abhishek Awasthi †, Peter J. Eder ‡, Manuel Schnaus ∗,
+Laurin Demmler∗, Karen Wintersperger ‡,
+Joseph Doetsch§
+This paper was developed within the Quantum Technology and Application Consortium (QUTAC). ¶
+ABSTRACT
+Grover’s search algorithm is one of the basic building block in the world of quantum algorithms.
+Successfully applying it to combinatorial optimization problems is a subtle challenge. As a
+quadratic speedup is not enough to naively search an exponentially large space, the search has to be
+complemented with a state preparation routine which increases the amplitudes of promising states
+by exploiting the problem structure. In this paper, we build upon previous work [1] to construct
+heuristic state preparation routines for the Traveling Salesperson Problem (TSP), mimicking the
+well-known classical Lin-Kernighan heuristic. With our heuristic, we aim to achieve a reasonable
+approximation ratio with only a polynomial number of Grover iterations. Further, we compare
+several algorithmic settings relating to termination criteria and the choice of Grover iterations when
+the number of marked solutions is unknown.
+1 Introduction
+Grover’s algorithm [2] is one of the oldest and most general achievements in the field of quantum algorithms. The
+algorithm searches an unsorted space for elements identified by a so-called oracle offering a quadratic speed-up (in
+terms of oracle calls) compared to brute-force search. When trying to apply this search algorithm to the domain of
+combinatorial optimization multiple challenges arise. The first is to define the criterion to be checked by the oracle.
+Given a candidate solution, it is in general not possible to efficiently tell whether the candidate solution optimizes the
+problem. To circumvent this issue, previous work proposed to instead focus on iteratively searching for improvements
+with respect to a reference solution instead of searching for the best solution from the beginning [3, 4, 5]. The initial
+reference is typically obtained using an efficient heuristic (e.g., a greedy algorithm), after which the Grover algorithm
+searches for all states better than the reference. For this search, the oracle can be easily defined [3] by marking all states
+whose cost function is lower than the reference value. After sampling a state improving the cost function, this state
+is chosen as the new reference and the process is repeated. When the Grover search cannot find an improvement, the
+algorithm returns the current solution. In this work, we address two key issues around this concept: The first concerns
+the details of the Grover search itself. The optimization application differs from the textbook case as we usually do
+not know how many “good” states there are. Typically, this problem is addressed by a randomization of the number of
+Grover iterations [5, 6] to be performed. We showcase a few subtleties in how exactly this randomization takes place
+and investigate if the same result could be achieved without randomness. The second issue addressed in this work
+is the state preparation preceding the Grover/Amplitude Amplification procedure. If one starts the algorithm for the
+solution of an optimization problem withnbinary variables in the uniform superposition over all2 n bit strings, there
+is no escaping an exponential run time if the goal is to measure one of exponentially few solutions. For this reason,
+we assert that any successful application of quantum search algorithms in combinatorial optimization must come
+∗Infineon Technologies AG, Neubiberg, Germany, maximilian.hess@infineon.com
+†BASF Digital Solutions GmbH, Ludwigshafen, Germany
+‡Siemens AG, Munich, Germany
+§Lufthansa Industry Solutions GmbH, Norderstedt, Germany
+¶QUTAC: info@qutac.de
+arXiv:2602.08418v1  [quant-ph]  9 Feb 2026
+=== PDF PAGE 2 ===
+Grover adaptive search with problem-specific state preparation
+with a problem-specific state preparation routine with the purpose of filtering out infeasible states and/or skewing the
+superposition towards certain reference states. This concept has already been demonstrated for the knapsack problem
+in [7]. We aim to demonstrate a similar method for the well known Traveling Salesperson Problem (TSP) whose
+constraint structure is fundamentally different from the linear inequalities defining the knapsack problem. To reach our
+objective, we combine a state preparation routine for states representing Hamiltonian cycles from [1] with inspiration
+taken from the Lin-Kernighan heuristic. More precisely, at every improvement step, we prepare a superposition of
+routes that differ only in a limited number of positions from the incumbent solution. We employ a benchmarking
+scheme along the lines of [8] and obtain relevant measures of quality for different algorithm settings. The hybrid
+benchmarking scheme allows us to analyze instances exceeding100binary variables which would not be possible
+using other quantum algorithms such as the Quantum Approximate Optimization Algorithm (QAOA) [9].
+2 Methods and Related Work
+Attempts at applying quantum search algorithms in the optimization of functions date back to the 1990s. In [5] the
+mechanism of iteratively searching for improvements with respect to an incumbent solution is outlined. The quantum
+search subroutine for an unknown number of good states in turn comes from [6] where the randomization of the choice
+of Grover iterations is proposed and proven to preserve a quadratic speedup over classical search. Further options in
+searching a space with an unknown fraction of positive outcomes are discussed by Yoder, Low and Chuang [4]. They
+remove the randomness by an algorithm which guarantees to measure a good solution with a specifiable probability
+1−δ. However, this guarantee comes at the price of an additional scaling which punishes small choices ofδ. In [10], the
+authors put together these well-known algorithmic building block into a framework dubbed “Grover Adaptive Search”
+(GAS) and specifically deal with the efficient construction of oracle operators for QUBO problems. On the side of
+combinatorial optimization, concrete applications of Grover Adaptive search have been proposed in [7] and [11] for
+knapsack and vehicle routing problems respectively. As it is central to our work, we reproduce the GAS algorithm [3]
+below.
+Data:f:X→R,λ >1
+Result:Solution candidatexand corresponding valuey=f(x)
+Computex 0 from a heuristic and setx=x 0,y=f(x 0);
+Setk= 1;
+whileTermination condition is not metdo
+Randomly selectn grover from{0, . . . ,⌈k−1⌉}; Apply Grover withngrover iterations of oracleO y and
+diffusion operatorD;
+Measure solution candidatez;
+iff(z)< ythen
+Set new thresholdy=f(z)and incumbent solutionx=z;
+Resetk= 1;
+end
+else
+Setk=λ·k;
+end
+end
+returnx, y
+Algorithm 1:Grover Adaptive Search in the orignial version. Whether or not the algorithm finds the optimal
+solution depends largely on when the search is terminated.
+The state preparation methods used in this paper rely on the methods developed by Baertschi and Eidenbenz [1] where
+a quantum algorithm which prepares superpositions of feasible states for the TSP is presented. Its original purpose
+was the construction of constraint-preserving mixers for variational algorithms. This state preparation routine, in turn,
+relies crucially on the efficient preparation of Dicke states, based on work by the same authors [12]. The idea to
+introduce a biasing factor into the state preparation rather than aiming for an equal superposition is inspired by work
+on the knapsack problem [7], where a very performant quantum algorithm was presented on the basis of skewing the
+initial state towards a certain reference state. Further inspiration comes from the classical optimization of the TSP
+where thek-opt and Lin-Kernighan heuristics [13] have long been a key component of state-of-the-art solvers.
+2
+=== PDF PAGE 3 ===
+Grover adaptive search with problem-specific state preparation
+3 Grover Adaptive Search for the TSP
+3.1 TSP: problem definition
+Originally formulated by William Rowan Hamilton and Thomas Kirkman [14] as a recreational puzzle, the Traveling
+Salesperson Problem is an essential problem in combinatorial optimization. It formalizes the problem of a traveler,
+who means to visitncities and returning to the city they originally left from, while never visiting a city twice and
+minimizing the total distance traveled. The problem is evidently influenced by pre-modern life and was first mentioned,
+albeit not in a mathematically descriptive manner in 1832[15].
+Formally, the problem has the following setting: Given a graphG, defined by its set of verticesVof sizen=|V|and
+edgesE(since the graph is complete,|E|= n(n−1)2 ), such thatG= (V, E), we define each edgee m,n ∈Eto carrya weightd m,n. In the original interpretation of the problem,d m,n corresponds to the distance between the vertices
+(cities)v m andv n. A possible path through the graph can then be encoded fully inN=n 2 binary decision variables.
+Each binary variablex i,t ∈ {0,1}decides whether vertexvi ∈Vis visited at timestept≤n. Hence each vertexv i is
+assigned exactlynvariables, one for each timestep of the tour.
+A feasible route in the graph must follow some obvious rules.
+1. Each city must be visited exactly once in a feasible tour.
+2. At each point in timet≤n, exactly one city is visited.
+3. There must be exactlyntotal time steps (i.e. no timestep may be skipped). [13]
+Mathematically these constraints define a set of feasible bit stringsFthat describe allowed tours in the graph:
+F=
+n
+x∈ {0,1}N :
+nX
+t=1
+xi,t = 1,∀i= 1, ..., n
+and
+nX
+i=1
+xi,t = 1,∀t= 1, ..., n
+o
+.(1)
+To simplify notation, we define the cost (or distance) of some bit stringx∈Fasd(x)as:
+d(x) =
+nX
+t=1
+nX
+i=1
+i−1X
+j=1
+di,jxi,txj,(tmodn)+1 ,(2)
+in which the modulo ensures that the route is a closed loop through the graph. The TSP problem is solved by a bit
+string (or several if the optimal space is degenerate) that satisfies:
+x∗ ∈arg min
+x∈F
+d(x).(3)
+3.2 Initial state preparation
+In this work, we propose a heuristic state preparation for the TSP, significantly reducing the search space while still
+producing high-quality solutions. Our state preparation is inspired by the classical Lin-Kernighan TSP heuristic [13].
+Our expectation is that by a combination of a Lin-Kernighan like state preparation and an amplitude amplification
+protocol, we can achieve a quadratic speedup over classical heuristics. In the Lin-Kernighan heuristic, a chain of
+consecutive edges of variable length is exchanged by a set of edges not contained in the current route. Since the
+one-hot encoding of the TSP uses a node-based representation of a route, we exchange consecutive nodes in the
+current reference solutionxwith other nodes in the graph. For each length of the exchange chain, we define a state
+preparation that creates a superposition of all solutions where those nodes are replaced. Additionally, we try starting
+the exchange chain at each step of the route to enable all possible node exchanges. Given a starting indexi 0 and
+an exchange chain lengthl, we are interested in the set of solutions obtained by swappinglindices of the original
+solutions such that no two indices are involved in more than one swap. When sampling a new state, it can be assumed
+without loss of generality that the exchange chain starts at the first step in the route. This is possible due to the cyclic
+property of a route. To represent an exchange chain not starting at the beginning of the route, we can shift the start of
+the route so the route’s starting point corresponds to the start of the chain.
+The total algorithm for the tree search with creating a TSP with an estimated number of Grover iterations is described
+in Algorithm 2. In this algorithm, we choose to expand the size of an exchange chain if the previous chains find an
+3
+=== PDF PAGE 4 ===
+Grover adaptive search with problem-specific state preparation
+Data:Initial referencex, chain length limitl max, Number of TSP citiesN
+Result:TSP Routex, estimated Grover iterationsk total
+lchain ←0;
+improvement←F alse;
+ktotal ←0;
+λ←5/4;
+whileimprovement orl chain < lmax do
+improvement←F alse;
+lchain ←l chain + 1;
+i←0;
+K←min(N 2, Nlchain );
+whilei < N−1do
+i←i+ 1;
+k←0;
+l←0;
+whilek < Kandk total ≤5N 3 do
+samplen grover uniformly at random from{0, . . . , λl};
+xnew ←sample(x, lchain, i, ngrover);
+ifd(x new)< d(x)then
+improvement←T rue;
+k←k+n grover;
+l←l+ 1;
+x←x new;
+lchain ←1;
+end
+ktotal ←k total +n grover;
+end
+end
+end
+Algorithm 2:Quantum search algorithm with a state preparation inspired by the Lin-Kernighan algorithm. The
+function sample randomly samples a state switching a chain of a certain length of the reference starting at a specific
+TSP step after applyingn grover Grover iterations.d(x)describes the TSP distance of a solutionx.
+improvement. Since small exchange chain may not find any improvements depending on the heuristic used for the
+initial reference state, we introduce a parameterl min. This parameter represents the size of exchanges up to which the
+algorithm has to check for improvements.
+For each exchange chain at each location in the route, we set a maximum number of random samples until which an
+improvement has to be found. We adapt this limit depending on the current size of the exchange chain. With a TSP of
+sizenand a chain length of sizel, the total number of samples is close to (n−1)!(n−1−l)! . Assuming one of those samples
+creates an improvement and the samples are drawn uniformly, limiting the number of iterations ton l+1 leads to a
+probability close to zero of not sampling that state for increasing values ofnandl.
+In the small sized instances which we analyzed for this work, we observed that the exchange length to successfully
+move away from the greedy starting solution would often be so large that essentially all vertices are re-assigned at
+every improvement step. However, for larger instances beyond the scope of our simulation protocol, we expect to see
+an effect forl << n.
+In order to create the samples, it is necessary to create a quantum state which switches out the nodes in the exchange
+chain while maintaining all other nodes in the TSP route. B ¨artschi et al. have previously created a state preparation
+which encodes all feasible TSP solutions [1]. Here, we use that circuit structure to enable switching nodes in the
+exchange chain while setting all other nodes to values depending on the previous swaps. Starting with the first step
+in the TSP, we create a Dicke state [12] with Hamming weight1among all nodes except the reference node. This
+operation ensures a quantum state that maintains a one-hot encoding for that TSP step. While we do not allow the
+algorithm to sample exactly the reference state, the algorithm can freely choose any other node in the graph instead.
+Then, we use the last step as a buffer to store the chosen node as well as the node and time step with which it has
+been switched. Those two steps of the TSP are then fixed and cannot be changed in the remaining circuit. Afterwards,
+this process is repeated until the end of the exchange chain is reached. Since each swap fixes two nodes in the route,
+4
+=== PDF PAGE 5 ===
+Grover adaptive search with problem-specific state preparation
+0 1 2 3
+Reference state 1 0 2 3
+2 3 0 1
+3 2 1 0
+Possible samples
+Figure 1: Example for sampling a new state from the reference on the left. Here, each color corresponds to a different
+node in the TSP. The exchange chain starts at index0and has a length of2. This means the first two nodes in the route
+are swapped out for different ones.
+this algorithm only allows for exchanges chains of a length up to⌊ n2 ⌋for a TSP withNnodes. If the chain lengthexceeds this limit, nodes would have to be changed after already being fixed, which is not allowed. An example of the
+sampling possibilities is shown in Fig. 1. For illustration purposes, we defined an example for this circuit in Quirk.
+This example performs the state preparation for a TSP with4nodes and an exchange chain of length2. The reference
+solution is the path(0,1,2,3).
+4 Further algorithm settings
+4.1 Parameters in GAS
+Certain parameters in GAS only become relevant once the optimization problem is sufficiently large. One
+example is the choice ofλin Algorithm 1 or the termination criterion. In [10], the GAS is applied to portfolio
+optimization for three assets, i.e., three qubits. They choose the termination criterion to stop after three consecutive
+iterations without improvement. Now, for larger problems, the question of good termination criteria (blue values in
+Algorithm 3) and iteration strategies for an unknown number of marked states (orange values in Algorithm 3) arises.
+Data:f:X→R,λ >1
+Result:Solution candidatex∈X,valuey=f(x)
+Computex 0 from a heuristic and setx=x 0, y=f(x 0);
+Setr= 1;
+whileTermination condition is not metdo
+Randomly selectn grover from{0, . . . ,⌈λr⌉}; Apply Grover withn grover iterations of oracleO y and diffusion
+operator D;
+Measure solution candidatez;
+iff(z)< ythen
+Set new thresholdy=f(z)and incumbent solutionx=z;
+Resetr= 1;
+end
+else
+Setr=r+ 1;
+end
+end
+Algorithm 3:Grover Adaptive Search with steps subject to variation colored blue and orange.
+5
+=== PDF PAGE 6 ===
+Grover adaptive search with problem-specific state preparation
+4.1.1 Termination criterion
+The termination criterion directly influences the gate count and the success probability of the algorithm. In this work,
+we investigate the following three options for termination criteria based on gate count:
+• Constant termination: Stop afterciterations, wherecis a constant factor.
+• Linear termination: Stop afterc·Napplications of Grover iterations, whereNis the size of the input problem.
+• Quadratic termination: Stop afterc·N 2 applications of Grover iterations.
+Additionally, we compare the performance of GAS with termination criteria based on the success probability. The
+counterrin Algorithm 3 counts the number of times we measure an unmarked state. Thus, allowing for largerr,
+decreases the probability of terminating even though there still is a marked state. We investigate the following options:
+• Constant termination: Stop whenr=c, wherecis a constant factor.
+• Linear termination: Stop whenr=c·N, whereNis the size of the input problem.
+• Quadratic termination: Stop whenr=c·N 2.
+4.1.2 Number of Grover iterations for an unknown number of marked states
+For applying Grover to optimization problems, we mark states in the search space dependent on a bound on the goal
+function. In general, for a given bound, we do not know the number of marked states. Now, if we pick the wrong
+number of iterations, Grover’s search algorithm can result in a quantum state, where the amplitude of our desired state
+is low. To avoid that, we need good strategies to set the number of Grover iterations to increase our chances of finding
+a marked state. In this work, we investigate the following options for setting the number of iterations in GAS:
+I. The original strategy from [10]: Randomly select the number of Grover iterations from{0, . . . , λr}with
+λ >1in each roundr.
+II. Fixed interval strategy: Randomly select the number of Grover iterations from
+0, . . . ,
+
+π
+4 arcsin
+√
+1/N
+
+
+−1
+
+.
+III. Incremental number of iterations: Fix the number of iterations to
+
+π
+4 arcsin(
+√
+2−r+1)
+
+for each roundr.
+The original strategy (I.) is outlined in Algorithm 1. Initially, the number of iterations is selected uniformly at random
+from a small interval. This interval systematically expands as long as a marked state is not measured. The process
+terminates upon the measurement of a marked state or when a predefined termination criterion (most commonly a
+maximum number of Grover iterations) is met. Essentially, the strategy begins with a limited number of iterations and
+progressively increases this allowance if unmarked states are repeatedly measured. This iterative adjustment allows
+Strategy I to achieve a success probability that can be arbitrarily close to 1, depending on the chosen termination
+condition.
+The fixed interval strategy (II.) is an attempt to maximize the success probability. We choose the set from which we
+draw the numbern grover of Grover iterations to be{0, . . . ,⌈π4Θ ⌉ −1}withΘ = arcsinq 1N . As stated in Lemma 2
+in [6], when applyingn grover Grover iterations to the uniform superposition, wherengrover is uniformly randomly drawn
+from the set{0, . . . , m−1}withm≥1/sin 2ΘandΘ = arcsin
+p
+M/N, the probability of obtaining a marked state
+is at least1/4. For small values ofΘwe havesin 2Θ≈2Θ. Thus, our upper bound of the set in the fixed interval
+strategy π
+4 arcsin
+√
+1/N
+ −1also ensures the probability of measuring a marked state to be at least1/4per round, since
+it fulfills
+1
+sin 2Θ ≈ 12Θ = 12 arcsinpM/N ≤ 12 arcsinp1/N ≤ π4 arcsinp1/N .(4)
+The incremental strategy (III.) is inspired by the lecture notes by Scott Aaronson [16]. In Strategy III., we estimate the
+number of marked states in each round. If no marked state is measured, this guess is updated. Specifically, the protocol
+begins with an initial guess for the number of marked itemsM=Nand halves this guess in subsequent steps. This
+halving mechanism means that fewer Grover iterations are applied initially, with the number of iterations increasing
+exponentially in later stages. Unlike protocols that randomly draw the number of queries, the incremental strategy
+(III.) deterministically updates its guess in each round until either a marked state is found or a predefined termination
+condition is met.
+6
+=== PDF PAGE 7 ===
+Grover adaptive search with problem-specific state preparation
+5 Results and Discussion
+We analyze15TSP instances with5randomly generated problems with8,10and12nodes respectively, the number
+of decision variables hence lies between64and144. For each instance, we compute the initial objective value via a
+simple greedy procedure: Starting at an arbitrary node, we add the shortest available edge leading to an unvisited node
+to the tour until all nodes have been visited. Then, we use the classical optimization library OR-Tools, specifically, the
+CP-SAT solver [17] to compile the set
+FT ={x∈ {0,1}n×n :xis a feasible tour,d(x)< T},(5)
+wherenis the number of nodes,d(x)is the distance of a tour, andTis the initial objective threshold. With this
+information, we can classically simulate our Grover-based protocols without the need to run quantum circuits. This
+is done by (randomly) drawing the number of Grover iterationsn grover in each round and computing the measurement
+for each of the previously computed “good” states according to the formula
+pj(x) =p 0(x)
+sin2((2j+ 1) arcsin √P )
+P .(6)
+HereM=|F T |is the number of good states,P= Mn! is the sum of all the measurement probabilities belonging
+to good states, andp 0(x) = 1n! is the initial measurement probability for statex. This method of evaluating aGrover-based algorithm works as long as the values ofp 0(x)andPcan be efficiently obtained which is the case
+as long as the computation of eq. 5 takes a reasonable amount of time. We found that this was still the case for
+the instance sizes under consideration which at over100variables go much beyond the scope of any benchmarking
+attempts for other quantum algorithms such as QAOA. As a termination condition, we limited the number of rounds
+within each improvement step toR= 5,R= log λ(n2)orR= log λ(n4), respectively, whereλ= 5/4is the base
+of the exponentially growing upper bound for the number of Grover iterations. Recall that the number of Grover
+iterations is sampled uniformly at random from the interval[0,⌈λ k⌉]in roundk. Hence the expected (and maximum)
+number of iterations isO(λ R)if we allow forRrounds. As our highest possible choice ofRwaslog λ(n4), our
+algorithm overall has a polynomial run time.
+5 10 15
+Instance number
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6Deviation from optimal solution
+Quantum search with LK-inspired state preparation
+LK inspired AA solver
+Greedy solution
+5 10 15
+Instance number
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000Number of iterations
+Quantum search with LK-inspired state preparation
+LK inspired AA solver
+Figure 2: Approximation ratio and iteration count of the local search strategy inspired by the Lin-Kernighan algorithm.
+To measure the performance of our proposed methods, we introduce two metrics. The first performance metric is the
+deviation of the detected solution from the optimal one, averaged over a number of trial runs. Concretely, ifxis the
+detected solution andx ∗ is the optimal solution, our figure of merit is given by
+d(x)−d(x ∗)
+d(x∗) .(7)
+The second performance measure in this work is the number of Grover iterations needed in the simulation runs to
+reach our results.
+The presented results go in two directions. First we briefly benchmark a quantum search algorithm with the “local
+search” state preparation routine outlined in section 3.2. For the instances under consideration, the ability to move
+7
+=== PDF PAGE 8 ===
+Grover adaptive search with problem-specific state preparation
+away from the greedy solution with local steps proved to be limited. We suspect that this is the case because the
+changes required to improve the intermediate solutions would require changing almost all of the (few) assignments in
+the relatively small examples considered. We expect to see a more favorable behavior for larger instances, where it is
+possible to improve a given solution locally. We ran the algorithm with an iteration limit of5n 3 wheren= 8,10,12
+is the number of vertices in the graph.
+Next, we examine a quantum search algorithm on the same TSP instances starting from a superposition of all feasible
+states with a focus on comparing the different variants of Grover adaptive search presented in section 4. With a
+termination criterion, which limits the number of rounds in an improvement step, the three strategies show some
+differences. Although the fixed interval and incremental versions reach a higher approximation ratio for the same
+number of rounds before the search is terminated, their total number of iterations is also much higher. For the fixed
+interval strategy, this is because the upper limit of the interval from which we draw the number of Grover iterations
+does not grow throughout the protocol but starts off at a high value. For the incremental strategy, the number of Grover
+iterations in roundkscales with
+√
+2k, compared to √Lk for the standard GAS strategy. With our choice ofL= 54,this leads to a much higher number of Grover iterations when the round limit is chosen to be high.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Approximation ratio
+Standard GAS strategy: 
+Approximation ratio for different termination criteria
+R = 5
+R = log (n2)
+R = log (n4)
+baseline: greedy
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Approximation ratio
+Fixed interval strategy: 
+Approximation ratio for different termination criteria
+R = 5
+R = log (n2)
+R = log (n4)
+baseline: greedy
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Approximation ratio
+Incremental strategy: 
+Approximation ratio for different termination criteria
+R = 5
+R = log (n2)
+R = log (n4)
+baseline: greedy
+Figure 3: Comparison of the three variations of GAS outlined in Algorithm 3. We show the approximation ratio for
+three different choices for the number of Grover iterations, cf. Section 4.1.2. Additionally, we vary the termination
+criteria, where the upper bound for the number of Grover iterations is set byλ R andRis the number of rounds within
+each improvement step.
+8
+=== PDF PAGE 9 ===
+Grover adaptive search with problem-specific state preparation
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+100
+101
+102
+103
+104
+105
+T otal number of iterations
+Standard GAS strategy: 
+T otal iterations for different internal termination criteria
+R = 5
+R = log (n2)
+R = log (n2)
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+103
+104
+105
+T otal number of iterations
+Fixed interval strategy: 
+T otal iterations for different internal termination criteria
+R = 5
+R = log (n2)
+R = log (n2)
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+Scenario number
+101
+102
+103
+104
+105
+T otal number of iterations
+Incremental strategy: 
+T otal iterations for different internal termination criteria
+R = 5
+R = log (n2)
+R = log (n2)
+Figure 4: Comparison of the three variations of GAS outlined in Algorithm 3. We show the total number of iterations
+for three different choices for the number of Grover iterations, cf. Section 4.1.2. The termination criteria depend on
+the upper bound for the number of Grover iterationsλ R, whereRis the number of rounds within each improvement
+step.
+6 Conclusion and Outlook
+Regarding the analysis of different algorithmic settings relating to choosing the number of Grover iterations, we have
+come to a number of conclusions. First, it should be noted that the fixed interval strategy is not to be recommended as
+a general purpose termination criterion. It can be useful when the number of marked states is expected to be very low
+as we then skip the regime of “few” Grover iterations and already have a reasonable probability for measuring a good
+state starting from the first round. As the number of marked states, or even its rough size, is generally unknown, we
+advise to employ the fixed interval strategy only in select cases where one has some prior knowledge. It is not trivial
+to pick a winner from the standard GAS and incremental strategies. It should be noted that the number of iterations
+goes up much faster for the incremental strategy as it is governed by exponential number with base2by construction.
+This growth can be controlled somewhat better by employing the standard GAS strategy and choosing the algorithm
+parameterLto be smaller than2. Also, as the number of iterations is chosen deterministically, the incremental strategy
+is only guaranteed to eventually result in success if the amplitude of the good states is of the form kN wherek >0isan integer andNis the number of solutions in the initial state. This was the case for our TSP example but might not
+always be true as evidenced by works like [7] where the amplitudes are determined by elaborate biasing procedures.
+To determine whether fixed-point quantum search [4] can offer an advantage in practice by replacing the randomness
+overhead with an algorithmic overhead is another interesting question meriting its own numeric study.
+The state preparation routine preceding the search plays a key role in making amplitude amplification a useful
+tool in combinatorial optimization. We built on the routine presented in [1] and showed how it can be modified
+to a neighborhood search state. It remains to be seen whether a quantum search based algorithm employing this
+neighborhood search scheme can be competitive with classical heuristics. This paper cannot yet precisely answer this
+9
+=== PDF PAGE 10 ===
+Grover adaptive search with problem-specific state preparation
+question as our benchmarking scheme relied on computing the sets of improving solutions (eq. 5). We expect that
+the instances for which the proposed neighborhood search is effective are larger than those we could analyze with
+our benchmarking scheme. Another topic which we do not address in this work is the quantum circuits required to
+implement oracles. A general implementation for QUBO problems is given in [3] but more efficient problem-specific
+variants might exist.
+References
+[1] Andreas B ¨artschi and Stephan Eidenbenz. Grover mixers for qaoa: Shifting complexity from mixer design to
+state preparation. In2020 IEEE International Conference on Quantum Computing and Engineering (QCE),
+pages 72–82. IEEE, 2020.
+[2] Lov K Grover. Quantum computers can search arbitrarily large databases by a single query.Physical review
+letters, 79(23):4709, 1997.
+[3] Austin Gilliam, Stefan Woerner, and Constantin Gonciulea. Grover adaptive search for constrained polynomial
+binary optimization.Quantum, 5:428, 2021.
+[4] Theodore J Yoder, Guang Hao Low, and Isaac L Chuang. Fixed-point quantum search with an optimal number
+of queries.Physical review letters, 113(21):210501, 2014.
+[5] Christoph Durr and Peter Hoyer. A quantum algorithm for finding the minimum, 1999.
+[6] Michel Boyer, Gilles Brassard, Peter Høyer, and Alain Tapp. Tight bounds on quantum searching.F ortschritte
+der Physik, 46(4–5):493–505, June 1998.
+[7] Soeren Wilkening, Andreea-Iulia Lefterovici, Lennart Binkowski, Michael Perk, Sandor P. Fekete, and Tobias J.
+Osborne. A quantum algorithm for solving 0-1 knapsack problems.npj Quantum Information, 11(1), aug 2025.
+[8] Chris Cade, Marten Folkertsma, Ido Niesen, and Jordi Weggemans. Quantifying grover speed-ups beyond
+asymptotic analysis.Quantum, 7:1133, October 2023.
+[9] Edward Farhi, Jeffrey Goldstone, and Sam Gutmann. A quantum approximate optimization algorithm, 2014.
+[10] Austin Gilliam, Stefan Woerner, and Constantin Gonciulea. Grover adaptive search for constrained polynomial
+binary optimization.Quantum, 5:428, April 2021.
+[11] Liu Lu, Ling Qian, Wu Xy, Chen-Rui Fan, Lu-Fan Zhang, Dun-Bo Cai, Hui-Jun Lu, Tie-Jun Wang, and Chuan
+Wang. Solving vehicle routing problem using grover adaptive search algorithm.IEEE Transactions on Intelligent
+Transportation Systems, PP:1–11, 01 2025.
+[12] Andreas B ¨artschi and Stephan Eidenbenz. Deterministic preparation of dicke states. InInternational Symposium
+on Fundamentals of Computation Theory, pages 126–139. Springer, 2019.
+[13] Shen Lin and Brian W Kernighan. An effective heuristic algorithm for the traveling-salesman problem.
+Operations research, 21(2):498–516, 1973.
+[14] Norman Biggs, E Keith Lloyd, and Robin J Wilson.Graph Theory, 1736-1936. Oxford University Press, 1986.
+[15] V oigt. Der handlungsreisende wie er sein soll und was er zu thun hat, um auftraege zu erhalten und eines
+gluecklichen erfolgs in seinen geschaeften gewiss zu sein, 1832.
+[16] Scott Aaronson. Introduction to quantum information science lecture notes, Fall 2018.
+[17] Laurent Perron and Fr ´ed´eric Didier. Cp-sat.
+10

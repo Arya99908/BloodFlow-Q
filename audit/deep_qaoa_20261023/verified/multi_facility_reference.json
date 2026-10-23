@@ -1,0 +1,135 @@
+{
+  "id": "multi_facility",
+  "repr": "Scenario(id='multi_facility', blood_groups=('O',), blood_banks=(BloodBank(id='a', name='A', location_id='A', inventory={'O': 2}), BloodBank(id='b', name='B', location_id='B', inventory={'O': 1})), hospitals=(Hospital(id='h1', name='H1', location_id='H1', demand={'O': 2}, urgency={'O': Urgency(category='critical', priority_weight=3)}), Hospital(id='h2', name='H2', location_id='H2', demand={'O': 2}, urgency={'O': Urgency(category='medium', priority_weight=1)})), routes=(Route(source='a', destination='h1', travel_time_minutes=10, distance_km=1, transport_cost=6, status='available'), Route(source='a', destination='h2', travel_time_minutes=10, distance_km=1, transport_cost=1, status='available'), Route(source='b', destination='h1', travel_time_minutes=10, distance_km=1, transport_cost=1, status='available'), Route(source='b', destination='h2', travel_time_minutes=10, distance_km=1, transport_cost=6, status='available')), compatibility={('O', 'O'): True}, synthetic=True)",
+  "qubits": 13,
+  "states": 8192,
+  "feasible_states": 99,
+  "optimal_states": 8,
+  "penalty": 161,
+  "exact_objective": 16.0,
+  "ising_max_error": 0.0,
+  "classical": {
+    "exact": {
+      "objective": 16.0,
+      "seconds": 0.000543708010809496
+    },
+    "milp": {
+      "objective": 16.0,
+      "seconds": 0.008561541995732114
+    },
+    "greedy": {
+      "objective": 16.0,
+      "seconds": 4.958400677423924e-05
+    },
+    "lp": {
+      "seconds": 0.0007511250005336478,
+      "values": {
+        "allocation": {
+          "('a', 'h1', 'O', 'O')": 1.0,
+          "('a', 'h2', 'O', 'O')": 1.0,
+          "('b', 'h1', 'O', 'O')": 1.0
+        },
+        "unmet_demand": {
+          "('h2', 'O')": 1.0
+        },
+        "slack": {
+          "('a', 'O')": 0.0,
+          "('b', 'O')": 0.0
+        }
+      }
+    }
+  },
+  "xy_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      6
+    ],
+    [
+      0,
+      10
+    ],
+    [
+      0,
+      12
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      2,
+      10
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      12
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      8
+    ],
+    [
+      5,
+      12
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ]
+  ],
+  "max_feasible_state_leakage_beta_0_7": [
+    0.9965813338338937,
+    5572
+  ],
+  "optimal_weight_sectors": [
+    4
+  ]
+}

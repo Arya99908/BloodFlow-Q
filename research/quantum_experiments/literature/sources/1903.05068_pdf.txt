@@ -1,0 +1,1940 @@
+=== PDF PAGE 1 ===
+Domain wall encoding of discrete variables for quantum annealing and QAOA
+Nicholas Chancellor∗
+Department of Physics and Durham Newcastle Joint Quantum Centre
+Durham University, South Road, Durham, UK
+In this paper I propose a new method of encoding discrete variables into Ising model qubits for
+quantum optimization. The new method is based on the physics of domain walls in one dimensional
+Ising spin chains. I ﬁnd that these encodings and the encoding of arbitrary two variable interactions
+is possible with only two body Ising terms. Following on from similar results for the ‘one hot’ method
+of encoding discrete variables [Hadﬁeld et. al. Algorithms 12.2 (2019): 34] I also demonstrate that it
+is possible to construct two body mixer terms which do not leave the logical subspace, an important
+consideration for optimising using the quantum alternating operator ansatz (QAOA). I additionally
+discuss how, since the couplings in the domain wall encoding only need to be ferromagnetic and
+therefore could in principle be much stronger than anti-ferromagnetic couplers, application speciﬁc
+quantum annealers for discrete problems based on this construction may be beneﬁcial. Finally, I
+compare embedding for synthetic scheduling and colouring problems with the domain wall and one
+hot encodings on two graphs which are relevant for quantum annealing, the chimera graph and the
+Pegasus graph. For every case I examine I ﬁnd a similar or better performance from the domain wall
+encoding as compared to one hot, but this advantage is highly dependent on the structure of the
+problem. For encoding some problems, I ﬁnd an advantage similar to the one found by embedding
+in a Pegasus graph compared to embedding in a chimera graph.
+I. INTRODUCTION AND BACKGROUND
+Therearecurrentlytwodominantsettingsforquantum
+computing, gate model quantum computing, in which
+computation is realized by a series of discrete ‘gate’ op-
+erations, and continuous time quantum computing, in
+which problems are encoded in quantum Hamiltonians
+and natural dynamics of physical systems are used to
+ﬁnd solutions. Furthermore, optimization and statistical
+sampling have been identiﬁed as a potential early appli-
+cation for both gate model and continuous time quantum
+computing.
+In continuous time quantum computing, optimization
+is achieved by mapping the optimization problem to the
+Hamiltonian of a controllable quantum system in such a
+way that low energy states correspond to more optimal
+solutions. The most technologically mature continuous
+time quantum computing devices are the superconduct-
+ing circuit quantum annealers produced by D-Wave Sys-
+tems Inc. [1]. Examples of applications for quantum an-
+nealing can be found in diverse ﬁelds such as ﬁnance[2–
+4], computer science [5–7], mathematics[8–10], schedul-
+ing [11–13], decoding of communications [14], computa-
+tional biology [15], ﬂight gate assignment [16], and air
+traﬃc management[17]. For gate based machines, one
+of the most promising algorithms for optimization is the
+so called the quantum alternating operator ansatz also
+known as quantum approximate optimization algorithm
+[18–22] abbreviated as QAOA. While in principle QAOA
+could actually be considered in either a gate model or
+continuous time setting, I restrict the discussion here to
+gate model implementations.
+∗Electronic address: nicholas.chancellor@gmail.com
+Like quantum annealing, QAOA requires the optimiza-
+tion problem to be eﬀectively mapped to a Hamiltonian.
+Gate model quantum computing is less technologically
+mature, so real world use cases have not been examined
+[75] to the extent they have in quantum annealing, al-
+though in principle QAOA (or potentially hybrid quan-
+tum/classical QAOA based algorithms for thermal sam-
+pling) could be applied to many if not all of the applica-
+tions given previously for quantum annealing.
+A common method of mapping classical optimization
+problems to quantum hardware is by encoding it into an
+Ising Hamiltonian,
+HIsing =
+∑
+i<j
+JijZiZj +
+∑
+i
+hiZi, (1)
+whereZ is a PauliZ matrix andZi = 11⊗i−12 ⊗Z⊗11⊗n−i2
+wheren is the total number of qubits, and112 is the2×2
+identity matrix. In this paper I will focus on encoding
+into Ising models. Owing to its relative simplicity to ex-
+perimentally implement, the most common physical im-
+plementation of Ising model quantum optimization is the
+transverse ﬁeld Ising model
+Htrans =−A
+∑
+i
+Xi +BH Ising (2)
+where A and B are positive, possibly time dependent,
+constants andXi is deﬁned similarly toZi.
+While the challenges in quantum annealing and (gate
+based)QAOAarenotidentical, itislikelythatbothtech-
+niques will face some challenges which are similar [22]. It
+is therefore natural to consider that some of the prob-
+lem mapping techniques for quantum annealing may be
+useful in QAOA and vice-versa. In this work I give a
+technique to eﬃciently map discrete variables and their
+interactions to qubits. This method is likely to be use-
+arXiv:1903.05068v4  [quant-ph]  20 Jul 2019
+
+=== PDF PAGE 2 ===
+2
+ful for both quantum annealing and QAOA, and I will
+discuss both potential applications.
+In the near term, both gate model and quantum an-
+nealing devices are likely to have limited connectivity
+[76]. The eﬀects of limited connectivity are diﬀerent in
+both cases, for gate model machines, qubit information
+can be eﬀectively swapped to realize necessary interac-
+tions, but this process will increase both circuit depth
+and gate count, which will be a major concern in near
+term devices with imperfect gates and limited coherence
+time.
+Forquantumannealing, amorehighlyconnectedgraph
+can be realized by minor embedding [23, 24] in which
+logical variables are mapped over strongly interacting
+‘chains’ of qubits which form graph minors. Problems
+can than be mapped to the eﬀective interaction graph of
+the minors rather than the original graph. Alternatively,
+the logical variables could be encoded into the parity of
+qubits[25–27]. Forquantumannealing, eitherembedding
+technique eﬀectively reduces the number of qubit vari-
+ables a machine can simulate and decreases the eﬀective
+dynamic range of energies which can be used in encoding
+the problem, since both methods require strong interac-
+tions to enforce that the qubits remain in logically valid
+states. Since minor embedding is the most common tech-
+nique currently used to map problems experimentally, it
+will be the basis of the analysis in this paper.
+There has recently been a signiﬁcant eﬀort by D-Wave
+Systems Inc. to improve the connectivity of their hard-
+ware graph to reduce the overheads associated with hard-
+ware embedding. The proposed new graph family, known
+as ‘Pegasus’, is signiﬁcantly more connected that the cur-
+rent ‘chimera’ graph family [28] (for an alternative con-
+struction see [29]). While hardware with the Pegasus
+topology is not yet publicly available, Pegasus graphs of
+varioussizescanbegeneratedusingthepubliclyavailable
+D-Wave networkx package [30].
+Since most quantum hardware is based on quantum
+bits (qubits), and many optimization problems involve
+discrete rather than binary variables, one often also needs
+to encode a higher than binary discrete variable (Z>2)
+into multiple quantum bits. Discrete variables include
+integer variables, but can also include other problem rep-
+resentations, including discretized versions of continuum
+variables, and any case where there are multiple mutu-
+ally exclusive options. One of many important example
+of discrete problem is scheduling, where time can be di-
+vided into discrete chunks, and a number of potentially
+conﬂicting tasks need to be performed [11–13]. The time
+at which each task is performed can be thought of as a
+discrete variable. Another important example is graph
+colouring, which seems like a rather esoteric problem but
+actually has applications in aircraft scheduling, organiz-
+ing ﬁle transfer between processors, and radio frequency
+assignments [9, 10, 31].
+Strictly speaking the most informationally dense way
+to encode such a variable into qubits is to map each value
+to a binary string, such that a discrete variable of sizem,
+(belonging toZm in mathematical language) could be en-
+coded in⌈log2(m)⌉ qubits. Consider the speciﬁc case of
+the interaction between two variables,V1∈ Zm,V 2∈ Zm
+using the binary encoding, for simplicity let us restrict
+ourselves to the case wherem is a binary number. In
+this case, quadratic interactions, including quadratic in-
+teractions of a variable with itself (V 21 ) will only require
+second order couplings, since there are2 log 2(m) qubits,
+the means 2 log 2(m) (2 log2(m)− 1) couplers. For such
+interactions, a binary representation is preferable to the
+encodings discussed here.
+However, for higher-than-binary discrete variables,
+quadratic interactions are a very restrictive form of inter-
+actions, general interactions would have to be expressed
+as a polynomial of order2 log 2(m) = log 2(m2). Since a
+polynomial term of orderk will require kth order cou-
+plings, and will in general require these to couple ev-
+ery combination of digits in each binary number. By
+combinatorics, the total number of such couplers will be
+∼ 2log2(m2) = m2. Because building a more than two
+body interactions out of two body Ising interactions re-
+quiresatleastoneauxilliaryqubit, thecostofimplement-
+ing arbitrary interactions between binary representations
+actually scales worse than less informationally dense en-
+codings. The traditional encoding for arbitrary discrete
+variable interactions is theone hot encoding, which re-
+quires m qubits to represent a variable, and does not
+require additional qubits to represent two variable inter-
+actions.
+The one hot encoding can be derived by realizing that,
+if a Hamiltonian is symmetric with respect to exchange of
+thequbits, thantheenergycanbewrittenasafunctionof
+Z =∑iZi, or equivalently, the count of qubits in the|1⟩
+conﬁguration, b =∑i 12(1−Zi). The energy with respect
+to a symmetric Hamiltonian is therefore a polynomial in
+b, the one hot condition can be enforced by constructing
+a second order polynomial where the minimum occurs at
+b = 1. In other words, since b is symmetric, it can be
+treated as a single parameter which counts the number of
+variables in the1 conﬁguration, a polynomial can be con-
+structed which is uniquely minimized when exactly one
+variable is in this conﬁguration, this term can eﬀectively
+act as a constraint,
+Hone hot,b =λ (b− 1)2 =λ(b2− 2b + 1), (3)
+where λ is a suitably large positive constant. Translat-
+ing back intoZi and dropping irrelevant constant factors
+yields
+Hone hot =λ
+
+∑
+i<j
+ZiZj− (m− 2)
+∑
+i
+Zi
+
+, (4)
+where λ is a suitably large positive constant which en-
+forces that the system should be found in the logically
+valid subspace with high probability. Because each logi-
+cal state corresponds to a speciﬁc qubit being in the one
+orientation, arbitrary pairwise interactions between one
+
+=== PDF PAGE 3 ===
+3
+hot encoded variables can be achieved using two body
+Ising interactions.
+It is worth brieﬂy commenting that a computer con-
+sisting of a single large Zm variable is a unary encod-
+ing and is therefore not eﬃcient, multiple such variables
+however have a robust tensor product structure as dis-
+cussed in [32], and therefore can be used eﬃciently in
+quantumcomputing, providedtherearesuﬃcientlymany
+compared to the (typical) variable size.
+I propose an alternative to the one hot encoding based
+on one dimensional Ising domain walls. I argue that this
+new encoding is likely to be more useful in near term ap-
+plications because it requires fewer qubits and in many
+realistic problem structures also requires a less connected
+interaction graph, which can lead to more eﬃcient imple-
+mentations, I also discuss a variety of other advantages.
+Once I have developed the domain wall encoding, I give
+a comparison between binary, one hot, and the domain
+wall encoding in table II. I discuss both quantum an-
+nealing and QAOA implementations, and in particular
+demonstrate that for several realistic classes of synthetic
+problems, the domain wall encoding can lead to signiﬁ-
+cant improvement in embedding eﬃciency over one hot,
+which in some cases is similar to the comparative advan-
+tage of embedding in a Pegasus graph versus a chimera
+graph.
+The structure of this paper is as follows. In section
+II, I introduce the domain wall encoding of discrete vari-
+ables. Inthefollowingsection, sectionIIIIintroducehow
+to encode arbitrary two variable interactions similarly to
+what is known for one hot. In section IV, I discuss how
+QAOA mixers which do not allow the system to leave
+the logically valid subspace may be implemented, as has
+been previously done for one hot in [22]. In section V I
+discuss advantages of building application speciﬁc special
+purpose annealers which encode discrete problems using
+the domain wall encoding. In the next section, section VI
+I discuss the advantages of the domain wall encoding for
+minor embedding in quantum annealing and circuit com-
+pilation in QAOA. In section VII I provide evidence of
+theadvantagegainedfromdomainwallencodingoverone
+hot for embedding three realistically structured problem
+types in graphs which are relevant to quantum anneal-
+ing. In section VIII I review my numerical methods in
+the interest of transparency and reproducibility (all code
+is also publicly available at [33], including simpliﬁed code
+to implement a domain wall encoding). Finally in section
+X I discuss the results and make concluding remarks.
+II. DOMAIN W ALLS IN THE ONE
+DIMENSIONAL ISING MODEL
+Let us consider the one dimensional ferromagnetic
+Ising model, deﬁned by the following Hamiltonian
+Hinf =−λ
+∞∑
+i=−∞
+ZiZi+1 (5)
++∞ −∞
++λ −λ
+Z(4)−1 Z(4)0 Z(4)1 Z(4)2 Z(4)3 Z(4)4
+Figure 1: Top: One dimensional ferromagnetic Ising chain
+with end spins held in place by inﬁnitely strong ﬁelds. Bot-
+tom: Equivalent model where the action of the end spins
+which cannot change their orientation is substituted by ﬁelds.
+As Table I depicts, the degenerate ground state manifold of
+this model encodes a variable inZ5.
+where Zi is a PauliZ matrix acting on theith qubit.
+I deﬁne a domain wall as existing between two qubit
+i and i + 1 when the bit values of the two qubits are
+not equal. In other words, doman walls exist for classical
+basis states where⟨ZiZi+1⟩ = −1. For a one dimen-
+sional ferromagnetic chain of qubits, the energy is simply
+proportional to the expectation value of the domain wall
+number. Moreover, a single bit ﬂip on qubiti, Xi (as
+implemented by the driver in Eq. 2), can have three dif-
+ferent possible eﬀects on domain walls
+1. If⟨Zi−1⟩ =⟨Zi+1⟩ =⟨Zi⟩, thenXi will create two
+domain walls, and increase the energy by4λ
+2. If⟨Zi−1⟩ =⟨Zi+1⟩⁄ =⟨Zi⟩, then two domain walls
+already exist adjacent to qubiti and they annihi-
+late, decreasing the energy by4λ
+3. If⟨Zi−1⟩ ⁄= ⟨Zi+1⟩, than one domain wall exists
+adjacent to qubit i and a bit ﬂip will move the
+domain wall at no energy cost
+An important consequence of the above is that bit ﬂips
+cannot remove a single domain wall, a domain wall can
+only be removed if it encounters another domain wall. In
+this sense domain walls aretopologically stable. In other
+words, if⟨Z−1⟩⁄ =⟨ZN⟩ than there must be an odd num-
+ber of domain walls between qubits−1 and N, regard-
+less of the conﬁguration of the intermediate qubits. This
+idea is somewhat reminiscent of how (classical) magnetic
+storage media store classical data in magnetic domains
+which are topologically protected from local ﬂuctuations
+as long as they are smaller than the size of the domain
+[34]. Unlike a magnetic hard drive, only a single domain
+wall per chain is topologically protected, as opposed to
+one domain wall every time a logical zero is adjacent to a
+logical one in the hard drive case. The reason for this dif-
+ference is that in quantum optimisation the ﬂuctuations
+play an active role in the computation, and therefore sim-
+ply making a domain large, without logically ﬁxing its
+value, risks the domain, and therefore the information it
+contains, being destroyed.
+Let us consider the situation where inﬁnitely strong
+penalties hold qubit−1 in the 1 state and qubitN in
+
+=== PDF PAGE 4 ===
+4
+encoded valuequbit conﬁguration
+0 0000
+1 1000
+2 1100
+3 1110
+4 1111
+Table I: The ﬁve states used to encodeZ5 using the domain
+wall scheme depicted in Fig. 1(bottom)
+the 0 state, as depicted in Fig. 1(top). In this case, there
+must be an odd number of domain walls between these
+two ﬁxed qubits. The lowest possible energy in this situ-
+ation is achieved by placing a single domain wall between
+any of theN + 1 pairs of successive qubits, and there-
+fore can be thought of as encoding n discrete variable
+x∈ ZN +1→{ 0, 1...N}.
+We now observe that since qubits−1 and N are both
+eﬀectively ﬁxed by strong constraints, they can be ig-
+nored, leaving only a segment ofN qubits (indexed be-
+tween 0 and N− 1) with the Hamiltonian
+HN =−λ[
+N−2∑
+i=0
+ZiZi+1−Z0 +ZN−1], (6)
+as depicted in Fig. 1(bottom). The concept of the two
+‘virtual’ qubits at the end of the chain allows a useful
+deﬁnition which will simplify the formulation of Hamil-
+tonians later on, I deﬁne
+Z (N )i =
+
+
+
+Zi −1<i<N
+−11 i =−1
+11 i =N
+undeﬁned otherwise
+, (7)
+using this deﬁnition, we are able to simplify Eq. 6
+HN =−λ
+N−1∑
+i=−1
+Z (N )i Z (N )i+1. (8)
+The single domain wall states which are used to encode
+Z5 in Fig. 1(bottom) appear in table I. The information
+storage in the domain wall encoding is a unary encoding
+(up to the padding with zeros) which, in itself is not
+a novel way of storing information, although I am not
+aware of any use of unary encodings in currently used
+Ising mappings. The novelty of the domain wall encoding
+comes not from how the information is stored, but how
+it is processed, in particular, the eﬃcient implementation
+of two variable interactions discussed in section III.
+Additional terms can be used to modify the energy
+given a domain wall at a given site, this can be accom-
+plished by observing that,
+1
+2⟨(Z (N )i −Z (N )i−1 )⟩ =
+
+
+
+0 ⟨Z (N )i−1⟩ =⟨Z (N )i ⟩
+1 ⟨Z (N )i−1⟩ =−1, ⟨Z (N )i ⟩ = 1
+−1 ⟨Z (N )i−1⟩ = 1, ⟨Z (N )i ⟩ =−1
+,
+(9)
+furthermore, it is not possible to have the case where
+⟨Z (N )i−1⟩ = 1, ⟨Z (N )i ⟩ = −1 with only a single domain
+wall, therefore, we deﬁne
+¯δi = 12(Z (N )i −Z (N )i−1 ), (10)
+which assigns an energy penalty of1 to domain wall lo-
+cationi and does nothing otherwise (neglecting constant
+energy oﬀsets, which are discussed later). Using these
+terms, arbitrary energies can be assigned to any domain
+wall position. I further observe that a binary variable in
+the domain wall formalism reduces to a single qubit, and
+Z (1)0 = Z, therefore the domain wall formalism recovers
+the standard binary qubit representation whenN = 1.
+It is worth remarking here that we could instead de-
+ﬁne ¯δi in an arguably more natural way using two body
+operations
+¯δ′i = 12(1−Z (N )i Z (N )i−1 ), (11)
+however, while this deﬁnition is completely mathemati-
+cally valid, I will show later that this requires four body
+Ising interactions to implement arbitrary two body inter-
+actions between the encoded variables.
+III. INTERACTIONS BETWEEN DOMAIN
+W ALL V ARIABLES
+Now that I have demonstrated how to asign penalties
+for single discrete variables, I move on to discuss coupling
+between domain wall encoded variables. To do this, I
+mustﬁrstintroducenotationforadditionalvariables, this
+is accomplished by introducing a second index relating to
+the variable number,k, ¯δi→ ¯δki and Z (N )i →Z (N ),ki .
+I now observe that the term ¯δki ¯δlj is one iﬀ variable
+k has a value ofi and variablel has a value ofj, and
+is zero for all other values of variablesk and l. From
+this observation, it follows that an arbitrary two variable
+function can be created from[77]
+H2var =
+N∑
+i=0
+M∑
+j=0
+Ei,j¯δki ¯δlj (12)
+Furthermore, by substituting in Eq. 10 the product
+¯δki ¯δlj = 14(Z (N ),ki−1 Z (M ),lj−1
+−Z (N ),ki Z (M ),lj−1 −Z (N ),ki−1 Z (M ),lj +Z (N ),ki Z (M ),lj ), (13)
+
+=== PDF PAGE 5 ===
+5
+since every term of this equation is at most two-body by
+Eq. 9, it immediately follows that arbitrary two variable
+functions can be constructed by two body Ising couplers
+between encoded domain wall variables. Furthermore
+since there are onlyN×M possible couplers between
+an encoded ZN +1 and a ZM +1, it follows that this can
+be accomplished with at mostN×M two body Ising
+terms. Since binary variables can be considered a spe-
+cial case of the domain wall encoding, arbitrary coupling
+between standard binary Ising variables (i.e. in mixed
+binary/integer problems) and domain wall encoded dis-
+crete variables is possible without requiring any special
+modiﬁcation to the formalism.
+Before moving on to applications of the domain wall
+encoding, it is important to make one technical math-
+ematical note about the domain wall encoding in con-
+trast to the one hot encoding. If we are using the do-
+main wall encoding to encode an interaction between a
+Zn and a Zm variable, then the number of independent
+Hamiltonian terms used to encode the interaction will be
+(m− 1)× (n− 1) two body interactions andn +m− 2
+single body terms, leaving a total ofn×m−1 total inde-
+pendent degrees of freedom to controln×m independent
+interaction terms. The missing degree of freedom is ac-
+counted for by the fact that all physical dynamics (and
+the ordering and gaps between energies of solutions) are
+invariant under a shift in the deﬁned zero of energy.
+A redeﬁnition of the zero of energy provides an addi-
+tional degree of freedom which is purely mathematical.
+Non-trivial physical interactions which shift the zero of
+energy are possible in one hot, a fully connected interac-
+tion between all of the qubits in each variable will penal-
+ize alln×m states equally. If one attempts to construct
+a similar ‘gauge operator’ in the domain wall encoding
+by summing all possible terms in Eq. 12, all interaction
+terms from the individual expansion in Eq. 13 will cancel.
+The fact that the number available one and two body
+interactions plus redeﬁnition of the zero energy exactly
+equalsn×m implies that the domain wall encoding is the
+densest possible encoding of arbitrary two variable inter-
+actions between integers using only one and two body
+Ising terms and no auxilliary qubits, using any fewer
+number of qubits would not leave enough degrees of free-
+dom to arbitrarily control the interaction.
+Let us now brieﬂy consider what would happen if I
+instead had deﬁned interactions using¯δ′i from Eq. 11, in
+that case, the resulting product would be
+¯δ′ki ¯δ′lj = 14(1−Z (N ),ki Z (N ),ki−1
+−Z (N ),lj Z (N ),lj−1 +Z (N ),ki Z (N ),ki−1 Z (N ),lj Z (N ),lj−1 ), (14)
+which requires a four body coupler and is therefore much
+less convenient to implement. One of the major results in
+this paper is that the coupling between domain wall vari-
+ables can be implemented only using two body coupling
+if built from the deﬁnition given in Eq. 10 rather than
+the one in Eq. 11. For the remainder of this work, I will
+only consider the interaction encoding deﬁned in Eq. 13
+because of the clear advantage it has in only requiring
+two body couplers to implement.
+IV. QAOA MIXERS
+Traditionally quantum annealing and QAOA use
+transverse ﬁeld mixers described by Hamiltonians of the
+form Eq. 2. However, this allows for the possibility of
+ending the call to the protocol in an invalid state, which
+in the case of the domain wall encoding would be any
+state where a variable encoding has more than one do-
+main wall. Such states are problematic because they do
+not uniquely correspond to solutions to the original prob-
+lem, and while it is possible that an advantage could be
+obtained using clever post-processing, an invalid state is
+still an undesirable outcome. The problem of ﬁnding in-
+valid states in ﬁnite temperature quantum annealing has
+been highlighted in [35]. It would therefore be preferable
+to use a mixing Hamiltonian which only mixes between
+valid states, as discussed in [22, 36, 37]. These papers
+have focused on QAOA, since currently existing quantum
+annealers use transverse ﬁeld mixers. There has however
+been substantial progress [38, 39] recently on two body
+mixing terms for quantum annealing, therefore, it may
+not be outside of the realm of possibility (although prob-
+ably further in the future) that the mixers proposed in
+this section could be implemented in quantum annealers.
+Recall that ﬂipping a qubit which is adjacent to a sin-
+gledomainwalldoesnotchangethedomainwallnumber,
+therefore, we should construct Hamiltonian terms which
+only perform a bit ﬂip operation if the qubit is adjacent
+to a single domain wall [78]. Fortunately the Hamilto-
+nian term (Zi−1Xi−XiZi+1) satisﬁes exactly this prop-
+erty. Starting from any computational basis state where
+⟨Zi−1⟩ =⟨Zi+1⟩, the two PauliX terms on qubiti will
+cancel. On the other hand, for⟨Zi−1⟩ =−⟨Zi+1⟩, the
+action will be±X, depending on which side of the qubit
+thedomainwallislocated. Summingtogethersuchterms
+for each domain wall site yields
+Hmix =
+N−1∑
+i=0
+(Z (N )i−1Xi−XiZ (N )i+1 ). (15)
+While this mixer Hamiltonian contains sums of non-
+commuting terms, it can be broken down into the sum of
+two Hamiltonians constructed out of commuting terms.
+This division works by observing thatX andZ terms are
+always consecutive, therefore Hamiltonian terms with all
+of theirZ components on odd (even) qubits will haveX
+components on even (odd) terms. The Hamiltonian can
+be split as followsHmix =H evenmix +H oddmix where
+H evenmix =
+⌊N−12 ⌋∑
+i=0
+(Z (N )2 i−1X2 i−X2 iZ (N )2 i+1), (16)
+
+=== PDF PAGE 6 ===
+6
+and
+H oddmix =
+⌈N +12 ⌉∑
+i=0
+(Z (N )2 i X2 i+1−X2 i+1Z (N )2 i+2). (17)
+Not only doesHmix conserve domain wall number, but
+each H even (odd)mix both do as well, implying that any op-
+erator formed by performing the unitaries created from
+these Hamiltonians will also conserve domain wall num-
+ber. Indeed, each of these terms can be constructed from
+ZiZi+1 and Hadamards. Since (exponentiated) two body
+Ising terms are already necessary to produce the phase
+separators, then this mixer can be eﬃciently constructed
+from two body terms which already exist.
+While the mixer in Eq. 15 is similar to the controlled-
+X-rotation mixer discussed at the beginning of 4.2.2
+of [22], there is an important distinction, while the
+controlled-X-rotation mixer is controlled by a single
+qubit value, whether or not theX is applied in Eq. 15
+is actually applied by whether two qubits agree or dif-
+fer. The approach of splitting the driver into commuting
+parts which follows after that equation is essentially the
+same as what was done in [22].
+It is worth observing that the mixers here explore the
+solution space in a fundamentally diﬀerent way than the
+one hot mixers in [22]. Those mixers allow a transition
+from any state to any other state, whereas the methods
+proposed here only allow transitions between consecutive
+states. It is not immediately obvious which of these mix-
+ers will actually perform better in real problems. On
+one hand, it is known that a speedup is not possible for
+quantum search in too low of a dimension [40], however,
+low dimensionality is only problematic in dimensions less
+than 4, meaningthatifthisresultcarriesoverfromsearch
+to optimization (it is nota priori clear that it would),
+then a quantum advantage would be possible in any case
+with more than 4 variables, which should be the case
+in all interesting optimization problems. On the other
+hand, it has been shown that it problematic to have a
+mixer which is fully connected, as would be the case for
+a single one hot variable [41–43]. However, since there
+will be many variables in a real problem, the total mixer
+graph formed in the solution space in the one hot encod-
+ing is likely to be quite far from fully connected. There-
+fore, while the behaviour of these two mixers is diﬀerent,
+which is better for computation should be treated as an
+open, likely problem dependent, question.
+V. SPECIALIZED DISCRETE OPTIMIZA TION
+ANNEALERS
+In addition to considering specialized QAOA mixer
+Hamiltonians for domain wall encodings, it is also worth
+brieﬂy discussing the possibility of constructing special-
+ized quantum annealers which are speciﬁcally designed
+for discrete, rather than binary problems. The Hamilto-
+nian to domain wall encode a variable can be constructed
+entirely from single body ‘ﬁeld’ terms and ferromagnetic
+(negative) coupling. Because of the way in which cur-
+rently used ﬂux qubit couplers are constructed, these
+terms can be implemented much more strongly than anti-
+ferromagnetic coupling [44]. Therefore, especially for rel-
+atively small discrete sets, it may be possible to construct
+a specialized quantum annealer designed to handle dis-
+crete variables with little or no sacriﬁce in the dynamic
+range available for problem setting as compared to a bi-
+nary machine. To some extent, the controls of D-Wave
+hardware already allow users to take advantage of the
+ability of ferromagnetic coupling to be stronger, but un-
+der the context of minor embedding [45].
+If a transverse ﬁeld mixer is used, then the system
+would necessarily access invalid higher energy states, and
+the energy separation would have to be suﬃcient that
+these states are not accessed. In a ﬂux qubit quantum
+annealer, the Ising spins are already formed from the two
+lowest energy states of an inﬁnite ladder for each qubit,
+and modelling these additional states is sometimes im-
+portant to fully understand the dynamics [46]. Creat-
+ing discrete variables with domain wall encodings would
+therefore not represent a fundamental change to how
+these devices work. A more exotic and ambitious op-
+tion would be to develop an annealer which has a mixer
+Hamiltonian of the form in Eq. 15, however, recall that
+thiswouldrequireasigniﬁcantadvanceinavailablemixer
+terms. Specialized drivers for quantum annealing which
+actoverafeasiblesubspacehasbeenexaminedpreviously
+for other problem encodings [22, 47, 48].
+Specialized annealers designed to handle discrete prob-
+lems could be particularly useful if a high value set of
+problems with similar or identical structure were identi-
+ﬁed. This would allow for the possibility of an applica-
+tion speciﬁc integrated circuit (ASIC) annealer designed
+to solve speciﬁc high value problems. Such an ASIC ap-
+proach would make it possible to reduce or eliminate the
+overhead associated with embedding for a family of high
+value problems, since embedding overhead can greatly
+reduce performance on current, non-specialized quantum
+annealers, reducing or eliminating this source of overhead
+is likely to result in a major increase in performance.
+One ﬁnal advantage of the domain wall encoding as
+compared to one hot is that the coupling between logical
+states using a transverse ﬁeld driver is non-perturbative
+in the sense that the system does not have to pass
+through a logically invalid state to get to diﬀerent logi-
+cally valid states. The eﬀective transition rates between
+logical states is therefore independent of the coupling.
+In contrast, to pass between two logically valid one hot
+states under transverse ﬁeld driving, the system must
+pass through a state with either more than one qubit in
+the one conﬁguration, or zero qubits in the one conﬁgura-
+tion. For a ﬁxed transverse ﬁeld the eﬀective coupling be-
+tween logically valid states will therefore decrease as the
+strength of the penalties enforcing the one hot constraint
+are increased. Not having a tradeoﬀ between encoding
+strength and coupling strength is likely to make design
+
+=== PDF PAGE 7 ===
+7
+of specialized domain wall encoded hardware simpler.
+VI. EMBEDDING/COMPILA TION
+There are several important diﬀerences when consider-
+ing the domain wall encoding proposed here when com-
+pared to one hot encoding with respect to minor embed-
+ding in the case of quantum annealing, or circuit compi-
+lation in the case of QAOA. These diﬀerences all relate
+to the interaction graph structure of the qubits encoding
+the problem.
+The most obvious in terms of embedding overhead is
+that a domain wall encoding requires one fewer qubit per
+discrete variable, while nominally a minor improvement,
+this could be signiﬁcant when encoding small discrete
+variables, for instance in a problem composed ofZ3 vari-
+ables, the qubit count would be reduced by13. There are,
+however, more subtle advantages which are likely to be
+more important. The domain wall encoding requires sig-
+niﬁcantly less connectivity within qubits encoding a vari-
+able than one hot. In one hot all of the qubits encoding
+a variable need to be interconnected, while the domain
+wall encoding only requires linear connectivity. Finally,
+the interactions between the variables will be diﬀerent in
+both cases. In summary, the three diﬀerences between
+the interaction graphs of the two encodings are
+1. The domain wall encoding requires one fewer qubit
+per discrete variable
+2. The domain wall encoding requires only linear con-
+nectivity for the qubits used to encode a single dis-
+crete variable, while one hot requires full connec-
+tivity
+3. While both methods can implement arbitrary two
+variable functions using two body interactions be-
+tween the qubits encoding the two variables, en-
+coding aparticular interaction will require diﬀerent
+interactions between the qubits, in some cases one
+hot will require more inter-variable interactions, in
+others the domain wall encoding will, the interac-
+tion structure will also be diﬀerent
+To mathematically capture some of the structural dif-
+ference between these two strategies, I consider theedge
+distance de between qubit variables in a graph, deﬁned
+simply as the minimum number of edges which must be
+traversed to get from one vertex to a diﬀerent vertex. In
+the one hot encoding, the edge distance between qubits
+which encode the same variableZn is always 1, whereas
+for a domain wall encoding, the edge distance between
+two such qubits can be as high asn− 1, depending on
+other interactions.
+Hardware graph connectivity has proven to be a major
+obstacle in quantum annealing. Recall that the conven-
+tionalstrategywhenaproblemgraphisnotasubgraphof
+a given hardware is to minor embed [23, 24] variables by
+encoding each of them to strongly coupled qubits which
+form a graph minor. Minor embedding eﬀectively re-
+duces the number of available qubits, and can lead to
+issues such as ‘broken’ variables due to thermal ﬂuctua-
+tions [35]. For quasi-planar geometries, like the D-Wave
+chimera graph, the size of fully connected graph which
+can be represented on a given device goes as the square
+root of the number of qubits. Parity based encodings
+[25–27] provide a potential alternative to minor embed-
+dings, but the size of fully connected graph which can be
+represented in a quasi-planar geometry still scales as the
+square root of the number of qubits [79].
+Forthereadersconvenience, IhaveconstructedtableII
+which lists key performance metrics for binary, one-hot,
+and domain wall strategies.
+Gate model quantum machines are less technologically
+mature, and therefore real world problem embedding
+strategies (which can be considered part of the circuit
+compilation problem) are less developed. However, the
+connectivity of the interaction graph on these devices is
+also likely to lead to overhead. One strategy to encode in-
+teractions which are not natively present in the hardware
+graph is to performsw apoperations between neighbour-
+ing physical qubits and thereby shuttle logical variables
+around to achieve necessary interactions (see for example
+[49–51]). These sw apoperations contribute to the to-
+tal circuit depth of a QAOA implementation. In a fully
+fault tolerant setting, this would only have the relatively
+minor consequence of an increased runtime. Near term
+devices, however, are likely to be far from fault tolerant,
+and therefore only be able to reliably implement rela-
+tively shallow circuits, it is therefore highly desirable to
+reduce circuit depth. Because the eventual structure of
+large scale gate based quantum devices is still unclear, I
+restrict the study of speciﬁc examples to embedding in
+quantum annealing.
+VII. EXAMPLES
+In this section, I compare domain wall and one hot
+minor embeddings for three realistic families of problem
+structures. The goal here is not to generate provably
+hard problems, but rather to reproduce realistic struc-
+tures which may be encountered in the real world. In all
+cases I examine, I ﬁnd that domain wall encoding yields
+at least a small advantage over one hot, but that the size
+of the advantage is highly problem structure dependant.
+As part of the study here, I numerically examine em-
+bedding into both the D-Wave chimera graph, and the re-
+cently proposed Pegasus graph. I ﬁnd that in the case of
+synthetic scheduling problems, the advantage in embed-
+ding eﬃciency between one hot and domain wall encod-
+ings is comparable to that of embedding into a chimera
+versus a Pegasus graph. On the other extreme, I ﬁnd
+that embedding domain wall encoded maximum three
+colour problems is actually slightly less eﬃcient than for
+one hot, but that the requirement of one fewer qubit per
+variable more than makes up for this diﬀerence and still
+
+=== PDF PAGE 8 ===
+8
+performance metric binary one hot domain wall
+# qubits ⌈log2(m)⌉ m m− 1
+# couplers 0 if m = 2 nn∈ Z m (m− 1) m− 2
+for encoding complicated otherwise
+intra-variable connectivity N/A or complicated complete linear
+maximum order ⌈log2(m)⌉ 1 1needed to penalize single values
+maximum order 2⌈log2(m)⌉ 2 2needed for two variable interactions
+maximumde between complicated 2 m
+qubits in interacting variables
+Table II: Comparison between binary, one hot and domain wall encoding strategies (note that theδ′i strategy is not shown in the
+table, but would be the same as the one used here except for would require fourth order coupling for a two variable interaction).
+Maximum order in this case refers to the maximum number ofZ variables which must appear in a single Hamiltonian term
+for the encoding. Red colouring is used to indicate a major drawback of a strategy, while blue indicates a major advantage
+conferred by a strategy. The word ‘complicated’ is used to indicate cases where the result is likely to be highly dependent on
+the details of the problem being encoded. For discussion of the performance metrics, and explanations of the ‘complicated’
+cases, see appendix 1.
+leaves domain wall encoding as the preferred strategy. I
+ﬁrst describe the basic results for the three families of
+problems, before a more in-depth comparative analysis
+in subsection VIID. For transparency and reproducibil-
+ity, the Hamiltonians for each example are provided in
+appendix 2.
+A. Unstructured Interactions
+Let us consider unstructured interactions, by which I
+mean interactions for which there is no particular struc-
+ture which makes the variables independent from each
+other in certain regimes and therefore require all two
+body terms to construct the interactions in both the one
+hotanddomainwallencoding[80]. Unstructuredinterac-
+tions may come about for example if the interactions be-
+tween the discrete variables are describing complex cor-
+relations, for instance in an discrete analogy to [2], but
+where each discrete variable represents more than two
+mutually exclusive possibilities.
+In the unstructured case, the interaction graph of the
+domain wall encoding will be a subgraph of the interac-
+tion graph of one hot, as depicted in Fig. 2, therefore
+the domain wall encoding will always be easier to im-
+plement since all of the interactions needed for the do-
+main wall encoding are also needed in one hot. In the
+example given in Fig. 2, with unstructured interactions
+between three Z4 variables, the domain wall encoding
+requires nine qubits and 36 interactions, while the one
+hot encoding requires12 qubits and 76 interactions [81].
+Given that an advantage can be shown analytically (by
+showing that the domain wall encoding is a subgraph of
+the one hot), it is not necessary to numerically analyse
+unstructured problems to show an advantage.
+Figure 2: Unstructured interactions between three Z4 vari-
+ables. Black: qubits and interactions needed for both domain
+wall and one hot encoding. Magenta: additional qubits and
+interactions needed for one hot encoding. Edges within vari-
+ables in the domain wall encoding have been made thicker as
+a guide to the eye.
+B. Graph Coloring
+Let us now consider the more structured problem
+of maximum graph colouring (referred to as Max- κ-
+ColorableSubgraph [22], also sometimes referred to as
+Max-κ-Cut [52, 53]), where given a graph andn possible
+node colours, the goal is to colour the graph to maximize
+the number of edges which connect vertexes of diﬀerent
+colours. Maximum graph colouring is a generalization
+of the more studied problem of graph colouring, since in
+graphs which are colourable withn colours, the maximal
+colouring is a ‘proper’ colouring of the graph, where no
+vertexes of the same colour share an edge. The question
+
+=== PDF PAGE 9 ===
+9
+Figure 3: One hot encoding of maximum four colouring of
+a small graph fragment, red edges indicate edges encoding
+interactions between variables, while green indicate the inter-
+nal edges within each variable. The lower right of the ﬁgure
+depicts the graph fragment.
+of whether or not a graph can be coloured is known to be
+NP-hard if the number of colours requires is greater than
+two [54], and even remains hard under quite restrictive
+conditions [55]. Solutions to graph colouring problems
+have wide applicability, including in aircraft scheduling,
+organizing ﬁle transfer between processors, and radio fre-
+quency assignments [31]. Quantum annealing has been
+applied to graph colouring problems in [9, 10].
+The structure of the interactions for colouring prob-
+lems is therefore to penalize vertexes of the same colour
+(variables which take the same value) while having no
+eﬀect otherwise. Since this interaction maps directly
+to anti-ferromagnetic interactions between qubits corre-
+sponding to the same value in one hot, each edge in the
+colouring graph requiresn two qubit interaction. For the
+domain wall encoding, the interactions to enforce diﬀer-
+ent colours are more complicated, but there is also one
+fewer qubit per variable. Whenn≥ 3, the number of in-
+teractionsrequiredpergraphedgeis 3 (n−1)−2 = 3n−5.
+This is not the end of the story when it comes to number
+of interactions, however, since the number of interactions
+per variable ismoreforonehot, requiring 12n (n−1)edges
+comparedtothe n−2interactionsrequiredbythedomain
+wall encoding.
+As an example, I show how to encode maximum four
+colouring on this four qubit graph fragment ﬁg. 3 depicts
+the one hot encoding for maximum four colouring on a
+four vertex graph fragment, while Fig. 4 depicts the do-
+main wall encoding.
+For n colours, it is possible calculate the ratio r of
+edges to variables above which one hot will involve fewer
+interactions, and below which the domain wall encoding
+will require fewer. This calculation is performed by ﬁrst
+ﬁnding the number of interactions per vertex required
+in the one hot and domain wall cases, and then setting
+them equal and solving. For the one hot encoding, each
+vertex will require 12n (n− 1) internal interactions, and
+each edge will require anothern. For a givenr ratio of
+edges to vertexes, this means that there will ben (n−
+1) +rn interactions per vertex. On the other hand, for
+−λ
+−λ
+−λ
+−λ
++λ
++λ
++λ
++λ
+Figure4: Domainwallencodingofmaximumfourcolouringof
+a small graph fragment, red edges indicate anti-ferromagnetic
+two qubit interactions between variables, while black edges
+indicate the same but ferromagnetic. Thick black the inter-
+nal edges within each variable. Red and blue qubits indicate
+where single body terms are applied, following Fig. 1(lower).
+The lower right of the ﬁgure depicts the graph fragment.
+the domain wall encoding, each vertex requires onlyn−
+1 internal interactions, but each edge requires 3n + 1
+interactions, leading to a total ofn−1+3 rn +r. Setting
+the two expressions equal and solving forr leads to:
+rc(n) =
+1
+2n2− 32n + 2
+2n− 5 (18)
+assuming again n≥ 3. In the limit of largen this ex-
+pression goes as n4, considering that each vertex should
+be adjacent to at leastn other vertexes for the colouring
+problem to be non-trivial, for a large number of colours
+the domain wall encoding will contain more edges for re-
+alistic problems. For a smaller number of colours, this
+ratio can be larger for instancerc(3) = 2, andrc(4) = 43.
+It is important to recall that in all cases, the domain wall
+encoding requires fewer qubits. There are also important
+diﬀerences in the structure of the interaction, which will
+be highlighted in the next section.
+Ignoring the diﬀerences in interaction graph structure,
+in cases wherer > rc there is a tradeoﬀ in terms of in-
+teraction number versus qubit number, with the domain
+wall encoding requiring fewer qubits but more interac-
+tions. Although a gross oversimpliﬁcation, let us consider
+for a moment the case where we ignore the structure and
+consider interaction counts. This over simpliﬁed picture
+suggest that for instance in an optical setting [56, 57]
+than the domain wall encoding would be preferred. How-
+ever, if interactions are more diﬃcult to implement, then
+the one hot encoding may be best. As I demonstrate
+later, the opposite is actually true , the structure of the
+domain wall encoding makes it easier to implement, and
+therefore also preferable at large sizes.
+In real situations, it is not just the number of edges
+which is important, but also the structure of the edges.
+We ﬁrst note that the domain wall encoding forms a ‘lay-
+ered’ structure, where the qubits can be divided inton−1
+layers corresponding to position in the chain used for the
+
+=== PDF PAGE 10 ===
+10
+10 20 30
+5
+10
+15Chimera L
+a)
+5.0 7.5
+10
+20
+b)
+10 20 30
+size of graph
+2
+4
+6Pegasus L
+c)
+5 10
+number of colours
+5
+10
+15
+d)
+Figure 5: Minimum linear size of graph requires to embed
+one hot (red) and domain wall (blue) encoded colouring prob-
+lems. Dashed lines and shaded regions indicate minimum and
+maximum seen for10 instances and the solid line with stars
+indicates the average, dotted lines on Chimera plots indicate
+size of the current generation of D-Wave device. (a) Three
+color embedded into Chimera. (b) n color embedding into
+chimera. (c) Three colour embedding into Pegasus. (d) n
+colour embedding into Pegasus.
+domain wall encoding. The minimum possible edge dis-
+tance de between a qubit on layeri and one on layerj
+is|i−j|, regardless of the graph being coloured, such a
+structure is not present in the one hot encoding. As dis-
+cussed later, numerical analysis reveals that in fact the
+relative ease of embedding the structures makes domain
+wall similarly or more eﬃcient to embed for all problem
+sizes I analyse.
+To examine the eﬀect of the diﬀerent structures, I con-
+sider numerically embedding maximum n colour prob-
+lems on Erdös-Rényi random graphs [58, 59](each pair
+of vertices independently has an edge with an indepen-
+dent ﬁxed probability) with edge probabilities of0.75and
+2n vertices. As a comparison, I also examine maximum
+three colour problems on Erdös-Rényi random graphs
+with edge probabilities of0.5. I examine embeddings on
+both the D-Wave Chimera graph and the recently pro-
+posed Pegasus [28] graph.
+For this analysis, I ﬁnd the smallest Pegasus or square
+Chimera graph for which a given problem can be embed-
+ded, using the available software [60]. I refer to either
+the linear size of the Chimera (number of unit cells along
+one side) or the size of the Pegasus graph (encoded in a
+single number) asL. The exact methods which are used
+for the numerics are described in Sec. VIII.
+As we can see in Fig. 5, the minimum size of chimera
+or Pegasus graph where a problem can successfully be
+embedded is always smaller or equal on average for the
+domain wall encoding versus one hot encoding. More-
+over, except for the three colour embedding in Pegasus
+at large sizes the diﬀerence becomes more dramatic, and
+the worst embedding of a domain wall encoding is still
+superior to the best for one hot. Finally, we observe
+that while, for the three colour problems the diﬀerence
+between the domain wall and one hot encodings is mini-
+−λ +λ
+... ...
+−λ +λ
+... ...
+2 2 11
+1 1
+1233 1 2 3 3
+2 2 22
+4 4 ......
+Figure 6: Encoding of scheduling conﬂicts using domain wall
+variables. Top: the encoding of a conﬂicts at a single time,
+where the event encoded in the the top chain has a duration
+of three time units and the event encoded in the bottom has a
+duration of two. Bottom: total encoding of the conﬂict with
+labels indicating the edge distance from the yellow vertex,
+the ‘...’ indicates a continued linear increase in edge distance.
+Otherwise, colours have the same meaning as in Fig. 1(lower).
+mal and grows only slowly with size, it grows much more
+dramatically for then colour problem. As I demonstrate
+later, in subsection VIID, this is due to the domain wall
+encoding being more eﬃciently embeddable, likely be-
+cause of the previously mentioned layered structure of
+the domain wall encoding in then colour case.
+C. Scheduling
+Let us now consider the problem of minimizing (or
+eliminating) scheduling conﬂicts, diﬀerent versions of
+this problem have been considered for quantum com-
+puting [11–13, 17], including most recently the problem
+of ﬂight deconﬂicting [17]. The basic structure I con-
+sider is that there areNt possible times and m events
+each of durationTk each of which which must start at
+time tk∈ (tk,min,t k,max) where tk,min∈ (0,N − 1) and
+tk,max≥ t0∈ (0,N − 1−Tk). Moreover, conﬂicts can
+occur if certain pairs of events, occuring at tk and tl
+overlap, which means that either 0≤ tl−tk < Tk or
+0≤ tk−tl < Tl. In both the domain wall and one hot
+encoding, single variable penalties correspond to single
+body Ising terms in the encoding, therefore, the problem
+structure is not changed by adding such penalties, which
+could correspond for example to penalties for delaying a
+ﬂight in [17].
+The structure for encoding time conﬂicts into the do-
+main wall encoding can be found in Fig. 6(top) we see
+the encoding of all conﬂicts which could occur if the
+lower variable has the value corresponding to the ﬁrst
+domain wall position on the bottom variable. In this ﬁg-
+ure the duration of the top domain wall encoded variable
+is Tk = 3 time units, whereas the duration of the event
+encoded in the bottom vairable isTl = 2. To encode the
+total conﬂicts, we just add encodings for the conﬂicts at
+all allowed values oftl, the result is Fig. 6(bottom). We
+also note the edge distancede of all of the vertexes from
+
+=== PDF PAGE 11 ===
+11
+6 8 10 12 14
+10
+20Chimera L
+5.0 7.5 10.0 12.5 15.0 17.5 20.0
+number of events
+5
+10Pegasus L
+Figure 7: Minimum linear size of graph requires to embed
+one hot (red) and domain wall (blue) encoded schedule con-
+ﬂict minimization problems with diﬀerent numbers events.
+Dashed lines and shaded regions indicate minimum and max-
+imum seen for10 instances and the solid line with stars indi-
+cates the average, dotted lines on Chimera plots indicate size
+of the current generation of D-Wave device. top: Chimera,
+bottom: Pegasus
+the yellow vertex, in particular noting that continuing
+the ﬁgure beyond what is drawn, for the top variable the
+edge distancede continues to grow linearly. In contrast,
+de takes a maximum value of two for the one hot encod-
+ing regardless of the allowed time range of the two events
+(one hot encoding not shown).
+For each possible value of atl where there is a potential
+conﬂict with eventk and none of the domain wall variable
+values involved are the maximal or minimum possible
+valuestheconﬂictscanbeencodedusingfourinteractions
+between pairs of binary variables, if any of the variables
+do take extremal values, than the number of pairwise
+interactions will be less than four. It follows that if there
+are q potential values where a conﬂict is possible, than
+the number of binary interactions which are needed is
+at most 4q, independent of the durations of each event,
+Tk and Tl. For one hot encoding on the other hand, for
+every pair of times where there is a conﬂict, there must
+be an interaction between two binary variables, therefore
+the number of interactions grows with event duration.
+To get a sense of the eﬀect of domain wall encod-
+ing, I again consider examples of embedding the same
+problem numerically when encoded in one hot versus do-
+main wall encoding strategies. In this case, I consider
+random schedule conﬂict minimization problems using a
+construction discussed in detail in Sec. VIII where both
+the number of variables and the potential range of times
+are increased as the problems are scaled. The results of
+this embedding are depicted in Fig. 7, while the range
+of graph sizes need to embed is much larger than for the
+case of colouring problems, the average size required for
+domain wall encodings is still signiﬁcantly smaller. As
+I show in the next subsection, this diﬀerence is at least
+partially due to the domain wall encoding being easier to
+embed.
+0 10 20
+0
+10
+20embedding ratio
+a)
+0 10 20
+0
+20
+3 45678910
+1112
+3
+4
+5
+6
+7
+8
+9b)
+0 10 20
+embedding ratio
+0
+10
+20
+5
+10
+15
+20
+5
+10
+15
+c)
+0 10
+0
+20
+d)
+Figure 8: Relative embedding ratios under diﬀerent circum-
+stances. Solid symbols (red and blue) indicate comparisons of
+domain wall encodings on theX axis and one hot encodings
+on theY axis. Hollow symbols indicate embedding into the
+Pegasus graph on theX axis and chimera on theY. Red
+indicates embedding into a chimera graph, while blue indi-
+cates embedding into a Pegasus. For hollow symbols, black
+indicates one hot encoding, and magenta indicates domain
+wall. Fully coloured symbols indicate average values (over10
+instances each), while lighter symbols indicate individual in-
+stances. All dashed lines are guides to the eye, with the cyan
+dashed line indicating circumstances where equal embedding
+ratios are obtained. (a) Three colour problems for sizes up
+to 30 vertices. (b) n colour problems, colour coded num-
+bers indicate number of colours in the problem (c) Schedul-
+ing problems coloured numbers indicate number of events in
+the problem (d) Squares indicate scheduling problems, while
+stars indicaten colour problems (three colour problems not
+shown).
+D. Analysis
+So far I have demonstated the advantage of domain
+wall encodings in realistic problems but have not an-
+alyzed the source of the advantage, or compared rela-
+tive advantages when embedding diﬀerent problems into
+graphs. To do this, I deﬁne theembedding ratio, which is
+the ratio of the number of vertexes used in the graph em-
+bedding to the number of vertexes in the original interac-
+tion graph. The embedding ratio captures the eﬃciency
+with which the problem structure can be embedded in
+a way which does not directly depend on the number of
+vertexes in the interaction graph, or details of the original
+problem.
+Fig. 8 compares the embedding ratios for the example
+problems discussed earlier in this section. From Fig. 8(a)
+it can be observed that the domain wall encoding of the
+maximum three colour problem is actually slightly less
+eﬃcient to embed than the one hot encoding, therefore,
+the advantage seen in Fig. 5(a and c) is entirely because
+of the fact that the domain wall encoding requires fewer
+variables. However, Fig. 8(b and c) demonstrate that for
+the maxn color and scheduling problems the structure of
+the domain wall encoding can be embedded much more
+eﬃciently at large sizes. Finally, Fig. 8(d) demonstrates
+
+=== PDF PAGE 12 ===
+12
+5 10 15 20
+embedding ratio 
+ Pegasus or domain wall
+0
+5
+10
+15
+20
+25
+30
+embedding ratio 
+ chimera or one hot
+Figure 9: Relative embedding ratios under diﬀerent circum-
+stances. Solid symbols (red and blue) indicate domain wall
+encodingembeddingratioonthe X axisandonehotonthe Y,
+whereas hollow symbols (black and magenta) indicate embed-
+ding into Pegasus on theX versus embedding into Chimera
+on the Y. Red indicates embedding into a Chimera graph,
+while blue indicates embedding into a Pegasus. Black indi-
+cates one hot encoding, while Magenta indicates domain wall
+encoding. Circles indicate three colour problems, while stars
+indicate, n colour problems, and squares indicate scheduling.
+All dashed lines are guides to the eye, with the cyan dashed
+line indicating the point where equal embedding ratios are
+obtained. All points are averaged over10 instances.
+the advantage of embedding into a Pegasus rather than
+Chimera graph, with the Pegasus embedding being much
+more eﬃcient.
+One additional advantage of comparing embedding ra-
+tios is that it provides a method to compare problems
+of diﬀerent sizes and types, and even the relative advan-
+tages gained from changing diﬀerent aspects, for instance
+encoding and hardware graph. Fig. 9 depicts relative
+embedding ratios under diﬀerent circumstances plotted
+on the same axes. From this plot, we ﬁrst observe that
+the structural advantage of domain wall encoding over
+one hot encoding is highly problem structure dependent,
+from actually a slight disadvantage in the case of three
+colour problems, to an advantage comparable with the
+advantage gained from embedding into a Pegasus graph
+rather than a chimera in the case of scheduling problems
+embedded into the Pegasus graph. The hardware graph
+structure (Pegasus versus chimera) on the other hand
+yields a consistent large advantage in terms of embed-
+ding overhead for all studied problem structure.
+VIII. NUMERICAL METHODS
+All embedding was performed using the minorminer
+software which is publicly available [60], with the default
+settings. Pegasus and Chimera graphs were created using
+thepubliclyavailableD-Wavenetworkxsoftware[30]. All
+of the code for the numerical calculations was written in
+Python 3.5 and is publicly available from [33].
+Theminimumembeddablesizeforagivenproblemwas
+calculated by ﬁrst trying the size of the previous prob-
+lem (or minimum size for the graph type) if embedding
+fails then the graph size is incremented until success and
+if successful the size is decremented until failure. For
+maximum colouring problems, the graphs to be coloured
+are Erdös Réyni random graphs [58, 59] (each pair of
+vertices independently has an edge with an independent
+ﬁxed probability) with edge probability0.5 in the three
+colour case and0.75 in then colour case.
+For scheduling problems, the goal is to minimize the
+number of conﬂicts between events each of which is con-
+strained to occur at integer times within a range of times
+between 0 and tmax. The value oftmax is chosen to be
+two times the number of events, and the probability that
+each pair of events will conﬂict (i.e. that interactions need
+to be encoded between them) is chosen independently at
+random with the probability of a conﬂict being0.75. The
+earliestpossiblestarttime tearly ofaneventischosenuni-
+formly at random between zero andtmax− 2. The latest
+possible start timetlate is chosen uniformly at random
+betweentearly + 1 and tmax. The duration of each event
+is chosen uniformly at random between one and ﬁve time
+units.
+The problems selected here have not been chosen to be
+provably hard, but rather to have representative struc-
+ture of a problem type. It is, however, worth noting that
+even if the scheduling and colouring problem types which
+are use here are not asymptotically hard, there will be a
+plethora of weighted versions of the problems which will
+have the same interaction graphs (and therefore use the
+same embeddings), and it is likely that at least one of
+these versions will be hard. The importance of the exis-
+tence of multiple problems with the same graph structure
+has been highlighted in [61].
+IX. EXTENSION: DOMAIN W ALL ANALOGUE
+OF k-HOT ENCODINGS
+One additional advantage of a one-hot encoding is that
+it can be naturally extended to ak-hot encoding by mod-
+ifying the strength of the one body terms such that in
+the lowest energy manifoldk variables are in the1 state,
+rather than only one. Unfortunately, it is not possible to
+play a similar trick for domain wall variables; the lowest
+energy state of the chain will always be the state with
+exactly one domain wall. The domain wall encoding can
+however be used to produce ak-hot analogy by linking
+together multiple chains and introducing strong interac-
+tions which do not allow any domain walls to be at the
+same site number. One way to accomplish this is em-
+ploy the colouring problem encoding in section VIIB on
+a clique (fully connected) graph, this would enforce that
+no two variables take the same value and thus the collec-
+tive object behaves like a k-hot encoding.
+However, an analogue of thek-hot encoding requiring
+even less interaction between the chains is possible, this
+cancomebyrealizingthattheconstraintthatthedomain
+
+=== PDF PAGE 13 ===
+13
+wall variablej + 1 has a greater value than variablej
+can be implemented eﬃciently by only interacting nearby
+qubits on neighbouring chains.
+This can be achieved by realising that iﬀ the value of
+variablej + 1 is less than or equal to that of variablej,
+than for somei the following logical statement will be
+true (⟨Z (N ),ji−1 ⟩ =−1)∧ (⟨Z (N ),j+1i ⟩ = 1). Therefore we
+can use interactions of the form(1+Z (N ),ji−1 ) (1−Z (N ),j+1i )
+to enforce the constraint,(⟨Z (N ),ji−1 ⟩ = 1)∨ (⟨Z (N ),j+1i ⟩ =
+−1)∀i, summing overi (and neglecting an irrelevant con-
+stant oﬀset) we obtain
+H (j,j+1)> =
+N−1∑
+i=0
+−Z (N ),ji−1 Z (N ),j+1i −Z (N ),j+1i +Z (N ),ji−1
+(19)
+which yields the minimum possible energy if the value
+of variable j is less than that ofj + 1, and a positive
+energy otherwise [82]. Thek-hot condition can therefore
+be enforced by addingλ′∑j=k−2j=0 H (j,j+1)> to the domain
+wall Hamiltonians which implementk variables.
+Constructing domain wall analogues ofk-hot problems
+seems counter-productive, since it requires more logical
+qubits than the analogousk-hot encoding. However, in
+thesek-hotanalogies, thepartsofthedomainwallswhich
+encode diﬀerent discrete values can still be spatially sep-
+arated, for some problem, the domain wall analogue may
+still be more eﬃcient after embedding. While a poten-
+tially fruitful endeavour, examining the eﬃciency trade-
+oﬀs betweenk-hot and domain wallk-hot analogues for
+encoding real problems is beyond the scope of this paper.
+X. DISCUSSION AND CONCLUSIONS
+In this manuscript, I have discussed a method of en-
+coding discrete variables into Ising model qubits based
+on domain walls in one dimensional spin chains which
+is an alternative to the traditional one hot method. I
+have further demonstrated how arbitrary (classical) two
+variable interactions can be encoded, and that these in-
+teractions only require two body Ising terms. Further-
+more, as was demonstrated in [22] for one hot, two body
+mixer terms which preserve the logically valid space are
+possible, which may be highly relevant in QAOA imple-
+mentations [22]. Finally, I have numerically examined
+the possibility of embedding problems encoded using the
+domain wall methods in two graphs which are relevant
+to quantum annealing, the chimera and Pegasus graphs.
+For every problem type I have examined, I found that the
+domain wall encoding can be embedded more eﬃciently
+than the one hot encoding. The level of improvement is
+strongly dependent on problem type, but in some cases
+can be comparable to the gains made from having a Pega-
+sus versus chimera hardware graph. Speciﬁcally, for the
+synthetic scheduling problems examined here,embedded
+into the Pegasus graph, the gains made in terms of the
+ratio of physical to logical bits for domain wall versus
+one hot is comparable to the gains from embedding into
+Pegasus versus chimera.
+It is likely that the large gains are due the fact that
+the domain wall encoding inherently allows variables to
+be more ‘spread out’ and therefore take advantage of the
+natural structure of the problem for embedding in a way
+which is not possible for one hot. One example of such
+structure is the fact that events occurring at very diﬀer-
+ent times in a scheduling problem are unlikely to inter-
+act. For two such interacting variables in one hot, the
+binary variables representing the events happening even
+at very diﬀerent times can have a maximum edge dis-
+tance of two (two edges must be traversed to get between
+them), whereas for a domain wall encoding, the edge dis-
+tance is in principle unbounded. It is worth emphasis-
+ing that this study was performed using general purpose
+heuristic problem embedding software, and therefore it
+is likely that even better results could be obtained using
+specialized software which is speciﬁcally designed to take
+advantage of known structural features within speciﬁc
+problems. Furthermore, the nominal hardware graphs
+studies here are also general purpose, it is likely that em-
+bedding overhead could be reduced or even eliminated
+on application speciﬁc hardware, for instance ASICs de-
+signed for problems with a particular structure.
+It would further be interesting to examine the most ef-
+ﬁcient strategies to decompose problems which do not ﬁt
+onto the hardware graph of a quantum annealer[62–64].
+The importance of such strategies has been highlighted
+in more general cases [65].
+It is ﬁnally worth brieﬂy noting that the natural struc-
+ture present in the domain wall encoding means that it
+can be used to design discrete or mixed binary/integer
+optimization problems which can be mapped to hard-
+ware with no embedding overhead. This could provide
+an important tool for scientiﬁc studies on real quantum
+annealers, as embedding may complicate the interpreta-
+tion of experimental results. In particular, in an upcom-
+ing work [66] I will examine the ability of real quantum
+annealers to ﬁnd solutions to mixed binary/integer prob-
+lems which are not only highly optimal but also robust,
+and examine how reverse annealing [67, 68] can be used
+as a tool to trade oﬀ between optimality and robustness.
+Acknowledgments
+This work was supported by BP plc, by EPSRC fellow-
+ship EP/S00114X/1, and ESPRC Hub EP/M013243/1.
+Figures were drawn using the Tikzit tikz editor [69]. Nu-
+merical calculations were performed in Python 3.5 [70]
+using jupyter notbeooks [71, 72] and used the numpy [73],
+minorminer [60], D-Wave networkx [30] modules. Plot-
+ting was performed using the maplotlib module [74]. The
+author thanks Viv Kendon for a critical reading of the
+paper, Jie Chen for spotting several typos in formulae
+posted in arχiv versions, and Adam Callison for point-
+
+=== PDF PAGE 14 ===
+14
+ing out that quadratic interactions can be implemented
+eﬃciently for a binary encoding.
+Appendix 1: Explantion of performance metrics
+given in table II
+We use several performance metrics to compare binary,
+one-hot, and domain wall encodings in table II, in this
+appendix. We also explain what makes the cases labelled
+as ‘complicated’ complicated, and why no simple answer
+can be given.
+# qubits
+This is the number of qubits which each encoding re-
+quires to logically represent the problem. In the case of
+binary encoding, this excludes any auxiliary qubits re-
+quired to implement constraints, see ‘# couplers for en-
+coding’ for a discussion of where such qubits may come
+about.
+# couplers for encoding
+This is the number of two body couplers required to
+restrict the qubits to thelogically valid subspace, in other
+words, the subspace of qubit conﬁgurations which corre-
+spond to logically valid values of the discrete variable
+being encoded. In the case of domain wall and one
+hot, this is straightforward, since the number of cou-
+plers for each is well deﬁned. In the case of binary en-
+coding, the complexity depends strongly on whether or
+not the discrete variable being encoded involves a binary
+(i.e. m = 2n, m∈ Z) number of possibilities or not. If it
+does, than the logically valid space is exactly the space of
+all possible bitstrings expressible inn qubits, and there-
+fore no couplers are required to constrain the space. On
+the other hand if the number of possibilities is not a bi-
+nary number, than constraints need to be added to pre-
+vent certain conﬁgurations, in general, these constraints
+will involve more than two body terms and would there-
+fore also require auxiliary qubits to implement eﬀective
+multi-body constraints. A full analysis of all of the ways
+this can be done is beyond the scope of this paper, so
+this case has been simply marked as ‘complicated’.
+intra-variable connectivity
+This is the structure of the connectivity required
+within the variable to restrict to the logically valid sub-
+space. For one hot this requires a fully connected con-
+struction, and for domain wall it requires linear connec-
+tivity. As with the number of couplers, the connectivity
+depends whether or not the discrete variable involves a
+binary number of possibilities, if it does, than no con-
+nections at all are needed to restrict to the logically valid
+subspace. On the other hand if there is not a binary num-
+ber, than some conﬁgurations need to be excluded, which
+will generally require high order coupling, the structures
+necessary to do this are complicated and beyond the
+scope of this paper.
+maximum order needed to penalize single values
+This is the highest order of coupling (i.e. how many
+qubits need to be coupled together in a single eﬀective
+interaction) to penalize an arbitrary single logical value.
+For both one hot and domain wall, this is one, since single
+body terms which either act on a single qubit or bracket
+a domain wall respectively can achieve this. For a binary
+encoding, one would in general need interactions which
+interact every qubit used to encode the variable with ev-
+ery other qubit used to encode the variable. Note that
+some speciﬁc kinds of penalties in the binary encoding
+may require much lower order, for instance, a penalty
+which scales linearly with the value of a binary number
+only requires single body terms.
+maximum order needed for two variable interactions
+This is the highest order of coupling (i.e. how many
+qubits need to be coupled together in a single eﬀective
+interaction) to implement an arbitrary two variable in-
+teraction. For both one hot and domain wall encodings
+this is two. For the binary encoding, this could require
+a coupling which involved every qubit in both variables.
+Speciﬁc interactions can require lower order though, for
+instance a quadratic interaction can be encoded using
+only one and two body interactions.
+maximum de between qubits in interacting variables
+This is the maximum edge distance between qubits
+used to encode two diﬀerent interacting variables. The
+edge distance is the minimum number of edges which
+must be traversed to get between two qubits in the in-
+teraction graph. Roughly speaking this measures how
+‘spread out’ a variable encoding can be. As discussed
+previously in this appendix, interactions between binary
+variables can be complex to encode and may require aux-
+iliaryqubitsifnativehighorderinteractionsarenotavail-
+able, therefore the edge distance in the binary case is
+complicated and case dependant.
+Appendix 2: Hamiltonians for examples
+In this appendix, I give explicit Hamiltonians for all
+of the example problem types. To simplify the expres-
+
+=== PDF PAGE 15 ===
+15
+sions and to make it so the same Hamiltonians can be
+used to express both types of domain wall encodings as
+well as one hot, it is useful to provide some deﬁnitions.
+First of all, I deﬁne the variable cores which are the con-
+straints necessary to deﬁne the variable for domain walls
+are deﬁned by Eq. 8
+H (N ),kcore =−λ
+N−1∑
+i=−1
+Z (N ),ki Z (N ),ki+1 , (20)
+where the notation has been modiﬁed to add the variable
+indexk, and to clarify the role of the Hamiltonian. Sim-
+ilarly, following from Eq. 4, the core Hamiltonian in the
+one hot equation can be deﬁned as
+H (N ),kcore =λ
+
+∑
+i<j
+Z kiZ kj− (m− 1)∑
+i
+Z ki
+
+. (21)
+In addition to the core, I need to deﬁne penalties on
+diﬀerent variable values, for the domain wall encoding,
+this comes from Eq. 10
+δ(N ),ki = 12(Z (N )i −Z (N )i−1 ) (22)
+where the bar has been dropped for notational conve-
+nience. Finally, for one hot, the deﬁnition is very simple,
+δ(N ),ki = 12Z ki+1. (23)
+Equipped with these deﬁnitions, I now deﬁne the Hamil-
+tonians for the three examples
+A. Unstructured Interactions
+In this case I consider unstructured interactions be-
+tween two variables, although the deﬁnition can be eas-
+ily extended to more. In this case, let the interactions
+between variable 1 of size N, and variable 2 of size M
+be deﬁned by theN×M matrix A. The Hamiltonian is
+therefore
+Hunstruct =H (N ),1core +H (M ),2core +
+N∑
+i=1
+M∑
+j=1
+Aijδ(N ),1i−1 δ(M ),2j−1 .
+(24)
+B. Graph colouring
+In this case, we consider colouring a graph with K
+vertexes and edges deﬁned by theK×K strictly upper
+triangular matrixe where 1 denotes an edge and0 rep-
+resents no edge, usingN colours. Each variable will be
+of size N and will have constraints which prevent ver-
+texes which are coloured the same to share edges. The
+Hamiltonian therefore takes the form
+Hcolor =
+K∑
+l=1
+H (N ),lcore +
+K∑
+i=1
+K∑
+j=i+1
+eij
+N−1∑
+k=0
+δ(N ),ik δ(M ),jk . (25)
+C. Scheduling
+In this case I consider a scheduling problem which is
+deﬁned to involve m events. A single event, event k,
+must occur betweentk,min and tk,max, and furthermore
+has a durationTk. For mathematical convenience, I de-
+ﬁne dur(k) =tk,max−tk,min Some events conﬂict, mean-
+ing that they cannot occur simultaneously while others
+do not. I deﬁne whether or not events conﬂict using the
+strictly upper triangular matrixC, where 1 represents a
+conﬂict and0 represents no conﬂict. The Hamiltonian is
+deﬁned as
+Hsched =
+m∑
+k=1
+H (dur(k)),kcore +
+m∑
+i=1
+m∑
+j=i+1
+Cij
+dur(i)∑
+l=1
+dur(j)∑
+q=1
+R(i,j)lq δ(dur(i)),il−1 δ(dur(j)),jq−1 . (26)
+The binary matrix R(i,j)lq deﬁnes whether or not two
+events temporally overlap given their duration, in other
+words,
+R(i,j)lq =
+
+
+
+1 ti,min +l− 1 =tj,min +q− 1
+1 tj,min +q− 1<t i,min +l− 1<t j,min +q− 1 +Tj
+1 ti,min +l− 1<t j,min + 1− 1<t i,min +q− 1 +Ti
+0 otherwise
+. (27)
+
+=== PDF PAGE 16 ===
+16
+[1] D-Wave. D-wave systems inc. website. http://www.
+dwavesys.com/, 2019. Accessed: 2019-05-03.
+[2] Michael Marzec.Portfolio Optimization: Applications in
+Quantum Computing, pages 73–106. John Wiley & Sons,
+Inc., 2016.
+[3] Roman Orus, Samuel Mugel, and Enrique Lizaso.
+Forecasting ﬁnancial crashes with quantum computing.
+arχiv:1810.07690, 2018.
+[4] Davide Venturelli and Alexei Kondratyev. Reverse quan-
+tum annealing approach to portfolio optimization prob-
+lems. arχiv:1810.08584, 2018.
+[5] N. Chancellor, S. Zohren, P. A. Warburton, S. Benjamin,
+and S. Roberts. A direct mapping of Max k-SAT and
+high order parity checks to a chimera graph.Scientiﬁc
+Reports, 6(37107), 2016.
+[6] Vicky Choi. Adiabatic quantum algorithms for the np-
+complete maximum-weight independent set, exact cover
+and 3SAT problems. arχiv:1004.2226, 2010.
+[7] VickyChoi. Diﬀerentadiabaticquantumoptimizational-
+gorithms for the np-complete exact cover and 3SAT prob-
+lems. Quantum Information and Computation, 11(7&8),
+2011.
+[8] Zhaokai Li, Nikesh S. Dattani, Xi Chen, Xiaomei Liu,
+Hengyan Wang, Richard Tanburn, Hongwei Chen, Xin-
+hua Peng, and Jiangfeng Du. High-ﬁdelity adiabatic
+quantum computation using the intrinsic Hamiltonian of
+a spin system: Application to the experimental factor-
+ization of 291311. arχiv:1706.08061, 2017.
+[9] Olawale Titiloye and Alan Crispin. Quantum annealing
+of the graph coloring problem. Discrete Optimization,
+8(2):376 – 384, 2011.
+[10] Olawale Titiloye and Alan Crispin. Graph coloring with
+a distributed hybrid quantum annealing algorithm. In
+James O’Shea, Ngoc Thanh Nguyen, Keeley Crockett,
+Robert J. Howlett, and Lakhmi C. Jain, editors,Agent
+and Multi-Agent Systems: Technologies and Applica-
+tions, pages 553–562, Berlin, Heidelberg, 2011. Springer
+Berlin Heidelberg.
+[11] Davide Venturelli, Dominic J. J. Marchand, and Galo
+Rojo. Quantum annealing implementation of job-shop
+scheduling. arχiv:1506.08479, 2015.
+[12] A. Crispin and A. Syrichas. Quantum annealing algo-
+rithm for vehicle scheduling. In2013 IEEE International
+Conference on Systems, Man, and Cybernetics, pages
+3523–3528, Oct 2013.
+[13] Tony T. Tran, Minh N. Do, Eleanor G. Rieﬀel, Jeremy
+Frank, Zhihui Wang, Bryan O’Gorman, Davide Ven-
+turelli, and J. Christopher Beck. A hybrid quantum-
+classical approach to solving scheduling problems. In
+SOCS, 2016.
+[14] N. Chancellor, S. Szoke, W. Vinci, G. Aeppli, and P. A.
+Warburton. Maximum–entropy inference with a pro-
+grammable annealer. Scientiﬁc Reports, 6(22318), 2016.
+[15] Alejandro Perdomo-Ortiz, Neil Dickson, Marshall Drew-
+Brook, Geordie Rose, and Alan Aspuru-Guzik. Find-
+ing low-energy conformations of lattice protein models
+by quantum annealing.Scientiﬁc Reports, 2(571), 2012.
+[16] Tobias Stollenwerk, Elisabeth Lobe, and Martin Jung.
+Flight gate assignment with a quantum annealer.
+arχiv:1811.09465, 2018.
+[17] T. Stollenwerk, B. O’Gorman, D. Venturelli, S. Man-
+drà, O. Rodionova, H. Ng, B. Sridhar, E. G. Rief-
+fel, and R. Biswas. Quantum annealing applied to de-
+conﬂicting optimal trajectories for air traﬃc manage-
+ment. IEEE Transactions on Intelligent Transportation
+Systems, pages 1–13, 2019.
+[18] Edward Farhi, Jeﬀrey Goldstone, and Sam Gut-
+mann. A quantum approximate optimization algorithm.
+arχiv:1411.4028, 2014.
+[19] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann.
+A quantum approximate optimization algorithm ap-
+plied to a bounded occurrence constraint problem.
+arχiv:1412.6062, 2014.
+[20] Zhi-Cheng Yang, Armin Rahmani, Alireza Shabani,
+Hartmut Neven, and Claudio Chamon. Optimizing varia-
+tional quantum algorithms using Pontryagin’s minimum
+principle. Phys. Rev. X, 7:021027, May 2017.
+[21] Zhang Jiang, Eleanor G. Rieﬀel, and Zhihui Wang. Near-
+optimal quantum circuit for Grover’s unstructured search
+using a transverse ﬁeld. Phys. Rev. A, 95:062317, Jun
+2017.
+[22] Stuart Hadﬁeld, Zhihui Wang, Bryan O’Gorman,
+Eleanor G. Rieﬀel, Davide Venturelli, and Rupak Biswas.
+From the quantum approximate optimization algorithm
+to a quantum alternating operator ansatz. Algorithms,
+12.2:34, 2019. (Special issue "Quantum Optimization
+Theory, Algorithms, and Applications").
+[23] Vicky Choi. Minor-embedding in adiabatic quantum
+computation: I. the parameter setting problem. Quan-
+tum Information Processing, (7):193–209, 2008.
+[24] Vicky Choi. Minor-embedding in adiabatic quantum
+computation: II. minor-universal graph design. Quan-
+tum Information Processing, 10:343, 2011.
+[25] Wolfgang Lechner, Philipp Hauke, and Peter Zoller. A
+quantum annealing architecture with all-to-all connectiv-
+ity from local interactions.Science Advances, 1(9), 2015.
+[26] AndreaRocchetto, SimonC.Benjamin, andYingLi. Sta-
+bilisers as a design tool for new forms of Lechner-Hauke-
+Zoller annealer. Science Advances, (2):e1601246, 2016.
+[27] Tameem Albash, Walter Vinci, and Daniel A. Lidar. Sim-
+ulatedquantumannealingwithtwoall-to-allconnectivity
+schemes. Phys. Rev. A, (94):022327, 2016.
+[28] Kelly Boothby, Paul Bunyk, Jack Raymond,
+and Aidan Roy. Next-generation topology of
+d-wave quantum processors. https://www.
+dwavesys.com/sites/default/files/14-1026A-C_
+Next-Generation-Topology-of-DW-Quantum-Processors.
+pdf, 2019. Accessed: 2019-05-03.
+[29] Nike Dattani, Szilard Szalay, and Nick Chancellor. Pega-
+sus: The second connectivity graph for large-scale quan-
+tum annealing hardware. arχiv:1901.07636, 2019.
+[30] D-wave networkx. https: // github. com/
+dwavesystems/ dwave_ networkx, 2018. Accessed
+2019-05-03.
+[31] Dàniel Marx. Graph colouring problems and their appli-
+cations in scheduling. Periodica Polytechnica Electrical
+Engineering (Archives), 48(1-2):11–16, 2004.
+[32] Robin Blume-Kohout, Carlton M. Caves, and Ivan H.
+Deutsch. Climbing mount scalable: Physical resource
+requirements for a scalable quantum computer.Founda-
+tions of Physics, 32(11):1641–1670, Nov 2002.
+[33] Nicholas Chancellor. Code associated with: Domain wall
+
+=== PDF PAGE 17 ===
+17
+encoding of integer variables for quantum annealing and
+QAOA. https://doi.org/10.15128/r27d278t029.
+[34] Daryl Janzen. Introduction to Electricity, Mag-
+netism, and Circuits. University of Saskatewan, 2018.
+https://openpress.usask.ca/physics155.
+[35] Tameem Albash, Victor Martin-Mayor, and Itay Hen.
+Temperature scaling law for quantum annealing optimiz-
+ers. Phys. Rev. Lett., (119):110502, 2017.
+[36] Samuel Marsh and Jingbo Wang. A quantum walk as-
+sisted approximate algorithm for bounded np optimisa-
+tion problems. arXiv:1804.08227, 2018.
+[37] Zhihui Wang, Nicholas C. Rubin, Jason M. Dominy, and
+Eleanor G. Rieﬀel.xy-mixers: analytical and numerical
+results for qaoa, 2019. arXiv:1904.09314.
+[38] Chunqing Deng. Demonstration of sign and mag-
+nitude tunable transverse ﬁeld in a superconduct-
+ing ﬂux qubit with microwave dressing. presented
+at AQC 2018: https://www.youtube.com/watch?v=
+4BzHTUiX6LU&feature=youtu.be, 2018. accessed: 2019-
+05-03.
+[39] I. Ozﬁdan, C. Deng, A. Y. Smirnov, T. Lanting, R. Har-
+ris, L. Swenson, J. Whittaker, F. Altomare, M. Bab-
+cock, C. Baron, A. J. Berkley, K. Boothby, H. Chris-
+tiani, P. Bunyk, C. Enderud, B. Evert, M. Hager, A. Ha-
+jda, J. Hilton, S. Huang, E. Hoskinson, M. W. Johnson,
+K. Jooya, E. Ladizinsky, N. Ladizinsky, R. Li, A. Mac-
+Donald, D. Marsden, G. Marsden, T. Medina, R. Molavi,
+R. Neufeld, M. Nissen, M. Norouzpour, T. Oh, I. Pavlov,
+I. Perminov, G. Poulin-Lamarre, M. Reis, T. Prescott,
+C. Rich, Y. Sato, G. Sterling, N. Tsai, M. Volkmann,
+W. Wilkinson, J. Yao, and M. H. Amin. Demonstration
+of nonstoquastic hamiltonian in coupled superconducting
+ﬂux qubits. arχiv:1903.06139, 2019.
+[40] Andrew Childs and Jeﬀrey Goldstone. Spatial search by
+quantum walk.Phys. Rev. A, 70:022314, 2004.
+[41] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann, and
+Daniel Nagaj. How to make the quantum adiabatic algo-
+rithm fail. International Journal of Quantum Informa-
+tion, 6(03):503–516, 2008.
+[42] Nicholas Chancellor. Continuous time hybrid
+quantum computing. presented at AQC 2018:
+https://www.youtube.com/watch?v=hSKCVESA-D8&
+feature=youtu.be, 2018. accessed: 2019-05-03.
+[43] Adam Callison, Nicholas Chancellor, Florian Mintert,
+and Viv Kendon. Finding spin-glass ground states us-
+ing quantum walks, 2019. In preparation.
+[44] Alec Maassen van den Brink, A. J. Berkley, and
+M. Yalowsky. Mediated tunable coupling of ﬂux qubits.
+New J. Phys, (3):230, 2005.
+[45] Virtual graphs for high-performance embedded topolo-
+gies. https://www.dwavesys.com/sites/default/
+files/14-1020A-A_Virtual_Graphs_for_High_
+Performance_Embedded_Topologies.pdf, 2019. Ac-
+cessed: 2019-08-03.
+[46] M. W. Johnson, M. H. S. Amin, S. Gildert, T. Lanting,
+F. Hamze, N. Dickson, R. Harris, A. J. Berkley, J. Jo-
+hansson, P. Bunyk, E. M. Chapple, C. Enderud, J. P.
+Hilton, K. Karimi, E. Ladizinsky, N. Ladizinsky, T. Oh,
+I.Perminov, C.Rich, M.C.Thom, E.Tolkacheva, C.J.S.
+Truncik, S. Uchaikin, J. Wang, and B. Wilsonand G.
+Rose. Quantum annealing with manufactured spins.Na-
+ture, 473:194–198, 2011.
+[47] Itay Hen and Federico M. Spedalieri. Quantum anneal-
+ing for constrained optimization. Phys. Rev. Applied,
+5:034007, Mar 2016.
+[48] ItayHenandMarceloS.Sarandy. Driverhamiltoniansfor
+constrained optimization in quantum annealing. Phys.
+Rev. A, 93:062312, Jun 2016.
+[49] Joschka Roﬀe, David Headley, Nicholas Chancellor, Do-
+minic Horsman, and Viv Kendon. Protecting quantum
+memories using coherent parity check codes. Quantum
+Sci. Technol., (3):035010, 2018.
+[50] Mark Whitney, Nemanja Isailovic, Yatish Patel, and
+John Kubiatowicz. Automated generation of layout and
+control for quantum circuits. InProceedings of the 4th In-
+ternational Conference on Computing Frontiers, CF ’07,
+pages 83–94, New York, NY, USA, 2007. ACM.
+[51] AlexanderCowtan, SilasDilkes, RossDuncan, Alexandre
+Krajenbrink, WillSimmons, andSeyonSivarajah. Onthe
+qubit routing problem. arχiv:1902.08091, 2019.
+[52] Subhash Khot, Guy Kindler, Elchanan Mossel, and Ryan
+O’Donnell. Optimal inapproximability results for max-
+cut and other 2-variable csps?SIAM Journal on Com-
+puting, 37(1):319–357, 2007.
+[53] A. Frieze and M. Jerrum. Improved approximation al-
+gorithms for maxk-cut and max bisection.Algorithmica,
+18(1):67–81, May 1997.
+[54] K.R.Duﬀy, N.O’Connell, andA.Sapozhnikov. Complex-
+ity analysis of a decentralised graph colouring algorithm.
+Information Processing Letters, 107(2):60 – 63, 2008.
+[55] David P. Dailey. Uniqueness of colorability and colorabil-
+ity of planar 4-regular graphs are np-complete.Discrete
+Mathematics, 30(3):289 – 293, 1980.
+[56] Takahiro Inagaki, Yoshitaka Haribara, Koji Igarashi,
+Tomohiro Sonobe, Shuhei Tamate, Toshimori Honjo,
+Alireza Marandi, Peter L. McMahon, Takeshi Umeki,
+Koji Enbutsu, Osamu Tadanaga, Hirokazu Takenouchi,
+Kazuyuki Aihara, Ken-ichi Kawarabayashi, Kyo Inoue,
+Shoko Utsunomiya, and Hiroki Takesue. A coherent Ising
+machine for 2000-node optimization problems.Science,
+354(6312):603–606, 2016.
+[57] Peter L. McMahon, Alireza Marandi, Yoshitaka Harib-
+ara, Ryan Hamerly, Carsten Langrock, Shuhei Ta-
+mate, Takahiro Inagaki, Hiroki Takesue, Shoko Ut-
+sunomiya, Kazuyuki Aihara, Robert L. Byer, M. M. Fe-
+jer, Hideo Mabuchi, and Yoshihisa Yamamoto. A fully-
+programmable 100-spin coherent Ising machine with all-
+to-all connections. Science, 2016.
+[58] Paul Erdös and Alfréd Rényi. On random graphs.Publ.
+Math. Debrecen, 6:290–297, 1959.
+[59] PaulErdösandAlfrédRényi. Ontheevolutionofrandom
+graphs. Bull. Inst. Internat. Statist, 38:343–347, 1960.
+[60] minorminer. https: // github. com/ dwavesystems/
+minorminer, 2018. Accessed 2019-05-03.
+[61] Alastair A. Abbott, Cristian S. Calude, Michael J. Din-
+neen, and Richard Hua. A hybrid quantum-classical
+paradigm to mitigate embedding costs in quantum an-
+nealing. arχiv:1803.04340, 2018.
+[62] Z. Bian et al. Discrete optimization using quantum an-
+nealing on sparse Ising models. Frontiers in Physics,
+2(56), 2014.
+[63] Z. Bian, F. Chudak, R. B. Israel, B. Lackey, W. G.
+Macready, and A. Roy. Mapping constrained optimiza-
+tion problems to quantum annealing with application to
+fault diagnosis. Frontiers in ICT, 3:14, 2016.
+[64] A. Douglass et al. qbsolve. https://github.com/
+dwavesystems/qbsolv, 2017. accessed: Nov. 28, 2017.
+[65] Shuntaro Okada, Masayuki Ohzeki, Masayoshi Terabe,
+
+=== PDF PAGE 18 ===
+18
+and Shinichiro Taguchi. Improving solutions by embed-
+ding larger subproblems in a d-wave quantum annealer.
+Scientiﬁc Reports, 9(1):2098, 2019.
+[66] Nicholas Chancellor. Trading oﬀ roubstness and opitmal-
+ity using reverse annealing, 2019. In preparation.
+[67] Reverse quantum annealing for local reﬁnement of
+solutions. https://www.dwavesys.com/sites/default/
+files/14-1018A-A_Reverse_Quantum_Annealing_for_
+Local_Refinement_of_Solutions.pdf, 2019. Accessed:
+2019-05-03.
+[68] NicholasChancellor. Modernizingquantumannealingus-
+ing local searches.New Journal of Physics, 19(2):023024,
+feb 2017.
+[69] Tikzit. http: // tikzit. github. io/, 2013. Accessed
+April 20th, 2018.
+[70] Guido Van Rossum and Fred L Drake.Python language
+reference manual. Network Theory United Kingdom,
+2003.
+[71] Thomas Kluyver, Benjamin Ragan-Kelley, Fernando
+Pérez, Brian Granger, Matthias Bussonnier, Jonathan
+Frederic, Kyle Kelley, Jessica Hamrick, Jason Grout,
+Sylvain Corlay, Paul Ivanov, Damián Avila, Saﬁa Ab-
+dalla, and Carol Willing. Jupyter notebooks – a pub-
+lishing format for reproducible computational workﬂows.
+In F. Loizides and B. Schmidt, editors,Positioning and
+Power in Academic Publishing: Players, Agents and
+Agendas, pages 87 – 90. IOS Press, 2016.
+[72] Fernando Pérez and Brian E Granger. IPython: a sys-
+tem for interactive scientiﬁc computing. Computing in
+Science & Engineering, 9(3), 2007.
+[73] Travis E Oliphant.A guide to NumPy, volume 1. Trelgol
+Publishing USA, 2006.
+[74] John D Hunter. Matplotlib: A 2d graphics environment.
+Computing in science & engineering, 9(3):90–95, 2007.
+[75] Technically speaking continuous time formulations of
+QAOA are possible, but no large scale hardware exists
+with this capability.
+[76] One potential exception is optical annealing devices de-
+signed in the spirit of so called ‘coherent Ising machines’
+[56, 57], which may be able to realize full connectivity,
+however, it is unclear if it is technically feasible to realize
+such devices at a large scale without classical feedback
+which interrupts large scale quantum coherence.
+[77] Again up to a constant energy oﬀset, see later discussion.
+Note that the single variable terms can be created from
+sums of two variable terms.
+[78] Strictly speaking we only want to prevent bit ﬂips in the
+no domain wall case, since the two domain wall case is
+already an invalid state.
+[79] By graph theoretical arguments relating to the treewidth,
+this will actually be true for any encoding strategy
+[80] Strictly speaking, one edge can always be removed by
+a judicious choice of the zero of energy in one hot, but
+not in the domain wall encoding, consequences will be
+discussed in a later footnote.
+[81] By using a judicious choice of the zero of energy, this
+could be reduced to73 interactions. This ‘removed’ edge
+can be placed between additional qubits in one hot rel-
+ative to domain wall without loss of generality so the
+domain wall encoding graph remains a subgraph of the
+one hot graph
+[82] This expression can even be made more eﬃcient by omit-
+ting domain wall sites corresponding to ‘impossible’ val-
+ues, for instance, there is no legal conﬁguration where
+the jth variable can take a value less thanj

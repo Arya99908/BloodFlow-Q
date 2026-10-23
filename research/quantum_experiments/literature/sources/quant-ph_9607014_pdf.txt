@@ -1,0 +1,197 @@
+=== PDF PAGE 1 ===
+arXiv:quant-ph/9607014v2  7 Jan 1999
+A quantum algorithm for ﬁnding the minimum ∗
+Christoph D¨ urr† Peter Høyer‡
+July 1996
+1 Introduction
+Let T [0..N − 1] be an unsorted table of N items, each
+holding a value from an ordered set. For simplicity,
+assume that all values are distinct. The minimum
+searching problem is to ﬁnd the index y such that T [y]
+is minimum. This clearly requires a linear number of
+probes on a classical probabilistic Turing machine.
+Here, we give a simple quantum algorithm which
+solves the problem using O(
+√
+N ) probes. The main
+subroutine is the quantum exponential searching al-
+gorithm of [2], which itself is a generalization of
+Grover’s recent quantum searching algorithm [3].
+Due to a general lower bound of [1], this is within
+a constant factor of the optimum.
+2 The algorithm
+Our algorithm calls the quantum exponential search-
+ing algorithm of [2] as a subroutine to ﬁnd the index
+of a smaller item than the value determined by a par-
+ticular threshold index . The result is then chosen as
+the new threshold. This process is repeated until the
+probability that the threshold index selects the min-
+imum is suﬃciently large.
+If there are t ≥ 1 marked table entries, the quan-
+tum exponential searching algorithm will return one
+of them with equal probability after an expected
+number of O(
+√
+N/t ) iterations. If no entry is
+marked, then it will run forever. We obtain the fol-
+lowing theorem.
+Theorem 1 The algorithm given below ﬁnds the in-
+dex of the minimum value with probability at least 12 .
+Its running time is O(
+√
+N ).
+∗This work was supported by the alcom-it Research Pro-
+gramme of the EU, the rand2 Esprit W orking Group, and the
+ISI Foundation.
+†Laboratoire de Recherche en Informatique, Universit´ e
+Paris-Sud, bˆ at. 490, F–91405 Orsay, France. Email:
+durr@lri.fr.
+‡Dept. of Math. and Comp. Science, Odense Univer-
+sity, Campusvej 55, DK–5230 Odense M, Denmark. Email:
+u2pi@imada.ou.dk.
+We ﬁrst give the minimum searching algorithm,
+then the proof of the probability of success.
+Quantum Minimum Searching Algorithm
+1. Choose threshold index 0 ≤ y ≤ N − 1 uniformly
+at random.
+2. Repeat the following and interrupt it when the
+total running time is more than 22 .5
+√
+N +
+1.4 lg2 N .1 Then go to stage 2(2c).
+(a) Initialize the memory as ∑j 1√N |j⟩|y⟩.
+Mark every item j for which T [j] < T [y].
+(b) Apply the quantum exponential searching
+algorithm of [2].
+(c) Observe the ﬁrst register: let y′ be the out-
+come. If T [y′] < T [y], then set threshold
+index y to y′.
+3. Return y.
+By convention, we assume that stage 2(2a) takes
+lg(N ) time steps and that one iteration in the expo-
+nential searching algorithm takes one time step. The
+work performed in the stages 1, 2(2c), and 3 is not
+counted.
+For the analysis of the probability of success, as-
+sume that there is no time-out, that is, the algorithm
+runs long enough to ﬁnd the minimum. We refer to
+this as the inﬁnite algorithm . We start by analyzing
+the expected time to ﬁnd the minimum.
+At any moment the inﬁnite algorithm searches the
+minimum among the t items which are less than T [y].
+During the execution any such element will be chosen
+at some point as the threshold with some probabil-
+ity. The following lemma states that this probability
+is the inverse of the rank of the element and is inde-
+pendent of the size of the table.
+Lemma 1 Let p(t, r) be the probability that the index
+of the element of rank r will ever be chosen when the
+1As notation, we use lg for the binary logarithm and ln for
+the natural logarithm.
+1
+=== PDF PAGE 2 ===
+inﬁnite algorithm searches among t elements. Then
+p(t, r) = 1 /r if r ≤ t, and p(t, r) = 0 otherwise.
+Proof. The case r > t is obvious. The case r ≤ t
+is proven by induction on t for a ﬁxed r: The basis
+p(r, r) = 1 /r is obvious since the output distribu-
+tion of the exponential searching algorithm is uni-
+form. Assume that for all k ∈ [r, t] the equation
+p(k, r) = 1 /r holds. Then when t + 1 elements are
+marked, y is chosen uniformly among all t+ 1 indices,
+and can hold an item of rank either r, greater than r,
+or less than r. Only the former two cases contribute
+to the summation:
+p(t + 1, r) = 1t + 1 +
+t+1∑
+k=r+1
+1
+t + 1 p(k − 1, r)
+= 1t + 1 + t + 1 − rt + 1 · 1r
+= 1r .
+The expected number of iterations used by the ex-
+ponential searching algorithm of [2] to ﬁnd the index
+of a marked item — among N items where t items are
+marked — is at most 92√N/t (see [2]). We can now
+deduce the expected time used to ﬁnd the minimum:
+Lemma 2 The expected total time used by the inﬁ-
+nite algorithm before y holds the index of the mini-
+mum is at most m0 = 454 √N + 710 lg2 N .
+Proof. The expected total number of time steps of
+stage 2(2b) before T [y] holds the minimum is at most
+N∑
+r=2
+p(N, r) 92
+√
+N
+r − 1 = 92 √N N −1∑r=1 1r + 1 1√r
+≤ 92 √N
+(
+1
+2 +
+N −1∑
+r=2
+r−3/2
+)
+≤ 92 √N
+(
+1
+2 +
+∫ N −1
+r=1
+r−3/2dr
+)
+= 92 √N
+(
+1
+2 +
+[
+−2r−1/2
+]N −1
+r=1
+)
+≤ 454 √N .
+The expected total number of time steps of
+stage 2(2a) before T [y] holds the minimum is at most
+N∑
+r=2
+p(N, r) lg N =(HN − 1) lg N
+≤ ln N lg N
+≤ 710 lg2 N,
+where HN denotes the N th harmonic number.
+Theorem 1 follows immediately from lemma 2 since
+after at most 2 m0 iterations, T [y] holds the minimum
+value with probability at least 12 .
+3 Final remarks
+The probability of success can be improved by run-
+ning the algorithm c times. Let y be such that T [y] is
+the minimum among the outcomes. With probabil-
+ity at least 1 − 1/2c, T [y] holds the minimum of the
+table. Clearly, the probability of success is even bet-
+ter if we run the algorithm only once with time-out
+c2m0, because then we use the information provided
+by the previous steps.
+If the values in T are not distinct, we use the
+same algorithm as for the simpliﬁed case. The anal-
+ysis of the general case is unchanged, except that in
+lemma 1, the equation p(t, r) = 1 /r now becomes an
+inequality, p(t, r) ≤ 1/r. Hence, the lower bound for
+the success probability given in theorem 1 for the
+simpliﬁed case is also a lower bound for the general
+case.
+Acknoledgment
+We wish to thank Stephane Boucheron for raising this
+problem to us and also Richard Cleve and Miklos
+Santha for helpful discussions.
+References
+[1] C.H. Bennett, E. Bernstein, G. Brassard and
+U. Vazirani, Strengths and weaknesses of quan-
+tum computing, SIAM Journal on Computing ,
+Volume 26, Number 5 1510–1523, 1997.
+[2] M. Boyer, G. Brassard, P. Høyer and A. Tapp,
+Tight bounds on quantum searching, Fortschritte
+Der Physik , 1998.
+[3] L.K. Grover, A fast quantum mechanical algo-
+rithm for database search, Proc. 28th Ann. ACM
+Symp. on Theory of Comput. , 212–219, 1996.
+2

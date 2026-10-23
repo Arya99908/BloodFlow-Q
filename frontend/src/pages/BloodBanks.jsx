@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Boxes, Droplet, MapPin } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
@@ -6,9 +6,12 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import InventoryBar from '../components/InventoryBar';
 import PageHeader from '../components/PageHeader';
 import { StatItem } from '../components/DataField';
+import BorderGlow from '../components/BorderGlow';
+import SwipeRow from '../components/SwipeRow';
 
 export default function BloodBanks() {
   const { data, loading, error, reload } = useApi(api.getScenario, []);
+  const [copiedBank, setCopiedBank] = useState('');
   const groups = data?.blood_groups || [];
   const banks = data?.blood_banks || [];
   const maxima = useMemo(() => Object.fromEntries(groups.map((group) => [
@@ -65,44 +68,19 @@ export default function BloodBanks() {
             </div>
             <span className="count-pill"><Boxes size={14} /> {banks.length} banks</span>
           </div>
-          <div className="table-scroll" role="region" aria-label="Scrollable data table" tabIndex={0}>
-            <table className="data-table bank-table">
-              <thead>
-                <tr>
-                  <th scope="col">Blood bank</th>
-                  <th scope="col">ID</th>
-                  {groups.map((group) => <th scope="col" key={group} className="num-cell">{group}</th>)}
-                  <th scope="col" className="num-cell">Total inventory</th>
-                </tr>
-              </thead>
-              <tbody>
-                {banks.map((bank) => {
-                  const total = groups.reduce((sum, group) => sum + (bank.inventory?.[group] || 0), 0);
-                  return (
-                    <tr key={bank.id}>
-                      <td>
-                        <div className="table-primary">
-                          <span className="table-avatar bank-avatar"><Droplet size={15} /></span>
-                          <div className="table-cell-meta">
-                            <strong className="table-cell-title">{bank.name}</strong>
-                            <span className="table-subline"><MapPin size={11} /> {bank.location_id}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td><code className="id-tag">{bank.id}</code></td>
-                      {groups.map((group) => (
-                        <td key={group} className="num-cell">
-                          <InventoryBar value={bank.inventory?.[group] ?? 0} maximum={maxima[group]} />
-                        </td>
-                      ))}
-                      <td className="num-cell">
-                        <strong className="total-quantity">{total.toLocaleString()}</strong> <small className="unit-label">units</small>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="blood-bank-cards" aria-label="Blood bank inventory cards">
+            {banks.map((bank) => {
+              const total = groups.reduce((sum, group) => sum + (bank.inventory?.[group] || 0), 0);
+              return <SwipeRow key={bank.id} className="blood-bank-swipe-row" label={`Blood bank ${bank.name}`} height={138} radius={15} actionWidth={86} actions={[{id:'copy-id',label:copiedBank === bank.id ? 'Copied' : 'Copy ID',color:'#ef233c'}]} actionColor="#ef233c" drawerColor="#2b2d42" rowColor="var(--bg-surface)" textColor="var(--text-primary)" haptic={false} onAction={() => { navigator.clipboard?.writeText(bank.id); setCopiedBank(bank.id); window.setTimeout(() => setCopiedBank(''), 1800); }}>
+                <BorderGlow className="blood-bank-glow" backgroundColor="var(--bg-surface)" borderRadius={15} glowRadius={14} glowColor="350 82 62" colors={['#ef233c', '#8d99ae', '#2b2d42']}>
+                <article className="blood-bank-card">
+                  <div className="blood-bank-identity"><span className="table-avatar bank-avatar"><Droplet size={17} /></span><div><strong>{bank.name}</strong><span><MapPin size={12}/> Location {bank.location_id || 'not reported'}</span><code>{bank.id}</code></div></div>
+                  <div className="blood-bank-inventory">{groups.map((group) => <div className="blood-bank-group" key={group}><span>{group}</span><InventoryBar value={bank.inventory?.[group] ?? 0} maximum={maxima[group]} /></div>)}</div>
+                  <div className="blood-bank-total"><strong>{total.toLocaleString()}</strong><span>units in stock</span></div>
+                </article>
+                </BorderGlow>
+              </SwipeRow>;
+            })}
           </div>
           <div className="table-legend">
             <span><i className="legend-swatch bar-high" /> Higher relative stock</span>

@@ -1,0 +1,598 @@
+ 
+ 
+
+  document.documentElement.classList.add('js');    [1912.04088] Grover Adaptive Search for Constrained Polynomial Binary Optimization 
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+    
+    
+    
+  
+   
+    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+            
+    
+    
+    
+              
+ 
+
+  
+     Skip to main content 
+  
+  
+  
+ 
+    
+
+   
+     
+   
+
+   
+     
+       
+       
+       
+     
+   
+
+    
+       
+         
+         
+       
+      Search
+     
+     Submit 
+     Donate 
+      
+       Log in 
+   
+ 
+
+ 
+   
+     
+       Search arXiv 
+       
+       
+       
+     
+     
+      Press Enter to search ·  Advanced search 
+     
+   
+ 
+     
+       
+ 
+     
+     
+--> 
+
+   
+     
+       Quantum Physics 
+     
+
+     
+       arXiv:1912.04088  (quant-ph)
+     
+ 
+ 
+   
+     
+  [Submitted on 9 Dec 2019 ( v1 ), last revised 6 Apr 2021 (this version, v3)] 
+      Title: Grover Adaptive Search for Constrained Polynomial Binary Optimization 
+      Authors:  Austin Gilliam ,  Stefan Woerner ,  Constantin Gonciulea               View a PDF of the paper titled Grover Adaptive Search for Constrained Polynomial Binary Optimization, by Austin Gilliam and 2 other authors 
+     View PDF 
+     HTML (experimental) 
+
+
+
+     
+             Abstract: In this paper we discuss Grover Adaptive Search (GAS) for Constrained Polynomial Binary Optimization (CPBO) problems, and in particular, Quadratic Unconstrained Binary Optimization (QUBO) problems, as a special case. GAS can provide a quadratic speed-up for combinatorial optimization problems compared to brute force search. However, this requires the development of efficient oracles to represent problems and flag states that satisfy certain search criteria. In general, this can be achieved using quantum arithmetic, however, this is expensive in terms of Toffoli gates as well as required ancilla qubits, which can be prohibitive in the near-term. Within this work, we develop a way to construct efficient oracles to solve CPBO problems using GAS algorithms. We demonstrate this approach and the potential speed-up for the portfolio optimization problem, i.e. a QUBO, using simulation and experimental results obtained on real quantum hardware. However, our approach applies to higher-degree polynomial objective functions as well as constrained optimization problems.
+     
+
+     
+     
+                
+           Comments: 
+           11 pages, 15 figures 
+         
+ 
+           Subjects: 
+           
+             Quantum Physics (quant-ph) ; Emerging Technologies (cs.ET) 
+          
+           Cite as: 
+             arXiv:1912.04088  [quant-ph]  
+         
+         
+             
+           (or  
+               arXiv:1912.04088v3  [quant-ph]  for this version)
+           
+         
+         
+             
+                          https://doi.org/10.48550/arXiv.1912.04088  
+               
+                    
+                 Focus to learn more 
+               
+               
+               
+                                    arXiv-issued DOI via DataCite 
+             
+           
+                  
+           Journal reference: 
+           Quantum 5, 428 (2021) 
+         
+         
+           
+             Related DOI :
+           
+            https://doi.org/10.22331/q-2021-04-08-428 
+
+             
+             
+               
+                    
+                 Focus to learn more 
+               
+               
+               
+                  
+                DOI(s) linking to related resources
+               
+             
+           
+         
+ 
+     
+   
+ 
+     
+       Submission history  From: Austin Gilliam [ view email ]                     [v1]  
+        Mon, 9 Dec 2019 14:43:38 UTC (45 KB) 
+              [v2]  
+        Mon, 10 Aug 2020 12:55:11 UTC (1,921 KB) 
+     [v3] 
+        Tue, 6 Apr 2021 15:46:49 UTC (2,030 KB) 
+ 
+   
+   
+      
+        
+       Full-text links: 
+       Access Paper: 
+       
+   
+View a PDF of the paper titled Grover Adaptive Search for Constrained Polynomial Binary Optimization, by Austin Gilliam and 2 other authors   View PDF    HTML (experimental)    TeX Source
+    
+        
+           
+           view license 
+          
+     
+          
+     Current browse context: 
+   quant-ph 
+
+   
+ 
+       < prev 
+     
+       |        
+       next > 
+      
+    
+     new 
+      |  
+     recent 
+      |   2019-12 
+    
+    Change to browse by:
+     
+         cs  
+         cs.ET  
+     
+   
+
+     
+       
+         References & Citations 
+         
+             
+               INSPIRE HEP  
+             
+            NASA ADS    Google Scholar  
+            Semantic Scholar  
+         
+          
+       
+
+ 
+     export BibTeX citation 
+     Loading... 
+ 
+
+ 
+     
+         
+             BibTeX formatted citation 
+             × 
+         
+         
+             loading... 
+         
+         
+             Data provided by:  
+              
+         
+     
+  
+    Bookmark   
+     
+   
+   
+     
+   
+    
+   
+ 
+ 
+    
+     Bibliographic Tools 
+     
+       Bibliographic and Citation Tools 
+       
+         
+           
+             
+               
+                
+               Bibliographic Explorer Toggle 
+             
+           
+           
+             Bibliographic Explorer   ( What is the Explorer? ) 
+           
+         
+         
+           
+             
+               
+                
+               Connected Papers Toggle 
+             
+           
+           
+             Connected Papers   ( What is Connected Papers? ) 
+           
+          
+           
+             
+               
+                
+               Litmaps Toggle 
+             
+           
+           
+             Litmaps   ( What is Litmaps? ) 
+           
+         
+         
+           
+             
+               
+                
+               scite.ai Toggle 
+             
+           
+           
+             scite Smart Citations   ( What are Smart Citations? ) 
+           
+         
+       
+          
+          
+          
+          
+     
+
+
+     
+     Code, Data, Media 
+     
+       Code, Data and Media Associated with this Article 
+       
+         
+           
+             
+               
+                
+               alphaXiv Toggle 
+             
+           
+           
+             alphaXiv   ( What is alphaXiv? ) 
+           
+         
+
+         
+           
+             
+               
+                
+               Links to Code Toggle 
+             
+           
+           
+             CatalyzeX Code Finder for Papers   ( What is CatalyzeX? ) 
+           
+         
+
+         
+           
+             
+               
+                
+               DagsHub Toggle 
+             
+           
+           
+             DagsHub   ( What is DagsHub? ) 
+           
+         
+  
+         
+           
+             
+               
+                
+               GotitPub Toggle 
+             
+           
+           
+             Gotit.pub   ( What is GotitPub? ) 
+           
+         
+
+         
+           
+             
+               
+                
+               Huggingface Toggle 
+             
+           
+           
+             Hugging Face   ( What is Huggingface? ) 
+           
+         
+
+         
+           
+             
+               
+                
+               ScienceCast Toggle 
+             
+           
+           
+             ScienceCast   ( What is ScienceCast? ) 
+           
+         
+       
+
+        
+        
+        
+        
+        
+        
+     
+
+
+       
+       Demos 
+       
+         Demos 
+         
+           
+             
+               
+                 
+                  
+                 Replicate Toggle 
+               
+             
+             
+               Replicate   ( What is Replicate? ) 
+             
+           
+           
+             
+               
+                 
+                  
+                 Spaces Toggle 
+               
+             
+             
+               Hugging Face Spaces   ( What is Spaces? ) 
+             
+           
+           
+             
+               
+                 
+                  
+                 Spaces Toggle 
+               
+             
+             
+               TXYZ.AI   ( What is TXYZ.AI? ) 
+             
+           
+         
+          
+          
+          
+       
+       
+       Related Papers 
+       
+         Recommenders and Search Tools 
+         
+           
+             
+               
+                 
+                  
+                 Link to Influence Flower 
+               
+             
+             
+               Influence Flower   ( What are Influence Flowers? ) 
+             
+           
+           
+             
+               
+                 
+                  
+                 Core recommender toggle 
+               
+             
+             
+               CORE Recommender   ( What is CORE? ) 
+             
+            
+          
+         
+           
+              Author  
+              Venue  
+              Institution  
+              Topic  
+           
+           
+                
+                
+                
+                
+           
+         
+          
+          
+       
+
+       
+       
+        About arXivLabs
+       
+       
+         
+           
+             arXivLabs: experimental projects with community collaborators 
+             arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website. 
+             Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them. 
+             Have an idea for a project that will add value for arXiv's community?   Learn more about arXivLabs  . 
+           
+           
+                       
+           
+         
+       
+
+     
+ 
+ 
+   
+     Which authors of this paper are endorsers?  |
+     Disable MathJax  ( What is MathJax? )
+      
+   
+   mathjaxToggle(); 
+ 
+       
+     
+
+ 
+   
+     
+       
+        We gratefully acknowledge support from
+        our  major funders ,
+          member institutions   ,    ,
+        and all contributors.
+       
+       
+         About 
+         · 
+         Help 
+         · 
+         Contact 
+         · 
+         Subscribe 
+         · 
+         Copyright 
+         · 
+         Privacy 
+         · 
+         Accessibility 
+         · 
+         Operational Status  (opens in new tab)  
+       
+     
+
+     
+       Major funding support from 
+       
+         
+           
+         
+         
+           
+         
+         
+           
+         
+       
+     
+   
+    
+
+    
+
+ 
+
+ 

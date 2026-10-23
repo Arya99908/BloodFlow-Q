@@ -1,0 +1,568 @@
+=== PDF PAGE 1 ===
+arXiv:1812.04170v1  [quant-ph]  11 Dec 2018
+For Fixed Control Parameters the Quantum Approximate
+Optimization Algorithm 's Objective Function Value Concentrates
+for Typical Instances
+Fernando G.S.L. Brand˜ ao,1, 2 Michael Broughton, 3, 1
+Edward Farhi, 1, 4 Sam Gutmann, and Hartmut Neven 1
+1Google Inc., Venice, California 90291, USA
+2Institute for Quantum Information and Matter,
+California Institute of Technology, Pasadena, California 91125, USA
+3Department of Computer Science, University of Waterloo,
+Waterloo, Ontario, N2L 3G1, Canada
+4Center for Theoretical Physics, Massachusetts
+Institute of Technology, Cambridge, MA 02139
+(Dated: December 12, 2018)
+Abstract
+The Quantum Approximate Optimization Algorithm, QAOA, use s a shallow depth quantum
+circuit to produce a parameter dependent state. For a given c ombinatorial optimization problem
+instance, the quantum expectation of the associated cost fu nction is the parameter dependent
+objective function of the QAOA. We demonstrate that if the pa rameters are ﬁxed and the instance
+comes from a reasonable distribution then the objective fun ction value is concentrated in the sense
+that typical instances have (nearly) the same value of the ob jective function. This applies not just
+for optimal parameters as the whole landscape is instance in dependent. We can prove this is true
+for low depth quantum circuits for instances of MaxCut on lar ge 3-regular graphs. Our results
+generalize beyond this example. We support the arguments wi th numerical examples that show
+remarkable concentration. For higher depth circuits the nu merics also show concentration and we
+argue for this using the Law of Large Numbers. We also observe by simulation that if we ﬁnd
+parameters which result in good performance at say 10 bits th ese same parameters result in good
+performance at say 24 bits. These ﬁndings suggest ways to run the QAOA that reduce or eliminate
+the use of the outer loop optimization and may allow us to ﬁnd g ood solutions with fewer calls to
+the quantum computer.
+1
+
+=== PDF PAGE 2 ===
+I. INTRODUCTION
+Soon we will have gate model quantum computers that can run shallo w depth quantum
+circuits on scores of qubits. Even without perfect ﬁdelity we will lear n about quantum al-
+gorithms in a regime where classical simulation is no longer practical. A g ood candidate to
+run on near term devices, as well as on larger devices with high ﬁdelity , is the Quantum
+Approximate Optimization Algorithm or QAOA [1]. For certain combinato rial search prob-
+lems, the shallowest depth version of QAOA has worst case perform ance guarantees that
+beat random guessing [1, 2], but not the best classical algorithms fo r these problems [3–5].
+At higher depth we do not know if the QAOA will outperform classical a lgorithms. This
+question needs to be explored analytically, through simulation, and b y running on actual
+hardware. In all cases we need strategies for picking parameters that optimize performance.
+For a given instance of a combinatorial search problem one strateg y is to seek to optimize
+the objective function by varying the control parameters attem pting to go uphill to ﬁnd
+good solutions. In this paper we look at instances of combinatorial s earch problems that
+are chosen randomly from some ﬁxed instance distribution. We show that the parameter
+landscape of the objective function is (nearly) independent of the chosen instance. This
+points to a strategy for ﬁnding good parameters. Take one instan ce of the problem and
+work hard to get good parameters. This may be computationally exp ensive. But once this
+has been done, these same parameter values will yield good values of the cost function on
+other randomly chosen instances. In other words the amortized c ost of solving instances goes
+to zero inversely with the number of instances being studied. Recen t work has also looked at
+strategies for picking optimal parameters that reduce calls to the quantum computer [6–8],
+while others have also remarked on the independence of the functio n value on the instance
+[8, 9].
+We begin by reviewing the QAOA and setting notation. The goal is to ﬁn d a good
+approximation ratio for a combinatorial search problem over n bits. We denote bit strings
+as z = z1z2 . . . zn and the search problem is speciﬁed by m clauses each of which is deﬁned
+on a subset of the bits. Associated with each clause α is a cost function Cα(z) which is 1 if
+z satisﬁes the clause α and is 0 if z does not. The total cost function is then
+C(z) =
+m∑
+α=1
+Cα(z) . (1)
+2
+
+=== PDF PAGE 3 ===
+Let Cmax be the maximum over all z of C(z). If an algorithm proposes z∗ as a candidate
+solution then the approximation ratio is
+A = C(z∗)Cmax (2)
+and the goal of any algorithm is to make A as close to 1 as possible. If each clause is
+satisﬁed on half of its input values then random guessing gives A = ( m/2)/Cmax which is
+lower bounded by 1 /2.
+The quantum computer operates in a 2 n dimensional Hilbert space with a computational
+basis |z⟩. Now the quantum operator C is deﬁned as
+C |z⟩ = C(z) |z⟩ . (3)
+We introduce a unitary operator that depends on C and a parameter γ as
+U(C, γ) = e−iγC =
+m∏
+α=1
+e−iγCα . (4)
+Note that each term in the product commutes with the others and b ecause C is integer
+valued, γ is an angle between 0 and 2 π. We introduce another operator
+B =
+n∑
+j=1
+Xj (5)
+where Xj is the Pauli X operator on qubit j, and an associated unitary that depends on a
+parameter β
+U(B, β) = e−iβB =
+n∏
+j=1
+e−iβXj (6)
+where β is an angle between 0 and π.
+The QAOA consists of an alternation of operators of the form (4) w ith operators of the
+form (6) acting on the initial state
+|s⟩ = 1√2n ∑z |z⟩ . (7)
+Each layer has its own parameters. Let γ = γ1 . . . γp and β = β1 . . . βp and deﬁne the
+quantum state
+|γ, β⟩ = U(B, βp)U(C, γp) . . . U(B, β1)U(C, γ1) |s⟩ . (8)
+For a given instance of a problem, the associated objective functio n on 2 p parameters is
+Fp(γ, β) = ⟨γ, β| C |γ, β⟩ . (9)
+3
+
+=== PDF PAGE 4 ===
+We use ‘cost’ to refer to Eq. (1) which depends on strings and ‘obje ctive’ to refer to Eq.
+(9) which depends on parameters. For a ﬁxed instance and value of p, we view (9) as the
+parameter landscape. The ultimate goal is to ﬁnd the high points in th e landscape. For now
+we want to see how the landscape varies as we look at diﬀerent instan ces which come from
+some instance distribution. For example we might look at n bit instances of Max3Sat where
+the distribution is uniform over all instances with the ratio of the num ber of clauses to the
+number of bits ﬁxed. Or we could look at MaxCut on graphs where eac h edge is included
+with probability 3 /(n − 1) so the expected value of the valence is 3. However in this paper
+we focus on MaxCut where the distribution is over all 3-regular grap hs. Our results will
+generalize beyond the examples but they contain the essence of th e more general arguments.
+II. FIXED p WITH n LARGE
+In this section we consider how the objective function varies when w e pick typical in-
+stances from a given distribution while holding p ﬁxed and taking n to be large. We start
+with MaxCut whose cost function can be written as
+C =
+∑
+⟨jk ⟩
+C⟨jk ⟩ (10)
+and
+C⟨jk ⟩ = 12(−ZjZk + 1). (11)
+Now the objective function can be written as
+Fp(γ, β) =
+∑
+⟨jk ⟩
+⟨s| U †(C, γ1) . . . U†(B, βp)C⟨jk ⟩U(B, βp) . . . U(C, γ1) |s⟩
+=
+∑
+⟨jk ⟩
+F⟨jk ⟩(γ, β)
+(12)
+where we will make use of the fact that the objective function is a su m over individual edge
+functions. We ﬁrst consider only 3-regular graphs and the shallowe st depth for the QAOA
+which is p = 1. Consider one term in equation (12) that comes from the edge ⟨jk⟩. We can
+write the relevant piece as
+F⟨jk ⟩(γ1, β1) = ⟨s| U †(C, γ1)U †(B, β1)ZjZkU(B, β1)U(C, γ1) |s⟩ . (13)
+The eﬀects of the conjugation by U(B, β1) is to rotate Zj and Zk about the x-axis so
+Zj → Zj cos(2β1) + Yj sin(2β1) and similarly for Zk. Still only qubits j and k are involved.
+4
+
+=== PDF PAGE 5 ===
+Now conjugation by U(C, γ1) introduces only the qubits that are immediately connected to
+qubits j and k on the 3-regular graph. There are 3 possibilities illustrated here
+. (14)
+So in the sum over all edges there are only 3 functions that can cont ribute
+F1(γ1, β1) = w F (γ1, β1) + w F (γ1, β1) + w F (γ1, β1) (15)
+where w is the number of edges that locally look like the ﬁrst picture in Eq. (14) and
+similarly for w and w . Now we introduce fractions of each type so that f = w /m,
+f = w /m and f = w /m where m = 3n/2 is the number of edges. So now
+F1(γ1, β1) =
+[
+f F (γ1, β1) + f F (γ1, β1) + f F (γ1, β1)
+]
+· m . (16)
+The key point is that for the distribution at hand, as n grows, the fractions f , f and f
+concentrate. In this particular case as n gets big, for a typical 3-regular graph, almost all
+edges’ neighborhoods locally look like trees. So f goes to 1 and the other two are of order
+1/n. Regardless of the parameter values, the objective function is th e same up to order 1 /n
+for almost all 3-regular graphs.
+Consider what happens as we increase p still working with 3-regular graphs. Look at
+edge ⟨jk⟩. The successive conjugations by the cost function unitary bring in to play qubits
+that are at most p away from j and k. For ﬁxed p the number of subgraph types is ﬁxed
+and is independent of the number of bits. As n gets large, on random 3-regular graphs,
+the subgraph fractions will concentrate. (For a random 3-regula r graph, in fact there is
+one dominant subgraph type, a tree.) This means that for ﬁxed p as n gets large, for ﬁxed
+parameters, the objective function value doesn’t depend on which n-bit-3-regular graph is
+randomly chosen. See also [8].
+Consider now a diﬀerent distribution of graphs, for example where e ach edge is included
+with probability 3 /(n − 1) so the average valence is 3. With this distribution, tossed graphs
+have isolated vertices and disconnected components. So we might f ocus on the largest
+connected component. Now at p = 1 there are more subgraph types than we found on
+3-regular graphs. Coming out of each of the two vertices on edge ⟨jk⟩ can be 0 , 1, 2, 3 . . .
+5
+
+=== PDF PAGE 6 ===
+edges. Still the fraction of each subgraph type will concentrate a s n gets large, dominated
+by trees. Since there is now a family of trees, there will be √n ﬂuctuations on the number
+of tree types and so the total cost function value will concentrat e with √n ﬂuctuations.
+With p larger than 1 but ﬁxed as n grows, there will still be concentration in the number of
+subgraph types and correspondingly concentration in the total c ost function.
+For p ﬁxed and n large, with ﬁxed parameters γ and β we have shown that the cost
+function will be the same on all typical instances of MaxCut on 3-reg ular graphs or Renyi
+graphs with probability 3 /(n − 1). The same reasoning will apply to other combinatorial
+search problems which have the restriction that the number of clau ses in which any variable
+can appear does not grow with n or at least grows only slowly with high probability. Oth-
+erwise for ﬁxed p, the relevant subgraph types will cover multiple times the instance g raph
+and our ﬁxed p arguments will not apply.
+There are well known theorems about well-behaved functions (e.g. with bounded Lip-
+schitz constants) of strings which state that the function value c oncentrates when the
+strings are chosen randomly. For example consider a specialized ver sion of the McDiar-
+mind/Hoeﬀding/Azuma inequality:
+Theorem. Let bit strings x1, . . . , xL be generated as independent random variables according
+to some distribution. Consider an arbitrary function of the strings f (x1, . . . , xL) which has
+the property that if any bit is ﬂipped the function value chan ges by no more than a constant
+c. Then
+Pr
+(⏐⏐⏐f (x1, . . . , xL) − E[f ]⏐⏐⏐ > t) < exp (−2t2Lc2 ) . (17)
+An n vertex graph has
+(n
+2
+)
+possible edges so we can think of a graph as described by
+(n
+2
+)
+bits where each bit says if an edge is present or not. So now think of t he function F
+in (9) as a function of
+(n
+2
+)
+bits. We can show that the function (9) does not change much
+when an edge is removed if p is ﬁxed, as long as the maximum valence does not grow with
+n. However now L is of order n2 so for the right hand side of (17) to be small we need t of
+order n and we are not getting good concentration. But what we have done is too simple.
+The theorem above does not notice that we are working with say Ren yi graphs with edge
+probability 3 /(n − 1). There is a graph version of this theorem (see Remark 3.25 of [10])
+which gives a concentration result for the Erdos-Renyi graph cas e. But in our attempts to
+use it we found concentration that was not as tight as what we obta ined with the subgraph
+6
+
+=== PDF PAGE 7 ===
+argument.
+However there is an advantage to this approach. Suppose we cons ider a generalization
+of the QAOA to situations where for each p we have angles γ for each clause. Or consider
+weighted MaxCut. Now our subgraph counting arguments will not wo rk because each edge
+is unique and we can not count subgraph types. Still the graph conc entration techniques
+can be used. But if p grows with n, we do not know how to meet the hypothesis of the
+theorems which is that the function value (9) does not change much if we remove an edge.
+However in the large p case we have other arguments which will be presented in section IV.
+III. NUMERICS THA T SHOW CONCENTRA TION
+Here we present some numerics that support the arguments made in the previous section
+and prepare for the next section on higher p. We look at the MaxCut cost function working
+at 20 bits tossing 3-regular graphs. The number of edges in each gr aph is 30 and to decrease
+some ﬂuctuations in some parameter regimes we put the further re striction that each graph
+has a MaxCut value of 26, which means that the largest possible value of the cost function
+is the same for all graphs.
+If we select the control parameters at random, especially at high p, one could argue that
+we are producing a random state and the quantum expectation of a ny clause would be near
+1/2, so the total objective function would be near 15. In this sens e the fact that we get
+the same value of the objective function regardless of which rando m graph is tossed would
+have an alternate explanation based on random states. So for our numerics we work with
+three regimes for each value of p. For the ﬁrst we select values of the parameters so that the
+objective function has a small value, much less than 15. In section V we will explain how
+these parameters are chosen. But for each p, once the 2 p parameters are ﬁxed we toss 25
+random graphs and evaluate the quantum expectation of the cost function. The ﬁrst column
+of Table 1 shows the results for p ranging from 2 to 7. We give the average over the 25 sample
+graphs and the standard deviation of the 25 samples. The concent ration is evident. In the
+next column for each p we select 2 p angles at random. Typically the quantum expectation
+of the cost function is near 15. Again we toss 25 random 3-regular g raphs and report the
+average over the 25 and the standard deviation. For the data in th e third column for each
+p we select 2 p angles that make the objective function large. Again we will discuss h ow this
+7
+
+=== PDF PAGE 8 ===
+is achieved in section V. But once the parameters are ﬁxed we see th at each tossed graph
+has nearly the same value of the objective function since the stand ard deviation over the 25
+samples is small.
+Low Random High
+p Mean Std. Mean Std. Mean Std.
+2 6.636 0.319 14.691 0.036 22.409 0.228
+3 5.218 0.294 15.125 0.042 23.109 0.175
+4 3.933 0.259 14.627 0.157 23.822 0.272
+5 3.132 0.159 15.725 0.113 24.349 0.179
+6 2.550 0.100 16.404 0.140 24.918 0.266
+7 1.954 0.088 15.975 0.096 25.110 0.221
+TABLE 1: Mean and standard deviation of objective function v alues across 25 random 20-node-
+3-regular graph instances each having a MaxCut value of 26. F or each p there are 3 sets of ﬁxed
+parameters. The ﬁrst is chosen to give a low cost function val ue, the second is randomly chosen
+and the third is chosen to make the cost function high. In the l ow and high cases the angles are
+not the best possible, but are chosen to drive the objective f unction away from a random point
+in the landscape.
+So far we have an argument that predicts concentration for low p. But the chart shows
+that concentration is maintained when p increases. We discuss this next.
+IV. HIGHER p
+Return to Eq. (12) and consider one term associated with edge ⟨jk⟩. The middle term is
+conjugated by p operators of the form U(C, γ) as in Eq. (4). Each conjugation may bring
+in new qubits which can be thought of as being reached by taking p steps from j and k.
+If there are no backward steps and only new qubits are reached we can picture the qubits
+connected to j or k as vertices on a tree. For example for p = 1 we have the tree seen in
+the third picture in equation (14). This has 6 qubits. If we go to p = 2 the tree has 14
+qubits. For p ranging from 2 to 7 the relevant tree sizes are 14, 30, 62, 126, 254 and 510.
+So working with 20 qubit graphs, we see that certainly by p = 3 the qubits connected to
+8
+
+=== PDF PAGE 9 ===
+each edge are covered many times by the conjugation operation. W e have left the domain of
+ﬁxed p with n large. However if you look at the data in Table 1 we see that even for p = 7
+we have concentration. Thus we need another explanation for the concentration, other than
+what was shown in Section II.
+We are going to make use of the fact that the objective function we evaluate is a sum of
+m individual terms,
+F (γ, β) =
+m∑
+α=1
+⟨γ, β| Cα |γ, β⟩ . (18)
+We always think of the parameters γ and β as ﬁxed. The randomness comes from tossing
+instances. So for the rest of this section we stop carrying around the γ and β and we write
+F =
+m∑
+α=1
+Cα . (19)
+We have some distribution of n-bit instances of some combinatorial search problem. We can
+think of each term in (19) as a random variable whose value lies betwee n 0 and 1. The sum is
+of order the number of clauses m. In most cases of interest m is linear or quadratic in n. By
+the Law of Large Numbers, if the terms in (19) are independent the n the standard deviation
+of F , regardless of the distribution, is of order √m. In this case we have concentration as
+typical instances will have the same value of F up to corrections of order √m. So we need
+to investigate the correlations between individual terms in Eq. (19) . We do this by example,
+returning again to MaxCut on 3-regular graphs.
+For MaxCut each clause is labeled by an edge so we can think of α as an edge label.
+In (19) the individual terms are correlated because they corresp ond to edges on the same
+graph. Let us see if we can use our simulations to estimate the corre lations between diﬀerent
+edges. First we need to be explicit about the random process that g enerates Cα. Pick a
+random n-bit-3-regular graph. Toss a random permutation of the integers 1, 2, . . . , m and
+use this sequence to relabel the edges. (We randomly relabel the e dges so that the edge name
+has no possible connection with the process that generated the gr aph.) Take the quantum
+expectation of the clause corresponding to edge α in the quantum state determined by the
+graph. (Recall again that the angles are ﬁxed.) This deﬁnes random variables that we call
+Cα, α = 1, . . . , m.
+Now any Cα has the same distribution as C1. So we have
+E[Cα] = E[C1] and std( Cα) = std( C1) . (20)
+9
+
+=== PDF PAGE 10 ===
+The correlation between Cα and Cα′ is
+Corr(Cα, Cα′) = Cov(Cα, Cα′)std(Cα) std(Cα′) (21)
+where
+Cov(Cα, Cα′) = E [(Cα − E[Cα])(Cα′ − E[Cα′])], (22)
+where the expectation is taken over the random graph and the ran dom permutation, and
+the standard deviation is the square root of the variance
+Var(Cα) = E
+[
+(Cα − E[Cα])2] . (23)
+Using (20) and (21) the correlation coeﬃcient between Cα and Cα′ can be written as
+Corr(Cα, Cα′) = Cov(Cα, Cα′)Var(C1) . (24)
+Now consider the variance of F
+Var(F ) = E
+[
+(F − E[F ])2] . (25)
+Since F is a sum, see (19), we have that
+Var(F ) =
+m∑
+α=1
+Var(Cα) +
+∑
+α⁄=α′
+Cov(Cα, Cα′) (26)
+so ∑
+α⁄=α′
+Cov(Cα, Cα′) = Var(F ) −
+m∑
+α=1
+Var(Cα) . (27)
+Inside each graph the Cα are correlated. The random permutation guarantees that the
+correlation is the same for each pair Cα, Cα′. So each covariance is
+1
+m(m − 1)
+[
+Var(F ) − m Var(C1)
+]
+(28)
+and each correlation coeﬃcient is
+1
+m − 1
+[
+Var(F )
+m Var(C1) − 1
+]
+. (29)
+We want to toss random graphs to estimate this quantity. Suppose we toss N graphs (we
+will use N = 100). For ﬁxed angles, for each of the N graphs we calculate F via (18) and
+get N samples Fk with k = 1, . . . , N, where the mean is estimated as
+F = 1N
+N∑
+k=1
+Fk (30)
+10
+
+=== PDF PAGE 11 ===
+and the variance is estimated as
+1
+N − 1
+N∑
+k=1
+(Fk − F )2 . (31)
+Next we need to estimate Var( C1). Since the mean and variance of each Cα are the same as
+for C1, we want to use all mN samples for the estimate. We can write for the estimate of
+E[C1]
+C = 1mN
+m∑
+α=1
+N∑
+k=1
+Cα,k
+= 1mF
+(32)
+and for the estimate of Var( C1) we use
+1
+mN − 1
+m∑
+α=1
+N∑
+k=1
+(Cα,k − C)2 , (33)
+where the mN − 1 makes the estimate unbiased (in the uncorrelated case). We use ( 33) to
+estimate Var( C1) and (31) to estimate Var( F ) and obtain our estimate of the correlation
+coeﬃcient via (29).
+Working at 20 bits we tossed random 3-regular graphs with the MaxC ut value ﬁxed
+at 26 to numerically investigate the correlation coeﬃcient given by (2 8). Here we worked
+at p=8 with ﬁve sets of ﬁxed parameters. One set was chosen to pr oduce a low value of
+the objective function, one set at medium low value, one set at a med ium high value and
+one set at a high value. (Presumably, ﬁxing the MaxCut value reduce s the spread of the
+objective function especially when using the high value parameters.) We also included a
+set of random parameters. We tossed 100 graphs for each set of parameters. The results
+are shown in Table 2. In general the correlation coeﬃcient (20) can range from -1 which
+is perfectly anti-correlated to 1 which is perfectly correlated. (In our case the correlation
+coeﬃcient must be ≥ −1m−1 as can be seen in (29).) The observed values we get near zero
+are good evidence that the individual terms that sum to make F have tiny correlations.
+Working at 20 bits this can help explain why the objective function is ne arly independent of
+the tossed graph. If we go to higher bit number we imagine that the c orrelation coeﬃcient
+will tend to zero because in bigger graphs the edges are further ap art.
+11
+
+=== PDF PAGE 12 ===
+F ˆstd(F ) Correlation Coeﬃcient
+Low 2.311 0.118 -0.016
+Med Low 7.621 0.297 0.013
+Random 15.203 0.262 0.040
+Med High 21.4978 0.250 0.008
+High 24.995 0.220 -0.031
+TABLE 2: Each row has a set of ﬁxed parameters at p = 8. The data comes from tossing 100
+3-regular graphs with a MaxCut of 26. In the ﬁrst row the param eters are chosen (see section
+V) to produce a low value of the cost function. In the second ro w the parameters are chosen for
+a medium low value. Etc. In all cases the correlation coeﬃcie nt is small.
+V. FROM SMALL TO LARGE INST ANCES
+We have observed in our numerical experiments that for any p, if we ﬁx parameters such
+that the objective function has a high value at some small number of qubits then those same
+parameters will produce a high value at a larger number of qubits. Wh en we looked for very
+good parameters so that the objective function value is close to op timal at low bit number
+then these same parameters produced a near optimal value of the objective function at a
+higher bit number. We illustrate this with an example. We tossed a rand om 3-regular graph
+at 10 bits and worked at p = 8. We searched for good parameters by doing 200 random
+restarts with a canned Matlab optimization algorithm running on a lapt op. This produced
+a set of angles with an approximation ratio of 0.984. It is possible that further searching
+would have led to an even higher approximation ratio but our goal was not to ﬁnd the
+very best parameters. We then used these 16 angles and evaluate d the cost function on 25
+randomly chosen 3-regular graphs with 24 vertices. The average a pproximation ratio for the
+25 instances was 0.934 with a standard deviation of 0.014. This value f or the approximation
+ratio is high and it came without any searching at 24 qubits.
+The good parameters we found at 10 bits at p = 8 will not work well on arbitrarily large
+graphs. If the number of vertices is very large, then working at p = 8, the local pictures on
+a very large graph will not cover the graph. For p = 8, working on very big 3-regular graphs
+the largest number of qubits that can be involved in any clause is 1022 . If we have a graph
+12
+
+=== PDF PAGE 13 ===
+with tens of thousands of vertices then these local terms will not s ee the large loops. And it
+is only odd length loops that prevent a MaxCut instance from being fu lly satisﬁable. The
+QAOA will not be able to tell the diﬀerence between a graph with large lo ops that are all
+even length from a graph with large odd length loops. So certainly in wo rst case the QAOA
+will not work as well on large graphs with ﬁxed p and parameters found on small graphs.
+In the near future, experimentalists will provide us with gate model quantum computers
+with up to 100 qubits. Suppose we run the QAOA on hardware to ﬁnd g ood approximation
+ratios for MaxCut on 3-regular graphs that are randomly generat ed. Then certainly at
+p = 8 we are well out of the ﬁxed p large n regime. It may be that we can ﬁnd good
+parameters with a classical simulator at say 20 bits and these same a ngles will produce good
+approximation ratios when run on a quantum computer at high bit num ber. This is a way
+to test the QAOA and the hardware in a regime that can not be classic ally simulated.
+VI. FUTURE OUTLOOK
+The main ﬁnding of this paper is that if we look at the objective functio n of the QAOA (9)
+then for ﬁxed γ and β this function has the same value on all typical instances generated
+by some reasonable distribution. For ﬁxed p and search problems where the number of
+clauses in which any variable can appear is bounded, we can prove tha t for n large there
+is concentration with ﬂuctuations of order the square root of the number of clauses. For p
+growing with n, we can argue for the concentration using the Law of Large Numbe rs and
+the assumption that individual terms in the objective function are n ot very correlated. Our
+numerical experiments bolster these arguments.
+This leads to a strategy for running the QAOA on a quantum compute r where the task is
+to ﬁnd a good approximation ratio for some combinatorial search pr oblem. Suppose we have
+a guarantee that the instances come from some reasonable distrib ution. Then given the ﬁrst
+instance to solve, work hard to ﬁnd the optimal parameters. This m ay be done by conducting
+a variational search for good parameters making repeated calls to the quantum computer.
+Or we may adopt a leapfrogging strategy as will be discussed in the ne xt paragraph. However
+once good parameters have been found for one instance, these s ame parameters can be used
+on other typical instances. It might be possible to improve perform ance for each instance
+by doing a narrow search in the neighborhood of the good paramete rs. Whether this is cost
+13
+
+=== PDF PAGE 14 ===
+eﬀective will depend on the problem at hand, the expense of running the quantum device and
+the desired performance. However our ﬁndings eliminate the need t o blindly search on each
+instance and gets rid of (or signiﬁcantly lessens) the burden of the outer loop optimization
+beyond the ﬁrst instance.
+Another key ﬁnding is that if we ﬁx p, then parameters that bring the cost function
+to a high value at low bit number will also bring the cost function to a high value on
+larger instances. In our numerical simulations we found good param eters at 10 bits and
+using these parameters we got good performance at 20 and 24 bits . There was no additional
+optimization at the higher bit numbers. This suggests a strategy fo r ﬁnding good parameters.
+Say we have a quantum computer with 100 qubits and we are looking at random instances
+of MaxCut on some distribution of graphs. Toss a random instance a t say 20 bits and use
+a classical computer to ﬁnd optimal angles. Here p is ﬁxed at say 6. Once the 12 angles
+are found we could run the quantum computer on a randomly chosen instance at 50 qubits
+using these 12 parameters. Reﬁne the angles by doing a local searc h near the given angles.
+This may take some time on the quantum computer but the starting p oint should already
+be good. Now we have a new set of 12 parameters which are working w ell at 50 qubits.
+Use these same parameters on randomly chosen instances as 100 b its. Further reﬁne if
+desired. This leapfrogging strategy will greatly reduce the comput ational cost of the outer
+loop optimization.
+We have introduced strategies for running the Quantum Approxima te Optimization Algo-
+rithm that greatly reduce the number of function calls to the quant um computer compared
+with direct variational approaches. This may shorten the time it will t ake until we can
+run the QAOA on a near term device and test its performance in regim es where classical
+simulation is not available. We look forward to these experiments.
+VII. ACKNOWLEDGEMENTS
+We thank the Google AI Quantum team for useful discussion. EF also thanks Soonwon
+Choi, Misha Lukin, Hannes Pichler, Sheng-Tao Wang and Leo Zhou for many good chats.
+We acknowledge Jeﬀrey Goldstone for help with the acknowledgemen ts. The work of EF was
+partially supported from NSF grant CCF-1729369 and ARO contrac t W911NF-17-1-0433.
+14
+
+=== PDF PAGE 15 ===
+FB work is partially supported by NSF.
+[1] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann.
+A Quantum Approximate Optimization Algorithm, 2014.
+arXiv:1411.4028 [quant-ph].
+[2] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann.
+A Quantum Approximate Optimization Algorithm Applied to a B ounded Occurrence Con-
+straint Problem, 2015.
+arXiv:1412.6062 [quant-ph].
+[3] Eran Halperin, Dror Livnat, Uri Zwick.
+MAX CUT in cubic graphs, 2004.
+Journal of Algorithms, Volume 53 Issue 2, Pages 169-185.
+[4] Boaz Barak, Ankur Moitra, Ryan O’Donnell, Prasad Raghav endra, Oded Regev, David
+Steurer, Luca Trevisan, Aravindan Vijayaraghavan, David W itmer, John Wright.
+Beating the random assignment on constraint satisfaction p roblems of bounded degree, 2015.
+Electronic Colloquium on Computational Complexity, Repor t No. 82 (2015). arXiv:1505.03424
+[cs.CC].
+[5] Johan H ˚ astad.
+Improved bounds for bounded occurrence constraint satisfa ction, 2015.
+https://www.nada.kth.se/~johanh/bounded2.pdf
+[6] D. Wecker, M. B. Hastings, M. Troyer.
+Training A Quantum Optimizer, 2016.
+Phys. Rev. A, Volume 94 Issue 2, Pages 022309.
+[7] Gavin E. Crooks.
+Performance of the Quantum Approximate Optimization Algor ithm on the Maximum Cut
+Problem, 2018.
+arXiv:1811.08419 [quant-ph].
+15
+
+=== PDF PAGE 16 ===
+[8] Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes Pichler, Mikhail D. Lukin.
+Quantum Approximate Optimization Algorithm: Performance , Mechanism, and Implementa-
+tion on Near-Term Devices, 2018.
+arXiv:1812.01041 [quant-ph].
+[9] Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbel l, David Gosset, Mark Howard.
+Simulation of quantum circuits by low-rank stabilizer deco mpositions, 2018.
+arXiv:1808.00128 [quant-ph].
+[10] Charles Bordenave.
+Lecture Notes on Random Graphs and Probabilistic Combinato rial Optimization. 2016.
+www.math.univ-toulouse.fr/ bordenave/coursRG.pdf
+16

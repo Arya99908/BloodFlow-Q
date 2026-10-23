@@ -1,0 +1,51 @@
+[
+  {
+    "scenario": "normal_reference",
+    "assignments_verified": 1024,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 25.2
+  },
+  {
+    "scenario": "inventory_shortage",
+    "assignments_verified": 128,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 152.6
+  },
+  {
+    "scenario": "demand_below_inventory",
+    "assignments_verified": 256,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 15
+  },
+  {
+    "scenario": "transport_disruption",
+    "assignments_verified": 64,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 140.0
+  },
+  {
+    "scenario": "critical_shortage",
+    "assignments_verified": 512,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 145.4
+  },
+  {
+    "scenario": "emergency_16",
+    "assignments_verified": 8192,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 215.6
+  },
+  {
+    "scenario": "multi_facility",
+    "assignments_verified": 8192,
+    "lp_integral": true,
+    "lp_seed_optimal": true,
+    "lp_seed_objective": 16.0
+  }
+]

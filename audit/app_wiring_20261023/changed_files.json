@@ -1,0 +1,14 @@
+{
+  "frontend/src/App.jsx": "1a28acb7c61c02a05850cb07d7738d8ed741f014bc6940d761078083fabfdad9",
+  "frontend/src/navigation.js": "d57643b4802099a378e8a7462d8947ee33019e3ffc0d609c414a2e49dcb12660",
+  "frontend/src/pages/Optimization.jsx": "0daf7507cb90a8b4a29e8c36f765c9c49add6b2da6a488d1ad627bf280fd83a4",
+  "frontend/src/services/aiAssistant.js": "694daa1c22c7ccd6c9cb7ea4cdcf740bcd2a8b9ad3138f779de80abfde6fb670",
+  "backend/routes/chat.py": "64dbd353f60c9d487d8e7b5e87ac2a4e3587d43aa44ccb429ef5fb93178131b2",
+  "frontend/src/pages/ExperimentReports.jsx": "a94ac49d83488dd34f0e386005aa7434ccad3276729ccd0284390dc5b160359e",
+  "frontend/src/pages/QuantumLab.jsx": "c7a4e06d381b377ab3f775c144851cafd65f45c203fbf7dbe34b2f2c50463f05",
+  "frontend/src/components/ResearchFollowup.jsx": "1b5735dec35f0e88b88e96560e599f34680ace24914ea359433dd2a1a0bab3f9",
+  "frontend/public/quantum-followup-study.json": "e9365366aec3b70899be3cf7233e015f8a41cd098fb9710fcb9dcaa59f44f4ee",
+  "scripts/export-research-followup.py": "50db73a3e62d4b925c721c36b046dad242eafa719bf55d624b0fe896f81dd2c1",
+  "frontend/tests/wiring.test.js": "e4fc4fa0746efbf070b01b3d49f04b721538f9043ed6ca858852c0f6f6a20660",
+  "tests/test_chat_wiring.py": "5c5c7156e8b71b7b9e299b62b338a5eb98f6bce8ebdb33a765bbd5666d647faa"
+}

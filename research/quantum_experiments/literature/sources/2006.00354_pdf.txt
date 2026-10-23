@@ -1,0 +1,1202 @@
+=== PDF PAGE 1 ===
+arXiv:2006.00354v2  [quant-ph]  2 Oct 2020
+Grover Mixers for QAOA: Shifting Complexity
+from Mixer Design to State Preparation
+Andreas Bärtschi
+CCS-3 Information Sciences and CNLS
+Los Alamos National Laboratory
+Los Alamos, NM 87544, USA
+baertschi@lanl.gov
+Stephan Eidenbenz
+CCS-3 Information Sciences
+Los Alamos National Laboratory
+Los Alamos, NM 87544, USA
+eidenben@lanl.gov
+Abstract—We propose GM-QAOA, a variation of the Quantum
+Alternating Operator Ansatz (QAOA) that uses Grover-like s elec-
+tive phase shift mixing operators. GM-QAOA works on any NP
+optimization problem for which it is possible to efﬁciently prepare
+an equal superposition of all feasible solutions; it is desi gned to
+perform particularly well for constraint optimization problems,
+where not all possible variable assignments are feasible so lutions.
+GM-QAOA has the following features: (i) It is not susceptibl e to
+Hamiltonian Simulation error (such as Trotterization erro rs) as
+its operators can be implemented exactly using standard gat e
+sets and (ii) Solutions with the same objective value are alw ays
+sampled with the same amplitude.
+We illustrate the potential of GM-QAOA on several opti-
+mization problem classes: for permutation-based optimiza tion
+problems such as the Traveling Salesperson Problem, we pres ent
+an efﬁcient algorithm to prepare a superposition of all poss ible
+permutations of n numbers, deﬁned on O(n2) qubits; for the
+hard constraint k-Vertex-Cover problem, and for an application
+to Discrete Portfolio Rebalancing, we show that GM-QAOA
+outperforms existing QAOA approaches.
+I. I NTRODUCTION
+Combinatorial optimization is among the key applications
+to beneﬁt from error-tolerant quantum computing as it could
+speed up practically and theoretically relevant problems s uch
+as M INIMUM TRAVELING SALESPERSON or M AXIMUM
+SATISFABILITY . While we generally do not expect to ﬁnd
+polynomial-time quantum algorithms for such N P-hard op-
+timization problems, quantum optimization algorithms tha t
+improve runtimes and/or quality (in terms of approximation
+ratios of found solutions vs. optimum solutions) over their
+classical counter parts may still exist.
+In this paper, we propose the polynomial-time Grover-
+Mixer Quantum Alternating Operator Ansatz (GM-QAOA)
+algorithm as a combination of the two leading quantum
+optimization approaches, namely Grover-based and Quantum
+Alternating Operator Ansatz (QAOA)-based [ 1]. Typically,
+quantum optimization algorithms that ﬁnd optimum solution s
+at the cost of exponential running times with reduced base
+(usually > 2) over their classical counter parts, such as [ 2], use
+Grover search as a key component. Quantum approximation
+Research presented in this article was supported by the Cent er for Nonlinear
+Studies CNLS and the Laboratory Directed Research and Devel opment pro-
+gram of Los Alamos National Laboratory under project number s 20190495CR
+and 20200671DI. LA-UR-20-23893
+algorithms that aim to ﬁnd good approximate solutions to
+optimization problems in polynomial time typically follow the
+Quantum Alternating Operator Ansatz (QAOA) [ 1], [ 3].
+A. Overview of GM-QAOA: Grover-Mixer Quantum Alternat-
+ing Operator Ansatz
+In order to introduce GM-QAOA more formally, we need a
+bit of notation. We use the combinatorial optimzation probl em
+of M AX K -V ERTEX COVER as an illustrative example. An
+instance I kvc of M AX K -V ERTEX COVER is a tuple (G, k) of
+a graph G = (V, E) with vertex set V = {v0, . . . , vn−1} and
+edge set E ⊆ V 2 = {∀0 ≤ i, j < n : (vi, vj)} and we are to
+ﬁnd a set V ′ ⊂ V of exactly k vertices, such that a maximum
+number of edges in E have at least one end point in V ′. I.e,
+the cost function is
+C(V ′) = ∑
+(vi,vj )∈E with vi∈V ′ or vj ∈V ′
+1 (1)
+Just like standard QAOA, GM-QAOA takes as input a
+triple (I, F, C ) of optimization problem instance I, feasible
+solutions F and cost function C as follows:
+• I is an instance of an optimization problem, whose
+solutions are deﬁned on n binary variables x0, . . . , xn−1.
+In our M AX K -V ERTEX COVER instance I kvc, the binary
+variables xi encode whether vertex vi is in a vertex cover
+solution V ′ or not.
+• Set F is the set of feasible solutions, where a solution x =
+xn−1 . . . x0 ∈ F ⊆ {0, 1}n is the solution with variables
+taking values xi. If F ⊊ {0, 1}n, we call the optimization
+problem a constraint optimization problem. In our M AX
+K-V ERTEX COVER example of instance I kvc, the set F
+of feasible solutions consists of all binary strings x of
+length n with exactly k variables set to 1, or alternatively
+speaking, all length- n strings of Hamming weight k.
+• Cost function C assigns a cost value to each feasible solu-
+tion x as given above for instance I kvc, where C(x) is the
+number of edges with at least one end point vertex with
+corresponding xi = 1 in solution x. The transformation
+xi ↦→ (1 − σzi )/2 yields the cost Hamiltonian
+HC = C((1 − σz0 )/2, . . . ,(1 − σzn−1)),
+and a solution x has objective value ⟨x| HC |x⟩.
+
+=== PDF PAGE 2 ===
+UM (βk) = e−iβk|F ⟩⟨F |
+|0⟩
+US UP (γk) U †S US . . .
+⟨βββ, γγγ| HC |βββ, γγγ⟩|0⟩
+|0⟩
+|0⟩
+|0⟩ Z −βk/π
+1√
+|F |
+∑
+x∈F
+|x⟩ /bracehti√u√left /bracehti√downright/bracehti√downleft /bracehti√u√right
+p rounds with angles γ1,β1,...,γp,βp
+Fig. 1. GM-QAOA (Grover Mixer QAOA): The state preparation u nitary US preparing the equal superposition of all feasible states |F ⟩ = 1√|F | ∑x∈F |x⟩
+and its conjugate transpose U †S are used to implement the Mixer UM (β) = e−iβ|F ⟩⟨F |.
+As illustrated in Fig. 1, the GM-QAOA circuit of level p
+for input (I, C, F ) consists of
+1) a state preparation unitary operator US that creates
+(without measurement) an equal superposition of all
+feasible solutions in F :
+US |0⟩ = |F ⟩ := 1√|F | ∑x∈F |x⟩
+2) p applications of alternating phase separation and mix-
+ing unitaries UP , UM ,
+3) and a ﬁnal measurement in the computational basis.
+The phase separator and mixing unitaries are parameterized
+each by p real numbers (angles) γγγ = ( γ1, . . . , γp)T and βββ =
+(β1, . . . , βp)T ; we write the ﬁnal state before measurement as
+|βββ, γγγ⟩ := UM (βp)UP (γp) · · · UM (β1)UP (γ1)US |0⟩⊗n .
+The phase separator unitary UP should be diagonal in the
+computational basis. We use UP (γ) = e−iγHC (modulo global
+phases), where HC is the cost Hamiltonian. As in standard
+QAOA, the angle vectors βββ, γγγ need to be optimized over in an
+outer-loop, thus GM-QAOA remains a variational algorithm;
+ﬁnding optimum or near-optimum angles can be done through
+a variety of optimization techniques [ 4], [5] or even theoretical
+analysis of individual values [ 6].
+The key innovation of GM-QAOA lies in the mixing unitary
+UM as we focus on state preparation to prepare an equal super-
+position of all feasible states and design a mixing unitary b ased
+thereon. In particular, once we have an efﬁcient state prepa ra-
+tion unitary US such that US |0⟩ = |F ⟩ := |F |−1/2 ∑x∈F |x⟩,
+we can directly implement a variational (with parameter β)
+mixing unitary
+UM (β) = e−iβ|F ⟩⟨F | (2)
+with
+e−iβ|F ⟩⟨F | =
+∞∑
+k=0
+(−iβ)k(|F ⟩ ⟨F |)k
+k!
+= Id +
+∞∑
+k=1
+(−iβ)k
+k! |F ⟩ (⟨F |F ⟩)k−1 ⟨F |
+= Id −
+(
+1 − e−iβ) |F ⟩ ⟨F |
+= US
+(
+Id −
+(
+1 − e−iβ) |0⟩ ⟨0|) U †S. (3)
+Such mixing unitaries resemble the well-known diffusion
+operators used in amplitude ampliﬁcation with the phase shi ft
+e−iβ replacing phase inversion (i.e. phase shifts of −1 =
+e−iπ). Thus the mixing unitary can be implemented using the
+one application of unitaries US, U †S each, two layers of X-
+gates and a multi-control phase-shift gate Z −β/π = ( 1 00 e−iβ ),
+which can be implemented in linear depth and size, as shown
+in Section II. In fact, such selective phase shift unitaries have
+been introduced by Grover with angles β = ±π/3 for ﬁxed-
+point quantum search [ 7] and were later generalized to a larger
+discrete set of angles by Y oder et al. [ 8]. We discuss the key
+properties of GM-QAOA that follow from this deﬁnition.
+1) Property 1: Computing Equal Feasible State Superposi-
+tions: If we limit ourselves to polynomial-size circuits, GM-
+QAOA relies on the existence of a polynomial state preparati on
+algorithm for unitary US to create an equal superposition
+of all feasible solutions F of input instance I. It is not
+at all obvious that such quantum algorithms exist for all
+combinatorial optimization problems. At ﬁrst glance, thre e
+categories of optimization problems exist with respect to t he
+feasible solution space F :
+1) All solutions are feasible (i.e, F = {0, 1}n, we call
+the problem unconstrained). In the original Quantum
+Approximate Optimization Algorithm (QAOA), Farhi et.
+al. studied unconstrained binary optimization problems
+such as M AXCUT [3] and MA XE3L IN2 [6]. We trivially
+get an equal superposition of all computational basis
+states |+⟩⊗n = H ⊗n |0⟩⊗n in circuit depth 1 (Fig. 2).
+
+=== PDF PAGE 3 ===
+|0⟩ H
+e−iγ1HC
+e−iβ1X
+. . .
+e−iβpX
+⟨βββ, γγγ| HC |βββ, γγγ⟩|0⟩ H e−iβ1X e−iβpX
+|0⟩ H e−iβ1X e−iβpX
+|0⟩ H e−iβ1X e−iβpX
+|0⟩ H e−iβ1X e−iβpX
+1√
+2n
+∑
+all x
+|x⟩
+US UP (γ1) UM (β1) UM (βp)
+/bracehti√u√left /bracehti√downright/bracehti√downleft /bracehti√u√right
+p rounds with angles γ1,β1,...,γp,βp
+Fig. 2. Original Quantum Approximate Optimization Algorit hm for un-
+constrained problems. State Preparation and a Transverse F ield Hamiltonian
+Mixer can be implemented with single-qubit gates in depth 1.
+2) The optimization problem is constrained (i.e., F ⊂
+{0, 1}n) and there exists a polynomial-sized quantum
+circuit to implement US. For example, Dicke-states
+(superpositions of all equal Hamming-weight states) can
+be computed in polynomial time [ 9] and serve as US for
+a large set of optimization problems, such as M AX K -
+VERTEX COVER or M AX K -S ET COVER .
+3) No polynomial-time quantum algorithm is known to
+compute US. We conjecture that problems such as M AX
+CLIQUE belong to this category.
+GM-QAOA performs best on problems of Category 2,
+which will be the focus of this paper, but can also handle
+problems in Category 1 (albeit at larger depth of the mixing
+unitary). As long as we stick to polynomial-size circuits, G M-
+QAOA will not handle Category-3 problems.
+2) Property 2: Mixing equal solutions at equal amplitude:
+Our Grover mixer unitaries are such that GM-QAOA results
+in ﬁnal states |βββ, γγγ⟩ where any two basis states x, y ∈ F with
+the same objective value, that is C(x) = C(y) or equivalently
+⟨x| HC |x⟩ = ⟨y| HC |y⟩, have the same amplitude in |βββ, γγγ⟩.
+To the best of our knowledge, this is the ﬁrst mixing operator
+that has this property (even including Category 1). We forma lly
+prove this result in Section II.
+3) Property 3: No Hamiltonian Simulation error: The GM-
+QAOA algorithm can be analyzed and understood purely in
+terms of Grover-like paradigms and elementary Pauli gates,
+which – as an aside – implies that the reader does not need a
+background in Hamiltonian simulation principles in order t o
+understand GM-QAOA. It follows as a beneﬁt that GM-QAOA
+does not suffer from numerical errors that Hamiltonian simu la-
+tion methods, such as Trotterization [ 10], Local Combination
+of Unitaries [ 11], or Quantum Walk based simulation [ 12],
+introduce. This in turn decreases the circuit complexity of
+GM-QAOA, making it more likely to succeed in a noisy envi-
+ronment, even though it may not particularly NISQ friendly.
+B. GM-QAOA vs. standard QAOA
+In order to appreciate GM-QAOA ’s standing among quan-
+tum optimization algorithms, we contrast it to earlier work .
+In the original Quantum Approximate Optimization Algo-
+rithm, Farhi et. al. studied unconstrained binary optimization
+US
+|0⟩
+UM (β0) UP (γk) UM (βk) . . .
+⟨βββ, γγγ| HC |βββ, γγγ⟩|0⟩
+|0⟩
+|0⟩
+|0⟩
+some feasible |x⟩ /bracehti√u√left /bracehti√downright/bracehti√downleft /bracehti√u√rightp rounds with angles γ1,β1,...,γp,βp
+Fig. 3. Quantum Alternating Operator Ansatz for Constraint Optimization
+Problems with a focus on Mixer Design. An intial Mixer applic ation – applied
+to an easily prepared single feasible state – is also used for State Preparation.
+problems, for which any solution is feasible and we get an
+equal superposition of all computational basis states |+⟩⊗n =
+H ⊗n |0⟩⊗n in circuit depth 1. Fig. 2 shows an overview of
+this original QAOA approach.
+Hadﬁeld et. al. extended QAOA into a general frame-
+work [ 1], renamed to Quantum Alternating Operator Ansatz,
+to cover a wide range of combinatorial optimization problem s,
+including constraint problems. Fig. 3 shows an overview of
+the Hadﬁeld QAOA approach. Unlike GM-QAOA, Hadﬁeld
+QAOA recommends for state preparation that US should
+efﬁciently create a superposition of some feasible states in
+F . Hadﬁeld deﬁnes several classes of mixing unitaries that
+are suited to different classes of optimization problems. I n
+keeping with the tradition of classical discrete optimizat ion,
+the QAOA ansatz requests that mixing unitaries UM preserve
+the feasible subspace and provide transitions between all p airs
+of feasible states, i.e. for every feasible state y ∈ F we have:
+“there exists an angle β∗ such that |⟨x| UM (β∗) |y⟩| > 0” if
+and only if “ x ∈ F ”.
+As for initial state preparation, the standard approach by
+Hadﬁeld is to start in a single feasible computational basis
+state (implementable in depth 1 with Pauli X gates) and to
+apply an initial mixing unitary UM (β0). In this case, the
+efﬁciency of the initial state preparation corresponds to t he ef-
+ﬁciency of the mixer implementation. In particular, it is hi ghly
+non-trivial to create mixer unitaries that assign amplitud e to all
+feasible states starting from just a single feasible basis s tate;
+in practice, the proposed QAOA mixers do not achieve such
+perfect mixing in a single iteration, particularly when res tricted
+to polynomial circuit size, thus the mixing across all feasi ble
+states happens only after several iterations of mixer and ph ase
+separator, which in turn makes the entire QAOA circuit longe r
+and thus less NISQ-friendly.
+Numerical simulations for applications with XY -model
+mixers such as M AX-K-COLORABLE SUBGRAPH and M AX-
+K-V ERTEX COVER found that starting in an equal superposi-
+tion of all feasible states (e.g. W - and Dicke-States for the
+mentioned examples) offers a beneﬁt over a random computa-
+tional basis state choice followed by an angle-optimized in itial
+mixing unitary UM (β0) [4], [ 5].
+In a sense, our GM-QAOA follows a reverse approach:
+
+=== PDF PAGE 4 ===
+Focus on state preparation to prepare an equal superpositio n
+of all feasible states and make use of Grover’s selective pha se
+shift operator to get a relatively simple mixing unitary tha t
+always remains and provides good transition properties in t he
+feasible solution space F . We thus shift the complexity from
+the mixing unitary into the preparation of US. This works
+well and brings a real beneﬁt only if US (and U †S) can be
+constructed in polynomial time. Hadﬁeld’s QAOA ansatz is
+general enough that GM-QAOA could be considered a special
+case of the ansatz for such problems.
+Related W ork: The original Grover quantum search al-
+gorithm [ 13] with phase inversions e−iπ|t⟩⟨t|, e−iπ|+⟩⟨+|⊗n
+around a target state |t⟩ and an initial state |+⟩⊗n has a “Souf-
+ﬂé” problem [ 14], in which too few or two many iterations
+“undercook” (or “overcook”, respectively) the amplitude o f
+the target state, leading to a sampling of mostly unmarked
+states. The same holds true for its generalization of amplit ude
+ampliﬁcation [ 15], which combines the state preparation and
+diffusion operator of Grover’s quantum search with state
+preparation unitaries US that correspond to, e.g., a classical
+randomized algorithm or a restriction of the Hilbert space t o
+a feasible subspace. This was addressed by Grover himself
+with a ﬁxed-point quantum search algorithm [ 7] that replaced
+selective phase inversions with selective phase shifts of ±π/3.
+This algorithm converges to the target state |t⟩, albeit at a loss
+of the quadratic speedup. Using a larger set of angles, Y oder
+et al. [ 8] later recovered the quadratic speedup by replacing
+exact convergence with convergence up to a tunable error
+parameter.
+V ariational learning of phases for quantum search [ 16] and
+Grover mixers for QAOA have recently been studied for
+unconstrained problems, such as for M AX-SAT [ 17] and for
+counting of weighted ground states [ 18]. The Hamiltonian
+|+⟩ ⟨+|⊗n ∼= Id +∑i σxi +∑⟨i,j⟩ σxi σxj +∑⟨i,j,k⟩ σxi σxj σxk . . .
+has also been proposed for fair sampling in quantum anneal-
+ing [ 19].
+Outline: In the remainder of the paper, we ﬁrst formally
+show the properties of the GM-QAOA mixers in Section II.
+The task of creating non-trivial starting states, which are
+typically highly entangled states, is of independent inter est
+as well. In particular, they can also be used for efﬁcient
+implementations of starting states and oracle operators in
+Grover Search algorithms for these problems. We illustrate
+the potential of our method on various problems, such as
+permutation-based optimization such as the Traveling Sale s-
+person Problem, optimization with hard constraints such as
+k-V ertex-Cover, and an application to portfolio rebalancin g in
+Section III. We describe efﬁcient state preparation circuits and
+compare the resulting mixers with current proposals for mix ing
+unitaries for these problems.
+II. GM-QAOA: P ROOFS AND IMPLEMENTATION
+For a vector vvv, denote by vvvi the i-th component of vvv.
+In particular, we denote by |βββ, γγγ⟩i the amplitude of the i-th
+computational basis state.
+Theorem 1. Consider any GM-QAOA circuit with a state
+preparation unitary US : |0⟩⊗n ↦→ | F ⟩, phase separators
+UP (γ) = e−iγHC , and Grover mixers UM (β) = e−iβ|F ⟩⟨F | =
+US(Id − (1 − e−iβ) |0⟩ ⟨0|)U †S. Then we have ﬁnal amplitudes
+|βββ, γγγ⟩z = 0 if z /∈ F (staying in the feasible subspace),
+|βββ, γγγ⟩x = |βββ, γγγ⟩y whenever x, y ∈ F have the same objec-
+tive value ⟨x| HC |x⟩ = ⟨y| HC |y⟩.
+Proof. We proceed by induction over the number of rounds k,
+denoting by
+⏐⏐βββ[k], γγγ[k]⟩ the state after the ﬁrst k QAOA rounds.
+For feasible states f ∈ F deﬁne obj(f ) := ⟨f | HC |f ⟩.
+State preparation: (k = 0 ): We have
+⏐⏐βββ[0], γγγ[0]⟩ = |F ⟩,
+and every feasible state f ∈ F has amplitude
+⏐⏐βββ[0], γγγ[0]⟩z =1√
+|F |
+, while all other states z /∈ F have amplitude 0.
+QAOA rounds: (p ≥ k > 0): Assume by induction
+hypothesis that for x, y ∈ F with obj(x) = obj( y) we have⏐⏐βββ[k−1], γγγ[k−1]⟩x = ⏐⏐βββ[k−1], γγγ[k−1]⟩y, and that for z /∈ F ,⏐⏐βββ[k−1], γγγ[k−1]⟩z = 0 . We show ⏐⏐βββ[k], γγγ[k]⟩x = ⏐⏐βββ[k], γγγ[k]⟩y
+and
+⏐⏐βββ[k], γγγ[k]⟩z = 0.Since UP (γk) is diagonal in the computational basis, it
+phase shifts feasible states f ∈ F by e−iγkobj(f ) and we get
+(UP (γk)
+⏐⏐βββ[k], γγγ[k]⟩)f = e−iγkobj(z) ⏐⏐βββ[k−1], γγγ[k−1]⟩f , while
+staying in the feasible subspace. Thus the amplitudes of the
+new state have an arithmetic mean of
+AM := AM
+(
+UP (γk)
+⏐⏐βββ[k], γγγ[k]⟩)
+= 1|F | ∑f ∈F e−iγkobj(f ) ⏐⏐βββ[k], γγγ[k]⟩f
+=
+√
+|F | · ⟨F | UP (γk)
+⏐⏐βββ[k], γγγ[k]⟩ .
+After application of UM (βk) =
+(
+Id − (1 − e−iβk ) |F ⟩ ⟨F |),
+we stay in the feasible subspace F :
+⏐⏐βββ[k], γγγ[k]⟩ = UM (βk)UP (γk) ⏐⏐βββ[k−1], γγγ[k−1]⟩
+= UP (γk)
+⏐⏐βββ[k−1], γγγ[k−1]⟩ − (1 − e−iβk )√|F | AM |F ⟩
+Thus we have for x, y ∈ F with obj(x) = obj( y) that
+⏐⏐βββ[k], γγγ[k]⟩x = e−iγkobj(x) ⏐⏐βββ[k−1], γγγ[k−1]⟩x − (1−e−iβk )√|F | AM
+= e−iγkobj(y) ⏐⏐βββ[k−1], γγγ[k−1]⟩y − (1−e−iβk )√|F | AM
+=
+⏐⏐βββ[k], γγγ[k]⟩y .
+Implementation of GM-QAOA phase separator and mixing
+unitaries: Here we brieﬂy review implementations for phase
+separators UP (γ) = e−iγHC , and for multi-controlled phase-
+shift operators Z t = ( 1 00 eit∗pi ) used in GM-QAOA ’s mixing
+unitaries.
+The cost Hamiltonians HC arising in combinatorial opti-
+mization problems are diagonal in the computational basis
+and can be written as sums of local Pauli-Z products. For
+example, the objective function of M AXE3L IN2 is a sum of
+3-local terms HC = ∑ duvwσzuσzv σzw with duvw = ±1. Since
+Pauli-Z terms pairwise commute, we can implement each term
+individually and in arbitrary order,
+UP (γ) = e−iγ ∑ duvw σzuσzv σzw = ∏ e−iγduvw σzuσzv σzw .
+
+=== PDF PAGE 5 ===
+W W
+e−iγ(σz1 σz3 σz4 −σz2 σz5 σz6 )
+=
+Rz(2γ)
+Rz(−2γ)
+=
++1 −1
+Z t/32
+Z −t/32 Z t/32
+Z −t/16 Z t/16
+Z −t/8 Z t/8
+Z −t/4 Z t/4
+Z t Z −t/4 Z t/4 Z −t/4 Z t/4
+Fig. 4. (left) Implementation of a phase separator UP (γ) = e−iγHC for a cost Hamiltonian HC = σz1 σz3 σz4 − σz2 σz5 σz6 using a swap network, parity
+computing CNOT stairs and Z-Rotations Rz(2γ). (right) Overview of a compilation of a multi-controlled ph ase shift gate Z t to into single-qubit phase shift
+gates and a constant number of Multi-Toffoli and Increment g ates, both of which can be further compiled into a linear numb er of 1- and 2-qubit gates.
+Assuming u, v, w are neighboring qubits, e−iγduvw σzuσzv σzw
+can be implemented with a Z-rotation gate Rz(2γduvw) =
+e−iγduvw σz conjugated with stairs of CNOT gates computing
+and uncomputing the parity of u, v, w, see Figure 4 (left).
+On restricted hardware such as Linear Nearest Neighbor
+architectures, though, qubits appearing in the same Pauli- Z
+product are not neighboring qubits. In these cases, one woul d
+use generalized swap networks [ 20] to bring the qubits of each
+term into neighboring positions at some point during the swa p
+network. Depending on the number of terms in HC, such a
+swap network may or may not asymptotically increase the size
+or depth to implement UP (γ), compared to a fully connected
+architecture.
+For the asymptotics of a compilation of multi-controlled
+phase-shift gate (which is at the heart of a Grover selective
+phase shift mixer), we largely follow a decomposition which
+gives a linear number of 1- and 2-qubit gates [ 21], and explain
+how that method extends to LNN architectures. In a ﬁrst
+step, a multi-controlled Z t-gate can be decomposed into a
+constant number of Multi-Toffoli, Increment/Decrement an d
+single-qubit Z t/2i gates, see Figure 4 (right). The Multi-
+Toffoli gates are interleaved, hence to compile them down
+to 1- and 2-qubit gates, we can make use of the qubits
+between the controls as “borrowed” ancillas, which need to
+be returned to their state. This can be done for each Multi-
+Toffoli with a linear number of 1- and 2-qubit gates [ 22].
+At the point where the Increment and the Decrement gate
+come into play, the bottom qubit is “freed up” and can be
+used as a borrowed ancilla as well. With this, we can split
+an Increment (or a Decrement) gate again into a constant
+number of Increments and Multi-Toffolis on half the number
+of qubits [ 23]. As the Increment and the Decrement gate are
+only used to implement relative phase shifts, one may change
+the actual order of the wires (as long as the increment follow s
+the original order) – in this way interleaving the Multi-Tof folis
+and Increments again with wires of borrowable ancillas. Usi ng
+these borrowable qubits again enables compilation into a li near
+number of 1- and 2-qubit gates [ 23], using similar ideas as
+the V an Rentergem adder [ 24]. We remark that by using
+additional zeroed ancilla qubits, the constant factors of s uch
+a construction can signiﬁcantly be reduced. In summary, we
+have:
+Theorem 2. Given a state preparation unitary US : |0⟩⊗n ↦→
+|F ⟩, the size and depth of a Grover mixing unitary UM (β) =
+e−iβ|F ⟩⟨F | = US(Id − (1 − e−iβ) |0⟩ ⟨0|)U †S are bounded by
+O(US + n), even on Linear Nearest Neighbor architectures.
+III. A PPLICATIONS
+In this section, we illustrate the potential of GM-QAOA
+on three different problem types: Optimization problems wi th
+non-intersecting constraints such as M AX K-V ERTEX COVER
+(with a single equality constraint), permutation-based op ti-
+mization problems such as the Traveling Salesperson Proble m
+(TSP), and applications to discrete portfolio rebalancing .
+To this end, we present for each type a construction
+of an efﬁcient state preparation unitary US that prepares
+an equal superposition of all feasible states, US |0 . . .0⟩ =
+1√
+|F |
+∑
+x∈F |x⟩. We then compare the resulting Grover Mixer
+with other Mixers, in terms of circuit size and depth as well
+as structure and quality of the Mixer.
+In our constructions, we make use of a recent result [ 9]
+on the preparation of Dicke states |Dnk ⟩, which are equal
+superpositions of all
+(n
+k
+)
+many n-qubit computational basis
+states x with Hamming weight HW (x) = k:
+Theorem 3 (Theorem 1 in [ 9]). Dicke states |Dnk ⟩ can be
+prepared with a circuit of size O(n · k) and depth O(n), even
+on Linear Nearest Neighbor architectures.
+In particular, that construction gives a linear-depth and -
+size circuit to construct Wn-states (symmetric n-qubit states of
+Hamming weight 1) and can also be used to prepare arbitrary
+symmetric states with maximum Hamming weight k.
+Application Outline: In the following subsections, we study
+MAX K -V ERTEX COVER , the Traveling Salesperson Problem
+and Portfolio Rebalancing. For each of these three applica-
+tions, we give
+• a short introduction and the problem encoding,
+• an explicit construction of the state preparation unitary
+US, including clickable links to interactive implementa-
+tions with the drag-and-drop quantum circuit simulator
+Quirk ( www.algassert.com/quirk),
+• a discussion of improvements over other approaches,
+• and possible generalizations.
+
+=== PDF PAGE 6 ===
+A. Max k-V ertexCover
+We used k-V ertex Cover as our running example when intro-
+ducing GM-QAOA in Section I-A giving a formal deﬁnition.
+The problem is ﬁnding a subset V ′ of exactly k vertices from
+a given graph, such that the number of edges with at least one
+end point in V ′ is maximized.
+1) Problem encoding: We let each vertex be represented
+by a binary variable xj, where xj = 1 if it is in the subset
+and xj = 0 otherwise for solution x. The objective function is
+given in graph form in Eq. 1. To express this in unitary form,
+we set
+C(x) =
+∑
+(vj ,vl)∈E
+OR(xj, xl)
+=
+∑
+(vj ,vl)∈E
+1 − (1 − xj )(1 − xl)
+(4)
+Using the transformation xj ↦→ (1−σzj )/2, the phase separator
+Hamiltonian becomes:
+HC = 14 ∑(vj ,vl)∈E 3I − σzj σzl − σzj − σzl . (5)
+As HC simply consists of mutually commuting 1- and 2-
+local terms which are diagonal in the computational basis, t he
+implementation of the corresponding Phase separator unita ry
+UP (γ) = e−iγHC is straightforward.
+2) State preparation: Since the set F of feasible solutions
+contains exactly all solutions x of Hamming weight k, we can
+use the Dicke state construction referenced in the previous
+section to create unitary US. As Dicke states can be prepared
+with O(nk) gates in O(n) depth (see, e.g. the preparation of
+|D53⟩ in an interactive example ), according to Theorem 2 so
+can a Grover mixer based on Dicke state preparation.
+3) Improvement: Previous approaches in QAOA problems
+with Hamming weight equality constraints have looked at
+mixing unitaries based on XY -Hamiltonians σxi σxj + σyi σyj ,
+namely a ring mixer and a complete mixer, named after the
+pairs of qubits on which the Hamiltonian acts:
+HXY -Ring =
+∑
+i
+σxi σxi+1 + σyi σyi+1
+HXY -Clique =
+∑
+i<j
+σxi σxj + σyi σyj
+The corresponding mixing unitaries e−iβHXY -Ring , e−iβHXY -Clique
+both preserve the feasible subspace but provide different t ran-
+sitions between feasible states, due to the “better connect ivity”
+of the complete graph mixing Hamiltonian. An experimental
+study on instances of M AX-K-V ERTEX COVER [5] has shown
+that QAOA with a complete mixer outperforms QAOA with
+a ring mixer, with the advantage most prominent for an
+intermediate number of QAOA rounds, and for Dicke states
+as starting states (compared to starting in a random but ﬁxed
+classical Hamming weight k state followed by an initial mixer,
+cf. Figure 3). Qualitatively similar results have been found
+for the M AX-K-COLORABLE SUBGRAPH problem, in which
+the color of each vertex is encoded in a one-hot-encoding on
+which an XY -mixer acts [ 4].
+While HXY -Clique outperforms HXY -Ring, an analytical so-
+lution of the XY -model on a complete graph is not known,
+hence an exact implementation of e−iβHXY -Clique seems out of
+reach. An implementation which is equivalent in the Hamming
+weight 1 and Hamming weight n − 1 subspaces is known, but
+as such only applicable to M AX-K-COLORABLE SUBGRAPH
+and not to M AX-K-V ERTEX COVER . On the other hand, taking
+a fermionic view at the HXY -Ring Hamiltonian one gets
+quadratic fermionic couplings which can be diagonalized us ing
+a Fermionic Fast Fourier Transform [ 4], which can be imple-
+mented in quadratic size and linear depth on Linear Nearest
+Neighbor architectures using a Givens-rotation network [ 25].
+Our Grover mixer UM (β) = e−iβHGM = e−iβ|F ⟩⟨F |
+can close this gap, combining better connectivity between
+feasible states in the mixing Hamiltonian as well as exact
+implementability in linear depth on LNN architectures. For
+a comparison of HGM with HXY -Ring and HXY -Clique, we can
+consider the actions of all three mixing unitaries in the feasible
+suspace by looking at the three mixing Hamiltonians restricted
+to the feasible subspace F . These are (up to constant factors)
+HXY -Ring|F ∼= ∑
+x,y∈F, BSD (x,y)=1
+|x⟩ ⟨y|
+HXY -Clique|F ∼= ∑
+x,y∈F, HD (x,y)=2
+|x⟩ ⟨y|
+HGM ∼= ∑
+x,y∈F
+|x⟩ ⟨y|
+where BSD (x, y) is the Bubble Sort distance and HD (x, y)
+is the Hamming distance between strings x and y. As any
+two binary strings of the same Hamming weight with Bubble
+Sort distance 1 must have Hamming distance 2, HXY -Clique|F
+sums over a superset of HXY -Ring|F and HGM over a superset
+of HXY -Clique|F , with HGM having full connectivity between
+feasible states while still having an O(n) depth and O(n·k) ⊆
+O(n2) size circuit implementation for its mixer, combining the
+advantages of the other two mixing Hamiltonians.
+4) Generalization: The state preparation and mixer of GM-
+QAOA for M AX-K-V ERTEX COVER are immediately applica-
+ble to other solution-size equality constraint optimizati on prob-
+lems such as D ENSEST -K-S UBGRAPH or M AX-K-S ET COVER .
+However, consideration has to be given to the complexity of
+the cost Hamiltonians – in the former case, the terms stay 2-
+local (as the OR of M AX-K-V ERTEX COVER in Equation ( 4) is
+replaced by an AND), but for M AX-K-S ET COVER the locality
+as well as the number of terms in HC might be large (albeit
+still polynomial in the problem size).
+B. Traveling Salesperson Problem
+In permutation-based N P optimization problems the task
+is to ﬁnd a minimum/maximum objective value over all
+permutations of the input. For example, in the Traveling
+Salesperson Problem, we are given n cities with a distance
+function d : [ n] × [n] → R≥0 between each pair of cities.
+
+=== PDF PAGE 7 ===
+W3 W3 W3 W3
+|0⟩
+W4
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+W2
+W2 W2
+|0⟩
+W3
+W2
+W2
+|0⟩
+W2
+W2
+|0⟩ W2 W2
+|0⟩
+|0⟩
+|0⟩
+|0⟩
+Fig. 5. State Preparation US: (left) Initialization of the ﬁrst row in a W4-state and |1111⟩ in the bitmask in the last row, followed by a bitmask update.
+(middle) Swapping a W3-state from the third row into the second row, controlled on t he bitmask, followed by a bitmask update. (right) Direct W2-state
+generation in the third row, controlled on the bitmask, foll owed by a bitmask update. At the end, the row constraint of the fourth row is also satisﬁed.
+The goal is to ﬁnd a tour through all cities that minimizes
+(approximately or exactly) the total travel distance along the
+tour.
+1) Problem encoding: Such a tour is given as a permutation
+τ : [ n] → [n] of the input cities, and we get a minimization
+problem over all permutations in the symmetric group Sn:
+min
+τ ∈Sn
+n∑
+k=1
+d(τ −1(k), τ −1(k + 1)).
+We can represent a permutation τ by a permutation matrix,
+i.e. a matrix which has exactly one “1” entry per column and
+per row (and “0”-entries otherwise). Here, a “1” entry in row
+r and column c denotes city c appearing at the r-th position of
+the tour. Equivalently, we may consider τ as a bitstring x =
+xn2−1 . . . x1x0 (with 0-based indexing), where the r-th group
+of n bits denotes a one-hot-encoding of τ −1(r), meaning that
+city τ −1(r) is mapped to the r-th position in the tour. Hence
+we can express the symmetric group as:
+Sn = {x | x = xn2−1 . . . x1x0 such that
+∀ 0 ≤ c < n :
+∑
+j≡c mod n
+xj = 1 (col. constraints)
+∀ 0 ≤ r < n :
+∑
+⌊i/n⌋=r
+xi = 1 (row constraints) }
+Using this deﬁnition and computational basis states x ∈ Sn
+on n2 qubits we get a cost Hamiltonian
+HC =
+n−1∑
+i=0
+n−1∑
+u=0
+n−1∑
+v=0
+d(u, v)σzi·n+uσz(i+1)·n+v, (6)
+adding a distance of d(u, v) once if and only if city v
+is visited directly after city u. As HC simply consists of
+mutually commuting 2-local terms which are diagonal in the
+computational basis, the implementation of the correspond ing
+Phase separator unitary UP (γ) = e−iγHC is straightforward.
+2) State preparation: We now give an efﬁcient circuit for a
+state preparation unitary US creating an equal superposition of
+all n! permutations, US |0⟩⊗n2 = |Sn⟩ = 1√n! ∑x∈Sn |x⟩. The
+existence of a polynomial-size circuit to prepare |Sn⟩ (at least
+approximately) follows from results on efﬁciently speciﬁa ble
+polynomials including the permanent perm(x0, . . . , xn2−1) =∑
+τ ∈Sn
+∏n
+i=1 xi,τ (i) [26, Theorem 28], or by considering the
+rows of Sn as qudits and using the (inverse) Schur transform
+for symmetric qudit states [ 27]. Here, we give an explicit
+construction of an O(n2) depth circuit with O(n3) gates to
+prepare |Sn⟩ exactly.
+We construct the superposition inductively row by row, such
+that after processing k rows our states satisﬁes all column
+constraints as well as the ﬁrst k row constraints. In order for
+the column constraints to match up, we use the n qubits of
+the last row as a bitmask of the yet unoccupied columns, i.e.
+we get an equal superposition of all n!k! terms in the set
+{x | x = xn2−1 . . . x1x0 such that
+∀ 0 ≤ c < n :
+∑
+j≡c mod n
+xj = 1 (col. constraints)
+∀ 0 ≤ r < k :
+∑
+⌊i/n⌋=r
+xi = 1 (row constraints)
+r = n − 1 :
+∑
+⌊i/n⌋=r
+xi = n − k (bitmask)}
+(Note that for k = n−1 we already get the set Sn.) Inductively,
+the k-th row is processed in two steps, illustrated for all rows
+in Figure 5:
+• First, the row constraint for the new row is satisﬁed.
+• Next, the bitmask in the last row is updated.
+
+=== PDF PAGE 8 ===
+In more detail, before adding the row of index k − 1, the
+bitmask row designates (in superposition) the n−k+1 columns
+of the permutation matrix in which a “1” may still be entered.
+For the very ﬁrst row (Figure 5 left), the bitmask will simply
+be |1⟩⊗n, and we easily create a Wn-state on the ﬁrst n qubits.
+For the second last row of index n − 2 (Figure 5 right), the
+bitmask is a superposition of all n-qubit states of Hamming
+weight 2, hence for each of the
+(n
+2
+)
+possibilities we use a
+2-controlled W2-state preparation on the respective columns.
+For any row of index k − 1 in-between, such a directly
+controlled Wn−k+1-state preparations would result in
+( n
+n−k+1
+)
+many controlled operations. Instead, by using the followin g
+row k as an ancilla row, we can signiﬁcantly reduce the
+number of operations. To this end, we generate a Wn−k+1-
+state on the last n − k + 1 qubits of row k, and swap these
+qubits into the correct places in row k − 1 (Figure 5 middle).
+This is done with
+• n controlled swaps (for 0 ≤ i < n swapping qubits kn−1
+and (k − 1)n + i, controlled by qubit (n − 1)n + i),
+• each followed by a controlled cyclic rotation of the last
+n − k + 1 qubits of row k (controlled by the same qubit
+(n − 1)n + i).
+The controls come from the bitmask register, hence exactly
+n − k + 1 of these operations will be executed, at which point
+row k is again in the state |0⟩⊗n. For each row, after adding
+the new row constraint, we update the bitmask with n CNOT
+gates, for 0 ≤ i < n resetting qubit (n − 1)n + i controlled
+on qubit (k − 1)n + i.
+Circuit implementations in Quirk can be found
+here (for S3), and here (for S4). Finally, we note that
+there is a redundancy in the superposition of cyclically
+shifted permutations – they encode the same tour. One may
+circumvent this by choosing a ﬁxed position in the ﬁrst row,
+instead of generating a Wn state. We conclude:
+Theorem 4. A state preparation unitary US for an equal
+superposition of all permutations in Sn, US : |0⟩⊗n2 ↦→
+|Sn|−1/2 ∑x∈Sn |x⟩ can be implemented with O(n3) gates in
+depth O(n2), even on Linear Nearest Neighbor architectures.
+Proof. We prove that the processing of each row can be
+implemented with O(n2) gates in depth O(n): For the second
+to last row, we have O(n2) 4-qubit gates, each of which can
+be implemented in constant size in parallel with ≈ n2 other of
+these gates for a row depth of O(n).
+For all other rows, the process consist of a W -state genera-
+tion and n controlled swaps and cyclic rotations. W -states can
+be implemented in O(n) size and depth, and cyclic rotations
+as well (via a stair of swaps between neighboring qubits).
+Hence these larger stair-shaped gates can be pushed togethe r
+to overlap in depth, keeping a linear O(n) depth overall, even
+on LNN architectures.
+Finally, to have the same asymptotics overall for LNN
+architectures, one can keep the bitmask register not in the
+bottom/last row, but always adjacent to the currently proce ssed
+row. Shifting the bitmask register to lower rows over time
+needs an additional O(n3) gates in O(n2) depth in total,
+keeping the same asymptotics.
+3) Improvement: In the following we show that our Grover
+Mixer approach is competive in depth with existing mixer
+designs for permutations, while lowering the number of tota l
+gates and not suffering from side effects of Trotterization .
+Previous approaches to design mixers for permutations have
+been based on Hamiltonians HM,{i,j},{u,v} swapping cities
+u, v in tour positions i, j [1]. These can be combined into
+value-independent ordering swap mixers, most prominently for
+transpositions (adjacent rows):
+UM,i(β) = e−iβHM,i with HM,i = ∑u,v HM,{i,i+1},{u,v},
+Such a mixer can be implemented with
+(n
+2
+)
+four-qubit gates,
+one for each of the terms HM,{i,i+1},{u,v}, where the four-
+qubit gates can be grouped in layers of ≈ n/2 gates which
+can be implemented in parallel for a depth of O(n). Using
+a generalized swap network [ 20], O(n2) gates in O(n) depth
+can even be achieved on LNN architectures.
+However, two such Hamiltonians HM,i, HM,i+1 do not
+commute, hence exactly implementing a simultaneous order-
+ing swap mixer UM (β) = e−iβ ∑i HM,i seems out of reach.
+Thus one may resort to a Trotterization implementing each
+UM,i(β) individually. To get transitions between all pairs of
+permutations, note that any permuation σ can be reached from
+any other permutation σ′ by at most (n2) transpositions, of
+which up to ≈ n/2 can be grouped to be executed in parallel.
+For example, a linear number of layers of alternatingly all
+UM,i with odd i and all UM,i with even i will give a mixer
+with O(n4) gates and O(n2) depth that preserves the feasible
+subspace of all permutations, and provides transitions bet ween
+all pairs of permutations σ, σ′. Other partitions of four-qubit
+gates into layers may also be possible. In any case, in compar -
+ison to a simultaenous swap mixer, the transitions do not onl y
+depend on β, but also suffer an unwanted Trotterization error
+that depends on the exact partitioning of four-qubit gates.
+We can compare this to our Grover Mixer UM (β) =
+e−iβ|Sn⟩⟨Sn|, which can be implemented exactly with O(n3)
+gates in O(n2) depth on LNN architectures and provides
+transitions between all pairs of permutations without any
+implementation artifacts. This also matches the numbers to
+implement the phase separator UP (γ) = e−iγHC which can
+be implemented with O(n3) gates in O(n2) depth (even
+on LNN architectures, when using swap networks). Hence
+a Grover Mixer improves on previously considered ordering
+swap mixers in terms of the total number of gates, while
+matching their depth.
+4) Generalizations: Our GM-QAOA approach to the Trav-
+eling Salesperson Problem extends to a variety of other
+problems based on injective mappings. We give two examples:
+• The Quadratic Assignment Problem [ 28] asks for a bi-
+jective assignment f : L → P from a set of locations L
+(with a distance function d : L × L → R≥0) to a set of
+
+=== PDF PAGE 9 ===
+facilities P (with a weight function w : P × P → R≥0)
+to minimize weighted distances between facilities,
+min
+f
+∑
+u,v∈P
+w(u, v) · d(f −1(u), f −1(p)).
+This can be seen as a generalization of TSP , where we
+have w(u, u + 1) = 1 and w(u, v) = 0 otherwise.
+• The Maximum Common Edge Subgraph Promlem [ 29]
+asks, given graphs G = ( VG, EG) and H = ( VH , EH )
+with |VG| ≤ | VH |, for a common subgraph of G and H
+with a maximum number of edges. This can be seen as
+a generalization of the graph isomorphism problem, i.e.
+we can formulate it as looking for an injective function
+f : VG → VH matching as many edges as possible.
+Finally, we remark that our approach can also cover prob-
+lems based on the alternating group An, i.e. the set of all
+permutations σ with an even number of inversions (elements
+i, j with σ(i) > σ (j)). For an permutation in string notation
+x = xn2−1 . . . x1x0 ∈ An, this means that the number of pairs
+r < c , for which xr·n+c = 1 holds, must be even.
+This number, modulo 2, can easily be computed in an ancilla
+in the following way: After the completion of row r and
+the following bitmask update, the number of inversions due
+to row r can be computed from row r and the bitmask (in
+linear depth, if we transform the bitmask into a preﬁx bitmas k
+ﬁrst, and uncompute it again). Then, when processing the
+second last row, we no longer generate controlled W2-states,
+but actually only a |1⟩ in the correct place, such that the last
+two rows complete an even permutation. This can be done
+controlled on the bitmask and the ancilla qubit, followed by
+an uncomputation of the ancilla before the last bitmask upda te.
+For an interactive example, see here (for A3). With a bit more
+work, the ancilla can even be included in the ﬁrst qubit of the
+second last row, for an interactive example, see here (for A3),
+or here (for A4).
+C. Discrete Portfolio Rebalancing
+As our third and last example we consider Discrete Portfolio
+Rebalancing, which was recently suggested as a ﬁrst ﬁnancia l
+application for QAOA [ 30]. In its simplest form, we are
+given a number of assets and a portfolio of short and long
+positions on these assets. Periodically, such a portfolio h as to
+be rebalanced in order to maintain in order to react to market
+and risk changes. For all details regarding modeling and cos t
+calculations we refer to the original article, here we focus on
+the the part pertaining to state preparation and mixer desig n.
+1) Problem encoding: In the simplest form of Discrete
+Portfolio Rebalancing, we are given n assets. On each asset
+we may have a short position, a long position or neither, with
+the condition that we allocate long and short positions for a
+net total (number of long positions minus number of short
+positions) of d discrete lots.
+We encode a rebalanced portfolio with two length- n bit-
+strings ℓ = ℓn . . . ℓ1 and s = sn . . . s1, where ℓi = 1
+stands for a long position on asset i, and si = 1 for a short
+position, respectively. The cost function C(ℓ, s) depends on
+several aspects: the risk-return of (ℓ, s), the trading costs of
+rebalancing the outdated portfolio into (ℓ, s), and a penalty
+term for the unwanted case of holding a long and a short
+position of the same asset ( ℓi = si = 1).
+A portfolio (ℓ, s) is said to belong to a band k, if it has k
+short positions, i.e. if s has Hamming weight HW (s) = k.
+There are n−d+1 different bands k = 0, . . . , n−d. To achieve
+a given band k, we can choose
+(n
+k
+)
+different combinations of
+short positions and
+( n
+d+k
+)
+combinations of long positions for
+a total of
+( n
+d+k
+)(n
+k
+)
+different portfolios.
+2) State preparation: In order to create an equal super-
+position of all portfolios of net total d lots, we precompute
+all the number of portfolios in each band k as well as their
+preﬁx sums. For example, given 4 assets and a ﬁxet net total
+of 2 discrete lots, there are
+(4
+2
+)(4
+0
+)
+= 6 portfolios in band 0,(4
+3
+)(4
+1
+)
+= 16 portfolios in band 1, and
+(4
+4
+)(4
+2
+)
+= 6 portfolios
+in band 2. The corresponding preﬁx sums are 6, 22, 28.
+Next we give a brief overview of the Dicke state preparation
+unitaries in Theorem 3: In their most general form, they consist
+of unitaries Un,n of size O(n2) and depth O(n), which map
+any computational basis states |1⟩⊗k |0⟩⊗n−k to the equal
+superposition of all Hamming-weight-k states, namely the
+Dicke state:
+Un,n : |1⟩⊗k |0⟩⊗n−k ↦→ |Dnk ⟩ .
+By linearity Un,n thus also maps superpositions of such input
+states to superpositions of Dicke states (symmetric states ).
+In particular, this means that to create a superposition of a ll
+portfolios, we can start with a correctly weighted superpos ition
+of bands, followed by one Dicke state unitary Un,n each for
+the ℓ and the s register. Such weighted superpositions can be
+implemented with a stair of controlled Y -rotations with angles
+based on the precomputed band and preﬁx weights [ 9]. For an
+outline see Figure 6 (left) and a interactive circuit , where e.g.√6/22 is shorthand for a rotation of Ry(2 cos−1(√6/22)).
+3) Improvement: The original proposal of QAOA for Dis-
+crete Portfolion Rebalancing, displayed in Figure 6 (right),
+on the ﬁrst glance shares some similarities: First, Bell pai rs
+between short and long positions give a superposition over
+bands 0, . . . , n − d. Secondly, Hamming-weight preserving
+mixing unitaries on registers ℓ and s each are used to get
+superpositions over all portfolios in the respective bands .
+However, there are two major differences: using Bell pairs
+to get a superposition over the bands results in a binomial
+weight distribution over the bands [ 30], rather than a weight
+distribution that models the number of different portfolio s
+in each band. Secondly – and more importantly – using
+Hamming-weight preserving mixing unitaries for the two
+registers prohibits a mixing between bands! Hence only the
+Grover mixing unitary can both restrict mixing to the feasib le
+subspace and provide transitions between all feasible states.
+4) Generalizations: We believe this last example shows one
+strength of the GM-QAOA approach: Focusing on creating
+an equal superposition of all feasible states might be more
+amenable than the direct design of mixing unitaries. Furthe r-
+more, as a generalization one may drop the requirement of
+
+=== PDF PAGE 10 ===
+US
+short positions
+|0⟩
+U4,4
+e−iγ1HC e−iβ1|F ⟩⟨F |
+|0⟩
+|0⟩ √16/22
+|0⟩ √6/28
+long positions
+|0⟩
+U4,4
+|0⟩
+|0⟩
+|0⟩
+US
+U4,4 U4,4
+U4,4 U4,4
+|0⟩
+e−iβ0HXY -Ring
+e−iγHC
+e−iβ0HXY -Ring
+|0⟩
+|0⟩ H
+|0⟩ H
+|0⟩
+e−iβ0HXY -Ring
+e−iβ1HXY -Ring
+|0⟩
+|0⟩
+|0⟩
+Fig. 6. Discrete Portfolio Rebalancing QAOA where we invest in long and short positions for a net total of 2 discrete lots, with bands 2−0 = 3 −1 = 4 −2 = 2 .
+(left) GM-QAOA: We ﬁrst create a superposition assigning th e correct weights to each band,
+√
+6
+28 |1100⟩ |0000⟩+
+√
+16
+28 |1110⟩ |1000⟩+
+√
+6
+28 |1111⟩ |1100⟩.
+Fed into two Dicke state preparation unitaries U4,4, this gives the equal superposition over all combinations o f long and short positions for 2 discrete lots.
+(right) Previous approach: Bell states of short and long pos itions give the correct net total, but lead to a binomial weig ht distribution over the different bands.
+Furthermore, using Hamming-weight preserving XY -ring mixers for both short and long positions individually prohibits a mixing between different bands.
+creating equal superpositions of all feasible states and relax
+this to creating superpositions of all feasible states with a non-
+zero amplitude for each feasible state.
+IV. C ONCLUSIONS
+We introduced the GM-QAOA framework for quantum
+algorithm optimization, which combines algorithmic princ iples
+from the Grover search algorithm and the Quantum Alternatin g
+Operator Ansatz. GM-QAOA mixer unitaries are straightfor-
+ward to implement exactly – and without any Hamiltonian
+simulation error – compared to standard mixers from QAOA.
+A review of applications for GM-QAOA has revealed multi-
+ple strengths: Grover mixers can combine useful properties of
+existing mixers (such as implementability and good transit ion
+properties in the case of M AX-K-V ERTEX COVER ), reduce the
+circuit complexity compared to existing mixers (such as for
+TSP), or even give rise to the ﬁrst known mixing unitaries
+that both stay in the feasible subspace and provide transiti ons
+between all states therein (as in the case of Discrete Portfo lio
+Optimization).
+GM-QAOA requires an efﬁcient method to create a super-
+position of all feasible solutions, without measurement. W hile
+not all optimization problems may have such circuits, a larg e
+number of interesting problems do, including the important
+Traveling Salesperson Problem and solution-size constrai nt
+maximization versions of many combinatorial problems, in-
+cluding k-V ertex Cover, k-Set Cover, etc.
+As an aside, we note that, as with many questions of
+quantum computational complexity nature, we do not have
+a complete understanding of which optimization problems fa ll
+into this class of allowing polynomial-time feasible solut ion
+superposition unitary operators, which is an interesting d i-
+rection for future research. Other future directions inclu de a
+numerical simulation assessment of our results and identif ying
+ways to leverage the property of GM-QAOA of producing
+states where equal-quality solutions result in equal sampl ing
+probability.
+REFERENCES
+[1] S. Hadﬁeld, Z. Wang, B. O’Gorman, E. G. Rieffel, D. V entur elli, and
+R. Biswas, “From the Quantum Approximate Optimization Algo rithm
+to a Quantum Alternating Operator Ansatz,” Algorithms, vol. 12, no. 2,
+p. 34, 2019, doi:10.3390/a12020034.
+[2] A. Ambainis, K. Balodis, J. Iraids, M. Kokainis, K. Pr ¯usis,
+and J. Vihrovs, “Quantum Speedups for Exponential-Time Dy-
+namic Programming Algorithms,” in 30th Annual ACM-SIAM Sym-
+posium on Discrete Algorithms, SODA’19 , 2019, pp. 1783–1793,
+doi:10.1137/1.9781611975482.107.
+[3] E. Farhi, J. Goldstone, and S. Gutmann, “A Quantum Approx imate
+Optimization Algorithm,” arXiv e-prints , 2014, arXiv:1411.4028.
+[4] Z. Wang, N. C. Rubin, J. M. Dominy, and E. G. Rieffel, “ XY
+mixers: Analytical and numerical results for the quantum al ternating
+operator ansatz,” Physical Review A , vol. 101, no. 1, p. 012320, 2020,
+doi:10.1103/PhysRevA.101.012320.
+[5] J. Cook, S. Eidenbenz, and A. Bärtschi, “The Quantum Alte rnat-
+ing Operator Ansatz on Max-k V ertex Cover,” in IEEE International
+Conference on Quantum Computing & Engineering, QCE’20 , 2020,
+arXiv:1910.13483.
+[6] E. Farhi, J. Goldstone, and S. Gutmann, “A Quantum Approx imate
+Optimization Algorithm Applied to a Bounded Occurrence Con straint
+Problem,” arXiv e-prints , 2014, arXiv:1412.6062.
+[7] L. K. Grover, “Fixed-Point Quantum Search,” Physical Review Letters ,
+vol. 95, no. 15, p. 150501, 2005, doi:10.1103/PhysRevLett.95.150501.
+[8] T. J. Y oder, G. H. Low, and I. L. Chuang, “Fixed-Point Quan tum Search
+with an Optimal Number of Queries,” Physical Review Letters, vol. 113,
+no. 21, p. 210501, 2014, doi:10.1103/PhysRevLett.113.210501.
+[9] A. Bärtschi and S. Eidenbenz, “Deterministic Preparati on
+of Dicke States,” in 22nd International Symposium on
+Fundamentals of Computation Theory, FCT’19 , 2019, pp. 126–139,
+doi:10.1007/978-3-030-25027-0_9.
+[10] S. Lloyd, “Universal Quantum Simulators,” Science, vol. 273, no. 5278,
+pp. 1073–1078, 1996, doi:10.1126/science.273.5278.1073.
+[11] D. W. Berry, A. M. Childs, R. Cleve, R. Kothari, and R. D.
+Somma, “Simulating Hamiltonian dynamics with a truncated T aylor
+series,” Physical Review Letters , vol. 114, no. 9, p. 090502, 2015,
+doi:10.1103/PhysRevLett.114.090502.
+[12] D. W. Berry, A. M. Childs, and R. Kothari, “Hamiltonian s imulation
+with nearly optimal dependence on all parameters,” in 56th Annual IEEE
+Symposium on F oundations of Computer Science, FOCS’15 , 2015, pp.
+792–809, doi:10.1109/FOCS.2015.54.
+[13] L. K. Grover, “A Fast Quantum Mechanical Algorithm for D atabase
+Search,” in 28th Annual ACM Symposium on Theory of Computing,
+STOC’96, 1996, pp. 212–219, doi:10.1145/237814.237866.
+[14] G. Brassard, “Searching a Quantum Phone Book,” Science, vol. 275, no.
+5300, pp. 627–628, 1997, doi:10.1126/science.275.5300.627.
+
+=== PDF PAGE 11 ===
+[15] G. Brassard, P . Hoyer, M. Mosca, and A. Tapp, “Quantum
+Amplitude Ampliﬁcation and Estimation,” arXiv e-prints , 2000,
+arXiv:quant-ph/0005055.
+[16] M. E. S. Morales, T. Tlyachev, and J. Biamonte, “V ariati onal learning of
+Grover’s quantum search algorithm,” Physical Review A , vol. 98, no. 6,
+p. 062333, 2018, doi:10.1103/PhysRevA.98.062333.
+[17] V . Akshay, H. Philathong, M. E. S. Morales, and J. D. Bia-
+monte, “Reachability Deﬁcits in Quantum Approximate Optim iza-
+tion,” Physical Review Letters , vol. 124, no. 9, p. 090504, 2020,
+doi:10.1103/PhysRevLett.124.090504.
+[18] B. Sundar, R. Paredes, D. T. Damanik, L. Dueñas-Osorio, and K. R. A.
+Hazzard, “A quantum algorithm to count weighted ground stat es of
+classical spin Hamiltonians,” 2019, arXiv:1908.01745.
+[19] Y . Matsuda, H. Nishimori, and H. G. Katzgraber, “Quantu m
+annealing for problems with ground-state degeneracy,” Journal
+of Physics: Conference Series , vol. 143, p. 012003, 2009,
+doi:10.1088/1742-6596/143/1/012003.
+[20] B. O’Gorman, W. J. Huggins, E. G. Rieffel, and K. B. Whale y,
+“Generalized swap networks for near-term quantum computin g,” arXiv
+e-prints, 2019, arXiv:1905.05118.
+[21] C. Gidney, “Using quantum gates instead of
+ancilla bits,” Jun 2015. [Online]. Available:
+https://algassert.com/circuits/2015/06/22/Using-Quantum-Gates-instead-of-Ancilla-Bits.html
+[22] ——, “Constructing large controlled
+nots,” Jun 2015. [Online]. Available:
+https://algassert.com/circuits/2015/06/05/Constructing-Large-Controlled-Nots.html
+[23] ——, “Constructing large increment
+gates,” Jun 2015. [Online]. Available:
+https://algassert.com/circuits/2015/06/12/Constructing-Large-Increment-Gates.html
+[24] Y . V . Rentergem and A. D. V os, “Optimal Design of a Revers ible Full
+Adder,” International Journal of Unconventional Computing , vol. 1, pp.
+339–355, 2005.
+[25] I. D. Kivlichan, J. McClean, N. Wiebe, C. Gidney, A. Aspu ru-Guzik,
+G. K.-L. Chan, and R. Babbush, “Quantum Simulation of Electr onic
+Structure with Linear Depth and Connectivity,” Physical Review Letters,
+vol. 120, no. 11, p. 110501, 2018, doi:10.1103/PhysRevLett.120.110501.
+[26] B. Fefferman and C. Umans, “On the Power of Quantum Fouri er
+Sampling,” in 11th Conference on the Theory of Quantum Computation,
+Communication and Cryptography, TQC’16 , ser. LIPICS, vol. 61, 2016,
+pp. 1:1–1:19, doi:10.4230/LIPIcs.TQC.2016.1.
+[27] D. Bacon, I. L. Chuang, and A. W. Harrow, “Efﬁcient Quan-
+tum Circuits for Schur and Clebsch-Gordan Transforms,” Phys-
+ical Review Letters , vol. 97, no. 17, p. 170502, Oct 2006,
+doi:10.1103/PhysRevLett.97.170502.
+[28] T. C. Koopmans and M. Beckmann, “Assignment Problems an d the
+Location of Economic Activities,” Econometrica, vol. 25, no. 1, pp. 53–
+76, 1957, doi:10.2307/1907742.
+[29] L. Bahiense, G. Mani ´c, B. Piva, and C. C. de Souza, “The maxi-
+mum common edge subgraph problem: A polyhedral investigati on,”
+Discrete Applied Mathematics , vol. 160, no. 18, pp. 2523–2541, 2012,
+10.1016/j.dam.2012.01.026.
+[30] M. Hodson, B. Ruck, H. Ong, D. Garvin, and S. Dulman, “Por tfolio re-
+balancing experiments using the Quantum Alternating Opera tor Ansatz,”
+arXiv e-prints , 2019, arXiv:1911.05296.

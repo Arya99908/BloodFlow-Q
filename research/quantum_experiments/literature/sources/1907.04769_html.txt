@@ -1,0 +1,487 @@
+ 
+
+ Improving Variational Quantum Optimization using CVaR 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ 1 Introduction 
+
+ 2 Variational Quantum Eigensolver 
+
+ 3 Quantum Approximate Optimization Algorithm 
+
+ 4 CVaR Optimization 
+
+ 5 Analysis of CVaR Optimization 
+
+ License: CC BY 4.0
+
+arXiv:1907.04769v3 [quant-ph] 13 Apr 2020
+
+ Improving Variational Quantum Optimization using CVaR
+
+ Panagiotis Kl. Barkoutsos
+
+ Affiliation:  IBM Research – Zurich
+
+ Giacomo Nannicini
+
+ Affiliation:  IBM T.J. Watson Research Center
+
+ Anton Robert
+
+ Affiliation:  IBM Research – Zurich
+
+ Affiliation:  École Normale Supérieure, PSL University, Paris
+
+ Ivano Tavernelli
+
+ Affiliation:  IBM Research – Zurich
+
+ Stefan Woerner
+
+ Email:  wor@zurich.ibm.com 
+
+ Affiliation:  IBM Research – Zurich
+
+ Abstract
+
+ Hybrid quantum/classical variational algorithms can be implemented on noisy intermediate-scale quantum computers and can be used to find solutions for combinatorial optimization problems.
+Approaches discussed in the literature minimize the expectation of the problem Hamiltonian for a parameterized trial quantum state.
+The expectation is estimated as the sample mean of a set of measurement outcomes, while the parameters of the trial state are optimized classically.
+This procedure is fully justified for quantum mechanical observables such as molecular energies.
+In the case of classical optimization problems, which yield diagonal Hamiltonians, we argue that aggregating the samples in a different way than the expected value is more natural.
+In this paper we propose the Conditional Value-at-Risk as an aggregation function.
+We empirically show – using classical simulation as well as quantum hardware – that this leads to faster convergence to better solutions for all combinatorial optimization problems tested in our study.
+We also provide analytical results to explain the observed difference in performance between different variational algorithms.
+
+ 1 Introduction
+
+ Combinatorial optimization (CO) has been extensively studied, because
+it is applied in many areas of business and science, and it is
+a source of interesting mathematical problems
+ [ nemhauser1988 ] . Even if many CO problems are NP-hard, they are
+routinely solved (possibly not to provable optimality) in industrial
+applications. It is widely believed that quantum computers cannot
+solve such problems in polynomial time (i.e., NP ⊈ \not\subseteq BQP
+ [ bernstein1997quantum ] ), but there is significant effort toward
+designing quantum algorithms that could be practically useful by
+quickly finding near-optimal solutions to these hard problems. Among
+these algorithms, two candidates are more likely to be efficiently
+implementable on noisy quantum computers: the
+Variational Quantum Eigensolver (VQE)
+ [ moll2018quantum , fried2017qtorch ] , and the Quantum Approximate
+Optimization Algorithm (QAOA)
+ [ Farhi2014 , farhi2017quantum , crooks2018performance ] . Both VQE and
+QAOA use a parametrized quantum circuit U ⁡ ( θ ) U(\theta) (also called
+variational form) to generate trial wave functions | ψ ⁡ ( θ ) ⟩ = U ⁡ ( θ ) ​ | 0 ⟩ \ket{\psi(\theta)}=U(\theta)\ket{0} , guided by a classical optimization algorithm that
+aims to solve:
+
+ min θ ⁡ ⟨ ψ ⁡ ( θ ) | ​ H ​ | ψ ⁡ ( θ ) ⟩ . \displaystyle\min_{\theta}\bra{\psi(\theta)}H\ket{\psi(\theta)}. 
+
+ (1) 
+
+ This expression encodes the total energy of a system through its
+Hamiltonian H H , and more specifically its expected value
+ ⟨ ψ ⁡ ( θ ) | ​ H ​ | ψ ⁡ ( θ ) ⟩ \bra{\psi(\theta)}H\ket{\psi(\theta)} . There is a well-known
+transformation to map CO problems into a Hamiltonian, see e.g.,
+ [ lucas2014ising ] ; this will also be discussed subsequently in
+this paper. Empirical evaluations indicate that VQE’s performance
+suffers from some key weaknesses in the context of CO problems, and
+there is significant room for improvement [ Nannicini2019 ] . At the
+same time, the literature on QAOA paints a mixed picture: while some
+work concludes that QAOA has promise
+ [ crooks2018performance , niu2019optimizing ] , other papers indicate
+that it may not perform better than classical algorithms
+ [ hastings2019classical ] .
+
+ In this paper, we propose a modification to the problem
+( 1 ) that is given to the classical
+optimization algorithm: rather than minimizing the expected value
+ ⟨ ψ ⁡ ( θ ) | ​ H ​ | ψ ⁡ ( θ ) ⟩ \bra{\psi(\theta)}H\ket{\psi(\theta)} , we minimize its Conditional
+Value-at-Risk (CVaR) – a measure that takes into account only the
+tail of the probability distribution and is widely used in finance
+ [ acerbi2002coherence ] . We argue that CVaR more closely matches
+the practical goal of heuristic solution methods for CO problems. We
+provide an analytical and numerical study, showing that the proposed
+methodology significantly improves performance and robustness of VQE
+and QAOA in the context of CO. As a byproduct of this analysis, we
+find that for small-depth circuits it is important to use variational
+forms with a sufficient number of parameters, e.g., at least linear in
+the number of qubits. QAOA for fixed (small) depth does not satisfy
+this requirement, and produces “flat” quantum states that yield low
+probability of sampling the optimal solution. Thus, not only does our
+paper introduce a simple way to improve the performance of the two
+most prominent candidates for CO on noisy quantum computers, but it
+also sheds some light on their behavior with small-depth circuits.
+While we do not claim that this brings their performance on par with
+state-of-the-art classical heuristics, our results indicate a marked
+improvement as compared to what is proposed in the literature. The
+numerical experiments discussed in this paper are implemented in the
+open-source library Qiskit [ Qiskit ] , and executed on classical
+quantum simulators as well as IBM’s quantum hardware.
+
+ The rest of this paper is divided as follows. The next two sections
+set the context for this paper by giving an overview of key concepts
+from the literature: the mapping of CO problems as a Hamiltonian, VQE
+(Section 2 ), and QAOA (Section 3 ). Section
+ 4 formally introduces our main contribution, CVaR
+optimization. An analysis of the method is given in Section
+ 5 . Section provides
+an empirical evaluation of the proposed method on classically
+simulated quantum circuits, and using quantum hardware. Section
+ provides a formal analysis of certain aspects
+of QAOA to explain the experimentally observed behavior. Finally,
+Section concludes the paper.
+
+ 2 Variational Quantum Eigensolver
+
+ The Variational Quantum Eigensolver (VQE) is a hybrid
+quantum/classical algorithm originally proposed to approximate the
+ground state of a quantum chemical system, i.e., the state attaining
+the minimum energy [ Peruzzo2014 ] . This is achieved by solving a
+problem of the form ( 1 ), with H H encoding
+the total energy of the quantum chemical system. The same approach can
+be used to attempt to solve CO problems. Consider a quadratic
+unconstrained binary optimization (QUBO) problem on n n variables:
+
+ min x ∈ { 0 , 1 } n ⁡ b T ​ x + x T ​ A ​ x , \displaystyle\min_{x\in\{0,1\}^{n}}b^{T}x+x^{T}Ax, 
+
+ (2) 
+
+ for given b ∈ ℝ n b\in\mathbb{R}^{n} and A ∈ ℝ n × n A\in\mathbb{R}^{n\times n} .
+Using the variable transformation x i = ( 1 − z i ) / 2 x_{i}=(1-z_{i})/2 for z i ∈ { − 1 , + 1 } z_{i}\in\{-1,+1\} , problem ( 2 ) can be expressed as an Ising spin
+glass model:
+
+ min z ∈ { − 1 , + 1 } n ⁡ c T ​ z + z T ​ Q ​ z , \displaystyle\min_{z\in\{-1,+1\}^{n}}c^{T}z+z^{T}Qz, 
+
+ (3) 
+
+ where c c and Q Q are easily computed from ( 2 ). These two
+equivalent problems encompass binary optimization problems, i.e., CO
+problems, and they are NP-hard [ barahona1982computational ] .
+
+ Problem ( 3 ) can be translated into a Hamiltonian for an
+ n n -qubit system: we replace z i z_{i} by the Pauli Z-matrix
+
+ σ Z i \displaystyle\sigma_{Z}^{i} 
+ = \displaystyle= 
+ ( 1 0 0 − 1 ) \displaystyle\left(\begin{array}[]{cc}1&0\\
+0&-1\end{array}\right) 
+
+ acting on the i i -th qubit, and each term of the form z i ​ z j z_{i}z_{j} by
+ σ Z i ⊗ σ Z j \sigma_{Z}^{i}\otimes\sigma_{Z}^{j} . The summation of (tensor products of) Pauli terms obtained this way is the desired Hamiltonian. The eigenvalues ± 1 \pm 1 of
+ σ Z i \sigma_{Z}^{i} correspond to the positive and negative spin of
+( 3 ). After constructing H H , we can apply VQE to attempt
+to determine the ground state, from which an optimal solution to
+( 3 ) can be sampled with probability 1.
+
+ The choice of the variational form U ⁡ ( θ ) U(\theta) is important. In this
+paper we follow a standard approach, see e.g.,
+ [ kandala2017hardware , Nannicini2019 ] . Assuming n n qubits, we
+start by applying single-qubit Y-rotations to every qubit,
+parametrized by an angle θ 0 , i \theta_{0,i} for qubit i i . We then repeat
+the following p p times: we apply controlled Z-gates to all qubit
+pairs ( i , j ) (i,j) satisfying i < j i<j , where i i denotes the control qubit
+and j j the target qubit; and we add another layer of single-qubit Y-rotations to every qubit, parametrized by θ k , i \theta_{k,i} for qubit i i 
+and repetition k ∈ { 1 , … , p } k\in\{1,\dots,p\} .
+Fig.  1 illustrates such a variational form for n = 3 n=3 and p = 2 p=2 .
+Notice that this variational form span all basis states. Overall, this leads to
+ n ⁡ ( 1 + p ) n(1+p) parametrized Y-rotations, and n ⁡ ( n − 1 ) 2 ​ p \frac{n(n-1)}{2}p controlled
+Z-gates. Since the controlled Z-gates commute with each other, the
+total circuit depth is O ⁡ ( n ​ p ) O(np) , although the number of gates is
+quadratic in n n . This variational form is used in our numerical simulations. When experimenting on quantum hardware
+we use nearest neighbor controlled Z-gates rather than all-to-all, i.e., we follow the connectivity provided by the hardware to
+reduce the number of two-qubit gates. We remark that these variational forms span any basis state (and thus the ground state of a diagonal Hamiltonian) already with the first layer of Y-rotations. The purpose of subsequent layers is to hopefully facilitate the task for the classical optimization algorithm used to choose the variational parameters. The above variational form with just one layer of Y-rotations can be efficiently simulated classically; for a discussion on the effect of entangling gates, we refer to [ Nannicini2019 ] .
+
+ Figure 1 : VQE variational form for n = 3 n=3 qubits and depth parameter p = 2 p=2 . 
+
+ The classical optimization algorithm that attempts to solve
+( 1 ) must be able to (at least) compute the
+objective function, i.e., the expected value in
+( 1 ). This is difficult to compute directly,
+but it can be estimated as follows. First, we prepare the trial
+wavefunction | ψ ⁡ ( θ ) ⟩ \ket{\psi(\theta)} on a quantum processor. Then, we
+measure the qubits, resulting in an n n -bit string x 0 ​ … ​ x n − 1 x_{0}\dots x_{n-1} . Each observed string easily translates into a sample from
+ ⟨ ψ ⁡ ( θ ) | ​ H ​ | ψ ⁡ ( θ ) ⟩ \bra{\psi(\theta)}H\ket{\psi(\theta)} , because H H is a weighted
+summation of tensor products of Pauli Z-matrices, and each such term
+can be computed with a simple parity check.
+We denote these samples by H k ​ ( θ ) H_{k}(\theta) , k = 1 , … , K k=1,\dots,K , where K ∈ ℕ K\in\mathbb{N} is the number
+of samples. The sample mean
+
+ 1 K ​ ∑ k = 1 K H k ​ ( θ ) \displaystyle\frac{1}{K}\sum_{k=1}^{K}H_{k}(\theta) 
+
+ (7) 
+
+ is an estimator for ⟨ ψ ⁡ ( θ ) | ​ H ​ | ψ ⁡ ( θ ) ⟩ \bra{\psi(\theta)}H\ket{\psi(\theta)} , and is
+used as the objective function for the classical optimization
+algorithm. The solution returned by the algorithm is then given by the
+bitstring that leads to the smallest H k H_{k} among all observed
+bitstrings and all θ \theta that have been evaluated.
+
+ 3 Quantum Approximate Optimization Algorithm
+
+ The Quantum Approximate Optimization Algorithm (QAOA) is a hybrid
+quantum/classical algorithm specifically developed for CO problems. In
+the context of this paper, QAOA can be seen as a form of VQE with a
+specific choice of the variational form that is derived from the
+problem Hamiltonian H H [ Farhi2014 ] . QAOA enjoys stronger
+convergence properties than VQE. For some problems, it can be shown
+that QAOA determines a quantum state with a guaranteed approximation
+ratio with respect to the ground state
+ [ Farhi2014 , farhi2014e3lin2 ] ; furthermore, QAOA applies adiabatic
+evolution as the circuit depth goes to ∞ \infty , implying that it will
+determine the optimal solution of the CO problem if the depth of the
+variational form is large enough and we can find the optimal circuit
+parameters.
+
+ Given a problem Hamiltonian corresponding to a QUBO as defined in
+( 3 ), the variational form of QAOA is constructed with a
+layer of Hadamard gates, followed by two alternating unitaries:
+
+ U C ​ ( γ ) \displaystyle U_{C}(\gamma) 
+ = \displaystyle= 
+ e − i ​ γ ​ ( ∑ i = 1 n c i ​ σ Z i + ∑ i , j = 1 n Q i ​ j ​ σ Z i ⊗ σ Z j ) , \displaystyle e^{-i\gamma\left(\sum_{i=1}^{n}c_{i}\sigma_{Z}^{i}+\sum_{i,j=1}^{n}Q_{ij}\sigma_{Z}^{i}\otimes\sigma_{Z}^{j}\right)}, 
+
+ (8) 
+
+ U B ​ ( β ) \displaystyle U_{B}(\beta) 
+ = \displaystyle= 
+ e − i β ∑ i = 1 n σ X i , \displaystyle e^{-i\beta\sum_{i=1}^{n}\sigma_{X}^{i}}, 
+
+ (9) 
+
+ where σ X i \sigma_{X}^{i} denotes the Pauli X-matrix
+
+ σ X i \displaystyle\sigma_{X}^{i} 
+ = \displaystyle= 
+ ( 0 1 1 0 ) \displaystyle\left(\begin{array}[]{cc}0&1\\
+1&0\end{array}\right) 
+
+ acting on the i i -th qubit.
+For a given depth p ∈ ℕ p\in\mathbb{N} , the variational form
+is thus defined as:
+
+ U ⁡ ( β , γ ) \displaystyle U(\beta,\gamma) 
+ = \displaystyle= 
+ [ ∏ i = 1 p U B ​ ( β i ) ​ U C ​ ( γ i ) ] ​ H ⊗ n , \displaystyle\left[\prod_{i=1}^{p}U_{B}(\beta_{i})U_{C}(\gamma_{i})\right]H^{\otimes n}, 
+
+ (13) 
+
+ where β , γ ∈ ℝ p \beta,\gamma\in\mathbb{R}^{p} are vectors of variational
+parameters, and here, H H denotes a Hadamard gate. (The symbol H H is overloaded in the quantum computing literature; in this paper it generally denotes the Hamiltonian, and in the few occasions where it indicates a Hadamard gate, we note it explicitly.)
+This yields the trial wave function:
+
+ | ψ ⁡ ( β , γ ) ⟩ \displaystyle\ket{\psi(\beta,\gamma)} 
+ = \displaystyle= 
+ U ⁡ ( β , γ ) ​ | 0 ⟩ , \displaystyle U(\beta,\gamma)\ket{0}, 
+
+ (14) 
+
+ which replaces | ψ ⁡ ( θ ) ⟩ \ket{\psi(\theta)} in ( 1 ).
+As in VQE, the expected value is computed as the sample mean over
+multiple observations from the quantum state, and the algorithm
+returns the bitstring that leads to the smallest H k H_{k} among all
+observed bitstrings and choices of β , γ \beta,\gamma .
+
+ The number of variational parameters for QAOA is thus 2 ​ p 2p , compared to n ⁡ ( 1 + p ) n(1+p) for VQE.
+The circuit depth of the QAOA variational form depends on n n , p p , and the number of clauses in the problem
+Hamiltonian, which is a difference with respect to VQE.
+Every U B U_{B} requires n n single-qubit X-rotations. One way to construct U C U_{C} 
+requires a single-qubit Z-rotation for each c i ≠ 0 c_{i}\neq 0 , and a
+single-qubit Z-rotation plus two CNOT-gates for each Q i ​ j ≠ 0 Q_{ij}\neq 0 ,
+yielding the term e − i γ σ Z i ⊗ σ Z j e^{-i\gamma\sigma_{Z}^{i}\otimes\sigma_{Z}^{j}} up to a
+global phase. The circuits used in our implementation are described
+in Appendix . In total, this leads to O ⁡ ( n 2 ​ p ) O(n^{2}p) 
+single-qubit rotations and O ⁡ ( n 2 ​ p ) O(n^{2}p) CNOT-gates, but the scaling may
+be better than the worst case if Q Q is sparse (i.e., there are few
+two-qubit interactions).
+
+ 4 CVaR Optimization
+
+ In quantum mechanics observables are defined as expected values
+ ⟨ ψ | ​ H ​ | ψ ⟩ \bra{\psi}H\ket{\psi} . This leads to the natural choice of the
+sample mean ( 7 ) as the objective function for the
+classical optimization problems embedded in VQE and QAOA. We argue
+that for problems with a diagonal Hamiltonian, such as CO problems,
+the sample mean may be a poor choice in practice. This is because when
+ H H is diagonal, there exists a ground state which is a basis
+state. If determining the value H j , j H_{j,j} of a basis state | j ⟩ \ket{j} 
+is classically easy, the state with the minimum eigenvalue computed by
+an algorithm is simply the best measurement outcome among all
+measurements performed. It is therefore reasonable to focus on
+improving the properties of the best measurement outcome, rather than
+the average. We illustrate this intuition with a simple
+example. Consider two algorithms 𝒜 1 {\cal A}_{1} and 𝒜 2 {\cal A}_{2} applied
+to a problem with Hamiltonian H H , minimum eigenvalue λ min \lambda_{\min} 
+and ground state | j ⟩ \ket{j} . Suppose 𝒜 1 {\cal A}_{1} produces a state
+ | ψ 1 ⟩ \ket{\psi_{1}} and 𝒜 2 {\cal A}_{2} produces a state | ψ 2 ⟩ \ket{\psi_{2}} , with
+the following properties: ⟨ ψ 1 | ​ H ​ | ψ 1 ⟩ / λ min = 1.1 \bra{\psi_{1}}H\ket{\psi_{1}}/\lambda_{\min}=1.1 and ⟨ j | ψ 1 ⟩ = 0 \braket{j|\psi_{1}}=0 ; ⟨ ψ 2 | ​ H ​ | ψ 2 ⟩ / λ min = 2.0 \bra{\psi_{2}}H\ket{\psi_{2}}/\lambda_{\min}=2.0 and ⟨ j | ψ 2 ⟩ = 0.1 \braket{j|\psi_{2}}=0.1 . We argue that
+from a practical point of view, algorithm 𝒜 2 {\cal A}_{2} is likely to be
+more useful than 𝒜 1 {\cal A}_{1} . This is because even if 𝒜 1 {\cal A}_{1} 
+leads to samples with a better objective function value on average,
+ 𝒜 1 {\cal A}_{1} will never yield the ground state | j ⟩ \ket{j} ; whereas
+ 𝒜 2 {\cal A}_{2} , which is much worse on average, has a positive and
+sufficiently high probability of yielding the ground state, so that
+with enough repetitions we can be almost certain of determining
+ | j ⟩ \ket{j} .
+
+ In light of this discussion, one way to attain our goal would be to
+choose, as the objective function, the minimum observed outcome over a set
+of measurements: min ⁡ { H 1 , … , H K } \min\{H_{1},...,H_{K}\} .
+However, for finite K K this typically leads to a non-smooth,
+ill-behaved objective function that is difficult to handle for
+classical optimization algorithms.
+
+ To help smooth the objective function, while still focusing on
+improving the best measured outcomes rather than the average, we
+propose the Conditional Value at Risk (CVaR, also called Expected
+Shortfall) as the objective function. Formally, the CVaR of a random variable
+ X X for a confidence level α ∈ ( 0 , 1 ] \alpha\in(0,1] is defined as
+
+ CVaR α ​ ( X ) \displaystyle\text{CVaR}_{\alpha}(X) 
+ = \displaystyle= 
+ 𝔼 ⁡ [ X | X ≤ F X − 1 ​ ( α ) ] \displaystyle\mathbb{E}[X|X\leq F_{X}^{-1}(\alpha)] 
+
+ (15) 
+
+ where F X F_{X} denotes the cumulative density function of X X . In other
+words, CVaR is the expected value of the lower α \alpha -tail of the
+distribution of X X . Without loss of generality, assume that the
+samples H k H_{k} are sorted in nondecreasing order, i.e. H k + 1 ≥ H k H_{k+1}\geq H_{k} . Then, for a given set of samples { H k } k = 1 , … , K \{H_{k}\}_{k=1,\dots,K} and
+value of α \alpha , the CVaR α \text{CVaR}_{\alpha} is defined as
+
+ 1 ⌈ α ​ K ⌉ ​ ∑ k = 0 ⌈ α ​ K ⌉ H k . \displaystyle\frac{1}{\lceil\alpha K\rceil}\sum_{k=0}^{\lceil\alpha K\rceil}H_{k}. 
+
+ (16) 
+
+ Note that the limit α ↘ 0 \alpha\searrow 0 corresponds to the minimum, and α = 1 \alpha=1 
+corresponds to the expected value of X X . In this sense, CVaR is a
+generalization of both the sample mean ( 7 ),
+and the best observed sample min ⁡ { H 1 , … , H K } \min\{H_{1},...,H_{K}\} . For small,
+nonzero values of α \alpha , CVaR still puts emphasis on the best
+observed samples, but it leads to a smoother and easier to handle
+objective function. It is clear that this can be applied to both VQE
+and QAOA, simply by replacing the sample mean
+( 7 ) with CVaR α \text{CVaR}_{\alpha} in the
+classical optimization algorithm. We call the resulting algorithms
+ CVaR -VQE and CVaR -QAOA,
+respectively.
+
+ 5 Analysis of CVaR Optimization
+
+ The optimization of CVaR α \text{CVaR}_{\alpha} with α < 1 \alpha<1 modifies the
+landscape of the objective function of VQE and QAOA as compared to the
+expected value, i.e., α = 1 \alpha=1 . This is formalized next.
+
+ We need to define a random variable that encodes the classical
+objective function value of a measurement outcome, i.e., the value of
+a binary string in the QUBO problem. Let X ⁡ ( θ ) X(\theta) be the
+random variable with outcomes H j , j H_{j,j} for j ∈ { 0 , 1 } n j\in\{0,1\}^{n} , i.e., the diagonal elements of the Hamiltonian, and
+ Prob ​ ( X ⁡ ( θ ) = H j , j ) = | α j ​ ( θ ) | 2 \text{Prob}(X(\theta)=H_{j,j})=|\alpha_{j}(\theta)|^{2} where
+ | ψ ⁡ ( θ ) ⟩ = ∑ j α j ​ ( θ ) ​ | j ⟩ \ket{\psi(\theta)}=\sum_{j}\alpha_{j}(\theta)\ket{j} . In other
+words, X ⁡ ( θ ) X(\theta) represents the QUBO objective function associated
+with a single measurement taken on the quantum state
+ | ψ ⁡ ( θ ) ⟩ \ket{\psi(\theta)} . Then the CVaR -version of
+( 1 ) can be written as:
+
+ min θ ⁡ CVaR α ​ ( X ⁡ ( θ ) ) . \displaystyle\min_{\theta}\text{CVaR}_{\alpha}(X(\theta)). 
+
+ (17) 
+
+ As it turns out, there is no well-defined mapping between local minima
+of ( 1 ) and ( 17 ).
+
+ Proposition 5.1 
+
+ A local minimum of ( 1 ) does not
+necessarily correspond to a local minimum of ( 17 ),
+and vice versa. 
+
+ To show this, we first exhibit a local minimum of
+( 1 ) that is not a local minimum of
+( 17 ). Consider a two-qubit Hamiltonian H = diag ​ ( 0 , 1 , 1 , 2 ) H=\text{diag}(0,1,1,2) , and variational form depicted in
+Fig.  .
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from
+

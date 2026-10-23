@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { calculateObjectiveUpperBound } from '../utils/scenarioBounds';
+import QuantumValueStudy from '../components/QuantumValueStudy';
 
 const METHODS = ['greedy', 'milp', 'exact', 'qaoa'];
 const methodNames = { greedy: 'Greedy baseline', milp: 'MILP (HiGHS)', exact: 'Exact', qaoa: 'QAOA' };
@@ -74,7 +75,7 @@ export default function Results() {
   };
 
   return <>
-    <PageHeader eyebrow="MEASURED COMPARISON" title="Results" description="Compare solver outputs returned by the backend. Missing or skipped measurements remain unavailable." action={<button className="button button-secondary" onClick={reload}><Clock3 size={15} /> Refresh history</button>} />
+    <PageHeader eyebrow="MEASURED COMPARISON" title="Solver Lab" description="Compare live backend outputs with the saved paired-seed research study. Each evidence source is labeled separately." action={<button className="button button-secondary" onClick={reload}><Clock3 size={15} /> Refresh history</button>} />
     <section className="panel results-benchmark-panel">
       <div className="panel-heading"><div><h2>Benchmark comparison</h2><p>Runs each method against the backend scenario using the shared objective.</p></div><BarChart3 size={18} className="muted-icon" /></div>
       <div className="results-benchmark-controls">
@@ -134,6 +135,7 @@ export default function Results() {
       {!loading && !error && !(data?.results || []).length && <section className="panel"><EmptyState title="No saved results in this backend session" detail="Run an optimization, emergency simulation, or benchmark first. Results reset when the backend restarts." /></section>}
       {!loading && !error && (data?.results || []).length > 0 && <div className="results-list">{[...(data.results || [])].reverse().map((entry, index) => <ResultCard key={`${entry.created_at}-${index}`} entry={entry} />)}</div>}
     </section>
+    <QuantumValueStudy />
   </>;
 }
 

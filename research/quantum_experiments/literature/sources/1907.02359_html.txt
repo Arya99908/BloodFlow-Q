@@ -1,0 +1,2438 @@
+ 
+
+ Benchmarking the Quantum Approximate Optimization Algorithm 
+
+ Skip to main content 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Contents 
+
+ Reading mode 
+
+ Colour theme 
+
+ Abstract 
+
+ I Introduction 
+
+ II Theoretical background 
+
+ II.1 The 2-SAT Problem 
+
+ II.2 The MaxCut Problem 
+
+ II.3 Quantum Annealing 
+
+ II.4 Quantum Approximate Optimization Algorithm 
+
+ II.5 Performance Measures 
+
+ III Practical aspects 
+
+ IV Results 
+
+ IV.1 QAOA with p = 1 p=1 
+
+ IV.2 QAOA for p > 1 p>1 
+
+ IV.3 Quantum annealing on a D-Wave machine 
+
+ V Conclusion 
+
+ Acknowledgements 
+
+ A Relation between QAOA and quantum annealing 
+
+ B Problem instances 
+
+ References 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:1907.02359v2 [quant-ph] 05 Jun 2020
+
+ Benchmarking the Quantum Approximate Optimization Algorithm
+
+ Madita Willsch
+
+ Affiliation:  Institute for Advanced Simulation, Jülich Supercomputing Centre,
+ Forschungszentrum Jülich, D-52425 Jülich, Germany
+
+ Affiliation:  RWTH Aachen University, D-52056 Aachen, Germany
+
+ Dennis Willsch
+
+ Affiliation:  Institute for Advanced Simulation, Jülich Supercomputing Centre,
+ Forschungszentrum Jülich, D-52425 Jülich, Germany
+
+ Affiliation:  RWTH Aachen University, D-52056 Aachen, Germany
+
+ Fengping Jin
+
+ Affiliation:  Institute for Advanced Simulation, Jülich Supercomputing Centre,
+ Forschungszentrum Jülich, D-52425 Jülich, Germany
+
+ Hans De Raedt
+
+ Affiliation:  Zernike Institute for Advanced Materials,
+ University of Groningen, Nijenborgh 4, NL-9747 AG Groningen, The Netherlands
+
+ Kristel Michielsen
+
+ Affiliation:  Institute for Advanced Simulation, Jülich Supercomputing Centre,
+ Forschungszentrum Jülich, D-52425 Jülich, Germany
+
+ Affiliation:  RWTH Aachen University, D-52056 Aachen, Germany
+
+ August 24, 2026
+
+ Abstract
+
+ The performance of the quantum approximate optimization algorithm is evaluated by
+using three different measures: the probability of finding the ground state, the energy expectation value, and a ratio closely related to the approximation ratio.
+The set of problem instances studied consists of weighted MaxCut problems
+and 2-satisfiability problems. The Ising model representations of the latter possess unique
+ground states and highly degenerate first excited states.
+The quantum approximate optimization algorithm is executed
+on quantum computer simulators and on the IBM Q Experience.
+Additionally, data obtained from the D-Wave 2000Q quantum annealer are used for comparison,
+and it is found that the D-Wave machine outperforms the quantum approximate optimization algorithm executed on a simulator. The overall performance of the quantum approximate optimization
+algorithm is found to strongly depend on the problem instance.
+
+ Keywords: 
+quantum computation; quantum annealing; optimization problems; QAOA
+
+ I Introduction
+
+ The Quantum Approximate Optimization Algorithm (QAOA) is a variational
+method for solving combinatorial optimization problems on a gate-based quantum computer  [ 1 ] .
+Generally speaking, combinatorial optimization is the task of
+finding, from a finite number of objects, that object which
+minimizes a cost function.
+Combinatorial optimization finds application in real-world
+problems including reducing the cost of supply chains,
+vehicle routing, job allocation, and so on.
+The QAOA is based on a reformulation of
+the combinatorial optimization in terms of finding
+an approximation to the ground state of a Hamiltonian
+by adopting a specific variational ansatz for the trial wave function.
+This ansatz is specified in terms of a gate circuit
+and involves 2 ​ p 2p parameters (see below) which have to be
+optimized by running a minimization algorithm on a conventional computer.
+
+ Alternatively, the QAOA can be viewed as a form of quantum annealing (QA)
+using discrete time steps. In the limit that these time steps
+become vanishingly small (i.e p → ∞ p\to\infty ), the adiabatic theorem  [ 2 ] guarantees
+that quantum annealing yields the true ground state,
+presuming that the adiabatic conditions are satisfied,
+thus providing at least one example for which the QAOA yields the correct answer.
+In addition, there exists a special class of models for which QAOA with p = 1 p=1 solves the optimization problem exactly  [ 3 ] .
+In general, for finite p p , there is no guarantee that the QAOA solution
+corresponds to the solution of the original combinatorial optimization problem.
+
+ Interest in the QAOA has increased dramatically in the past few years
+as it may, in contrast to Shor’s factoring algorithm  [ 4 ] ,
+lead to useful results even when used on NISQ devices  [ 5 ] .
+Experiments have already been performed  [ 6 , 7 ] .
+Moreover, the field of application, which is optimization, is much larger than, for example, factoring,
+rendering the QAOA a possible valuable application for gate-based quantum computers in general.
+It has also been proposed to use the QAOA for showing quantum supremacy on near-term devices  [ 8 ] .
+
+ The aim of this paper is to present a critical assessment of the QAOA, based on results
+obtained by simulation, running the QAOA on the IBM Q Experience,
+and a comparison with data produced by the D-Wave 2000Q
+quantum annealer.
+
+ We benchmark the QAOA by applying it to a set of 2-SAT problems with up to 18 variables and weighted MaxCut problems with 16 variables.
+We measure performance by means of the energy, a ratio related to the approximation ratio, and the success probability.
+We find that the overall success of QAOA depends critically on the problem instance.
+
+ The paper is structured as follows:
+In Sec.  II , we introduce the 2-SAT  [ 9 ] and MaxCut  [ 9 ] problems
+which are used to benchmark the QAOA and review the basic elements
+of the QAOA and QA.
+Section  III discusses the procedures
+to assess the performance of the QAOA and to compare it with QA.
+The results obtained by using simulators, the IBM Q Experience,
+and the D-Wave 2000Q quantum annealer are presented in Sec.  IV .
+Section  V contains our conclusions.
+
+ II Theoretical background
+
+ II.1 The 2-SAT Problem
+
+ Solving the 2-satisfiability (2-SAT) problem amounts to finding a true/false
+assignment of N N Boolean variables such that a given expression is satisfied  [ 9 ] .
+Such an expression consists of arbitrarily many conjunctions of
+clauses that consist of disjunctions of pairs of the Boolean variables (or their
+negations), respectively. Neglecting irrelevant constants, problems of this type
+can be mapped onto the quantum spin Hamiltonian
+
+ H Ising = ∑ i h i ​ σ i z + ∑ i , j J i ​ j ​ σ i z ​ σ j z , \displaystyle H_{\mathrm{Ising}}=\sum\limits_{i}h_{i}\sigma_{i}^{z}+\sum\limits_{\mathclap{i,j}}J_{ij}\sigma_{i}^{z}\sigma_{j}^{z}, 
+
+ (1) 
+
+ where σ i z \sigma_{i}^{z} denotes the Pauli z z -matrix of spin i i 
+with eigenvalues z i ∈ { − 1 , 1 } z_{i}\in\{-1,1\} .
+In the basis that diagonalizes all σ i z \sigma_{i}^{z} (commonly referred to as the computational basis),
+Hamiltonian Eq. ( 1 ) is a function of the variables z i z_{i} .
+For the class of 2-SAT problems that we consider, this cost function is integer valued.
+Minimizing this cost function answers the question whether there
+exists an assignment of N N Boolean variables that solves the 2-SAT problem and provides this assignment.
+
+ In this paper, we consider a collection of 2-SAT problems that, in terms of Eq. ( 1 ),
+possess a unique ground state and a highly degenerate first-excited state
+and, for the purpose of solving such problems by means of the D-Wave quantum annealer,
+allow for a direct mapping onto the Chimera graph  [ 10 , 11 , 12 ] .
+
+ II.2 The MaxCut Problem
+
+ Given an undirected graph 𝒢 \mathcal{G} with vertices i ∈ V i\in V and edges
+ ( i , j ) ∈ E (i,j)\in E , solving the MaxCut problem yields two subsets S 0 S_{0} and
+ S 1 S_{1} of V V such that S 0 ∪ S 1 = V S_{0}\cup S_{1}=V , S 0 ∩ S 1 = ∅ S_{0}\cap S_{1}=\emptyset , and the
+number of edges ( i , j ) (i,j) with i ∈ S 0 i\in S_{0} and j ∈ S 1 j\in S_{1} is as large as possible  [ 9 ] .
+In terms of a quantum spin model, the solution
+of the MaxCut problem corresponds to the lowest energy eigenstate of the Hamiltonian
+
+ H MaxCut = ∑ ( i , j ) ∈ E σ i z ​ σ j z , \displaystyle H_{\mathrm{MaxCut}}=\sum\limits_{\mathclap{(i,j)\in E}}\sigma_{i}^{z}\sigma_{j}^{z}, 
+
+ (2) 
+
+ where the eigenvalue z i = 1 z_{i}=1 ( − 1 ) (-1) of the σ i z \sigma_{i}^{z} operator
+indicates that vertex i i belongs to subset S 0 S_{0} ( S 1 S_{1} ).
+Clearly, the eigenvalues of Eq. ( 2 ) are integer valued.
+
+ The weighted MaxCut problem is an extension for which the edges ( i , j ) (i,j) of the graph 𝒢 \mathcal{G} are
+weighted by weights w i ​ j w_{ij} .
+The corresponding Hamiltonian reads
+
+ H W = ∑ ( i , j ) ∈ E w i ​ j ​ σ i z ​ σ j z . \displaystyle H_{\mathrm{W}}=\sum\limits_{\mathclap{(i,j)\in E}}w_{ij}\sigma_{i}^{z}\sigma_{j}^{z}. 
+
+ (3) 
+
+ Obviously, Eq. ( 3 ) is a special case of Eq. ( 1 ).
+
+ II.3 Quantum Annealing
+
+ Quantum annealing was proposed
+as a quantum version of simulated annealing  [ 13 , 14 ] and shortly thereafter, the related notion of adiabatic quantum computation has been introduced  [ 15 , 16 ] .
+The working principle is that an N N -spin
+quantum system is prepared in the state | + ⟩ ⊗ N \ket{+}^{\otimes N} , which is the
+ground state of the initial Hamiltonian H init = − H 0 H_{\mathrm{init}}=-H_{0} , where
+
+ H 0 = ∑ i = 1 N σ i x , \displaystyle H_{0}=\sum\limits_{i=1}^{N}\sigma_{i}^{x}, 
+
+ (4) 
+
+ and σ i x \sigma_{i}^{x} is the Pauli x x -matrix for spin i i .
+The Hamiltonian of the system
+changes with time according to
+
+ H ⁡ ( s ) = A ⁡ ( s ) ​ H init + B ⁡ ( s ) ​ H C , s = t / t a , \displaystyle H(s)=A(s)H_{\mathrm{init}}+B(s)H_{C},\qquad s=t/t_{a}, 
+
+ (5) 
+
+ where t a t_{a} is the total
+annealing time, A ⁡ ( s = 0 ) ≫ 1 , B ⁡ ( s = 0 ) ≈ 0 A(s=0)\gg 1,B(s=0)\approx 0 and A ⁡ ( s = 1 ) ≈ 0 , B ⁡ ( s = 1 ) ≫ 1 A(s=1)\approx 0,B(s=1)\gg 1 
+(in appropriate units) and H C H_{C} is the Hamiltonian corresponding
+to the discrete optimization problem (e.g. the MaxCut or the 2-SAT problem considered in this paper).
+
+ If | Ψ ⁡ ( 0 ) ⟩ |{}\Psi(0)\rangle is the ground state of H 0 H_{0} ,
+the adiabatic theorem
+says that the state | Ψ ⁡ ( t a ) ⟩ |{}\Psi(t_{a})\rangle obtained from the solution of
+
+ i ​ ∂ ∂ t ​ | Ψ ⁡ ( t ) ⟩ \displaystyle i\frac{\partial}{\partial t}|{}\Psi(t)\rangle 
+ = [ B ⁡ ( t / t a ) ​ H C − A ⁡ ( t / t a ) ​ H 0 ] ​ | Ψ ⁡ ( t ) ⟩ , \displaystyle=\left[B(t/t_{a})H_{C}-A(t/t_{a})H_{0}\right]|{}\Psi(t)\rangle, 
+
+ (6) 
+
+ | Ψ ⁡ ( 0 ) ⟩ \displaystyle|{}\Psi(0)\rangle 
+ = | + ⟩ ⊗ N , \displaystyle=|{}+\rangle^{\otimes N}\;, 
+
+ (7) 
+
+ with 0 ≤ t ≤ t a 0\leq t\leq t_{a} , will approach
+the ground state (i.e., yield the minimum) of H C H_{C} if the variation
+of A ⁡ ( t / t a ) A(t/t_{a}) and B ⁡ ( t / t a ) B(t/t_{a}) is sufficiently smooth and the annealing time t a t_{a} becomes infinitely long  [ 2 ] .
+Equation ( 6 ) is the time-dependent Schrödinger equation
+with a time-dependent Hamiltonian B ⁡ ( t / t a ) ​ H C − A ⁡ ( t / t a ) ​ H 0 B(t/t_{a})H_{C}-A(t/t_{a})H_{0} .
+The formal solution of Eqs. ( 6 ) and ( 7 ) is given by the time-ordered product of matrix exponentials  [ 17 ] 
+
+ | Ψ ⁡ ( t a ) ⟩ = lim p → ∞ { ∏ j = 1 p e − i ​ τ ​ ( p ) ​ [ B ⁡ ( j / p ) ​ H C − A ⁡ ( j / p ) ​ H 0 ] } ​ | + ⟩ ⊗ N \displaystyle|{}\Psi(t_{a})\rangle=\lim_{p\to\infty}\left\{\prod_{j=1}^{p}e^{-i\tau(p)\left[B(j/p)H_{C}-A(j/p)H_{0}\right]}\right\}|{}+\rangle^{\otimes N} 
+
+ = lim p → ∞ { ∏ j = 1 p e i ​ τ ​ ( p ) ​ A ​ ( j / p ) ​ H 0 ​ e − i ​ τ ​ ( p ) ​ B ​ ( j / p ) ​ H C } ​ | + ⟩ ⊗ N , \displaystyle=\lim_{p\to\infty}\left\{\prod_{j=1}^{p}e^{i\tau(p)A(j/p)H_{0}}e^{-i\tau(p)B(j/p)H_{C}}\right\}|{}+\rangle^{\otimes N}\;, 
+
+ (8) 
+
+ where t = j ​ τ ​ ( p ) t=j\tau(p) and τ ⁡ ( p ) = t a / p \tau(p)=t_{a}/p and we used Trotter’s formula  [ 18 ] such that exp ⁡ ( τ ⁡ ( H A + H B ) ) → exp ⁡ ( τ ​ H A ) ​ exp ⁡ ( τ ​ H B ) \exp(\tau(H_{A}+H_{B}))\to\exp(\tau H_{A})\exp(\tau H_{B}) for τ → 0 \tau\to 0 for two operators H A H_{A} and H B H_{B} .
+According to the adiabatic theorem  [ 2 , 19 ] , lim t a → ∞ | Ψ ⁡ ( t a ) ⟩ \lim_{t_{a}\to\infty}|{}\Psi(t_{a})\rangle is the ground state of H C H_{C} .
+In practice, quantum annealing is performed with finite t a t_{a} .
+
+ In this paper, we use the D-Wave 2000Q to perform the quantum annealing experiments.
+
+ II.4 Quantum Approximate Optimization Algorithm
+
+ In this section, we briefly review the basic elements of the QAOA  [ 1 ] .
+
+ Consider an optimization problem for which the objective function is given by
+ C ⁡ ( z ) = ∑ j C j ​ ( z ) C(z)=\sum_{j}C_{j}(z) , where z = z 1 ​ z 2 ​ … ​ z N z=z_{1}z_{2}\dots z_{N} , z i ∈ { − 1 , 1 } z_{i}\in\{-1,1\} , and typically, each of
+the C j ​ ( z ) C_{j}(z) depends on a few of the z i z_{i} only.
+If each C j ​ ( z ) C_{j}(z) depends on not more than two of the z i z_{i} , the mapping of C ⁡ ( z ) C(z) onto the
+Ising Hamiltonian H C H_{C} is straightforward.
+If C j ​ ( z ) C_{j}(z) depends on the products of three or more z i z_{i} ,
+ C ⁡ ( z ) C(z) may still be mapped onto the Ising Hamiltonian,
+potentially at the expense of introducing additional auxiliary variables  [ 20 ] .
+The Ising Hamiltonian is diagonal in the σ z \sigma^{z} basis,
+and the ground state energy, denoted by E C ( 0 ) E^{(0)}_{C} ,
+corresponds (up to an irrelevant constant) to the minimum of C ⁡ ( z ) C(z) .
+
+ The QAOA works as follows.
+The quantum computer is prepared in the state | + ⟩ ⊗ N \ket{+}^{\otimes N} ,
+i.e. the uniform superposition of all computational basis
+states, which can be achieved by applying the Hadamard
+gates H ⊗ N H^{\otimes N} to | 0 ⟩ ⊗ N \ket{0}^{\otimes N} .
+
+ The next step is to construct a variational ansatz for the wave function according to
+
+ | γ → , β → ⟩ = U B ( β p ) U C ( γ p ) ⋯ U B ( β 1 ) U C ( γ 1 ) | + ⟩ ⊗ N , \displaystyle\ket{\vec{\gamma},\vec{\beta}}=U_{B}(\beta_{p})U_{C}(\gamma_{p})\cdots U_{B}(\beta_{1})U_{C}(\gamma_{1})\ket{+}^{\otimes N}, 
+
+ (9) 
+
+ where γ → = ( γ 1 , … , γ p ) \vec{\gamma}=(\gamma_{1},\ldots,\gamma_{p}) , β → = ( β 1 , … , β p ) \vec{\beta}=(\beta_{1},\ldots,\beta_{p}) and
+
+ U C ​ ( γ ) \displaystyle U_{C}(\gamma) 
+ = e − i ​ γ ​ H C , \displaystyle=e^{-i\gamma H_{C}}, 
+
+ (10) 
+
+ U B ​ ( β ) \displaystyle U_{B}(\beta) 
+ = e − i ​ β ​ H 0 = e − i β ∑ i = 1 N σ i x . \displaystyle=e^{-i\beta H_{0}}=e^{-i\beta\sum_{i=1}^{N}\sigma_{i}^{x}}. 
+
+ (11) 
+
+ If the eigenvalues of H C H_{C} ( H 0 H_{0} ) are integer-valued,
+we may restrict the values of the γ i \gamma_{i} ( β i \beta_{i} ) to the interval [ 0 , 2 ​ π ] [0,2\pi] ( [ 0 , π ] [0,\pi] )  [ 1 ] .
+In the case of the weighted MaxCut problem (see Eq.  3 ), the γ i \gamma_{i} cannot be restricted to the interval [ 0 , 2 ​ π ] [0,2\pi] , in general.
+The parameter p p in Eq. ( 9 ) determines the number of independent parameters of the trial state. Modifications of the QAOA also allow for different mixing operators than the one given in Eq. ( 11 )  [ 21 ] .
+
+ As for all variational methods, γ → \vec{\gamma} and β → \vec{\beta} are determined by minimizing the cost function.
+In the case at hand, we minimize the expectation value of the Hamiltonian H C H_{C} , that is
+
+ E p ​ ( γ → , β → ) = ⟨ γ → , β → | ​ H C ​ | γ → , β → ⟩ , \displaystyle E_{p}(\vec{\gamma},\vec{\beta})=\bra{\vec{\gamma},\vec{\beta}}H_{C}\ket{\vec{\gamma},\vec{\beta}}, 
+
+ (12) 
+
+ as a function of ( γ → , β → ) (\vec{\gamma},\vec{\beta}) and denote
+
+ E p ​ ( γ → ∗ , β → ∗ ) = min ′ γ → , β → ′ ⁡ E p ​ ( γ → , β → ) , \displaystyle E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*})=\mathop{{\min}^{\prime}}_{\vec{\gamma},\vec{\beta}}E_{p}(\vec{\gamma},\vec{\beta}), 
+
+ (13) 
+
+ where min ′ \mathop{{\min}^{\prime}} denotes a (local) minimum obtained numerically.
+In practice, this minimization is carried out on a conventional digital computer.
+
+ The quantum computer is prepared in the state | γ → , β → ⟩ \ket{\vec{\gamma},\vec{\beta}} with the current values of γ → \vec{\gamma} and β → \vec{\beta} using the quantum circuit corresponding to Eq. ( 9 ).
+According to quantum theory, each measurement of the state of the quantum computer in the computational basis
+produces a sample z z with probability P ( z ) = | ⟨ z | γ → , β → ⟩ | 2 P(z)=|\langle z|\vec{\gamma},\vec{\beta}\rangle|^{2} .
+This procedure is repeated until a sufficiently large number of samples z z is collected.
+If we want to search for the optimal ( γ → \vec{\gamma} , β → \vec{\beta} ) by minimizing
+ E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) , we can estimate E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) through
+
+ E p ​ ( γ → , β → ) = ∑ z P ⁡ ( z ) ​ C ​ ( z ) , \displaystyle E_{p}(\vec{\gamma},\vec{\beta})=\sum\limits_{z}P(z)C(z), 
+
+ (14) 
+
+ where the sum is over all collected samples z z and the probability P ⁡ ( z ) P(z) is approximated by the relative frequency with which a particular sample z z occurs.
+When using the quantum computer simulator, the state vector | γ → , β → ⟩ \ket{\vec{\gamma},\vec{\beta}} 
+is known and can be used to compute the matrix element Eq. ( 12 ) directly, i.e., it is not necessary to produce samples with the simulator.
+Obviously, for a complex minimization problem such as Eq. ( 12 ),
+it may be difficult to ascertain that the minimum found is the global minimum.
+
+ Once γ → ∗ \vec{\gamma}^{*} and β → ∗ \vec{\beta}^{*} have been determined,
+repeated measurement in the computational basis of the state | γ → ∗ , β → ∗ ⟩ \ket{\vec{\gamma}^{*},\vec{\beta}^{*}} of the
+quantum computer yields a sample of z z ’s.
+In the ideal but exceptional case that | γ → ∗ , β → ∗ ⟩ \ket{\vec{\gamma}^{*},\vec{\beta}^{*}} is the
+ground state of H C H_{C} , the measured z z is a representation of that ground state.
+In the other case, there is still a chance that the sample contains the ground state. Moreover, one is often not only interested in the ground state but also in solutions that are close. The QAOA produces such solutions because even if | γ → ∗ , β → ∗ ⟩ \ket{\vec{\gamma}^{*},\vec{\beta}^{*}} is not the ground state, it is likely that z z ’s for which C ⁡ ( z ) ≤ E p ​ ( γ → ∗ , β → ∗ ) C(z)\leq E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*}) are generated.
+
+ The QAOA can also be viewed as a finite- p p approximation of Eq. ( 8 ),
+where in addition the constraint
+that the coefficients of H 0 H_{0} and H C H_{C} derive from the functions A ⁡ ( j / p ) A(j/p) and B ⁡ ( j / p ) B(j/p) is relaxed.
+Instead of | Ψ ⁡ ( t a ) ⟩ |{}\Psi(t_{a})\rangle , we now have
+
+ | γ → , β → ⟩ \displaystyle|{}\vec{\gamma},\vec{\beta}\rangle 
+ = \displaystyle= 
+ { ∏ j = 1 p e − i ​ β j ​ H 0 ​ e − i ​ γ j ​ H C } ​ | + ⟩ ⊗ N , \displaystyle\left\{\prod_{j=1}^{p}e^{-i\beta_{j}H_{0}}e^{-i\gamma_{j}H_{C}}\right\}|{}+\rangle^{\otimes N}\;, 
+
+ (15) 
+
+ where the γ j \gamma_{j} ’s and β j \beta_{j} ’s are to be regarded as parameters that can be chosen freely.
+In Appendix  A , we show that if γ → \vec{\gamma} and β → \vec{\beta} 
+are chosen according to the linear annealing schedule,
+we recover the finite- p p description of the quantum annealing process.
+The underlying idea of the QAOA
+is that even for small p p , Eq. ( 15 )
+can be used as a trial wave function in the variational sense.
+For finite p p , the QAOA only differs from other variational
+methods of estimating ground state properties  [ 22 , 23 , 24 , 25 , 26 ] 
+by the restriction to wave functions of the form of Eq. ( 15 ).
+
+ II.5 Performance Measures
+
+ We consider three measures for the quality of the solution,
+namely (M1) the probability for finding the ground state
+(called success probability in what follows)
+which should be as large as possible,
+(M2) the value of E p ​ ( γ → ∗ , β → ∗ ) E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*}) which should be as
+small as possible,
+and (M3) the ratio defined by
+
+ r = E p ​ ( γ → ∗ , β → ∗ ) − E max E min − E max , \displaystyle r=\frac{E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*})-E_{\mathrm{max}}}{E_{\mathrm{min}}-E_{\mathrm{max}}}, 
+
+ (16) 
+
+ which should be as close to one as possible and indicates how close the
+expectation value E p ​ ( γ → ∗ , β → ∗ ) E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*}) is to the optimum.
+For the set of problems treated in this paper, the eigenvalues of the problem
+Hamiltonian can take negative and positive values. We denote the smallest and largest
+eigenvalues by E min E_{\mathrm{min}} and E max E_{\mathrm{max}} , respectively.
+As a consequence, the ratio E p ​ ( γ → ∗ , β → ∗ ) / E min E_{p}(\vec{\gamma}^{*},\vec{\beta}^{*})/E_{\mathrm{min}} can have
+negative and positive values. By subtracting the largest eigenvalue E max E_{\mathrm{max}} ,
+we shift the spectrum to be nonpositive and the ratio r r is thus nonnegative with 0 ≤ r ≤ 1 0\leq r\leq 1 .
+In computer science, a ρ \rho -approximation algorithm is a polynomial-time algorithm
+which returns for all possible instances of an optimization problem, a solution with
+cost value V V such that
+
+ V V ′ ≥ ρ , \displaystyle\frac{V}{V^{\prime}}\geq\rho, 
+
+ (17) 
+
+ where V ′ V^{\prime} is the cost of the optimal solution  [ 27 ] .
+For randomized algorithms, the expected cost of the solution has to be at least ρ \rho 
+times the optimal solution  [ 28 ] .
+The constant ρ \rho is called performance guarantee or approximation ratio .
+The ratio r r corresponds to the left-hand side of the
+definition of the approximation ratio ρ \rho (Eq. ( 17 )). Since we
+cannot investigate all possible problem instances, we use r r only as a measure for the subset of
+instances that we have selected.
+
+ We do not consider the run time or the time-to-solution as performance measures since the timing results obtained from the simulator may not be representative for QAOA performed on a real device.
+Obtaining a single sample (for p = 1 p=1 ) on the IBM Q 16 Melbourne processor takes about 3 ​ μ 3\,\upmu s.
+However, we used the IBM Q Experience for a grid search only.
+Usually, the waiting time in the queue is much longer than the run time and we did not perform QAOA with the optimization step on the real device.
+However,
+we also performed quantum annealing on the D-Wave 2000Q quantum annealer with an annealing time of t a = 3 ​ μ t_{a}=3\,\upmu s.
+
+ Figure 1: Sketch of the workflow for executing the QAOA with p > 1 p>1 . 
+
+ As measures (M1) and (M3) require knowledge of the ground state of H C H_{C} ,
+they are only useful in a benchmark setting.
+In a real-life setting, only measure (M2) is of practical use.
+For the simplest case p = 1 p=1 and a triangle-free (connectivity) graph,
+the expectation value of the Hamiltonian
+
+ H C = ∑ i h i ​ σ i z + ∑ ( i , j ) ∈ E J i ​ j ​ σ i z ​ σ j z , \displaystyle H_{C}=\sum\limits_{i}h_{i}\sigma_{i}^{z}+\sum\limits_{\mathclap{(i,j)\in E}}J_{ij}\sigma_{i}^{z}\sigma_{j}^{z}, 
+
+ (18) 
+
+ can be calculated analytically.
+The result is given by
+
+ E ⁡ ( γ , β ) \displaystyle E(\gamma,\beta) 
+ = ∑ i h i sin ( 2 β ) sin ( 2 γ h i ) ∏ j : ( i , j ) ∈ E cos ( 2 γ J i ​ j ) \displaystyle=\sum\limits_{i}h_{i}\sin(2\beta)\sin(2\gamma h_{i})\prod\limits_{\mathclap{j:(i,j)\in E}}\cos(2\gamma J_{ij}) 
+
+ + ∑ ( i , j ) ∈ E J i ​ j ( sin 2 ( 2 β ) sin ( 2 γ h i ) sin ( 2 γ h j ) \displaystyle+\sum\limits_{\mathclap{(i,j)\in E}}J_{ij}\Bigg(\sin^{2}(2\beta)\sin(2\gamma h_{i})\sin(2\gamma h_{j}) 
+
+ × ∏ k ≠ j : ( i , k ) ∈ E cos ( 2 γ J i ​ k ) ∏ l ≠ i : ( j , l ) ∈ E cos ( 2 γ J j ​ l ) \displaystyle\quad\times\prod\limits_{\mathclap{k\neq j:(i,k)\in E}}\cos(2\gamma J_{ik})\prod\limits_{\mathclap{l\neq i:(j,l)\in E}}\cos(2\gamma J_{jl}) 
+
+ + 1 2 sin ( 4 β ) sin ( 2 γ J i ​ j ) ( cos ( 2 γ h i ) ∏ k ≠ j : ( i , k ) ∈ E cos ( 2 γ J i ​ k ) \displaystyle+\frac{1}{2}\sin(4\beta)\sin(2\gamma J_{ij})\Bigg(\cos(2\gamma h_{i})\prod\limits_{\mathclap{k\neq j:(i,k)\in E}}\cos(2\gamma J_{ik}) 
+
+ + cos ( 2 γ h j ) ∏ l ≠ i : ( j , l ) ∈ E cos ( 2 γ J j ​ l ) ) ) , \displaystyle\quad+\cos(2\gamma h_{j})\prod\limits_{\mathclap{l\neq i:(j,l)\in E}}\cos(2\gamma J_{jl})\Bigg)\Bigg), 
+
+ (19) 
+
+ where the products are over those vertices that share an edge with the indicated
+vertex. For h i = 0 h_{i}=0 and J i ​ j = 1 / 2 J_{ij}=1/2 , Eq. ( 19 ) is the same as
+Eq. (15) in Ref.  [ 29 ] , up to an irrelevant constant contribution.
+We use Eq. ( 19 ) as an independent check for our numerical results.
+
+ III Practical aspects
+
+ We adopt two different procedures for testing the QAOA.
+For p = 1 p=1 , we evaluate E p ​ ( γ , β ) E_{p}(\gamma,\beta) for points ( γ , β ) (\gamma,\beta) on a regular 2D grid.
+We create the corresponding gate circuit using Qiskit  [ 30 ] and execute it on the IBM simulator
+and the IBM Q Experience  [ 31 ] .
+Instances which are executed on the IBM Q Experience natively fit, meaning that they directly map onto the architecture such that no additional SWAP-gates are needed.
+
+ For the QAOA with p > 1 p>1 , we perform the procedure shown in Fig.  1 .
+Given p p and values of the parameters β → \vec{\beta} and γ → \vec{\gamma} ,
+a computer program defines the gate circuit in the Jülich universal quantum
+computer simulator (JUQCS)  [ 32 ] format.
+JUQCS executes the circuit and returns the expectation value
+of the Hamiltonian H C H_{C} in the state | γ → , β → ⟩ \ket{\vec{\gamma},\vec{\beta}} (or the success probability).
+This expectation value (or this success probability) in turn is passed to a Nelder-Mead minimizer  [ 33 , 34 ] which
+proposes new values for β → \vec{\beta} and γ → \vec{\gamma} .
+This procedure is repeated until E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) (or the success probability)
+reaches a stationary value.
+Obviously, this stationary value does not need to be the global minimum
+of E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) (or the success probability).
+In particular, if E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) (or the success probability as a function of γ → \vec{\gamma} and β → \vec{\beta} ) has many local minima,
+the algorithm is likely to return a local minimum.
+This, however, is a problem with minimization in general and is not specific to the QAOA.
+In practice, we can only repeat the procedure
+with different initial values of ( γ → , β → ) (\vec{\gamma},\vec{\beta}) 
+and retain the solution that yields the smallest E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) (or the highest success probability).
+For the 18-variable problems, the execution time of a single cycle, as depicted in Fig.  1 , is less than a second for small p p and even for p ≈ 40 − − 50 p\approx 40--50 , the execution of a cycle takes about one second. The execution time of the complete optimization then depends on how many cycles are needed for convergence.
+
+ For the QAOA, many (hundreds of) evaluations N e ​ v N_{ev} of E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) are
+necessary for optimizing the parameters γ → \vec{\gamma} and β → \vec{\beta} .
+A point that should be noted is that we obtain the success
+probability for the QAOA from the state vector and that with little effort, we can calculate
+ E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) in that state when using the simulator.
+In contrast, when using a real quantum device,
+in practice E p ​ ( γ → , β → ) E_{p}(\vec{\gamma},\vec{\beta}) is estimated
+from a (small) sample of N S N_{S} values of ⟨ z | H C | z ⟩ \langle z|H_{C}|z\rangle .
+Therefore, using the QAOA on a real device only makes sense if
+the product N S ⋅ N e ​ v N_{S}\cdot N_{ev} is much smaller than the dimension of
+the Hilbert space of 2 N 2^{N} . Otherwise the amount of work
+is comparable to exhaustive search over the 2 N 2^{N} basis states of the Hilbert space.
+
+ For the quantum annealing experiments on the D-Wave quantum annealer,
+we distribute several copies of the problem instance (that is the Ising Hamiltonian Eq. ( 18 ))
+on the Chimera graph and repeat the annealing procedure to collect statistics
+about the success probability and the ratio r r .
+Since we do not need a minor embedding for the problem instances considered,
+we can directly put 244 (116, 52) copies of the 8-variable (12-variable, 18-variable,
+respectively) instances simultaneously on the D-Wave 2000Q quantum annealer and we only need 250
+(500, 1000, respectively) repetitions for proper statistics to infer the success
+probability. If we are not interested in estimating the success probability but only need the
+ground state to be contained in the sample, much less repetitions are necessary.
+
+ IV Results
+
+ IV.1 QAOA with p = 1 p=1 
+
+ Figures  2 and 3 show the success probability and the expectation value E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) ,
+i.e., after applying the QAOA for p = 1 p=1 , as a function of γ \gamma and β \beta 
+for a 2-SAT problem with 8 spins and
+for a 16-variable weighted MaxCut problem, respectively, as obtained by using the IBM Q simulator.
+The specifications of the problem instances are given in Appendix  B .
+With the simulator, the largest success probability that has been obtained
+for the 8-variable 2-SAT problem is about 10% and about 2% for the 16-variable weighted MaxCut problem.
+We find that regions with high success probability correspond to small energy expectation values,
+as expected (see Figs.  2 and 3 ). However,
+the values of ( γ , β ) (\gamma,\beta) for which the success probability is the largest
+and E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) is the smallest differ slightly.
+
+ Figure 2: (color online) Simulation results for
+the 8-variable 2-SAT problem instance (A) (see Table  3 in Appendix  B ) as a function of γ \gamma and β \beta for p = 1 p=1 .
+(a) Success probability (b) E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) . 
+
+ Figure 3: (color online) Same as Fig.  2 except that
+instead of the 8-variable 2-SAT problem instance (A), we solve
+a 16-variable MaxCut problem given in Table  2 in Appendix  B . 
+
+ As mentioned earlier, if the Hamiltonian Eq. ( 18 ) does not have integer eigenvalues,
+which is the case for the weighted MaxCut problem that we consider (see Eq. ( 3 )), the periodicity of
+ E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) with respect to γ \gamma is lost.
+Therefore, the search space for γ \gamma increases severely.
+Moreover, the landscape of the expectation value E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) exhibits many local minima.
+Fortunately, for the case at hand, it turns out that the largest success probability can still be
+found for γ ∈ [ 0 , 2 ​ π ] \gamma\in[0,2\pi] .
+Plots with a finer γ \gamma grid around the largest success probability and the smallest
+value of E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) are shown in
+Figs.  4 a and  4 b, respectively.
+Clearly, using a simulator and for p = 1 p=1 , it is not difficult to find
+the largest success probability or the smallest E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) ,
+as long as the number of spins is within the range that the simulator can handle.
+
+ Figure 4: (color online) The same as Fig.  3 except that the part containing
+the maximum success probability is shown on a finer grid. 
+
+ The results for the same 8-variable 2-SAT problem instance shown in Fig.  2 ,
+but obtained by using the quantum processor IBM Q 16 Melbourne  [ 31 ] , are shown in Fig.  5 .
+
+ Figure 5: (color online) Same as Fig.  2 except that instead
+of using the IBM Q simulator, the results have been obtained by using the quantum processor IBM Q 16 Melbourne of the IBM Q Experience. 
+
+ To obtain an estimate of the success probability, for each pair of β \beta and γ \gamma ,
+we performed seven runs of 8192 samples each.
+Note that in this case, the total number of samples per grid point ( 57344 57344 ) is much
+larger than the number of states 2 8 = 256 2^{8}=256 .
+Thus, we can infer the success probability with very good statistical accuracy.
+However, such an estimation is feasible for small system sizes only.
+By comparing Figs.  2 and  5 ,
+we conclude that the IBM Q Experience results for the success probability do not
+bear much resemblance to those obtained by the simulator.
+However, the IBM Q Experience results for E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) 
+show some resemblance to those obtained by the simulator.
+It seems that at this stage of hardware development,
+real quantum computer devices have serious problems producing data
+that are in qualitative agreement with the p = 1 p=1 solution Eq. ( 19 ).
+
+ Figures  6 and 7 show the
+distributions of
+ ⟨ z | H C | z ⟩ \langle z|H_{C}|z\rangle where the states z z are samples generated
+with probability | ⟨ z | γ , β ⟩ | 2 |\langle z|\gamma,\beta\rangle|^{2} 
+for the values of γ \gamma and β \beta 
+that maximize the p = 1 p=1 success probability (black, “QAOA - G”) and minimize E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) (blue, “QAOA - E”)
+for the 8-variable 2-SAT problem and the 16-variable weighted MaxCut problem, respectively.
+For comparison, we also show the corresponding distributions obtained by random sampling (green).
+Although for p = 1 p=1 , the QAOA enhances the success probability compared to random sampling,
+for the 16-variable MaxCut problem, the probability of finding the ground state is less than 2 % 2\% ,
+as shown in Fig.  7 .
+
+ Figure 6: (color online) Frequencies of
+sampled energies ⟨ z | H C | z ⟩ \langle z|H_{C}|z\rangle for the 8-variable 2-SAT problem instance (A),
+obtained by simulation of the QAOA with p = 1 p=1 .
+Black (striped): ( γ , β ) (\gamma,\beta) maximize the success probability;
+blue (squared): ( γ , β ) (\gamma,\beta) minimize E 1 ​ ( γ , β ) E_{1}(\gamma,\beta) ;
+green (solid): γ = β = 0 \gamma=\beta=0 corresponding to random sampling. 
+
+ Figure 7: (color online) Same as Fig.  6 except that
+instead of the 8-variable 2-SAT problem instance (A), we solve
+a 16-variable MaxCut problem. 
+
+ From these results, we conclude that as the number of variables increases, the largest
+success probability that can be achieved with the QAOA for p = 1 p=1 is rather small.
+Moreover, the p = 1 p=1 results obtained on a real gate-based quantum device are
+of very poor quality, suggesting that the prospects of performing p > 1 p>1 on such devices
+are, for the time being, rather dim.
+However, we can still use JUQCS to benchmark the performance of the QAOA for p > 1 p>1 on an ideal quantum computer by adopting the procedure sketched in Fig.  1 . Simulations of the QAOA on noisy quantum devices are studied in Ref.  [ 35 ] .
+
+ IV.2 QAOA for p > 1 p>1 
+
+ Figure  8 shows results
+produced by combining JUQCS and the Nelder-Mead algorithm  [ 33 , 34 ] 
+which demonstrate that for p = 10 p=10 and the 18-variable 2-SAT problem instance (A) (see Appendix  B ), there exist γ → \vec{\gamma} and β → \vec{\beta} which produce a success probability of roughly 40%.
+
+ Figure 8: (color online)
+Simulation results of the p = 10 p=10 QAOA applied to the 18-variable 2-SAT problem instance (A) (see Appendix  B ).
+Shown are (a) the success probability, (b)
+the energy E 10 = E 10 ​ ( γ → , β → ) E_{10}=E_{10}(\vec{\gamma},\vec{\beta}) 
+as a function of the iteration steps of the Nelder-Mead algorithm,
+during the minimization of the success probability,
+(c) the values β i \beta_{i} and (d) the values γ i \gamma_{i} for i = 1 , … , 10 i=1,\ldots,10 
+as obtained after 14000 Nelder-Mead iterations.
+The initial values of ( γ → , β → ) (\vec{\gamma},\vec{\beta}) are chosen such that
+ β 1 = β 1 ∗ \beta_{1}=\beta_{1}^{*} and γ 1 = γ 1 ∗ \gamma_{1}=\gamma_{1}^{*} , where β 1 ∗ \beta_{1}^{*} and γ 1 ∗ \gamma_{1}^{*} 
+are the optimal values extracted from the p = 1 p=1 QAOA minimization of the success probability,
+and all other β i \beta_{i} and γ i \gamma_{i} are random. For this 2-SAT problem, the actual ground state energy is E C ( 0 ) = − 19 E_{C}^{(0)}=-19 . 
+
+ The minimization of the success probability starts with values for ( γ → , β → ) (\vec{\gamma},\vec{\beta}) which are chosen such that γ 1 = γ 1 ′ \gamma_{1}=\gamma_{1}^{\prime} and β 1 = β 1 ′ \beta_{1}=\beta_{1}^{\prime} , where γ 1 ′ \gamma_{1}^{\prime} and β 1 ′ \beta_{1}^{\prime} denote the optimal values for the success probability extracted from the p = 1 p=1 QAOA simulation data,
+and all other γ i \gamma_{i} and β i \beta_{i} are random.
+From Fig.  8 (a), we conclude that
+the Nelder-Mead algorithm is effective in finding a minimum of the success probability
+(the spikes in the curves correspond to restarts of the search procedure).
+As can be seen in Fig.  8 (b), the energy expectation E p = 10 E_{p=10} 
+also converges to a stationary value as the number of Nelder-Mead iterations increases.
+The values of β i \beta_{i} and γ i \gamma_{i} at the end of the minimization process
+are shown in Fig.  8 (c,d).
+
+ Note that the use of the success probability as the cost function to be minimized
+requires the knowledge of the ground state, i.e. of the solution of the optimization problem.
+Obviously, for any problem of practical value, this knowledge is not available but
+for the purpose of this paper, that is, for benchmarking purposes,
+we consider problems for which this knowledge is available.
+
+ When the function to be optimized has many local optima, the choice of the initial values
+can have a strong influence on the output of the optimization algorithm.
+We find that the initialization of the γ i \gamma_{i} ’s and β i \beta_{i} ’s
+seems to be crucial for the success probability that can be obtained, suggesting that there are
+many local minima or stationary points.
+This is illustrated in Fig.  9 where we
+show the results of minimizing the success probability
+starting from γ i \gamma_{i} ’s and β i \beta_{i} ’s taken from
+a linear annealing scheme (see Appendix  A ),
+for the same problem as the one used to produce the data
+shown in Fig.  8 .
+
+ Figure 9: (color online)
+Same as Fig.  8 
+except that the initial values are chosen according to a linear annealing scheme with step size τ = 0.558 \tau=0.558 (dashed (blue) line).
+Values after optimization are marked by (green) crosses. 
+
+ Looking at Fig.  8 (a,b), we see that
+the final success probability is 38.6% and E p = 10 ≈ − 14.22 E_{p=10}\approx-14.22 ,
+whereas from Fig.  9 (a,b), we deduce that
+the final success probability is only 8.5% and E p = 10 ≈ − 12.16 E_{p=10}\approx-12.16 .
+For comparison, the actual ground state energy is E C ( 0 ) = − 19 E_{C}^{(0)}=-19 .
+Comparing also Figs.  8 (c,d)
+and Fig.  9 (c,d)
+clearly shows the impact of the initial values of
+the γ i \gamma_{i} ’s and β i \beta_{i} ’s on the results of the values
+after minimization.
+
+ For this particular 18-variable 2-SAT problem,
+minimizing the energy expectation E p = 10 E_{p=10} instead of the success probability did not lead to a
+higher success probability. In fact, the success probability only reached 0.1%
+and E p = 10 ≈ − 14.97 E_{p=10}\approx-14.97 (data not shown).
+Although this energy expectation value and the initial value for the case shown in Fig.  9 ( E p = 10 ≈ − 14.36 E_{p=10}\approx-14.36 ) are better than the final expectation value in the case presented in Fig.  8 , the success probabilities are much worse.
+From these results, we conclude that the optimization of γ → \vec{\gamma} and β → \vec{\beta} with respect to the energy expectation value may in general result in different (local) optima
+than would be obtained by an optimization with respect to the success probability.
+Possible reasons for this might be that the energy landscape has (many) more local minima
+than the landscape of the success probability has local maxima or that the
+positions of the (local) minima in the energy landscape are not aligned with (local) maxima of
+the landscape of the success probability.
+
+ Figure  10 shows results for a 16-variable weighted MaxCut problem
+for which minimizing E p = 10 E_{p=10} improves the success probability.
+
+ Figure 10: (color online)
+Same as Fig.  8 
+except that (i) the results are for the 16-variable weighted MaxCut problem instance, (ii) the initial values are chosen according to a linear annealing scheme with step size τ = 1 \tau=1 (dashed (blue) line), and
+(iii) the energy expectation value E p = 10 E_{p=10} is taken as the cost function for the Nelder-Mead
+minimization procedure. The actual ground state energy is E C ( 0 ) = − 17.7 E_{C}^{(0)}=-17.7 .
+Values after optimization are marked by (green) crosses. 
+
+ The initialization is done according to the linear annealing scheme (see Appendix  A ).
+This is a clear indication that for finite p p , the QAOA can be
+viewed as a tool for producing optimized annealing schemes  [ 36 , 37 ] .
+For this problem, the success probability after 6000 Nelder-Mead iterations is quite large ( ≈ 85.6 % \approx 85.6\% ).
+At the end of the minimization procedure,
+the γ i \gamma_{i} ’s and β i \beta_{i} ’s deviate from their initial values (see Fig.  10 (c,d))
+but, as a function of the QAOA step i i , show the same trends, as in Fig.  9 .
+This suggests that the QAOA
+may yield γ i \gamma_{i} ’s and β i \beta_{i} ’s that deviate less and less from
+their values of the linear annealing scheme as p p increases.
+
+ This observation is confirmed by the results shown in Fig.  11 
+for an 8-variable 2-SAT problem instance.
+
+ Figure 11: (color online)
+Same as Fig.  8 
+except that (i) the results are for the 8-variable 2-SAT problem instance (A), (ii) the initial values are chosen according to a linear annealing scheme with step size τ = 1 \tau=1 (dashed (blue) line), and (iii) the energy expectation value E p = 50 E_{p=50} is taken as the cost function for the Nelder-Mead minimization procedure. The actual ground state energy is E C ( 0 ) = − 9 E_{C}^{(0)}=-9 . 
+
+ We set p = 50 p=50 and use the linear annealing scheme to initialize the γ i \gamma_{i} ’s and β i \beta_{i} ’s (see Appendix  A ) which yields a success probability of about 82.7%.
+Although we are using E p = 50 E_{p=50} as the function to be minimized,
+Fig.  11 (b) shows that the success probability
+at the end of the minimization process is close to one.
+Further optimization of the γ i \gamma_{i} ’s and β i \beta_{i} ’s in the spirit
+of the QAOA shows that small deviations of γ i \gamma_{i} ’s and β i \beta_{i} ’s from
+the linear annealing scheme increase the success probability to almost one.
+Not surprisingly, this indicates that if the initial
+ γ i \gamma_{i} ’s and β i \beta_{i} ’s define a trial wave function which
+yields a good approximation to the ground state,
+the variational approach works well  [ 26 ] .
+
+ All in all, we conclude that the success of the QAOA strongly depends on the
+problem instance. While the investigated 8-variable 2-SAT problem and the
+16-variable MaxCut problem work well, the success of the (also for quantum annealing
+hard) 2-SAT problem with 18 variables is rather limited.
+
+ IV.3 Quantum annealing on a D-Wave machine
+
+ Since the QAOA results produced by a real quantum device
+are of rather poor quality, for comparing the QAOA
+to quantum annealing on the D-Wave quantum annealer, we eliminate all device errors
+of the former by using simulators to perform the necessary quantum gate operations.
+
+ Table  1 summarizes the simulation results of
+the QAOA for p = 1 p=1 and p = 5 p=5 in comparison with the data obtained from the
+D-Wave 2000Q for 2-SAT problems with 8, 12 and 18 variables.
+Both the success probability and the ratio r r are shown.
+We present data for annealing times of 3 ​ μ ​ s 3\,\upmu\mathrm{s} 
+(approximately the real time it takes the IBM Q Experience to
+return one sample for the p = 1 p=1 QAOA quantum gate circuit) and
+ 30 ​ μ ​ s 30\,\upmu\mathrm{s} . Postprocessing on the D-Wave 2000Q quantum annealer has been turned off.
+The results for the QAOA with p = 2 , 3 , 4 , 5 p=2,3,4,5 steps are obtained by initializing the
+ γ i \gamma_{i} ’s and β i \beta_{i} ’s ( i = 1 , … , p − 1 i=1,\dots,p-1 ) with the optimal values obtained from the
+minimization for p − 1 p-1 steps and setting γ p = β p = 0 \gamma_{p}=\beta_{p}=0 .
+
+ Table 1: 
+Results produced by the D-Wave 2000Q (DW_2000Q_2_1 chip) in comparison with the QAOA for various
+2-SAT problem instances. Performance measures are the success probability
+and the ratio r r .
+For the QAOA, parameter optimization
+uses the energy expectation value E p E_{p} as the function to be minimized,
+as if the QAOA was executed on a real device.
+The γ i \gamma_{i} ’s and β i \beta_{i} ’s ( i = 1 , … , p − 1 i=1,\dots,p-1 ) are initialized with the optimal values obtained from the minimization for p − 1 p-1 steps and γ p = β p = 0 \gamma_{p}=\beta_{p}=0 .
+
+ Variables 
+ Success probability (%) 
+ Ratio r r 
+
+ (problem 
+ D-Wave 
+ QAOA 
+ D-Wave 
+ QAOA 
+
+ label) 
+ 3 ​ μ ​ s 3\,\upmu\mathrm{s} 
+  30 ​ μ ​ s \,30\,\upmu\mathrm{s} 
+ p = 1 p=1 
+ p = 5 p=5 
+ 3 ​ μ ​ s 3\,\upmu\mathrm{s} 
+  30 ​ μ ​ s \,30\,\upmu\mathrm{s} 
+ p = 1 p=1 
+ p = 5 p=5 
+
+ 8 (A) 
+ 99.75 99.75 
+ 99.92 99.92 
+ 8.84 8.84 
+ 42.39 42.39 
+ 1.00 1.00 
+ 1.00 1.00 
+ 0.71 0.71 
+ 0.84 0.84 
+
+ 8 (B) 
+ 99.76 99.76 
+ 99.92 99.92 
+ 8.84 8.84 
+ 42.39 42.39 
+ 1.00 1.00 
+ 1.00 1.00 
+ 0.71 0.71 
+ 0.84 0.84 
+
+ 8 (C) 
+ 99.76 99.76 
+ 99.92 99.92 
+ 8.84 8.84 
+ 42.39 42.39 
+ 1.00 1.00 
+ 1.00 1.00 
+ 0.71 0.71 
+ 0.84 0.84 
+
+ 8 (D) 
+ 99.88 99.88 
+ 99.95 99.95 
+ 7.50 7.50 
+ 46.73 46.73 
+ 1.00 1.00 
+ 1.00 1.00 
+ 0.70 0.70 
+ 0.85 0.85 
+
+ 12 (A) 
+ 27.90 27.90 
+ 61.11 61.11 
+ 1.87 1.87 
+ 4.08 4.08 
+ 0.91 0.91 
+ 0.95 0.95 
+ 0.81 0.81 
+ 0.87 0.87 
+
+ 12 (B) 
+ 75.86 75.86 
+ 92.48 92.48 
+ 2.15 2.15 
+ 7.10 7.10 
+ 0.97 0.97 
+ 0.99 0.99 
+ 0.76 0.76 
+ 0.86 0.86 
+
+ 12 (C) 
+ 88.12 88.12 
+ 95.79 95.79 
+ 2.18 2.18 
+ 10.30 10.30 
+ 0.98 0.98 
+ 0.99 0.99 
+ 0.77 0.77 
+ 0.87 0.87 
+
+ 12 (D) 
+ 52.68 52.68 
+ 77.69 77.69 
+ 2.00 2.00 
+ 5.44 5.44 
+ 0.93 0.93 
+ 0.97 0.97 
+ 0.77 0.77 
+ 0.86 0.86 
+
+ 18 (A) 
+ 1.22 1.22 
+ 4.82 4.82 
+ 0.22 0.22 
+ 0.87 0.87 
+ 0.91 0.91 
+ 0.91 0.91 
+ 0.79 0.79 
+ 0.87 0.87 
+
+ 18 (B) 
+ 10.85 10.85 
+ 36.12 36.12 
+ 0.33 0.33 
+ 1.82 1.82 
+ 0.91 0.91 
+ 0.94 0.94 
+ 0.77 0.77 
+ 0.88 0.88 
+
+ 18 (C) 
+ 0.88 0.88 
+ 3.37 3.37 
+ 0.25 0.25 
+ 0.22 0.22 
+ 0.91 0.91 
+ 0.91 0.91 
+ 0.80 0.80 
+ 0.90 0.90 
+
+ 18 (D) 
+ 89.38 89.38 
+ 97.01 97.01 
+ 0.34 0.34 
+ 9.03 9.03 
+ 0.99 0.99 
+ 1.00 1.00 
+ 0.76 0.76 
+ 0.89 0.89 
+
+ 18 (E) 
+ 51.20 51.20 
+ 78.32 78.32 
+ 0.34 0.34 
+ 4.15 4.15 
+ 0.95 0.95 
+ 0.98 0.98 
+ 0.76 0.76 
+ 0.88 0.88 
+
+ 18 (F) 
+ 4.84 4.84 
+ 16.03 16.03 
+ 0.31 0.31 
+ 0.83 0.83 
+ 0.90 0.90 
+ 0.92 0.92 
+ 0.78 0.78 
+ 0.89 0.89 
+
+ From Table  1 , we conclude
+that using the D-Wave, the probability of sampling the ground state (i.e., the unique
+solution of the 2-SAT problem) is much larger than the one obtained
+from running the QAOA on a simulator.
+Accordingly, the ratio r r is also higher. However, the ratios r r obtained from
+the D-Wave data show stronger variation with the particular
+problem instance (for 12 and 18 spins) than the ratios obtained from the QAOA which seem to systematically increase with the problem size for p = 5 p=5 . The
+increase in the ratio r r from the QAOA for p = 1 p=1 to the QAOA for p = 5 p=5 is
+much larger than the increase in the ratio r r for the D-Wave 2000Q
+when using a ten times longer annealing time.
+On the other hand, the ratio r r obtained from the D-Wave data is,
+in most cases, significantly larger than the one obtained from the QAOA.
+The D-Wave results and the QAOA results for p = 5 p=5 exhibit similar trends: For many of the 12- and 18-spin problem instances, the success probabilities of the QAOA are roughly one-tenth of the probabilities obtained from the D-Wave machine for annealing times of 3 ​ μ 3\upmu s, indicating that problem instances which are hard for the D-Wave machine are also hard for the QAOA with a small number of steps.
+
+ V Conclusion
+
+ We have studied the performance of the quantum approximate optimization algorithm
+by applying it to a set of instances of 2-SAT problems with up to 18 variables and a unique solution,
+and weighted MaxCut problems with 16 variables.
+
+ For benchmarking purposes, we only consider problems for which the solution, i.e. the true ground state of the problem Hamiltonian is known.
+In this case, the success probability, i.e. the probability
+to sample the true ground state, can be used as the function to be minimized.
+This is the ideal setting for scrutinizing the performance of the QAOA.
+In a practically relevant setting, the true ground state is not known
+and one has to resort to minimizing the expectation value of the problem Hamiltonian.
+Furthermore, on a real device, this expectation value needs to be estimated from a (small) sample.
+Using a simulator, one can dispense of the sampling aspect.
+Our simulation data show that the success of the QAOA
+based on minimizing the expectation value of the problem Hamiltonian
+strongly depends on the problem instance.
+
+ For a small number of QAOA steps p = 1 , … , 50 p=1,\ldots,50 , the QAOA may be viewed as a method to
+determine the 2 ​ p 2p parameters in a particular variational ansatz for the wave function.
+For our whole problem collection, we find that
+the effect of optimizing the p = 1 p=1 wave function on the success probability
+is rather modest, even when we run the QAOA on the simulator.
+In the case of a nontrivial 8-variable 2-SAT problem,
+for which the p = 1 p=1 QAOA on a simulator yields good results,
+the IBM Q Experience produced rather poor results.
+
+ There exist 2-SAT problems for which the p = 5 p=5 QAOA performs satisfactorily
+(meaning that the success probability is much larger than 1%),
+also if we perform the simulation in the practically relevant setting,
+that is we minimize the expectation of the problem Hamiltonian, not the success probability.
+We also observed that (local) maxima of the success probability and (local) minima of the energy expectation value seem not always to be sufficiently aligned.
+
+ Quantum annealing can be viewed as a particular realization of the QAOA with p → ∞ p\to\infty .
+This suggests that we may use, for instance, a linear annealing scheme to initialize the 2 ​ p 2p parameters.
+For small values of p p , after minimizing these parameters,
+depending on the problem instance, they may or may not resemble the annealing scheme.
+For the case with p = 50 p=50 studied in this paper, they are close to their values of the
+linear annealing scheme, yielding a success probability that is close to one.
+Summarizing, the performance of the QAOA varies considerably with the problem instance,
+the number of parameters 2 ​ p 2p , and their initialization.
+This variation also makes it difficult to develop a general strategy for optimizing the 2 ​ p 2p parameters.
+
+ For the set of problem instances considered, taking the success probability as a measure,
+the QAOA cannot compete with quantum annealing when no minor embedding is necessary (as in the case of the instances studied).
+We also find a correlation between instances that are hard for quantum annealing and instances that are hard for the QAOA.
+The ratio r r , which also requires knowledge of the true ground state,
+is a less sensitive measure for the algorithm performance.
+Therefore, it shows less variation from one problem instance to another.
+But the ratios r r obtained from the QAOA (using a simulator) are, with a few exceptions, still
+significantly smaller than those obtained by quantum annealing on a real device.
+
+ Acknowledgements.
+
+Access and compute time on the D-Wave machine located at the headquarters of D-Wave Systems in Burnaby (Canada) were provided by D-Wave Systems.
+We acknowledge use of the IBM Q Experience. This work does not reflect the views or opinions of IBM or any of its employees.
+D.W. is supported by the Initiative and Networking Fund of the Helmholtz Association through the Strategic Future Field of Research project “Scalable solid state quantum computing (ZT-0013)”.
+K.M. acknowledges support from the project OpenSuperQ (820363) of the EU Flagship Quantum Technologies.
+
+ Appendix A Relation between QAOA and quantum annealing
+
+ In this appendix, we give a mapping between a Hamiltonian describing a quantum annealing scheme and the QAOA for a given number of steps. The annealing Hamiltonian reads
+
+ H ⁡ ( s ) = A ⁡ ( s ) ​ ( − H 0 ) + B ⁡ ( s ) ​ H C , s = t / t a ∈ [ 0 , 1 ] , \displaystyle H(s)=A(s)(-H_{0})+B(s)H_{C},\quad s=t/t_{a}\in[0,1], 
+
+ (20) 
+
+ where (we have to add an additional minus sign to H 0 H_{0} such that the state | + ⟩ ⊗ N \ket{+}^{\otimes N} we start from is the ground state of H ⁡ ( s ) H(s) and the convention still conforms with the formulation of the QAOA)
+
+ H 0 \displaystyle H_{0} 
+ = ∑ i σ i x , \displaystyle=\sum_{i}\sigma_{i}^{x}, 
+
+ (21) 
+
+ H C \displaystyle H_{C} 
+ = ∑ i h i ​ σ i z + ∑ i ​ j J i ​ j ​ σ i z ​ σ j z . \displaystyle=\sum_{i}h_{i}\sigma_{i}^{z}+\sum_{ij}J_{ij}\sigma_{i}^{z}\sigma_{j}^{z}. 
+
+ (22) 
+
+ We discretize the time-evolution operator of the annealing process into N N time steps of size τ = t a / N \tau=t_{a}/N . Approximating each time step to second order in τ \tau yields  [ 38 , 17 ] 
+
+ U \displaystyle U 
+ = e + i τ A ( s N ) H 0 / 2 e − i ​ τ ​ B ​ ( s N ) ​ H C \displaystyle=e^{+i\tau A(s_{N})H_{0}/2}e^{-i\tau B(s_{N})H_{C}} 
+
+ × e + i τ ( A ( s N ) + A ( s N − 1 ) ) H 0 / 2 ⋯ \displaystyle\quad\times e^{+i\tau(A(s_{N})+A(s_{N-1}))H_{0}/2}\cdots 
+
+ × e − i ​ τ ​ B ​ ( s 2 ) ​ H C e + i τ ( A ( s 2 ) + A ( s 1 ) ) H 0 / 2 \displaystyle\quad\times e^{-i\tau B(s_{2})H_{C}}e^{+i\tau(A(s_{2})+A(s_{1}))H_{0}/2} 
+
+ × e − i ​ τ ​ B ​ ( s 1 ) ​ H C e + i τ A ( s 1 ) H 0 / 2 , \displaystyle\quad\times e^{-i\tau B(s_{1})H_{C}}e^{+i\tau A(s_{1})H_{0}/2}, 
+
+ (23) 
+
+ where s n = ( n − 1 / 2 ) / N s_{n}=(n-1/2)/N , and n = 1 , … , N n=1,\dots,N .
+
+ To map Eq. ( 23 ) to the QAOA evolution
+
+ V = e − i ​ β p ​ H 0 e − i ​ γ p ​ H C ⋯ e − i ​ β 1 ​ H 0 e − i ​ γ 1 ​ H C , \displaystyle V=e^{-i\beta_{p}H_{0}}e^{-i\gamma_{p}H_{C}}\cdots e^{-i\beta_{1}H_{0}}e^{-i\gamma_{1}H_{C}}, 
+
+ (24) 
+
+ we can neglect e + i τ A ( s 1 ) H 0 / 2 e^{+i\tau A(s_{1})H_{0}/2} because its action on | + ⟩ ⊗ N \ket{+}^{\otimes N} yields only a global phase factor and we can choose
+
+ γ n \displaystyle\gamma_{n} 
+ = τ B ( s n ) , n = 1 , … , N \displaystyle=\tau B(s_{n}),\qquad n=1,\dots,N 
+
+ (25) 
+
+ β n \displaystyle\beta_{n} 
+ = − τ ( A ( s n + 1 ) + A ( s n ) ) / 2 , n = 1 , … , N − 1 \displaystyle=-\tau\left(A(s_{n+1})+A(s_{n})\right)/2,\qquad n=1,\dots,N-1 
+
+ (26) 
+
+ β N \displaystyle\beta_{N} 
+ = − τ A ( s N ) / 2 . \displaystyle=-\tau A(s_{N})/2. 
+
+ (27) 
+
+ So N N time steps for the second-order-accurate annealing scheme correspond to p = N p=N steps for the QAOA.
+
+ As an example, we take
+
+ A ⁡ ( s ) = 1 − s , B ⁡ ( s ) = s . \displaystyle A(s)=1-s,\qquad B(s)=s. 
+
+ (28) 
+
+ Using Eqs. ( 25 ) – ( 27 ), we obtain
+
+ γ n \displaystyle\gamma_{n} 
+ = τ ⁡ ( n − 1 / 2 ) N \displaystyle=\frac{\tau(n-1/2)}{N} 
+
+ (29) 
+
+ β n \displaystyle\beta_{n} 
+ = − τ ⁡ ( 1 − n N ) \displaystyle=-\tau\left(1-\frac{n}{N}\right) 
+
+ (30) 
+
+ β N \displaystyle\beta_{N} 
+ = − τ 4 ​ N . \displaystyle=-\frac{\tau}{4N}. 
+
+ (31) 
+
+ Appendix B Problem instances
+
+ Table 2: The 16-variable weighted MaxCut problem instance. 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+
+ 0 
+ 4 
+ 0.4 
+
+ 0 
+ 5 
+ 0.8 
+
+ 0 
+ 6 
+ 0.2 
+
+ 1 
+ 4 
+ 0.7 
+
+ 1 
+ 5 
+ 0.5 
+
+ 1 
+ 6 
+ 0.6 
+
+ 1 
+ 7 
+ 0.8 
+
+ 2 
+ 4 
+ 0.4 
+
+ 2 
+ 5 
+ 1.0 
+
+ 2 
+ 6 
+ 0.3 
+
+ 2 
+ 7 
+ 0.7 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+
+ 3 
+ 4 
+ 0.3 
+
+ 3 
+ 5 
+ 0.7 
+
+ 3 
+ 6 
+ 0.6 
+
+ 3 
+ 7 
+ 0.4 
+
+ 4 
+ 12 
+ 0.1 
+
+ 6 
+ 14 
+ 0.2 
+
+ 7 
+ 15 
+ 1.0 
+
+ 8 
+ 12 
+ 0.1 
+
+ 8 
+ 13 
+ 0.9 
+
+ 8 
+ 14 
+ 1.0 
+
+ 8 
+ 15 
+ 0.8 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+
+ 9 
+ 12 
+ 0.3 
+
+ 9 
+ 13 
+ 0.5 
+
+ 9 
+ 14 
+ 0.1 
+
+ 9 
+ 15 
+ 0.7 
+
+ 10 
+ 12 
+ 0.5 
+
+ 10 
+ 13 
+ 0.7 
+
+ 10 
+ 14 
+ 0.3 
+
+ 10 
+ 15 
+ 0.6 
+
+ 11 
+ 12 
+ 0.2 
+
+ 11 
+ 13 
+ 0.8 
+
+ 11 
+ 14 
+ 0.5 
+
+ The problem instance of the 16-variable weighted MaxCut problem is listed in Table  2 .
+
+ Our 2-SAT problems have been selected such that they possess a unique ground state and a highly degenerate first-excited state, making them (very) hard to solve by simulated annealing.
+In this paper, we have taken instances from this collection that (1) present different degrees of difficulty for quantum annealing and (2) can be mapped directly onto the architecture of the IBM Q Melbourne chip and the Chimera graph architecture of the D-Wave 2000Q quantum annealer.
+We require (2) because otherwise, we would need to perform additional swap gates on the IBM Q Experience and use a minor embedding on the D-Wave 2000Q quantum annealer.
+This would make a direct comparison complicated and require including the particular graph structure in the benchmark, rendering it device-dependent and thus losing generality.
+The simulator, on the other hand, does not impose any constraints on the connectivity.
+Tables  3 – 5 contain the instances of the 8-, 12- and 18-variable 2-SAT problems, respectively. Entries for which both J i ​ j J_{ij} and h i h_{i} are zero have been omitted.
+
+ Table 3: 8-variable 2-SAT problem instances with 9 clauses. 
+
+ (A) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 6 
+ 1 
+ 0 
+
+ 1 
+ 3 
+ − 1 -1 
+ 0 
+
+ 2 
+ 0 
+ − 1 -1 
+ 1 
+
+ 3 
+ 4 
+ 1 
+ 0 
+
+ 5 
+ 6 
+ − 1 -1 
+ − 1 -1 
+
+ 6 
+ 4 
+ − 1 -1 
+ 1 
+
+ 7 
+ 1 
+ − 1 -1 
+ 1 
+
+ (B) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 7 
+ − 1 -1 
+ − 1 -1 
+
+ 1 
+ 3 
+ − 1 -1 
+ 1 
+
+ 2 
+ 5 
+ 1 1 
+ 0 
+
+ 2 
+ 6 
+ − 1 -1 
+ 0 
+
+ 4 
+ 6 
+ − 1 -1 
+ − 1 -1 
+
+ 5 
+ 7 
+ 1 1 
+ 0 
+
+ 6 
+ 3 
+ 1 1 
+ 1 1 
+
+ (C) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 3 
+ − 1 -1 
+ − 1 -1 
+
+ 0 
+ 7 
+ − 1 -1 
+ − 1 -1 
+
+ 1 
+ 2 
+ 1 
+ 0 
+
+ 2 
+ 3 
+ 1 1 
+ 0 
+
+ 4 
+ 0 
+ 1 1 
+ − 1 -1 
+
+ 5 
+ 1 
+ 1 1 
+ − 1 -1 
+
+ 6 
+ 7 
+ − 1 -1 
+ 1 
+
+ (D) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 2 
+ − 1 -1 
+ 0 
+
+ 0 
+ 7 
+ 1 1 
+ 0 
+
+ 1 
+ 6 
+ 1 1 
+ 0 
+
+ 1 
+ 7 
+ − 1 -1 
+ 0 
+
+ 2 
+ 3 
+ 1 1 
+ 0 
+
+ 3 
+ 4 
+ 1 1 
+ − 1 -1 
+
+ 3 
+ 6 
+ − 1 -1 
+ − 1 -1 
+
+ 4 
+ 5 
+ 1 
+ 0 
+
+ 6 
+ 5 
+ 1 
+ 1 
+
+ Table 4: 12-variable 2-SAT problem instances with 13 clauses. 
+
+ (A) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 9 
+ 1 
+ − 1 -1 
+
+ 1 
+ 9 
+ − 1 -1 
+ 1 
+
+ 2 
+ 6 
+ 1 1 
+ 1 
+
+ 3 
+ 11 
+ 1 
+ 1 
+
+ 5 
+ 11 
+ 1 1 
+ 1 
+
+ 6 
+ 10 
+ − 1 -1 
+ 1 
+
+ 7 
+ 6 
+ − 1 -1 
+ − 1 -1 
+
+ 8 
+ 10 
+ − 1 -1 
+ − 1 -1 
+
+ 9 
+ 4 
+ 1 1 
+ − 2 -2 
+
+ 10 
+ 4 
+ − 1 -1 
+ 1 
+
+ 11 
+ 9 
+ 1 
+ 1 1 
+
+ (B) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 7 
+ 1 1 
+ − 1 -1 
+
+ 0 
+ 8 
+ 1 1 
+ − 1 -1 
+
+ 1 
+ 10 
+ 1 1 
+ − 1 -1 
+
+ 2 
+ 4 
+ − 1 -1 
+ − 2 -2 
+
+ 2 
+ 8 
+ 1 1 
+ − 2 -2 
+
+ 3 
+ 0 
+ 1 1 
+ − 1 -1 
+
+ 5 
+ 4 
+ 1 
+ − 1 -1 
+
+ 6 
+ 2 
+ − 1 -1 
+ 1 
+
+ 7 
+ 11 
+ 1 
+ 0 
+
+ 9 
+ 2 
+ − 1 -1 
+ 1 
+
+ 10 
+ 11 
+ − 1 -1 
+ 0 
+
+ (C) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 6 
+ 1 1 
+ 0 
+
+ 1 
+ 5 
+ 1 
+ − 1 -1 
+
+ 2 
+ 0 
+ − 1 -1 
+ − 1 -1 
+
+ 3 
+ 10 
+ − 1 -1 
+ 0 
+
+ 4 
+ 11 
+ − 1 -1 
+ − 1 -1 
+
+ 5 
+ 3 
+ − 1 -1 
+ − 1 -1 
+
+ 6 
+ 7 
+ 1 
+ − 1 -1 
+
+ 7 
+ 10 
+ 1 
+ 0 
+
+ 8 
+ 5 
+ − 1 -1 
+ 1 1 
+
+ 9 
+ 11 
+ 1 
+ 1 
+
+ 11 
+ 6 
+ 1 
+ 1 
+
+ (D) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 10 
+ − 1 -1 
+ 1 
+
+ 1 
+ 9 
+ − 1 -1 
+ 0 
+
+ 2 
+ 10 
+ − 1 -1 
+ 1 
+
+ 3 
+ 6 
+ − 1 -1 
+ − 1 -1 
+
+ 4 
+ 3 
+ − 1 -1 
+ 1 
+
+ 5 
+ 10 
+ − 1 -1 
+ 1 
+
+ 6 
+ 9 
+ − 1 -1 
+ 0 
+
+ 7 
+ 1 
+ 1 1 
+ − 1 -1 
+
+ 8 
+ 3 
+ − 1 -1 
+ − 1 -1 
+
+ 10 
+ 8 
+ − 1 -1 
+ − 2 -2 
+
+ 11 
+ 8 
+ 1 
+ − 1 -1 
+
+ Table 5: 18-variable 2-SAT problem instances with 19 clauses. 
+
+ (A) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 5 
+ − 1 -1 
+ − 2 -2 
+
+ 0 
+ 7 
+ 1 
+ − 2 -2 
+
+ 0 
+ 10 
+ − 1 -1 
+ − 2 -2 
+
+ 1 
+ 13 
+ 1 
+ − 2 -2 
+
+ 1 
+ 15 
+ 1 
+ − 2 -2 
+
+ 2 
+ 5 
+ − 1 -1 
+ 1 
+
+ 3 
+ 12 
+ − 1 -1 
+ 1 
+
+ 4 
+ 7 
+ 1 
+ 1 
+
+ 6 
+ 11 
+ 1 
+ 1 
+
+ 7 
+ 9 
+ 1 
+ 1 
+
+ 8 
+ 0 
+ − 1 -1 
+ 1 
+
+ 9 
+ 12 
+ − 1 -1 
+ 0 
+
+ 10 
+ 11 
+ 1 
+ 0 
+
+ 11 
+ 15 
+ − 1 -1 
+ 1 
+
+ 14 
+ 13 
+ − 1 -1 
+ − 1 -1 
+
+ 16 
+ 1 
+ − 1 -1 
+ 1 
+
+ 17 
+ 1 
+ 1 
+ − 1 -1 
+
+ (B) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 1 
+ 1 
+ − 1 -1 
+
+ 0 
+ 3 
+ 1 
+ − 1 -1 
+
+ 0 
+ 11 
+ − 1 -1 
+ − 1 -1 
+
+ 1 
+ 13 
+ 1 
+ 2 
+
+ 1 
+ 15 
+ 1 
+ 2 
+
+ 1 
+ 17 
+ − 1 -1 
+ 2 
+
+ 2 
+ 10 
+ 1 
+ 0 
+
+ 3 
+ 12 
+ 1 
+ 0 
+
+ 4 
+ 13 
+ 1 
+ − 1 -1 
+
+ 5 
+ 8 
+ − 1 -1 
+ 0 
+
+ 5 
+ 12 
+ 1 
+ 0 
+
+ 6 
+ 17 
+ 1 
+ 1 
+
+ 7 
+ 11 
+ 1 
+ 0 
+
+ 8 
+ 10 
+ 1 
+ 0 
+
+ 9 
+ 15 
+ − 1 -1 
+ 1 
+
+ 14 
+ 7 
+ − 1 -1 
+ − 1 -1 
+
+ 16 
+ 2 
+ 1 
+ 1 
+
+ (C) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 1 
+ 0 
+ − 1 -1 
+ − 1 -1 
+
+ 2 
+ 4 
+ − 1 -1 
+ 0 
+
+ 3 
+ 4 
+ − 1 -1 
+ 1 
+
+ 4 
+ 0 
+ − 1 -1 
+ − 2 -2 
+
+ 5 
+ 4 
+ − 1 -1 
+ − 1 -1 
+
+ 6 
+ 1 
+ − 1 -1 
+ 1 
+
+ 7 
+ 2 
+ − 1 -1 
+ 1 
+
+ 8 
+ 1 
+ 1 
+ − 1 -1 
+
+ 9 
+ 10 
+ 1 
+ 1 
+
+ 10 
+ 12 
+ 1 
+ 1 
+
+ 11 
+ 16 
+ − 1 -1 
+ − 1 -1 
+
+ 12 
+ 15 
+ − 1 -1 
+ 0 
+
+ 13 
+ 10 
+ − 1 -1 
+ − 1 -1 
+
+ 14 
+ 15 
+ 1 1 
+ − 1 -1 
+
+ 15 
+ 16 
+ 1 
+ − 1 -1 
+
+ 16 
+ 5 
+ 1 
+ 1 
+
+ 17 
+ 5 
+ − 1 -1 
+ 1 
+
+ (D) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 9 
+ 1 1 
+ 0 
+
+ 0 
+ 14 
+ 1 1 
+ 0 
+
+ 1 
+ 4 
+ − 1 -1 
+ − 1 -1 
+
+ 2 
+ 10 
+ − 1 -1 
+ 0 
+
+ 2 
+ 13 
+ − 1 -1 
+ 0 
+
+ 3 
+ 17 
+ 1 1 
+ 1 
+
+ 4 
+ 6 
+ − 1 -1 
+ 1 
+
+ 4 
+ 7 
+ − 1 -1 
+ 1 
+
+ 5 
+ 10 
+ 1 
+ 0 
+
+ 5 
+ 11 
+ 1 
+ 0 
+
+ 6 
+ 15 
+ 1 1 
+ 0 
+
+ 7 
+ 9 
+ 1 1 
+ 0 
+
+ 8 
+ 15 
+ 1 1 
+ 0 
+
+ 8 
+ 17 
+ 1 1 
+ 0 
+
+ 11 
+ 14 
+ − 1 -1 
+ 0 
+
+ 12 
+ 16 
+ − 1 -1 
+ 1 
+
+ 13 
+ 16 
+ − 1 -1 
+ 0 
+
+ (E) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 5 
+ 1 1 
+ 0 
+
+ 0 
+ 9 
+ − 1 -1 
+ 0 
+
+ 1 
+ 6 
+ 1 1 
+ 0 
+
+ 1 
+ 14 
+ 1 1 
+ 0 
+
+ 2 
+ 10 
+ 1 1 
+ − 1 -1 
+
+ 3 
+ 5 
+ − 1 -1 
+ 0 
+
+ 3 
+ 15 
+ 1 1 
+ 0 
+
+ 4 
+ 17 
+ 1 1 
+ 0 
+
+ 4 
+ 8 
+ − 1 -1 
+ 0 
+
+ 6 
+ 15 
+ − 1 -1 
+ 0 
+
+ 7 
+ 9 
+ − 1 -1 
+ − 1 -1 
+
+ 8 
+ 13 
+ − 1 -1 
+ 0 
+
+ 10 
+ 17 
+ − 1 -1 
+ 0 
+
+ 11 
+ 7 
+ 1 1 
+ − 1 -1 
+
+ 12 
+ 14 
+ − 1 -1 
+ 1 
+
+ 16 
+ 13 
+ − 1 -1 
+ − 1 -1 
+
+ 17 
+ 7 
+ − 1 -1 
+ − 1 -1 
+
+ (F) 
+
+ i i 
+ j j 
+ J i ​ j J_{ij} 
+ h i h_{i} 
+
+ 0 
+ 3 
+ − 1 -1 
+ − 1 -1 
+
+ 0 
+ 4 
+ 1 1 
+ − 1 -1 
+
+ 1 
+ 6 
+ 1 1 
+ 0 
+
+ 2 
+ 13 
+ − 1 -1 
+ − 1 -1 
+
+ 3 
+ 1 
+ − 1 -1 
+ − 1 -1 
+
+ 4 
+ 9 
+ 1 1 
+ 1 
+
+ 5 
+ 4 
+ − 1 -1 
+ − 1 -1 
+
+ 6 
+ 14 
+ − 1 -1 
+ 0 
+
+ 7 
+ 0 
+ − 1 -1 
+ 1 
+
+ 8 
+ 3 
+ 1 1 
+ − 1 -1 
+
+ 9 
+ 10 
+ − 1 -1 
+ − 1 -1 
+
+ 9 
+ 15 
+ 1 1 
+ − 1 -1 
+
+ 11 
+ 10 
+ 1 1 
+ − 1 -1 
+
+ 13 
+ 14 
+ − 1 -1 
+ 0 
+
+ 15 
+ 12 
+ 1 1 
+ 1 
+
+ 16 
+ 12 
+ − 1 -1 
+ 1 1 
+
+ 17 
+ 15 
+ − 1 -1 
+ − 1 -1 
+
+ References
+
+ [1] 
+ E. Farhi, J. Goldstone, and S. Gutmann, “A quantum approximate
+optimization algorithm,” (2014), arXiv:1411.4028 . 
+
+ [2] 
+ M. Born and V. Fock, Zs. f. Phys. 51 , 165 (1928) . 
+
+ [3] 
+ M. Streif and M. Leib, “Comparison of QAOA with Quantum
+and Simulated Annealing,” (2019), arXiv:1901.01903 . 
+
+ [4] 
+ P. W. Shor, SIAM J. Comput. 26 , 1484 (1997) . 
+
+ [5] 
+ J. Preskill, Quantum 2 , 79 (2018) . 
+
+ [6] 
+ J. S. Otterbach, R. Manenti,
+N. Alidoust, A. Bestwick, M. Block, B. Bloom, S. Caldwell, N. Didier, E. S. Fried, S. Hong, P. Karalekas,
+C. B. Osborn, A. Papageorge, E. C. Peterson, G. Prawiroatmodjo, N. Rubin, C. A. Ryan, D. Scarabelli, M. Scheer, E. A. Sete, P. Sivarajah, R. S. Smith, A. Staley,
+N. Tezak, W. J. Zeng, A. Hudson, B. R. Johnson, M. Reagor, M. P. da Silva, and C. Rigetti, “Unsupervised machine learning on a hybrid quantum computer,” (2017), arXiv:1712.05771 . 
+
+ [7] 
+ X. Qiang, X. Zhou,
+J. Wang, C. M. Wilkes, T. Loke, S. O’Gara, L. Kling, G. D. Marshall, R. Santagati, T. C. Ralph, J. B. Wang,
+J. L. O’Brien, M. G. Thompson, and J. C. F. Matthews, Nat. Photonics 12 , 534 (2018) . 
+
+ [8] 
+ E. Farhi and A. W. Harrow, “Quantum supremacy
+through the quantum approximate optimization algorithm,” (2016), arXiv:1602.07674 
+. 
+
+ [9] 
+ G. R. Garey and D. Johnson, Computers and
+Intractability (W.H. Freeaman, 2000). 
+
+ [10] 
+ P. I. Bunyk, E. M. Hoskinson, M. W. Johnson, E. Tolkacheva,
+F. Altomare, A. J. Berkley, R. Harris, J. P. Hilton, T. Lanting, A. J. Przybysz, and J. Whittaker, IEEE Trans. Appl. Supercond. 24 , 1 (2014) . 
+
+ [11] 
+ Z. Bian, F. Chudak,
+R. Israel, B. Lackey, W. G. Macready, and A. Roy, Front. Phys. 2 , 56 (2014) . 
+
+ [12] 
+ T. Boothby, A. D. King, and A. Roy, Quantum Inf. Process. 15 , 495 (2016) . 
+
+ [13] 
+ A. Finnila, M. Gomez,
+C. Sebenik, C. Stenson, and J. Doll, Chem. Phys. Lett. 219 , 343 (1994) . 
+
+ [14] 
+ T. Kadowaki and H. Nishimori, Phys. Rev. E 58 , 5355 (1998) . 
+
+ [15] 
+ E. Farhi, J. Goldstone,
+S. Gutmann, and M. Sipser, “Quantum computation by adiabatic evolution,” 
+(2000), arXiv:quant-ph/0001106 
+. 
+
+ [16] 
+ A. M. Childs, E. Farhi, and J. Preskill, Phys. Rev. A 65 , 012322 (2001) . 
+
+ [17] 
+ M. Suzuki, J. Math. Phys. 26 , 601 (1985) . 
+
+ [18] 
+ H. F. Trotter, Proc. Amer. Math. Soc. 10 , 545 (1959) . 
+
+ [19] 
+ T. Albash and D. Lidar, Rev. Mod. Phys. 90 , 015002 (2018) . 
+
+ [20] 
+ N. Chancellor, S. Zohren,
+ and P. A. Warburton, npj Quantum Inf. 3 , 21 (2017) . 
+
+ [21] 
+ S. Hadfield, Z. Wang,
+B. O’Gorman, E. G. Rieffel, D. Venturelli, and R. Biswas, Algorithms 12 , 34 (2019) . 
+
+ [22] 
+ A. Peruzzo, J. McClean,
+P. Shadbolt, M. Yung, X. Zhou, P. J. Love, A. Aspuru-Guzik, and J. L. O’Brien, Nat. Commun. 5 , 4213 (2014) . 
+
+ [23] 
+ P. J. J. O’Malley, R. Babbush, I. D. Kivlichan, J. Romero,
+J. R. McClean, R. Barends, J. Kelly, P. Roushan, A. Tranter, N. Ding, B. Campbell, Y. Chen,
+Z. Chen, B. Chiaro, A. Dunsworth, A. G. Fowler, E. Jeffrey, E. Lucero,
+A. Megrant, J. Y. Mutus, M. Neeley, C. Neill, C. Quintana, D. Sank, A. Vainsencher, J. Wenner,
+T. C. White, P. V. Coveney, P. J. Love, H. Neven, A. Aspuru-Guzik, and J. M. Martinis, Phys.
+Rev. X 6 , 031007
+(2016) . 
+
+ [24] 
+ A. Kandala, A. Mezzacapo,
+K. Temme, M. Takita, M. Brink, J. M. Chow, and J. M. Gambetta, Nature 549 , 242 (2017) . 
+
+ [25] 
+ Z. Yang, A. Rahmani,
+A. Shabani, H. Neven, and C. Chamon, Phys.
+Rev. X 7 , 021027
+(2017) . 
+
+ [26] 
+ T. Hsu, F. Jin, C. Seidel, F. Neukart, H. De Raedt, and K. Michielsen, “Quantum annealing with anneal path control: application to 2-SAT problems
+with known energy landscapes,” (2018), arXiv:1810.00194 . 
+
+ [27] 
+ D. P. Williamson and D. B. Shmoys, The Design of Approximation Algorithms (Cambridge University Press, 2011). 
+
+ [28] 
+ M. X. Goemans and D. P. Williamson, J. ACM 42 , 1115 (1995) . 
+
+ [29] 
+ Z. Wang, S. Hadfield,
+Z. Jiang, and E. G. Rieffel, Phys.
+Rev. A 97 , 022304
+(2018) . 
+
+ [30] 
+ G. Aleksandrowicz, T. Alexander, P. Barkoutsos, L. Bello,
+Y. Ben-Haim, D. Bucher, F. J. Cabrera-Hernádez, J. Carballo-Franquis, A. Chen, C.-F. Chen, J. M. Chow, A. D. Córcoles-Gonzales, A. J. Cross, A. Cross, J. Cruz-Benito, C. Culver, S. D. L. P. González, E. D. L. Torre, D. Ding, E. Dumitrescu,
+I. Duran, P. Eendebak, M. Everitt, I. F. Sertage, A. Frisch, A. Fuhrer, J. Gambetta, B. G. Gago, J. Gomez-Mosquera, D. Greenberg, I. Hamamura,
+V. Havlicek, J. Hellmers, Ł. Herok, H. Horii, S. Hu, T. Imamichi, T. Itoko,
+A. Javadi-Abhari, N. Kanazawa, A. Karazeev, K. Krsulich, P. Liu, Y. Luh, Y. Maeng, M. Marques,
+F. J. Martín-Fernández, D. T. McClure, D. McKay, S. Meesala,
+A. Mezzacapo, N. Moll, D. M. Rodríguez, G. Nannicini, P. Nation, P. Ollitrault, L. J. O’Riordan, H. Paik, J. Pérez,
+A. Phan, M. Pistoia, V. Prutyanov, M. Reuter, J. Rice, A. R. Davila, R. H. P. Rudy, M. Ryu, N. Sathaye,
+C. Schnabel, E. Schoute, K. Setia, Y. Shi, A. Silva, Y. Siraichi,
+S. Sivarajah, J. A. Smolin, M. Soeken, H. Takahashi, I. Tavernelli, C. Taylor, P. Taylour, K. Trabing, M. Treinish, W. Turner, D. Vogt-Lee, C. Vuillot, J. A. Wildstrom, J. Wilson, E. Winston,
+C. Wood, S. Wood, S. Wörner, I. Y. Akhalwaya, and C. Zoufal, “Qiskit: An open-source framework for quantum
+computing,” (2019). 
+
+ [31] 
+ IBM, “IBM Q Experience,” https://www.research.ibm.com/ibm-q/ (2016). 
+
+ [32] 
+ H. De
+Raedt, F. Jin, D. Willsch, M. Willsch, N. Yoshioka, N. Ito, S. Yuan, and K. Michielsen, Comput. Phys. Commun. 237 , 47 (2019) . 
+
+ [33] 
+ J. A. Nelder and R. Mead, Comput. J. 7 , 308 (1965) . 
+
+ [34] 
+ W. H. Press, S. A. Teukolsky, W. T. Vetterling, and B. P. Flannery, Numerical Recipes 3rd
+Edition: The Art of Scientific Computing (Cambridge University Press, New York, USA, 2007). 
+
+ [35] 
+ G. G. Guerreschi and A. Y. Matsuura, Sci. Rep. 9 , 6903 (2019) . 
+
+ [36] 
+ G. E. Crooks, “Performance of the
+quantum approximate optimization algorithm on the maximum cut problem,” 
+(2018), arXiv:1811.08419v1 . 
+
+ [37] 
+ L. Zhou, S.-T. Wang,
+S. Choi, H. Pichler, and M. D. Lukin, “Quantum approximate optimization algorithm: Performance,
+mechanism, and implementation on near-term devices,” (2018), arXiv:1812.01041v1 . 
+
+ [38] 
+ H. De Raedt and B. De Raedt, Phys. Rev. A 28 , 3575 (1983) . 
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( 
+
+ ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About · 
+ Help · 
+ Contact · 
+ Subscribe · 
+ Copyright · 
+ Privacy · 
+ Accessibility · 
+ Operational Status (opens in new tab) 
+

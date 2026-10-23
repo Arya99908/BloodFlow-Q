@@ -1,0 +1,18 @@
+{
+  "rpc_names": [
+    "advance_emergency_request",
+    "assign_authorized_collection_team",
+    "assign_request_transport",
+    "confirm_collection_at_centre",
+    "create_emergency_blood_request",
+    "get_coordination_dashboard",
+    "notify_next_donor",
+    "propose_collection_appointment",
+    "record_collection_release",
+    "respond_to_collection_appointment",
+    "respond_to_donor_request",
+    "verify_request_inventory"
+  ],
+  "missing_migration_definitions": [],
+  "scope": "Static migration coverage only; no live private writes or notifications"
+}

@@ -1,0 +1,1702 @@
+=== PDF PAGE 1 ===
+An evolving objective function for improved
+variational quantum optimisation
+Ioannis Kolotouros∗ and Petros Wallden†
+University of Edinburgh, School of Informatics, EH8 9AB Edinburgh, United Kingdom
+(Dated: June 27, 2022)
+A promising approach to useful computational quantum advantage is to use variational quan-
+tum algorithms for optimisation problems. Crucial for the performance of these algorithms is to
+ensure that the algorithm converges with high probability to a near-optimal solution in a small
+time. In Barkoutsos et al [Quantum 2020] an alternative class of objective functions, called Con-
+ditional Value-at-Risk (CVaR), was introduced and it was shown that they perform better than
+standard objective functions. Here we extend that work by introducing an evolving objective func-
+tion, which we call Ascending-CVaR and that can be used for any optimisation problem. We test
+our proposed objective function, in an emulation environment, using as case-studies three diﬀerent
+optimisation problems: Max-Cut, Number Partitioning and Portfolio Optimisation. We examine
+multiple instances of diﬀerent sizes and analyse the performance using the Variational Quantum
+Eigensolver (VQE) with hardware-eﬃcient ansatz and the Quantum Approximate Optimization
+Algorithm (QAOA). We show that Ascending-CVaR in all cases performs better than standard ob-
+jective functions or the “constant” CVaR of Barkoutsos et al [Quantum 2020] and that it can be
+used as a heuristic for avoiding sub-optimal minima. Our proposal achieves higher overlap with the
+ideal state in all problems, whether we consider easy or hard instances – on average it gives up to
+ten times greater overlap at Portfolio Optimisation and Number Partitioning, while it gives an 80%
+improvement at Max-Cut. In the hard instances we consider, for the number partitioning problem,
+standard objective functions fail to ﬁnd the correct solution in almost all cases, CVaR ﬁnds the
+correct solution at 60% of the cases, while Ascending-CVaR ﬁnds the correct solution in 95% of the
+cases.
+I. INTRODUCTION
+We have recently entered the era where quantum
+computers have scaled up, from small proof-of-principle
+devices to devices that are beyond the classical simula-
+tion limit opening the prospect for providing computa-
+tional speed-ups. However, we are still very far from the
+point that large fault tolerant quantum computers are
+developed. Our period has been termed as Noisy Inter-
+mediate Scale Quantum (NISQ) device era [1] and refers
+to the time that the existing devices vary from≈ 50
+qubits of Google’s quantum-advantage1 experiment [2]
+to devices withO(1000) qubits that are anticipated in
+a horizon of ﬁve to ten years.
+There are two paths forward for quantum comput-
+ing. The “long-term” path requires to intensify the ef-
+forts (theoretical and experimental) to overcome exist-
+ing barriers and truly scale up these devices to the large
+fault-tolerant regime. The “near-term” one, is to deter-
+mine if and how these NISQ devices can be used directly
+and oﬀer advantage for problems of practical impor-
+tance. A promising approach in the latter path, is the
+use of hybrid quantum-classical algorithms. A leading
+class of candidate algorithms, both due the possible im-
+∗ i.kolotouros@sms.ed.ac.uk
+† petros.wallden@ed.ac.uk
+1 Also known as “quantum computational supremacy”.
+portance of the applications and the promise it shows,
+is the class of variational quantum algorithms for opti-
+misation problems.
+One can divide variational quantum algorithms (see
+more details II]) into three main steps. The ﬁrst step is
+to map the targeted problem to the mathematical task
+that these algorithms are designed to solve, which is the
+search for the ground state energy of a Hamiltonian2.
+The second step, is a method to estimate the energy of
+a quantum state, given a (polynomial in the size of the
+input) number of copies. Finally, the third step consists
+of a parameterised family of quantum states (“ansatz”)
+and a classical optimiser that given the above tools,
+outputs eﬃciently an approximation of the ground state
+energy. This is done by ﬁnding the choice of parameters
+that lead to the quantum state that has the smallest
+energy.
+The success of the algorithms depend on all those
+steps and extensive research on improving each of them
+exists, indicatively, [3] used warm-starting to improve
+QAOA on low depth, [4] improved QAOA by intro-
+ducing a non-local version which outperformed classical
+QAOA on 3-regular graphs, [5, 6] introduced diﬀerent
+procedures on how to optimise the variational param-
+eters and [7] used reinforcement learning to assist the
+2 Mathematically this is simply evaluating the smallest eigen-
+value of a Hermitian matrix.
+arXiv:2105.11766v3  [quant-ph]  24 Jun 2022
+
+=== PDF PAGE 2 ===
+2
+classical optimisation.
+What we focus in this contribution is the third part,
+and speciﬁcally on how to use the measurement out-
+comes performed in estimating the energy of a quan-
+tum state to (i) accelerate the speed and (ii) improve
+the accuracy that the classical optimiser ﬁnds an (ap-
+proximation of the) ground state and thus solves the
+problem optimally. Prior to our work, [8] inspired by
+statistical physics, used a Gibbs objective function to
+improve the performance. Minimising theinﬁdelity be-
+tween the parameterised state and a target state [9, 10]
+appears to be another promising approach.
+For classical optimisation problems, the solution
+(ground state) is one of the computational basis quan-
+tum states. Preparing a quantum state that has big
+overlap with that state is suﬃcient to give a good and
+quick approximation of the ground state. For example,
+if one can achieve a constant but possibly small overlap
+withthecorrectsolution, itisguaranteedaftersampling
+this state a constant number of times to obtain at least
+one sample of the true ground state. In [11], the authors
+used this idea, and instead of evaluating the proximity
+of a quantum state to the desired (ground state) by
+minimising the (overall) energy, aimed to minimise the
+energy of the lowest tail of a quantum state. This, intu-
+itively, wouldsucceedquickerinﬁndingaquantumstate
+that has a non-negligible overlap with the solution (but
+not necessarily very high overlap). This state, however,
+suﬃces to solve the problem. This intuition was also
+conﬁrmed with numerical simulations. In other words,
+the cost function used in the classical optimiser, in or-
+der to ﬁnd the optimal parameters, was not the energy
+of the quantum state, but the tail of the corresponding
+distribution.
+Inspired by this idea but also by adiabatic quantum
+computing [12], we consider here an evolving cost func-
+tion. Inourproposalthewaythatthecostofaquantum
+state is computed, dynamically changes during the clas-
+sicaloptimisationprocess. Westartwithacostfunction
+as in [11] focusing on a small tail, but during the optimi-
+sation process we gradually increase the tail (fraction of
+the distribution we “count”) until we reach a point that
+all the distribution is included i.e. we measure the full
+expectation value of the energy (as in “standard” cost
+functions).
+Our contributions.
+• We introduce an evolving objective function that
+starts with the CVaR deﬁned in [11] and gradu-
+ally in the optimisation process becomes the full
+energy of the quantum state. Alternative forms of
+this Ascending-CVaR objective functions are con-
+sidered and a linear and a sigmoid functions (that
+appear to perform better) are selected.
+• We test our proposal, with classical numerical
+simulations (using up to 20 qubits), both in the
+setting of VQE with hardware eﬃcient ansatz and
+in QAOA. Our results suggest that our proposal
+leads to faster convergence with bigger overlap
+with the ideal solution than prior works, while
+crucially, succeeds in obtaining the solution in
+(many) instances that other techniques fail alto-
+gether (see Section VII for statistics and compar-
+isons).
+• Our analysis is done for three diﬀerent combina-
+torial optimisation problems, namely Max-Cut,
+Number Partitioning and Portfolio Optimisation.
+We consider many diﬀerent instances and prob-
+lem sizes where the conclusions persist in all cases.
+This has importance in its own right, since these
+problems are important by themselves, and our
+proposal gives an approach to improve the perfor-
+mance and bring closer achieving “useful” quan-
+tum advantage. Interestingly, our method oﬀered
+greater advantage in “hard instances” of the prob-
+lems, where the other methods frequently failed
+to ﬁnd the solutions altogether.
+Structure. In Section II we give the essential back-
+ground: We introduce the variational quantum algo-
+rithms and speciﬁcally, the variational quantum eigen-
+solver and the quantum approximate optimisation algo-
+rithm. We then introduce the CVaR objective function
+of [11] and ﬁnally analyse the three diﬀerent combinato-
+rial optimisation problems that we use as case-studies.
+In Section III we introduce our novel method called
+Ascending-CVaR and we discuss the hyperparameters
+of our model. In section IV we illustrate our method
+using a small instance as an example. In Section V we
+discuss our methodology. In section VI we present the
+results of our method compared to existing objective
+functions. We conclude in Section VII with a general
+discussion of our method and future work.
+II. PRELIMINARIES
+We introduce two of the main Variational Quantum
+Algorithms [13], the CVaR objective function [11] and
+the three types of combinatorial optimisation problems
+that we use.
+A. V ariational Quantum Algorithms
+Here we revise the methods with focus on optimisa-
+tion problems. The general framework of a variational
+quantum algorithm is outlined in Figure 1. The ﬁrst
+step is to map the classical cost functionC(x) that de-
+scribes the optimisation problem, into an interacting
+qubit HamiltonianHC whose ground state gives the so-
+lution we are seeking.
+
+=== PDF PAGE 3 ===
+3
+Figure 1: General framework of a variational quantum algorithm. The optimisation problem, described by a cost
+function C(x) is mapped to an interacting qubit HamiltonianHC. A parameterised family of states (“ansatz”)
+U(θ) with random initial parameters is chosen and a quantum-classical feedback loop iteratively updates the
+parametersθ. The optimisation ends when the stopping condition is met, and the optimal parametersθ∗ are
+outputted.
+The second step is to choose an ansatz family of uni-
+tary operatorsU(θ). This family is both eﬃciently ex-
+pressibleandtrainable, parameterisedbya µ-parameter
+vectorθ = (θ1,...,θ µ) where µ =O(poly(n)) and n is
+the system size. In general, the parameters are initial-
+ized at random3. The third step is to evaluate some
+objective function, usually taken to be the expectation
+value of the problem’s Hamiltonian on the state consid-
+ered⟨ψ(θ)|HC|ψ(θ)⟩. This is done by preparing the
+state (applying the unitaryU(θ) on the initial state)
+and then measuring the output in the computational
+basis and repeating this procedure for a given number
+of times (typically called “shots”). This number deter-
+mines the accuracy the objective function is evaluated.
+The fourth step is to update the parameters and repeat
+step three, iteratively using some classical optimiser un-
+til a stopping condition is satisﬁed. We then say that
+the parameters are optimal, i.e.
+θ∗ = arg min
+θ
+O (θ,HC) (1)
+The state produced by these parameters,|ψ(θ∗)⟩ =
+U(θ∗)|0⟩⊗n, can be used to give an estimate of the
+3 There are cases that a “clever” initialization could lead to faster
+convergence [14, 15]
+ground state energy of the HamiltonianHC and thus an
+approximate solution to the desired optimisation prob-
+lem. The objective function used during this process,
+as stated above, typically coincides with the expecta-
+tion value of the problem’s Hamiltonian. However, we
+note here that other choices may also be possible, es-
+pecially if we realise that the true target of the opti-
+misation algorithm is to sample, at least once, the op-
+timal solution. This can eﬃciently be produced if the
+output state has a suﬃciently large (or more precisely
+simply non-vanishing) overlap with the optimal solution
+|⟨ψ(θ∗)|ψopt⟩| 2.
+B. Conditional V alue-At-Risk
+Barkoutsos et al. [11] used an alternative objective
+function. They demonstrated that their proposal per-
+formed better than minimising the expectation value.
+The key observation is that for optimisation problems
+the optimal solution is a computational basis state. For
+computational basis states, one can compute their en-
+ergy (eﬃciently). For a general quantum state|ψ(θ)⟩
+one can prepare and measure it (multiple times) in the
+computational basis, and the expectation value of the
+energy is simply the average of the individual compu-
+tational basis states energies. To ﬁnd the overlap of
+
+=== PDF PAGE 4 ===
+4
+this state with the optimal solution (ground state) one
+can simply observe the frequency of the computational
+basis state with the smallest energy. Naturally, if that
+overlap is too small (or even zero), it is possible that
+none of the measurements outcomes will give the solu-
+tion. On the other hand it is also clear that the overlap
+of this state with computational basis vectors with high
+energy are irrelevant for ﬁnding the ground state. The
+idea of [11] was to use this observation and instead of
+using all the measurement outcomes and compute the
+expectation value, they used as objective function the
+lower tail of the distribution of energies obtained, i.e.
+ignored all but a small fraction (with smallest energy)
+of their measurement outcomes.
+They then demonstrated that their technique suc-
+ceeded in getting quicker a quantum state that has a
+suﬃciently large overlap with the ground state. This
+in turn, is suﬃcient to actually ﬁnd this ground state,
+since as a ﬁnal step, once the optimalθ∗ is found, one
+can keep the computational vector that has the small-
+est energy only. Speciﬁcally, letHk be the energy cor-
+responding to a computational basis vector, and let us
+order them in such a way that largerk corresponds to
+larger energy. For each state, one repeats the measure-
+mentK-times, sothereare(upto) K distinctvalues Hk.
+In[11]anewparameter αwasintroduced. Let α∈ (0, 1]
+be the fraction (part of the tail) that we want to keep.
+This fraction, typically, needs to be non-negligible (we
+can assume for simplicity, that is constant). Then the
+objective function that was used, was the average of the
+smallest αK samples, i.e.
+CVaR α = 1⌈αK⌉
+⌈αK⌉∑
+k=0
+Hk (2)
+In order to achieve the same accuracy when evaluating
+this objective function, as the accuracy achieved when
+computing the expectation value usingK shots, it is
+clear that the number of runs of the preparation circuit
+need to be increased toK/α.
+As it was proven by [11], the anglesθ∗ that minimise
+CVaRα do not (in general) correspond to minima of the
+expectation value. As a result, the angles that lead to
+the smallest possibleα-tail diﬀer from the angles that
+minimise the average of the samples. This fact moti-
+vates to introduce a lowerα-tail optimisation so as to
+achieve an overlap with the optimal state of at leastα,
+i.e ﬁnd optimalθ∗ that satisfy:
+|⟨ψ(θ∗)|ψopt⟩| 2≥α (3)
+C. Combinatorial Optimisation Problems
+We test our proposed method in various instances
+of three diﬀerent combinatorial optimisation problems.
+These are all important problems in their own right,
+so improving the performance of variational quantum
+algorithms for these problems is of independent inter-
+est. Moreover, testing our proposed objective func-
+tion on diﬀerent types of combinatorial optimisation
+problems demonstrates that improvements observed are
+generic and motivates further use for diﬀerent applica-
+tions. Given that our proposal’s starting point is the
+work of [11], we included the problems that they tested
+their proposal to allow for more direct comparison.
+The easiest way to use variational quantum algo-
+rithms for an optimisation problem is to ﬁrst map the
+problem to a Quadratic Unconstrained Binary Opti-
+mization (QUBO) problem. This is what we will do
+for all our examples. QUBO problems seek to solve
+(ﬁnd thex that minimises the expression):
+min
+x
+(
+bTx +xTAx) (4)
+where b∈ Rn and A∈ Rn×n. These cost functions can
+easily be mapped to an Ising Hamiltonian [16] by ﬁrst
+transforming the binary variablesxi∈{ 0, 1} according
+to:
+xi = 1−zi2 (5)
+where zi∈{− 1, +1} are spin variables, and then turn-
+ing the cost function to a Hamiltonian by promoting
+these variables to Pauliσzi operators, one for each qubit
+i. The QUBO problem then transforms to
+min
+z
+cTz +zTQz (6)
+where the newc∈ Rn and Q∈ Rn×n are easily com-
+putable.
+Then, by replacing the spin variablezi with the Pauli
+σzi operator with corresponding eigenvalues{−1, +1},
+the problem translates into ﬁnding the ground state, i.e.
+the spin conﬁguration, of ann-qubit system interacting
+with the Hamiltonian:
+H =
+n∑
+i=1
+ciσzi +
+n∑
+i=1
+Qijσziσzj (7)
+1. Max-Cut Problem
+The ﬁrst problem isMax-Cut. It is one of the most
+studied combinatorial problems in the context of varia-
+tional quantum algorithms due to the simplicity and
+
+=== PDF PAGE 5 ===
+5
+guaranteed performance at least for some instances
+[17, 18].
+LetG(V,E ) be a non-directedn-vertex graph, where
+V is the set of vertices,E is the set of edges, andwij
+are the weights of the edges. A cut is deﬁned as a
+bipartion of the setV into two disjoint subsetsP,Q,
+i.e. P∪Q =V and P∩Q =∅. Equivalently, we label
+every vertex with either0 or 1, where it is understood
+that the vertex belongs to setP if it takes the value
+0 and to setQ if it takes the value1. The aim is to
+maximise the following cost function:
+C(x) =
+n∑
+i,j=1
+wijxi (1−xj) (8)
+This intuitively corresponds to ﬁnding a partition of the
+vertices into two disjoint sets that “cuts” the maximum
+number of edges. By applying the transformation, Eq.
+(5), the cost function transforms into:
+C(z) =
+∑
+⟨i,j⟩∈E
+wij
+2 (1−zizj) (9)
+Maximising the cost function above corresponds into
+ﬁnding the ground state of the Hamiltonian4:
+HC =−
+∑
+⟨i,j⟩∈E
+wij
+2
+(
+1−σziσzj) (10)
+Max-Cut is known to be NP-Hard. The best classi-
+cal approximation algorithm is that of Goemans and
+Williamson which uses semi-deﬁnite programming to
+achieve an approximation ratio, Eq. (A4),r∗≈ 0.87856
+for all graphs. Note, that being NP-Hard implies that
+we do not expect to have an eﬃcient quantum algo-
+rithm (poly-time) to solve the problem for its hardest
+instances5, but we could deﬁnitely get improvements
+using quantum algorithms (either by smaller speed-ups
+or by heuristics that could solve more instances than
+classical heuristics).
+Although it was proven that constant-depth QAOA
+does not outperform GW for certain class of problems
+[4], there are instances where the approximation ratio of
+the former is larger than the latter [19]. Note here that
+QAOA beats random guessing even atp = 1 [17], while
+Machine Learning techniques have been used to classify
+for which graph types is better to use QAOA instead
+of GW [20]. In general, however, the performance of
+QAOA in intermediate depths is still highly unexplored.
+4 Note the overall minus sign that turns the maximisation of the
+cost function to ﬁnding the minimum energy for the Hamilto-
+nian.
+5 NP is strongly believed to not be included in BQP
+2. Number Partitioning
+The second problem is Number Partitioning and is
+stated as follows. Given a set of N positive integers
+S ={n1,n 2,...,n N}, the target is to ﬁnd a bipartion of
+theset S intotwodisjointsubsets P,Q, whereP∪Q =S
+andP∩Q =∅ so that the diﬀerence between the sum of
+the elements on the setP and the setQ is minimized.
+We thus want to minimize the cost function:
+C(x) =
+( N∑
+i=1
+(2xi− 1)ni
+)2
+(11)
+The binary stringx =x1x2...x n corresponds to one
+conﬁguration where a numberni is placed in theP set
+(xi = 0) or in theQ set (xi = 1). The cost function can
+easily be mapped to the Ising Hamiltonian:
+HC =
+( N∑
+i=1
+σzini
+)2
+(12)
+By expanding the cost function Eq. (12), the cost
+function can be written as:
+HC =
+∑
+i⁄=j
+(ninj)σziσzj +
+N∑
+i=1
+n2i (13)
+If we neglect the constant term, we can see that the
+Number Partitioning problem can be easily mapped to
+the Sherrington-Kirkpatrick model which is an energy
+minimization problem with an all-to-all random cou-
+plings which was recently analysed on [21].
+Although the problem is known to be NP-Hard, it
+is also known as the “easiest hard problem”. That is,
+because there exists a “hard-easy” phase transition [22]
+where instances belonging in the easy-phase can be ef-
+ﬁciently tackled using heuristics [23]. Interestingly, it
+appears that one may be able to tackle some of the in-
+stances in the “hard phase” using variational quantum
+algorithms.
+3. Portfolio Optimisation
+The third problem isPortfolio Optimisation [24, 25]
+and is stated as follows. Given a set of n assets
+{0,··· ,n}, corresponding expected returnsµi and co-
+variances Σij, a risk factorq > 0 and a budget B ∈
+{1,...,n }, the considered portfolio optimisation prob-
+lem tries to ﬁnd a subset of assets P ⊂ {1,...,n }
+with|P| =B such that the resultingq-weighted-mean-
+variance, i.e.∑i∈Pµi−q∑i,j∈P Σij, is maximised. In
+other words, we want to maximise the cost function:
+
+=== PDF PAGE 6 ===
+6
+C(x) =
+n∑
+i=1
+µixi−q
+n∑
+i,j=1
+Σijxixj (14)
+along with the constraint
+n∑
+i=1
+xi =B (15)
+The portfolio vectorx∈{ 0, 1}n, consisting ofn bi-
+nary decision variables, indicates whether an asset is
+picked (xi = 1) or not (xi = 0). The constraint in (15)
+is translated as an extra penalty term in the Hamilto-
+nian (∑ni=1xi−B)2.
+The problem is known to be NP-complete [26]. We
+apply the transformation, Eq. (5), so the cost function
+transforms into:
+C(z) =−q
+n∑
+i,j=1
+Σij
+4 zizj +
+n∑
+i=1
+
+
+n∑
+j=1
+qΣijzi
+2 − µizi2
+
+
++
+n∑
+i=1
+
+µi
+2 −
+n∑
+j=1
+qΣij
+4
+
+
+(16)
+which, along with the extra penalty term, corresponds
+to minimising the Hamiltonian :
+HC =
+n∑
+i,j=1
+qΣij
+4 σziσzj−
+n∑
+i=1
+
+
+n∑
+j=1
+qΣijσzi
+2 − µiσzi2
+
+
+−
+n∑
+i=1
+
+µi
+2 −
+n∑
+j=1
+qΣij
+4
+
+ +
+( n∑
+i=1
+σzi + n2−B
+)2
+(17)
+Portfolio optimisation as given in Eq. (14) was re-
+cently tackled using variational quantum algorithms
+[27], using warm-starting QAOA [3] and on D-wave sys-
+tems using quantum annealing [28]. Prior to our work,
+[29] developed a quantum-walk-based optimisation al-
+gorithm and [30] considered a more general setting of
+portfolio optimisation, called dynamic portfolio optimi-
+sation, where one has to allocate weights to a number
+of assets in a period of time in order to maximise the
+overall return.
+III. ASCENDING-CV AR
+The CVaR cost function of [11] was shown to per-
+form better in general, than the “standard” expectation
+value. There are three observations, however, that mo-
+tivates our proposal. First, as noted in [11], the choice
+ofα is somehow random, and importantly, for diﬀerent
+problems and even for diﬀerent instances of the same
+class of problems, the optimal choice ofα varies in a
+non-obvious (e.g. monotonic) way. The performance
+of the algorithm’s speed, but also if it ﬁnds the solu-
+tion at all, depends on that choice. The second point
+is that optimising with a ﬁxed smallα has further dis-
+advantages: (i) it “ﬁnds” parameters θ that result to
+a state that does not have the greatest overlap with
+the solution and (ii) the true running time of the al-
+gorithm to achieve same accuracy is larger, in other
+words for each iteration one requires1/α times more
+measurements to achieve the same accuracy in estimat-
+ing the cost function (since only the lowerα fraction
+of the measurements are used). Finally, the third ob-
+servation is that theCVaR α objective functions with
+diﬀerent α have a diﬀerent energy landscape. For any
+ﬁxed choice ofα the optimiser could “get stuck” at a
+local minimum. Interestingly, if one varies theα during
+the optimisation, while we still ensure that if the algo-
+rithm ﬁnds the true ground state it remains there, we
+also avoid getting stuck at local minima since those are
+diﬀerent for diﬀerent choices ofα. Therefore if the opti-
+miser reaches a point that has a local minimum for one
+value ofα, whenα changes this point (may) no longer
+be a local minimum and thus could continue “moving”
+towards the true global minimum (ground state).
+Let’s say that an optimisation problem has an opti-
+mal solution which is a computational basis state and
+we denote it as|ψopt⟩. Let’s also assume that a param-
+eterised family of gates,U(θ), acts on the|0⟩⊗n state
+and produces the state
+|ψ(θ)⟩ =aopt(θ)|ψopt⟩ + (1−aopt(θ))|ψother⟩ (18)
+where|ψother⟩ is the superposition of all sub-optimal
+computational basis states. Let’s also assume that this
+parameterised family of states can achievea maximum
+overlap κ with the optimal solution6. We can write the
+state|ψ⟩, corresponding to the state with the highest
+overlap, without loss of generality as:
+|ψ⟩ =√κ|ψopt⟩ +(1−√κ)|ψother⟩ (19)
+Proposition 1. For the family of states in Eq.(18)
+and for allα≤κ:
+min
+θ
+CVaR α(θ) = min|φ⟩⟨φ|HC|φ⟩ (20)
+i.e. all CVaR α with α≤ κ share the same minimum
+objective function value which is the smallest eigenvalue
+of the Hamiltonian.
+6 In other words, the complex coeﬃcientaopt(θ) corresponding
+to the probability of sampling the optimal solutionProb (opt) =
+|aopt|2 has a maximum value :maxθ |aopt(θ)|2 =κ)
+
+=== PDF PAGE 7 ===
+7
+It is clear from Proposition 1 thatall CVaR α(θ) with
+α≤ κ share the same ground state, which is the true
+optimum of the optimisation problem. Thus all angles
+θ∗ that correspond to a global minimum ofCVaR α1
+will also correspond to a global minimum ofCVaR α2
+if α2≤ α1≤ κ. For example for an ansatzU(θ) that
+is able to attain 10% overlap with the optimal com-
+putational basis state, if one is able to ﬁnd the global
+minimum of CVaR 0.1, which means that 10% of the
+measurements correspond to the ground state, then it
+is clear that allα <0.1 will also be minimised by the
+same angles.
+Proposition 2. Let an optimisation problem with
+an optimal solution|ψopt⟩ corresponding to a compu-
+tational basis state. For any parameterised family of
+gates U(θ) that can achieve a maximum overlapκ with
+the optimal solution, the anglesθ∗ that correspond to
+the global minimum ofCVaR α1 will also correspond to
+a global minimum forCVaR α2 if α1≤ α2≤ κ. The
+converse does not necessarily hold.
+In other words, Proposition 2 states that if
+θ∗ = arg min θCVaR α2(θ) then also θ∗ =
+arg minθCVaR α1(θ) for all α1≤ α2≤ κ. This indi-
+cates why decreasingα may not seem like a good choice.
+If for example the optimiser is able to ﬁnd the optimal
+angles that minimiseCVaR α1 withα1≤κ, then for all
+α2 < α1 they will still remain optimal angles and thus
+will not be able to achieve a higher overlap state.
+Proposition 3. A local minimum forCVaR α1 does
+not necessarily correspond to a local minimum for
+CVaR α2 if α1⁄=α2.
+Proposition 3 was proven using a counterexample in
+[11]. All these Propositions are important for introduc-
+ing a non-stationary optimisation technique that avoids
+local minima. We know from Proposition 1 that all
+CVaR α objective functions with α∈ (0,κ ] share the
+same minimum objective value which is the ground
+state energy of the Hamiltonian. We also know from
+Proposition 2 that many of the global minima forα1
+may not be a global minimum forα2 if α1 < α2 and
+thus increasing α introduces extra information about
+the optimality of states. Finally, Proposition 3 indi-
+cates that diﬀerent objective functions are associated
+with diﬀerent energy landscapes as they do not agree
+on the local minima.
+However, knowing the maximum overlap κ in ad-
+vance is not always possible. In the case of VQE with
+a hardware eﬃcient ansatz, it can be shown thatκ = 1
+and so minθCVaR α(θ) = min |φ⟩⟨φ|HC|φ⟩ for every
+α∈ (0, 1]. On the other hand for the QAOA ansatz,
+our experiments showed thatκ is usually small on low
+depth but increases with the number of layers
+The cost functions used in variational quantum algo-
+rithms, to our knowledge, are “constant in time”, mean-
+ing that the whole optimisation is run with a ﬁxed cost
+function. To solve the issue of “selecting the bestα” and
+the other reasons listed above, we propose to use a dy-
+namically evolving cost function, that essentially passes
+through a ﬁxed set ofα values. In the case of VQE, it
+is initialised in a very small value and the optimisation
+ends withα = 1 that is the standard expectation value
+of the Hamiltonian. We call all these cost functions
+Ascending-CVaR. This has also a great(er) number of
+free choices, since we can now freely choose the (as-
+cending) function. However, all choices we tried for the
+ascending function performed (in general) better than
+ﬁxedα, which indicates that the evolving cost function
+is a promising approach. For the remaining of the paper
+we focused on two functions that performed better:
+The linear ascending in which the parameterαt is
+iteratively and discretely increased by the rule:
+αt+1 =αt +λ
+CVaR αt = 1⌈αtK⌉
+⌈αtK⌉∑
+k=0
+Hk
+(21)
+whereλ∈ [0.025, 0.045] is theascending factorand 0<
+αt≤ 1.
+The sigmoid ascending in which the parameterαt is
+discretely increased according to the function :
+αt = 11 +e5−λt (22)
+where λ∈ [0.3, 0.4] is again the ascending factor and
+0<α t≤ 1.
+To reach this conclusion we tested four diﬀerent func-
+tions, asigmoid, alinear, anexponential and alogarith-
+mic (see Figure 2) on VQE-CVaRαt with various diﬀer-
+ent ascending rates. All functions were tested on all
+three problems. The metrics used were the magnitude
+oftheoverlapwiththeoptimalsolution, thesuccessrate
+(i.e. the number of times where it succeeds to achieve a
+non-negligible overlap) as well as the average time taken
+to achieve at least10% overlap (for details see V).
+The linear ascending, Eq. (21), and the sigmoid as-
+cending, Eq. (22), functions have the most steady be-
+havior as it can be seen in Figure 3, outperforming the
+other two types on the majority of instances. The sig-
+moid was slightly slower in terms of speed, which is
+why we mainly used the linear one. However, as we will
+discuss in the next section, it appears that it may be
+better in some classes of problems especially on harder
+instances with∼ 50qubits. It seems that in those cases,
+the optimiser is doing better spending the majority of
+its iterations on lowα values and thus the sigmoid per-
+forms better.
+It is worth noting that increasingα to α = 1 where
+it becomes the expectation value is not necessary. The
+
+=== PDF PAGE 8 ===
+8
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 2: Diﬀerent choices for the ascending function.
+All functions start from the same initial point,
+α0 = 0.01 and ascend untilαf = 1 is reached.
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 3: Portfolio optimisation instance for 18 assets
+and diﬀerent ascending functions. The blue line
+(down-pointing marker) indicates the linear ascending
+and always achieves a high overlap with the optimal
+solution in contrast to the orange line (line marker),
+the exponential ascending, which fails in almost any
+instance.
+wholepointofvariationalalgorithmsistoachieveacon-
+stant non-negligible overlap with the optimal or near-
+optimal solution. For that reason one could only varyα
+untilitreachesathreshold ϵtruncatingtheoptimisation
+and reducing the number of iterations by a considerable
+amount.
+We remark here thatAscending-CVaR is fundamen-
+tally diﬀerent from an adaptive strategy that selects
+the optimal value for the parameterα. Speciﬁcally, by
+looking at the results in Section VI we can see that
+our method is able to reach quantum states that result
+in a very high overlap with the optimal state (almost
+equal to unity) that no constant choice ofα would be
+able to attain. Even when the question is whether we
+ﬁnd the solution with at least some small probability,
+Ascending-CVaR succeeds in cases where all of the ﬁxed
+α failed.
+In order to get the intuition why our method works
+one should think of what varyingα actually does. The
+optimiser, at each iteration, moves towards a local (or
+a global) minimum corresponding to the instantaneous
+value of α. By increasing α at every step, the opti-
+misation is able to “see” a larger part of the energy
+distribution of the quantum state. This translates to
+the optimiser gaining additional information about the
+quantum state which modiﬁes the objective function
+landscape.
+This extra information alters the landscape and is
+thus able to “erase” false local minima, while using the
+previous step as “initialisation” it is unlikely that the
+optimiser will get stuck in new sub-optimal minima.
+Moreover, since only the global minima are invariant
+under α transformations, this change in the landscape
+will not aﬀect any correct moves of the optimiser. In
+other words, if the optimisation algorithm did converge
+in a sub-optimal local minimum for a value ofα, it may
+notstillbeinalocalminimumbyswitchingintoadiﬀer-
+ent value ofα. Hence, the Ascending-CVaR algorithm
+is guiding the trajectory of the optimiser in the highly
+parameterised space until it reaches a (nearly) optimal
+solution.
+Finally, the reason our method is sensitive to the
+choice of the ascending factorλ is related to the speed
+that the optimiser is receiving this extra information
+(see Appendix C on how we numerically test the as-
+cending factors for the diﬀerent optimisation problems).
+The pseudocode for the Ascending-CVaR algorithm
+is outlined in Algorithm 1
+IV. WHY OUR METHOD WORKS: AN
+EXAMPLE
+It would be illustrative to describe how local minima
+may vanish when the objective function is changed dur-
+ing the optimisation. In Figure 4 we plot theCVaR α
+objective function landscape for diﬀerent values ofα.
+We choose to draw the landscape for the QAOA algo-
+rithm with depth p = 1 because the two parameters
+β,γ make it suitable to visualise in a 2D plot. On the
+contrary, VQE with a hardware eﬃcient ansatz even on
+depth p = 1 would require 2n parameters.
+It can be easily seen that the positions of the local
+minima change but the position of the true global min-
+imum remain the same while the conditionα≤κ holds
+(seeProposition1). However, inordertomakeitclearer
+
+=== PDF PAGE 9 ===
+9
+Algorithm 1: General Ascending-CVaR
+Optimisation Algorithm
+Require: Cost FunctionC(θ);
+θ(0)← Random initial parameters in the domain of
+C(θ);
+α0← Initial α;
+g(α)← Ascending function;
+U (θ)← Ansatz Family
+for i = 1, 2,... do
+θ∗ = arg min θCVaR αi−1 (θ) with initial
+parameters θ(0);
+if stopping condition is met then
+return θ∗;
+end
+αi←g(αi−1);
+θ(0) = θ∗;
+end
+for the reader, we choose to circle the position of a local
+minimum, located atγ = 0.15,β = 1.75. In this case,
+we can see how the local minima vanishes during the
+variation of the objective function. An optimiser that
+could stuck during the optimisation on a ﬁxed value of
+α could “unstuck” with the change ofα.
+The problem corresponding to the ﬁgures is a small
+instance of the Number Partitioning problem with size
+n = 8. Even in a small size instance like this, the land-
+scape is full of sub-optimal local minima where the op-
+timiser could falsely converge to. This case-problem
+however does not constitute an example to prove the
+value of our method but only to visualise the changes in
+the energy landscape. The biggest improvements were
+observed in high dimensional expressive parameterised
+family of gates like the VQE with a hardware eﬃcient
+ansatz or larger depth QAOA which cannot be plotted
+in a two-dimensional contour.
+V. METHODS
+One common metric used, especially in QAOA, is the
+approximation ratio as given in Eq. (A4). However, as
+we noted earlier, the true aim of variational quantum
+algorithms for combinatorial optimisation is to obtain
+quickly a suﬃciently high (but not necessarily close to
+unity) overlap with the optimal solution. The CVaR
+method, for example, is constructed in a way that the
+maximum overlap achieved is not unity but determined
+by the riskα. While our approach does achieve high
+approximation ratio, to make a fair and more complete
+comparison with prior works and importantly with [11],
+we use diﬀerent metrics. Speciﬁcally, to benchmark and
+test our proposed method, we used three diﬀerent types
+of metrics. The ﬁrst is the overlap with the optimal
+solution. If |ψopt,i⟩ is a d-degenerate ground state of
+the problem Hamiltonian, then the overlap is deﬁned
+as:
+d∑
+i=1
+|⟨ψ(θ)|ψopt,i⟩| 2 (23)
+i.e. the probability of obtaining the optimal solution,
+given the parameters θ. It follows that the parame-
+terised state with the highest overlap with the optimal
+solution leads to sampling that optimal solution with
+the least number of circuit executions.
+Thesecondmetricwewanttotestisthetimetakento
+reach a given ﬁxed overlap. We set a threshold of10%
+probability of obtaining the optimal solution and we
+tested which method achieves at least that probability
+faster. We note however that, in order to test which
+method converges to a10% overlap faster, we have to
+use α≥ 0.1 because allα <0.1 are not guaranteed to
+converge in an overlap of10% since the parametersθ
+than minimiseα lead in an overlap smaller than 0.1.
+To summarise the results and compare better the dif-
+ferent approaches, for each cost function we divided the
+problem instances to those that the cost function is suc-
+cessful and to those that it fails. The meaning of what
+constitutes a “successful” run or a “failed” run cannot
+be unambiguously deﬁned. For our work we consider
+that an optimiser is successful at a given instance of
+a problem if it achieves at least10% overlap with the
+optimal solution. It is clear that as the size of the prob-
+lem instances increase, achieving a ﬁxed 10% overlap
+becomes harder7. In our analysis we chose 10% since
+this leads to interesting behaviour where the methods
+analysed diﬀer in their performance.
+In our experiment, for comparing with ﬁxed α we
+used four diﬀerent choices: α = 0.1, 0.2, 0.5, 1. The
+α = 1 choice corresponds to a non CVaR objective func-
+tion. Speciﬁcally,α = 1 refers to the expectation value
+(it includes all the measurement outcomes) and it is
+the objective function that has been used in the over-
+whelming majority of the existing literature on varia-
+tional quantum algorithms. In [11] they did an exten-
+sive comparison of CVaR with the expectation value (on
+thesamecombinatorialproblemswemakeouranalysis).
+For that reason, we choose to make the comparison of
+all diﬀerent choices ofα with our proposedαt and plot
+our results in one section (see Section VI).
+We also note that ascending factorsλ∈ [0.025, 0.045]
+and λ∈ [0.3, 0.4] were found to be a good choice for
+7 We should note that even a much smaller overlap is suﬃcient
+to ﬁnd at least once the solution, provided that the number of
+“shots” is suﬃciently large.
+
+=== PDF PAGE 10 ===
+10
+Gamma Values
+Beta Values
+Gamma Values
+Beta Values
+Gamma Values
+Beta Values
+Gamma Values
+Beta Values
+Figure 4: Visualisation of local and global minima for diﬀerentCVaR α objective functions. On the top two
+ﬁgures, corresponding toα = 0.05 on the left andα = 0.08 on the right, you can see the local minima drawn in
+the red circle. However, on the bottom ﬁgures, corresponding toα = 0.11 on the left andα = 0.14 on the right,
+the local minima no longer exist.
+the three diﬀerent problems on instances with 15 to 20
+qubits for the linear and sigmoid ascending respectively.
+(see Appendix C). However, we would like to stress that
+if the sizes of the instances increase or even if the prob-
+lems change but the sizes remain the same, one would
+have to readjust the hyperparameterλ. Investigating
+theoretically the choice of both the ascending factor and
+the ascending function given the characteristics of the
+problem as well as possible connections of our method
+to adiabatic quantum computing goes beyond the scope
+of this paper but will be investigated in a subsequent
+work.
+In the QAOA algorithm we tested instances using
+depth p = 1 to p = 6 while on VQE we worked only on
+the depthp = 1, since this depth was suﬃcient to get
+very good accuracy. In near term devices for the QAOA
+algorithm, increasing the depth even more becomes im-
+practical due noise and decoherence. For this reason we
+didnotconsidergreaterdepth, despitethefactthatthe-
+oretically this could lead to better performance. This
+means that the variational ansatz for QAOA has only
+2 to 12 parameters, i.e. only a fraction of the total pa-
+rameters present in hardware eﬃcient ansatz used for
+VQE in depth-1.
+To account for the diﬀerent sizes of problem in-
+stances, and to make a fair comparison for the speed
+of convergence, we used the normalised optimiser it-
+erations [31]. Note that this choice is made in order
+to be able to compare the performance of the algorithm
+amonginstancesthatinvolvediﬀerentnumberofqubits,
+and see how the improvement oﬀered by Ascending-
+CVaR is independent of the instance size. Concretely,
+the normalised optimiser iterations is deﬁned as the
+number of times the optimiser evaluates the objective
+function divided by the function’s number of parame-
+ters, i.e. the number of parameters of the ansatz. In the
+
+=== PDF PAGE 11 ===
+11
+case of the VQE the number of parameters aren(1 +p)
+while on QAOA are2p. We note however, that the real
+time of convergence could be used as seen in Appendix
+B, where we compare the performance with respect to
+the total number of circuit repetitions. However, as
+we show below, there are instances where the constant
+CVaR does not achieve even a small overlap with the
+optimal solution and in those cases the time taken be-
+comes irrelevant.
+We ran our experiments on IBM’sQiskit Aer sim-
+ulator, allowing noiseless multi-shot executions of our
+circuit. We set the number of executions of our cir-
+cuit to K = 1000, which scaled up asK/α with the
+choice of α. All instances were given a maximum of
+(66×parameters) optimiser iterations which is more
+than enough iterations for an optimiser to converge to a
+minimum in the problems we implemented. They were
+initialised with a random choice of parameters, but the
+same for all diﬀerent choices ofα. We used the same
+gradient-free optimiser, COBYLA [32], for all diﬀerent
+problems and instances as it was shown to outperform
+other classical optimisers [33].
+VI. RESUL TS
+We will analyse the results for each of the three com-
+binatorialoptimisationproblemsseparately. Foreachof
+themwewillpresenttheresultsforVQEwithhardware-
+eﬃcient ansatz ﬁrst and then the results for QAOA. We
+note that for all three combinatorial optimisation prob-
+lems and for all methods used (Ascending-CVaR, con-
+stant CVaR, expectation value), VQE performs (much)
+better than QAOA, at least for the suﬃciently shal-
+low circuits that we consider. Our method improves
+the performance in both cases (VQE, QAOA) but since
+VQE gives much better results for these problems, in
+the comparison and discussion we will focus on VQE
+instances only.
+A. Max-Cut
+For theMax-Cut problem we worked on unweighted
+graphs with 15-19 vertices, drawn from diﬀerent graph
+classes and sampled them using the NetworkX library
+[34].
+1. CVaR αt -VQE
+For regular graphs, CVaRαt-VQE behaved equally
+well with constant-α’s optimisation as well as with the
+expectation value. All of the methods reached the cho-
+sen threshold of10% overlap with the optimal state at
+almost equal times without any diﬃculty. For that rea-
+son we focused on harder non-regular instances where
+our method outperformed the latter methods. In Ta-
+ble I we give a summary of the results for 100 random
+non-regular unweighted graph instances with 15 to 19
+vertices. We can see that our method succeeds in more
+instanceswhiletheoverlapachievedisalsomuchhigher.
+There are many reasons why non-regular random
+graphs are “harder” than regular graphs. The ﬁrst is
+that the ground state of a regular graph, due to its sym-
+metry, is highly degenerate where the optimiser could
+easily reach without “stucking” in a sub-optimal mini-
+mum. The second is that the Hamiltonian correspond-
+ing to a random graph has more distinct eigenvalues
+and as it was shown numerically by [33], the number of
+distinct eigenvalues correlates inversely with the perfor-
+mance of hardware eﬃcient ansatz.
+Indicatively, in Figure 5 we plot the probability of
+sampling the optimal solution over the normalised num-
+ber of iterations for two random graphs with 17 vertices.
+For the left ﬁgure, we can see how the optimiser for the
+Ascending-CVaR optimisation is able to to ﬁnd the op-
+timal solution in under 10 normalised iterations which
+by the end of the optimisation is able to increase the
+probability up to 70%. Notably the expectation value
+or constant CVaR completely fail. The right part of
+the ﬁgure, gives another example where our approach
+performs better. This instance constitutes an example
+where smallerα’s do not lead to better performance for
+constant CVaR8. We can see in the ﬁgure that while
+α = 0.1 failed, α = 0.2 was able to achieve a high qual-
+ity parameterised state. This is another indication why
+our approach is more ﬂexible.
+2. CVaR αt -QAOA
+Solving the Max-Cut problem using QAOA, with
+small depth circuits, does not seem a very promising
+approach in any of the methods considered (constant
+CVaRorAscending-CVaR).Intermsofspeed, allmeth-
+ods converged equally fast but in states with small over-
+lap with the solution (with relatively small diﬀerences
+within diﬀerent approaches). Having said that, as ex-
+plained below, our method still gives improved perfor-
+mance.
+While CVaRαt-VQE optimisation results in high
+overlap states, CVaRαt-QAOA produces “ﬂat” states,
+a behaviour also observed in [11]. These states have
+almost equal probability amplitudes to the majority of
+8 In most cases, smallαgives better performance, but one cannot
+knowa-prioriwhichisthesuitable αintheconstantCVaRcase.
+
+=== PDF PAGE 12 ===
+12
+Max-Cut Successful Instances Average Overlap
+αt 0.1 0.2 0.5 1 αt 0.1 0.2 0.5 1
+Random Graphs 96 84 81 68 53 64.69 12.13 21.45 39.28 36.24
+Table I: Results table for theMax-Cut problem (VQE) for 100 random non-regular unweighted graph instances
+with 15 to 19 vertices.
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 5: Max-Cut instances with 17 vertices for random non-regular unweighted graphs.Ascending-CVaR,
+drawn with a blue line (diamond marker), results in a fast and high overlap with the optimal solution in contrast
+to constant CVaR.
+the computational basis states. For the Max-Cut prob-
+lem, as noted in [17], it seems that the states produced
+with QAOA with smallp result to states with energy
+close to the (random) initialisation point. The spread
+of the energies does increase withp, possibly leading
+to a state close to the ground state, but in our anal-
+ysis we focused on smallp≤ 6. Intuitively, the main
+reason why QAOA cannot achieve the same probabil-
+ity amplitudes as VQE, in the same depth, is due to
+having a smaller number of parameters as well as the
+architecture of the ansatz [35].
+Note that the parameter space is ﬁlled with sub-
+optimal local minima. Constant CVaR objective func-
+tions with diﬀerent conﬁdence levelα’s lead to diﬀerent
+energy landscape. This means that a local minimum
+for a conﬁdence level α1 does not, in general, corre-
+spond to a local minimum for a conﬁdence levelα2 if
+α1⁄= α2. This is probably the reason that we get im-
+proved performance. For example, in Figure 6 we see
+how Ascending-CVaR can avoid local minima. In this
+example all constant CVaR achieve less than3% over-
+lap with the ground state, while the Ascending-CVaR
+gives 7%.
+B. Number Partitioning
+On Number Partitioningwe tested instances with 17
+to 20 integers, on both VQE and QAOA.
+1. CVaR αt -VQE
+On CVaRαt-VQE we tested 300 instances with 17 to
+20 integers, sampled randomly from three sets;N1 =
+{0,..., 200}, N2 ={0,..., 500} and N3 ={0,..., 750}.
+We highlight that the smaller the set that the numbers
+are uniformly drawn from, the easier the optimiser suc-
+ceeds in ﬁnding the optimal solution. A summary of
+the results is given at Table II.
+For the ﬁrst two sets, we used a linear ascending func-
+tion with an ascending factorλ = 0.03. Further optimi-
+sation of the parameter may lead in either faster con-
+vergence or more successful instances. Either way, the
+Ascending-CVaR method outperforms constant CVaR
+and the expectation value objective function on the
+aforementioned metrics (e.g. see typical performance
+on Figure 7).
+For the last setN3, constant CVaR and the expec-
+tation value as objective functions struggled to achieve
+even a small overlap with the optimal solution. Indica-
+
+=== PDF PAGE 13 ===
+13
+NP Successful Instances Average Overlap
+αt 0.1 0.2 0.5 1 αt 0.1 0.2 0.5 1
+N1 87 85 66 16 2 54.17 11.50 16.56 7.94 0.99
+N2 80 69 29 11 0 48.33 10.24 7.56 5.88 0.4
+N∗3 95 58 24 9 0 56.85 8.24 5.84 3.45 0.16
+Table II: Results table for theNumber Partitioningproblem (VQE) for the three diﬀerent setsN1, N2 and N∗3,
+where the star at the last set indicates that we used the sigmoid ascending function.
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 6: CVaRαt-QAOA optimisation with linear
+ascending for a Max-Cut instance of 17 qubits. The
+blue line (diamond marker), indicating the ascending
+optimisation, results in more than a 100% increase in
+the overlap with the optimal solution in contrast to
+the expectation value or constant CVaR optimisation.
+tively, at 40% of the cases none of the constant CVaR
+objective functions could be “successful”9. We found
+that by choosing a sigmoid ascending function, the op-
+timiser is able to attain a high quality parameterised
+state and succeed in the majority of instances (95%).
+The trade-oﬀ is that using the sigmoid ascending func-
+tion, in contrast to linear ascending, comes with some
+cost of more circuit shots in order to achieve the same
+accuracy. Note also, that the linear ascending func-
+tion, while performing worse than the sigmoid, it was
+still more successful than the constant CVaR objective
+functions.
+9 Recall, thatsuccessfulinourconvention, meanstoachieveover-
+lap of at least10% with the optimal solution.
+2. CVaR αt -QAOA
+While CVaRαt-VQE optimisation eﬃciently achieved
+a high overlap state already within the ﬁrst layer for in-
+stances drawn from the two setsN1 and N2, CVaRαt-
+QAOA failed to achieve a high overlap on small depths.
+To address this issue without having to increase the
+depthoftheansatzwechosetoworkoninstances drawn
+from the smaller setM ={0,..., 50}. For the Num-
+ber Partitioning problem, the cost function’s parameter
+space is highly dependent on the set we draw the num-
+bers from. The unitary transformation eiγHC is com-
+posed of eiγnknlσkzσlz terms wherenk,nl correspond to
+the numbers on thek andl index respectively. The pa-
+rameterγ is then restricted to0≤γ <2π/(njnm) with
+nj and nm corresponding to the two smallest numbers
+of the set.
+Our method succeeds in ﬁnding quantum states with
+higher overlap, unreachable with constant CVaR opti-
+misation, possibly because it avoids the high amount of
+local minima. Indicatively in Figure 8 we see an exam-
+ple where Ascending-CVaR achieves more than double
+overlap with the optimal solution than other methods,
+but is still below the threshold of10% required to clas-
+sify this as a “successful run”.
+C. Portfolio Optimisation
+On Portfolio Optimisation we tested instances with
+16 to 20 assets, on both VQE and QAOA, with a budget
+drawn uniformly at random from the setB ={0,...n}
+wheren is the number of assets and many diﬀerent risk
+factors q.
+1. CVaR αt -VQE
+We used linear ascending with an ascending factor
+λ = 0.045 and the conﬁdence level was initialised on
+α0 = 0.01. The results are summarised in Table III. In
+Figure 9 we see the typical performance of two diﬀerent
+instances where we plotted the probability of obtain-
+ing the optimal solution over the normalised number of
+optimiser iterations for the CVaRαt-VQE.
+
+=== PDF PAGE 14 ===
+14
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 7: Probability of sampling the optimal solution forNumber Partitioninginstances with 17-20 integers
+uniformly drawn from the setsN1 ={0,..., 200} (on the left) andN2 ={0,..., 500} (on the right). The blue
+line (diamond marker), indicatingAscending-CVaR outperforms constant CVaR in terms of speed and overlap
+with the optimal solution.
+Portfolio Optimisation Successful Instances Average Overlap
+αt 0.1 0.2 0.5 1 αt 0.1 0.2 0.5 1
+Random Portfolios 100 100 100 16 1 63.25 13.35 24.74 9.42 0.64
+Table III: Results table for thePortfolio Optimisation problem (VQE) for 100 random Portfolios with 16 to 20
+assets.
+We highlight the fact that Ascending-CVaR and con-
+stant CVaR withα = 0.1, 0.2 succeed in achieving at
+least 10% overlap on all instances tested (see results on
+Table III), while the expectation value (α = 1) failed
+in almost all cases. Moreover, it is worth noting that
+our method oﬀers a signiﬁcant improvement in compar-
+ison with all the other approaches in the speed that
+this overlap was achieved (in terms of normalised opti-
+miser iterations and circuit repetitions) and in the over-
+all magnitude of the overlap achieved (see also Table
+III).
+2. CVaR αt -QAOA
+CVaRαt-QAOA, similarly with [11], underperforms
+signiﬁcantly in terms of overlap with the optimal state,
+compared to CVaRαt-VQE. Speciﬁcally, keeping the
+depth as in previous parts, and without increasing
+the shots each circuit is implemented, all methods fail
+achieving overlap with the optimal solution well below
+1%. There are several reasons for this failure, includ-
+ing the Reachability Deﬁcits [36], the large problem
+density [33] andBarren Plateaus [37]. This, however,
+goes beyond the focus of this paper that is to ﬁnd a
+way to improve the performance of previously used ob-
+jective functions. To illustrate the improvement, we
+could have used (signiﬁcantly) larger number of shots,
+where Ascending-CVaR would start showing better per-
+formance. This would make the comparison with other
+problems unfair (where in all cases we used the same
+“normalised” number of shots), and it would still not
+present a practical way to solve the Portfolio Optimi-
+sation problem (VQE is much better), so we omitted
+it.
+VII. CONCLUSIONS
+We introduced a novel type of objective function,
+Ascending-CVaR, to be used in variational quantum al-
+gorithms for any combinatorial optimisation problem.
+The starting point is the (constant) CVaR objective
+function of [11], where they illustrated that for any
+choice of riskα the true ground state is a minimum,
+and that with (typically small values of) α one can
+improve the performance compared to the “standard”
+expectation-value objective function. Our idea was to
+use an evolving objective function that “passes” through
+all the diﬀerent values ofα to ﬁnish at the expectation
+
+=== PDF PAGE 15 ===
+15
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 8: CVaRαt-QAOA for an 18-integer instance
+Number Partitioning problem withp = 4. The blue
+line (diamond marker), indicating Ascending-CVaR
+optimisation, is able to achieve 100% increase in the
+overlap with the optimal solution in respect to the
+other objective functions.
+value. This, intuitively, avoids getting stuck at local
+minima since the energy landscape for diﬀerentα’s dif-
+fers apart from the global minimum.
+We tested numerically the proposal on three combi-
+natorialoptimisationproblems(Max-Cut, NumberPar-
+titioning and Portfolio Optimisation), where in agree-
+ment with prior works we found that for these problems
+VQE seems more promising than QAOA with small
+depth. The improvement that Ascending-CVaR pro-
+vides to VQE and QAOA are similar but we focus on
+VQE here since this was the overall more promising
+approach to solve the corresponding optimisation prob-
+lems.
+We observed that Ascending-CVaR gave much
+greater on average overlap with the optimal solution
+(see Table IV). In Portfolio Optimisation and Number
+Partitioning we got 10 times greater overlap than the
+expectation value (while we got at least double overlap
+than the best constant CVaR choice). In Max-Cut we
+got smaller improvement (80%) compared to the expec-
+tation value, but note that the constant CVaR actually
+gavemuchsmalleroverlap. Perhapsthemostimportant
+feature is that in the Number Partitioning and Max-
+Cut, Ascending-CVaR succeeded in ﬁnding the solution
+inmanyinstancesthatnootherapproachachievedmore
+than the small chosen threshold of10% overlap. This
+indicates that not only the approach improves the qual-
+ity of the results, but is plausible that instances that are
+believed to be “hard” with the other methods, will be-
+come “easy” and thus solvable.
+Beyond the accuracy of the result, another factor to
+evaluate the performance of variational quantum algo-
+rithms is the speed, that can be counted with respect
+to the (average) number of iterations the optimisation
+needs to run until the algorithm outputs a (candidate)
+solution. Since our proposal “passes” through several
+choices ofα, one could expect that the “trade-oﬀ” for
+better overlap would be slower speed and thus more
+optimisation iterations. Interestingly, not only we do
+not get any cost in speed, but in most cases we see an
+improvement, i.e. our method requires fewer iterations
+to reach the threshold of10% overlap with the solution
+(see Table V). The only case that our method required
+slightly more iterations than theα = 0.1 was for the
+case that we actually observed the greater improvement
+in overlap. This was the Number Partitioning from the
+set N3, where the overlap was seven times better than
+the “next best” case, and 350 times greater overlap than
+the expectation value (see Table II).
+Ourwork, notonlyoﬀersagenericmethodtoimprove
+the performance of variational quantum algorithms for
+combinatorial optimisation problems, it also suggests a
+new direction of research where dynamic objective func-
+tions can be used to boost the performance in terms
+of quality and speed of near-term quantum algorithms.
+An immediate follow up to the proposal suggested here
+is to generalise our approach. Concretely, our method
+introduces two extra degrees of freedom. The hyper-
+parameter λ and the function according to which the
+parameter α increases. It is worth exploring a more
+systematic rule on how to ﬁx these degrees of freedom
+according to the problem considered and the features
+of the speciﬁc instance. Finally, considering other dy-
+namic objective functions is another direction that is
+worth pursuing.
+The code for the experiments is available at
+GitHub 10.
+ACKNOWLEDGEMENTS
+P.W. acknowledges support by the UK Hub in Quan-
+tum Computing and Simulation, part of the UK Na-
+tional Quantum Technologies Programme with funding
+from UKRI EPSRC grant EP/T001062/1 and the Col-
+laborative Computational Project - Quantum Comput-
+ing (CCP-QC) with funding from UKRI EPSRC grant
+EP/T026715/1.
+10 https://github.com/ioankolot/ascending_cvar
+
+=== PDF PAGE 16 ===
+16
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 9: Portfolio Optimisation problem for 18 and 20 asset instances with linear ascending andλ = 0.045. The
+blue line (diamond marker) indicates the CVaRαt-VQE optimisation which already within the ﬁrst 15 optimiser
+iterations has achieved over40% overlap, compared to constantα’s where either fail (α = 0.5, 1), or lead to
+slower and sub-optimal convergence (α = 0.1, 0.2).
+Problem Type Successful Instances % Overlap Improvement%
+αt 0.1 0.2 Expectation Value αt 0.1 0.2
+Portfolio Optimisation 100 100 100 1 9782 2125 4023
+Number Partitioning 87.3 70 39.6 0.6 10225 1858 1464
+Max-Cut 96 84 81 53 78.5 -66.52 -40.8
+Table IV: Overview of our method
+[1] John Preskill. Quantum computing in the nisq era and
+beyond. Quantum, 2:79, 2018.
+[2] Frank Arute, Kunal Arya, Ryan Babbush, Dave Bacon,
+Joseph C Bardin, Rami Barends, Rupak Biswas, Sergio
+Boixo, Fernando GSL Brandao, David A Buell, et al.
+Quantum supremacy using a programmable supercon-
+ducting processor. Nature, 574(7779):505–510, 2019.
+[3] Daniel J Egger, Jakub Marecek, and Stefan Woerner.
+Warm-starting quantum optimization. arXiv preprint
+arXiv:2009.10095, 2020.
+[4] Sergey Bravyi, Alexander Kliesch, Robert Koenig, and
+Eugene Tang. Obstacles to state preparation and vari-
+ational optimization from symmetry protection.arXiv
+preprint arXiv:1910.08980, 2019.
+[5] Andrea Skolik, Jarrod R McClean, Masoud Mohseni,
+Patrick van der Smagt, and Martin Leib. Layerwise
+learning for quantum neural networks. Quantum Ma-
+chine Intelligence, 3(1):1–11, 2021.
+[6] Ken M Nakanishi, Keisuke Fujii, and Synge Todo.
+Sequential minimal optimization for quantum-classical
+hybrid algorithms. Physical Review Research ,
+2(4):043158, 2020.
+[7] Matteo M Wauters, Emanuele Panizon, Glen B Mbeng,
+and Giuseppe E Santoro. Reinforcement learn-
+ing assisted quantum optimization. arXiv preprint
+arXiv:2004.12323, 2020.
+[8] Li Li, Minjie Fan, Marc Coram, Patrick Riley, Stefan
+Leichenauer, et al. Quantum optimization with a novel
+gibbs objective function and ansatz architecture search.
+Physical Review Research, 2(2):023074, 2020.
+[9] Marcello Benedetti, Delﬁna Garcia-Pintos, Oscar Per-
+domo, VicenteLeyton-Ortega, YunseongNam, andAle-
+jandro Perdomo-Ortiz. A generative modeling approach
+for benchmarking and training shallow quantum cir-
+cuits. npj Quantum Information , 5(1):1–9, 2019.
+[10] Song Cheng, Jing Chen, and Lei Wang. Information
+perspective to probabilistic modeling: Boltzmann ma-
+chines versus born machines.Entropy, 20(8):583, 2018.
+[11] Panagiotis Kl Barkoutsos, Giacomo Nannicini, Anton
+Robert, Ivano Tavernelli, and Stefan Woerner. Improv-
+ing variational quantum optimization using cvar.Quan-
+tum, 4:256, 2020.
+[12] Tameem Albash and Daniel A Lidar. Adiabatic
+quantum computation. Reviews of Modern Physics ,
+90(1):015002, 2018.
+
+=== PDF PAGE 17 ===
+17
+Problem Type Instance Class Average Normalised Iterations
+αt 0.1 0.2
+Portfolio Optimisation Random Portfolios 9.64 11.13 16.29
+Number Partitioning N1 12.1 19.76 25.09
+N2 14.73 24.13 28.86
+N∗3 27.12 25.12 33.62
+Max-Cut Random Graphs 8.75 9.3 10.8
+Table V: Average Normalised Optimiser Iterations to achieve at least10% overlap with the optimal solution for
+the three diﬀerent combinatorial problems.
+[13] Marco Cerezo, Andrew Arrasmith, Ryan Babbush, Si-
+monCBenjamin, SuguruEndo, KeisukeFujii, JarrodR
+McClean, Kosuke Mitarai, Xiao Yuan, Lukasz Cincio,
+et al. Variational quantum algorithms.arXiv preprint
+arXiv:2012.09265, 2020.
+[14] Stefan H. Sack and Maksym Serbyn. Quantum anneal-
+ing initialization of the quantum approximate optimiza-
+tion algorithm. Quantum, 5:491, July 2021.
+[15] Fernando GSL Brandao, Michael Broughton, Edward
+Farhi, Sam Gutmann, and Hartmut Neven. For ﬁxed
+control parameters the quantum approximate optimiza-
+tion algorithm’s objective function value concentrates
+for typical instances.arXiv preprint arXiv:1812.04170 ,
+2018.
+[16] AndrewLucas. Isingformulationsofmanynpproblems.
+Frontiers in Physics, 2:5, 2014.
+[17] Edward Farhi, Jeﬀrey Goldstone, and Sam Gutmann.
+A quantum approximate optimization algorithm.arXiv
+preprint arXiv:1411.4028, 2014.
+[18] Zhihui Wang, Stuart Hadﬁeld, Zhang Jiang, and
+Eleanor G Rieﬀel. Quantum approximate optimization
+algorithm for maxcut: A fermionic view.Physical Re-
+view A, 97(2):022304, 2018.
+[19] Gavin E Crooks. Performance of the quantum approxi-
+mateoptimizationalgorithmonthemaximumcutprob-
+lem. arXiv preprint arXiv:1811.08419 , 2018.
+[20] Charles Moussa, Henri Calandra, and Vedran Dunjko.
+To quantum or not to quantum: towards algorithm se-
+lection in near-term quantum optimization. Quantum
+Science and Technology, 5(4):044009, 2020.
+[21] Edward Farhi, Jeﬀrey Goldstone, Sam Gutmann, and
+Leo Zhou. The quantum approximate optimization al-
+gorithm and the sherrington-kirkpatrick model at inﬁ-
+nite size. arXiv preprint arXiv:1910.08187 , 2019.
+[22] Stephan Mertens. Number partitioning.Computational
+Complexity and Statistical Physics , page 125, 2006.
+[23] Richard E Korf. Multi-way number partitioning. In
+IJCAI, volume 9, pages 538–543, 2009.
+[24] Roman Orus, Samuel Mugel, and Enrique Lizaso.
+Quantum computing for ﬁnance: Overview and
+prospects. Reviews in Physics , 4:100028, 2019.
+[25] Davide Venturelli and Alexei Kondratyev. Reverse
+quantum annealing approach to portfolio optimization
+problems. Quantum Machine Intelligence , 1(1):17–30,
+2019.
+[26] Hans Kellerer, Renata Mansini, and M Grazia Sper-
+anza. Selecting portfolios with ﬁxed costs and mini-
+mum transaction lots. Annals of Operations Research ,
+99(1):287–304, 2000.
+[27] Daniel J Egger, Claudio Gambella, Jakub Marecek,
+Scott McFaddin, Martin Mevissen, Rudy Raymond,
+Andrea Simonetto, Stefan Woerner, and Elena Yn-
+durain. Quantum computing for ﬁnance: state of the
+art and future prospects.IEEE Transactions on Quan-
+tum Engineering, 2020.
+[28] Jeﬀrey Cohen, Alex Khan, and Clark Alexander. Port-
+folio optimization of 40 stocks using the dwave quantum
+annealer. arXiv preprint arXiv:2007.01430 , 2020.
+[29] N. Slate, E. Matwiejew, S. Marsh, and J. B. Wang.
+Quantum walk-based portfolio optimisation.Quantum,
+5:513, July 2021.
+[30] Samuel Mugel, Carlos Kuchkovsky, Escolastico
+Sanchez, Samuel Fernandez-Lorenzo, Jorge Luis-Hita,
+Enrique Lizaso, and Roman Orus. Dynamic portfolio
+optimization with real datasets using quantum pro-
+cessors and quantum-inspired tensor networks. arXiv
+preprint arXiv:2007.00017, 2020.
+[31] Jorge J Moré and Stefan M Wild. Benchmarking
+derivative-free optimization algorithms.SIAM Journal
+on Optimization, 20(1):172–191, 2009.
+[32] Michael JD Powell. A direct search optimization
+method that models the objective and constraint func-
+tions by linear interpolation. InAdvances in optimiza-
+tion and numerical analysis , pages 51–67. Springer,
+1994.
+[33] Giacomo Nannicini. Performance of hybrid quantum-
+classical variational heuristics for combinatorial opti-
+mization. Physical Review E, 99(1):013304, 2019.
+[34] Aric Hagberg, Pieter Swart, and Daniel S Chult. Ex-
+ploring network structure, dynamics, and function us-
+ing networkx. Technical report, Los Alamos National
+Lab.(LANL), Los Alamos, NM (United States), 2008.
+[35] Stuart Hadﬁeld, Zhihui Wang, Bryan O’Gorman,
+Eleanor G Rieﬀel, Davide Venturelli, and Rupak
+Biswas. From the quantum approximate optimization
+algorithm to a quantum alternating operator ansatz.
+Algorithms, 12(2):34, 2019.
+[36] V. Akshay, H. Philathong, I. Zacharov, and J. Bia-
+monte. Reachability Deﬁcits in Quantum Approximate
+Optimization of Graph Problems.Quantum, 5:532, Au-
+gust 2021.
+[37] Jarrod R McClean, Sergio Boixo, Vadim N Smelyan-
+skiy, Ryan Babbush, and Hartmut Neven. Barren
+plateaus in quantum neural network training land-
+
+=== PDF PAGE 18 ===
+18
+scapes. Nature communications, 9(1):1–6, 2018.
+[38] Alberto Peruzzo, Jarrod McClean, Peter Shadbolt,
+Man-Hong Yung, Xiao-Qi Zhou, Peter J Love, Alán
+Aspuru-Guzik, and Jeremy L O’brien. A variational
+eigenvalue solver on a photonic quantum processor.Na-
+ture communications, 5(1):1–7, 2014.
+[39] Nikolaj Moll, Panagiotis Barkoutsos, Lev S Bishop,
+Jerry M Chow, Andrew Cross, Daniel J Egger, Ste-
+fan Filipp, Andreas Fuhrer, Jay M Gambetta, Marc
+Ganzhorn, et al. Quantum optimization using varia-
+tional algorithms on near-term quantum devices.Quan-
+tum Science and Technology , 3(3):030503, 2018.
+[40] Abhinav Kandala, Antonio Mezzacapo, Kristan
+Temme, Maika Takita, Markus Brink, Jerry M Chow,
+and Jay M Gambetta. Hardware-eﬃcient variational
+quantum eigensolver for small molecules and quantum
+magnets. Nature, 549(7671):242–246, 2017.
+[41] Joonho Lee, William J Huggins, Martin Head-Gordon,
+and K Birgitta Whaley. Generalized unitary coupled
+cluster wave functions for quantum computation.Jour-
+nal of chemical theory and computation , 15(1):311–324,
+2018.
+[42] Dave Wecker, Matthew Hastings, and Matthias Troyer.
+Towards practical quantum variational algorithms.
+2018.
+[43] Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes
+Pichler, and Mikhail D Lukin. Quantum approximate
+optimization algorithm: Performance, mechanism, and
+implementation on near-term devices.Physical Review
+X, 10(2):021067, 2020.
+[44] Lennart Bittel and Martin Kliesch. Training variational
+quantumalgorithmsisnp-hard–evenforlogarithmically
+many qubits and free fermionic systems.arXiv preprint
+arXiv:2101.07267, 2021.
+[45] RuslanShaydulin, IlyaSafro, andJeﬀreyLarson. Multi-
+start methods for quantum approximate optimization.
+In 2019 IEEE High Performance Extreme Computing
+Conference (HPEC), pages 1–8. IEEE, 2019.
+Appendix A: V ariational Quantum Algorithms
+In this section we introduce the details of the two
+main variational quantum algorithms used in this pa-
+per.
+a. Variational Quantum Eigensolver
+The Variational Quantum Eigensolver, as proposed
+by [38], is a hybrid quantum-classical algorithm, orig-
+inally designed to solve quantum chemistry problems,
+but it can be used to tackle optimisation problems [33].
+The main idea is to a map the optimisation problem
+into a cost function that is translated into an interacting
+qubit Hamiltonian [39], whose ground state corresponds
+to the solution of the optimisation problem.
+The encoded qubit Hamiltonian,HC, is decomposed
+into a linear combination of Pauli stringsPa, consisted
+Figure 10: Single Layer Hardware Eﬃcient Ansatz for
+3 qubits.
+of tensor products of Pauli Matricesˆσx, ˆσy, ˆσz :
+HC =
+M∑
+k=1
+ckPk (A1)
+where M =O(poly(n)), n is the system size andck
+is the complex coeﬃcient of thePk Pauli string. How-
+ever, forcombinatorialoptimisationproblemswherethe
+Hamiltonian is a diagonal matrix,HC is decomposed
+only on Pauli strings consisting ofσzi operators.
+VQE is initialised by creating a parameterised state
+|ψ(θ)⟩ whose parameters are iteratively updated by a
+classical optimiser so as to minimize an objective func-
+tion, usually the expectation value of (A1). The param-
+eterised state is created by choosing a variational form
+U(θ) which acts on the initial state|0⟩⊗n and produces
+|ψ(θ)⟩.
+Our choice of variational form U(θ) is a hardware
+eﬃcient ansatz[11, 40], where the qubits are initialised
+in the|0⟩ state andRy(θi)-rotations are applied in each
+qubit along with control-Z operators. Each layer of the
+variational form consists of (CZ )ij operations with i
+the control qubit andj the target qubit, as long as the
+condition i < jholds, and Ry(θi) rotations for every
+qubit. If p is the number of layers, then the number
+of parameters is linear,µ =n (1 +p), in the number of
+qubits and the variational form spans every basis state
+already within the ﬁrst layer.
+The hardware eﬃcient ansatzfalls in the more gen-
+eral category ofproblem-agnostic ansatze, meaning that
+the structure of the ansatz carries no information about
+the problem itself and is mostly suited for optimisation
+problems. Other problems use diﬀerent ansatz families,
+like theUnitary Coupled Clusterwhich is widely used in
+chemistry to obtain the ground state of a molecule [41]
+or the Variational Hamiltonian Ansatz which encodes
+the problem’s Hamiltonian [42].
+
+=== PDF PAGE 19 ===
+19
+Figure 11: General framework of ap-layer QAOA
+consisting of 2p variational angles.
+b. Quantum Approximate Optimisation Algorithm
+The Quantum Approximate Optimisation Algorithm
+(QAOA) [17] is a variational quantum algorithm mostly
+used in combinatorial optimisation problems, and while
+in shallow depths it is analytically and numerically ex-
+plored for some problems [18, 43], its performance in
+intermediate depths is still unknown.
+The QAOA algorithm applies an alternation of two
+unitary transformations, one encoding the cost function
+HC, U(HC) = e−iγHC, and the other a mixer Hamil-
+tonian HB =∑σxi , U(HB) = e−iβHB, whereγ and β
+are variational angles specifying the “time” for which
+the unitary transformations are applied. The system is
+initialised at the ground state ofHB and the alternat-
+ing ansatz of U(HB) U(HC) is applied p-times, with
+p deﬁning the number of layers of the algorithm (see
+Figure 11), producing the state:
+|β,γ⟩ =e−iβpHBe−iγpHC...e −iβ1HBe−iγ1HC|+⟩
+(A2)
+where |+⟩ is the uniform superposition state, γ =
+(γ1...,γ p) andβ = (β1...,β p).
+With suﬃcient repetitions of the algorithm, the ex-
+pectation value is calculated as:
+Fp(β,γ) =⟨β,γ|HC|β,γ⟩ (A3)
+until the 2p optimal parameters (β∗,γ∗) are found.
+IfCopt is the optimal cost function, then the target of
+the algorithm is to maximise the approximation ratio,
+deﬁned as:
+r∗ = Fp(β∗,γ∗)Copt (A4)
+Finding the optimal parameters is far from trivial
+since the expectation value landscape is highly non-
+convex, ﬁlled with local minima where a classical op-
+timiser could easily get stuck.
+The hardest part of QAOA, and in general of a varia-
+tionalquantumalgorithm, isﬁndingtheoptimalparam-
+eters that will lead in a high overlap with the optimal
+Circuit Repetitions
+Prob. of Optimal Solution
+Figure 12: Probability of sampling an optimal solution
+over the circuit repetitions for a Number-Partitioning
+instance.
+(or near-optimal) bit-string or low expectation value.
+Recently, [44] proved that training the optimization pa-
+rameters is NP-Hard and that the landscape of the ob-
+jectivefunctionisﬁlledwithfar-from-optimallocalmin-
+ima. One way to avoid “getting stuck” in a local minima
+is using multi-start methods [45] or heuristic methods
+like using the global optimum of one layer, in QAOA,
+as a starting point for the next [43].
+Appendix B: Circuit Repetitions
+In this section, we demonstrate how our method out-
+performs, in terms of real circuit repetitions and qual-
+ity of the output state, the previously used objective
+functions. We set our “default” circuit repetitions to
+K = 1000which we thenscale itup, along thediscretely
+increasing α using the expressionK/αt, for each given
+time. While one may think that this would weaken our
+results, as illustrated below, it seems that in terms of
+circuit repetitions our method converges to the chosen
+threshold of10% faster than the best of constant CVaR
+or the expectation value approaches.
+Appendix C: Numerical analysis of Ascending
+factor
+In this section we illustrate how the performance of
+our algorithm depends on the choice of theascending
+factor λ. We numerically tested a large number of in-
+stances of sizes from 16 to 20 qubits and observed that
+the algorithm performed optimally for ascending fac-
+tors drawn from the set[0.025, 0.045]. For this reason,
+
+=== PDF PAGE 20 ===
+20
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Normalised Optimiser Iterations
+Prob. of Optimal Solution
+Figure 13: Performance ofAscending-CVaRalgorithm with linear ascending for diﬀerent choices of the ascending
+factor λ. The yellow (square marker) and green (down-pointing marker) lines which refer toα = 0.08 and
+α = 0.1 respectively are not able to reach a good approximation to the optimal solution. On the other hand, the
+orange (line marker) and light blue (circle marker) lines which correspond toα = 0.04 and α = 0.025 are both
+able to achieve an overlap larger than50%. Finally, the dark blue line (diamond marker) is still able to reach a
+good approximation to the ground state but it lacks in terms of speed of convergence and magnitude of overlap
+achieved. The graph on the left refers to a Number Partitioning problem while the graph on the right to
+Portfolio Optimisation Problem.
+as an example, we choose to draw the behavior of our
+algorithm for two random instances (one for Portfolio
+Optimisation and one for Number Partitioning) for dif-
+ferent choices of the hyperparameterλ.
+The performance of our method is sensitive to the
+choice ofλ. A smallλ still converges to an optimal solu-
+tion but requires a large number of iterations, compared
+to λ chosen from the set[0.025, 0.045] which is able to
+attain a 10% within a small number of iterations. On
+the other hand, choosing λ to be large (hoping for a
+faster convergence) fails to achieve even a minor over-
+lap with the optimal solution. A careful tuning of λ
+is therefore necessary for the optimal performance of
+the algorithm given the size and class of the problem at
+hand.

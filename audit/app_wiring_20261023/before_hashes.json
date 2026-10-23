@@ -1,0 +1,7 @@
+{
+  "frontend/src/App.jsx": "03bef256441e03e8c1d06594708847f173c78d38700103d2545f9904f563ea26",
+  "frontend/src/navigation.js": "98f3d4b84007e65efea564991d4dba09c1f765eea760478921284c0a0754f39c",
+  "frontend/src/pages/Optimization.jsx": "375306cd51b89550cc736841c30bbc24719961ec04317ca0fb004cfa63464634",
+  "frontend/src/services/aiAssistant.js": "a12ddb8a6c3ff79b1f08cc118a4a4d1730acc7324a52651b7cf6423579d2d096",
+  "backend/routes/chat.py": "bdaf0bd56154383f3d2a0d74144d5642c28012460027dca2c4b40f6f55c2b844"
+}
