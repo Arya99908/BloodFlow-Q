@@ -219,8 +219,16 @@ class MILPSolver:
         scenario: Scenario,
         objective_config: ObjectiveConfig,
         secondary_penalties: Mapping[str, float] | None = None,
-    ) -> dict[str, dict]:
-        """Solve the continuous LP relaxation, returning fractional values for warm-starting."""
+        *,
+        include_metadata: bool = False,
+    ) -> dict[str, object]:
+        """Return relaxed quantity maps; optionally include objective and timing.
+
+        Metadata is opt-in to preserve research callers that iterate the maps.
+        """
+        started = time.perf_counter()
+        secondary = _validate_secondary_penalties(secondary_penalties)
+        secondary_cost = objective_config.secondary_penalty_weight * sum(secondary.values())
         allocation_vars = scenario.allocation_variables()
         routes = {(r.source, r.destination): r for r in scenario.routes}
 
@@ -234,7 +242,9 @@ class MILPSolver:
         num_vars = num_x + num_u
 
         if num_vars == 0:
-            return {"allocation": {}, "unmet_demand": {}, "slack": {}}
+            return {"allocation": {}, "unmet_demand": {}, "slack": {},
+                    **({"objective_value": float(secondary_cost),
+                        "runtime_seconds": time.perf_counter() - started} if include_metadata else {})}
 
         c = np.zeros(num_vars, dtype=float)
         lb = np.zeros(num_vars, dtype=float)
@@ -323,4 +333,6 @@ class MILPSolver:
             "allocation": alloc_dict,
             "unmet_demand": unmet_dict,
             "slack": slack_dict,
+            **({"objective_value": float(res.fun + secondary_cost),
+                "runtime_seconds": time.perf_counter() - started} if include_metadata else {}),
         }

@@ -54,14 +54,17 @@ class XYCredibilityTests(unittest.TestCase):
         theta=a._compute_warm_start_thetas(q)
         self.assertTrue(Statevector.from_instruction(a.build_circuit(h,np.array([.3,.4]),thetas=theta)).equiv(Statevector.from_instruction(b.build_circuit(h,np.array([.3,.4]),thetas=theta))))
 
-    def test_double_seed_failure_silently_prepares_uniform(self):
+    def test_double_seed_failure_reports_uniform_fallback(self):
         q=tiny_qubo(); solver=QAOASolver(QAOAConfig(warm_start=True,max_iterations=5,shots=32))
         with patch('optimization.milp.MILPSolver.solve_relaxation',side_effect=RuntimeError('test failure')), patch('optimization.greedy.GreedyAllocator.solve',side_effect=RuntimeError('test failure')):
             np.testing.assert_allclose(solver._compute_warm_start_thetas(q),np.pi/2)
             result=solver.solve(q)
-        self.assertTrue(result.warm_start_used) # currently requested-mode metadata, not seed provenance
+        self.assertFalse(result.warm_start_used)
+        self.assertTrue(result.optimizer_information['warm_start_requested'])
+        self.assertEqual(result.optimizer_information['seed_source'], 'uniform_fallback')
+        self.assertIn('greedy fallback unavailable', result.optimizer_information['seed_fallback_reason'])
 
-    def test_empty_xy_graph_falls_back_to_x_rotation(self):
+    def test_empty_xy_graph_preserves_state(self):
         from dataclasses import replace
         from quantum.qubo import build_qubo, QUBOPenaltyConfig
         q=tiny_qubo(); base=q.scenario
@@ -71,5 +74,5 @@ class XYCredibilityTests(unittest.TestCase):
         solver=QAOASolver(QAOAConfig(mixer='xy'))
         self.assertEqual(solver._compute_xy_pairs(q),())
         qc=solver.build_circuit(convert_qubo_to_ising(q),np.array([0,.7]),thetas=np.array([0.]),xy_pairs=())
-        self.assertIn('rx',qc.count_ops())
-        self.assertGreater(Statevector.from_instruction(qc).probabilities()[1],.1)
+        self.assertNotIn('rx',qc.count_ops())
+        self.assertAlmostEqual(Statevector.from_instruction(qc).probabilities()[1],0.0)

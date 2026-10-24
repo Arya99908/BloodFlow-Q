@@ -75,7 +75,7 @@ class QAOASolverTests(unittest.TestCase):
         ))
         result = solver.solve(qubo)
         self.assertTrue(result.warm_start_used)
-        self.assertEqual(result.mixer_type, "x")
+        self.assertEqual(result.mixer_type, "warm_start")
         self.assertEqual(sum(result.counts.values()), 64)
 
     def test_warm_start_recovers_when_lp_solver_fails(self) -> None:

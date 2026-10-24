@@ -1,3 +1,5 @@
+import QAOAVariantSelect from '../components/QAOAVariantSelect';
+import { QAOA_VARIANTS, getQAOAVariant, qaoaVariantConfig } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, ArrowRight, Play, ShieldCheck, Settings2 } from 'lucide-react';
 import { api } from '../services/api';
@@ -28,7 +30,8 @@ export default function DemoMode() {
   const [method, setMethod] = useState('qaoa');
   const [weights, setWeights] = useState(FALLBACK_WEIGHTS);
   const [qaoa, setQaoa] = useState(FALLBACK_QAOA);
-  const [warmStart, setWarmStart] = useState(false);
+  const [qaoaVariant, setQaoaVariant] = useState('standard');
+  const warmStart = getQAOAVariant(qaoaVariant).warm_start;
   const [penalties, setPenalties] = useState({ inventory_penalty_weight: '10000', demand_penalty_weight: '10000' });
   const [result, setResult] = useState(null);
   const [liveRuns, setLiveRuns] = useState({});
@@ -44,7 +47,7 @@ export default function DemoMode() {
   }, [defaults]);
 
   const objectiveWeights = weights;
-  const qaoaSettings = { ...qaoa, warm_start: warmStart, mixer: 'x' };
+  const qaoaSettings = { ...qaoa, ...qaoaVariantConfig(qaoaVariant) };
   const cases = catalog?.scenarios?.length ? catalog.scenarios : FALLBACK_CASES;
   const storedRuns = precomputed?.runs || [];
   const selectedCase = cases.find((item) => item.id === scenarioId) || FALLBACK_CASES[0];
@@ -56,9 +59,9 @@ export default function DemoMode() {
   const allocations = output?.after_allocation || output?.allocation || [];
   const actualScenario = output?.modified_scenario || output?.scenario || null;
   const comparableRuns = useMemo(() => {
-    if (mode === 'precomputed') return storedRuns.filter((run) => run.scenario_id === 'normal');
-    return ['greedy', 'milp', 'exact', 'qaoa', 'warm_qaoa'].map((solver) => liveRuns[`normal:${solver}`]).filter(Boolean);
-  }, [liveRuns, mode, storedRuns]);
+    if (mode === 'precomputed') return storedRuns.filter((run) => run.scenario_id === scenarioId);
+    return ['greedy', 'milp', 'exact', ...QAOA_VARIANTS.map(variant => `qaoa-${variant.id}`)].map((solver) => liveRuns[`${scenarioId}:${solver}`]).filter(Boolean);
+  }, [liveRuns, mode, storedRuns, scenarioId]);
 
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
   const setQaoaValue = (key, value) => setQaoa((current) => ({ ...current, [key]: key === 'optimizer' ? value : Number(value) }));
@@ -105,8 +108,8 @@ export default function DemoMode() {
     }
     try {
       const measured = await api.runDemo(request);
-      const runKey = method === 'qaoa' && warmStart ? 'warm_qaoa' : method;
-      const labeledRun = { ...measured, demo_method_label: method === 'qaoa' ? (warmStart ? 'Warm-start QAOA' : 'Standard QAOA') : method.toUpperCase() };
+      const runKey = method === 'qaoa' ? `qaoa-${qaoaVariant}` : method;
+      const labeledRun = { ...measured, demo_method_label: method === 'qaoa' ? getQAOAVariant(qaoaVariant).label : method.toUpperCase() };
       setResult(labeledRun);
       setLiveRuns((current) => ({ ...current, [`${scenarioId}:${runKey}`]: labeledRun }));
     } catch (issue) { setRunError(issue.message || 'The requested demo run failed.'); }
@@ -146,13 +149,8 @@ export default function DemoMode() {
               const recommended = String(Math.max(1, Math.ceil(demoBound * 1.5)));
               setPenalties({ inventory_penalty_weight: recommended, demand_penalty_weight: recommended });
             }}>Use audited comparison settings</button>
-            <p className="comparison-help">Preset: depth 2, 512 shots, 3 starts × 80 optimizer iterations; warm-start epsilon 0.1. Uses more compute. Compare both variants with the same budget.</p>
-            <label className="demo-field" htmlFor="demo-qaoa-variant">QAOA variant</label>
-            <select id="demo-qaoa-variant" className="field-control" value={warmStart ? 'warm' : 'standard'} onChange={(event) => setWarmStart(event.target.value === 'warm')} disabled={running}>
-              <option value="standard">Standard QAOA</option>
-              <option value="warm">Warm-start QAOA</option>
-            </select>
-            <p className="comparison-help">{warmStart ? 'Uses a classical allocation to prepare the initial quantum state and its matching mixer.' : 'Starts from a uniform quantum state with the standard X mixer.'}</p>
+            <p className="comparison-help">Preset: depth 2, 512 shots, 3 starts × 80 optimizer iterations; warm-start epsilon 0.1. Uses more compute. Compare all four variants with the same budget.</p>
+            <QAOAVariantSelect id="demo-qaoa-variant" value={qaoaVariant} onChange={setQaoaVariant} disabled={running} />
             <div className="demo-settings-grid">
               <NumberField label="Random seed" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min="0" />
               <NumberField label="QAOA depth (p)" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min="1" max="5" />
@@ -168,7 +166,7 @@ export default function DemoMode() {
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
           </>}
-          <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, Standard QAOA and Warm-start QAOA in turn. Completed responses stay visible for this browser session.</p>
+          <p className="comparison-help">To build a same-scenario comparison, run Greedy, MILP, Exact, Standard QAOA, Warm-start QAOA, XY and Warm-start + XY in turn. Completed responses stay visible for this browser session.</p>
           <div className="demo-step-actions">{configStep > 0 && <button type="button" className="button button-secondary" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type="button" className="button button-primary" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <ClickSpark className="demo-run-spark" style={{width:'auto',height:'auto'}} sparkColor="#edf2f4"><SpecularButton size="md" radius={10} tint="#d90429" textColor="#fff" lineColor="#ff9aa8" baseColor="#d90429" className="run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</SpecularButton></ClickSpark>}</div>
           <p className="demo-qaoa-status"><ShieldCheck size={14} /> QAOA availability reported by backend: <strong>{defaults?.qaoa_available == null ? 'checking' : defaults.qaoa_available ? 'available' : 'unavailable'}</strong>. {defaults?.qaoa_unavailable_reason || 'A failed QAOA request stays an error.'}</p>
         </section> : <section className="panel demo-config">
@@ -220,6 +218,8 @@ export default function DemoMode() {
               <div className="panel solver-metadata-panel">
                 <div className="metadata-panel-heading">QAOA circuit & execution telemetry</div>
                 <div className="metadata-row-grid">
+                  <MetaRow label="Initialization source" value={(output?.after_qaoa || output)?.optimizer_information?.seed_source ?? 'Not recorded'} />
+                  <MetaRow label="Effective mixer" value={(output?.after_qaoa || output)?.optimizer_information?.effective_mixer ?? 'Not recorded'} />
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
                   <MetaRow label="Feasible shot rate" value={(output?.after_qaoa || output)?.optimizer_information?.feasible_shot_rate == null ? 'Not available' : `${(100 * (output?.after_qaoa || output).optimizer_information.feasible_shot_rate).toFixed(1)}%`} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
@@ -242,7 +242,7 @@ export default function DemoMode() {
           </>}
         </section>
       </div>
-      <section className="panel demo-comparison"><div className="panel-heading"><div><h2>Greedy · MILP · Exact · QAOA comparison</h2><p>{mode === 'precomputed' ? 'Historical measured runs for the same compact normal scenario.' : 'Live results collected from this page session for the same compact normal scenario.'}</p></div></div>
+      <section className="panel demo-comparison"><div className="panel-heading"><div><h2>Greedy · MILP · Exact · QAOA comparison</h2><p>{mode === 'precomputed' ? `Historical measured runs for ${scenarioId.replaceAll('_', ' ')}.` : `Live results collected from this page session for ${scenarioId.replaceAll('_', ' ')}.`}</p></div></div>
         {comparableRuns.length ? (
           <div className="table-scroll" role="region" aria-label="Solver comparison" tabIndex={0}>
             <table className="data-table">

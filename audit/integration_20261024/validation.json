@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-24",
+  "base_commit": "345a42a",
+  "source": "BloodFlow-Q1-codex-warm-qaoa-integration",
+  "validation": {
+    "backend_tests_passed": 170,
+    "research_tests_passed": 21,
+    "frontend_tests_passed": 32,
+    "development_build": "passed",
+    "browser_interaction": "not tested"
+  },
+  "same_environment_comparison": {
+    "runs_per_implementation": 120,
+    "identical_fields": [
+      "counts",
+      "feasible_shot_rate",
+      "best_feasible_objective",
+      "seed_objective"
+    ],
+    "matching_runs": 120,
+    "warm_runs_finding_exact_optimum": 60
+  },
+  "historical_snapshot_comparison": {
+    "matching_histograms": 97,
+    "total_runs": 120,
+    "saved_environment": {
+      "python": "3.13.15",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "packages": {
+        "qiskit": "2.6.0",
+        "qiskit-aer": "0.17.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1"
+      }
+    },
+    "current_environment": {
+      "python": "3.14.7",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "packages": {
+        "qiskit": "2.6.0",
+        "qiskit-aer": "0.17.2",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1"
+      }
+    },
+    "note": "Historical JSON preserved unchanged. Same-environment source and integrated implementations agree; cross-environment saved counts are not bitwise reproduced."
+  },
+  "current_source_hashes": {
+    "experiments/run_warm_qaoa_comparison.py": "49a57c320dd5693833e93a75796a73445de7d010fe77889ef10d009a4bfd0082",
+    "quantum/qaoa_solver.py": "b87c6045b344011c68f85c9112d8c244ac68ef4e9fcc1c36c23c9ca618c67f1b",
+    "quantum/qubo.py": "2e26596a8dbb965e210908eef4cebf7305283a6b3ec9930a7a1a9b1aaf7f4bbe",
+    "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+    "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+    "optimization/milp.py": "72bd813791bd21ab8a8822b316e9d12f7acf7a1f16f5a4dc39b02b6f72aeff86",
+    "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+    "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+    "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+    "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+    "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+    "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2"
+  },
+  "compatibility": {
+    "xy_support": "retained; empty exchange graph now applies identity mixing",
+    "warm_start_used": "actual LP/greedy preparation; false on uniform fallback",
+    "mixer_type": "effective mixer; requested mixer retained in optimizer_information",
+    "lp_metadata": "opt-in to preserve existing research quantity-map consumers"
+  }
+}

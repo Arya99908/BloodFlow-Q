@@ -95,6 +95,8 @@ class QAOAConfig:
             raise ValueError("restarts must be an integer from 1 to 10")
         if not isinstance(self.normalize_cost, bool):
             raise ValueError("normalize_cost must be boolean")
+        if not isinstance(self.warm_start, bool):
+            raise ValueError("warm_start must be boolean")
         if self.optimizer not in {"COBYLA", "Nelder-Mead", "Powell"}:
             raise ValueError("optimizer must be one of: COBYLA, Nelder-Mead, Powell")
         if self.mixer not in {"x", "xy", "warm_start"}:
@@ -140,91 +142,97 @@ class QAOASolver:
         self.config = config or QAOAConfig()
 
     def _compute_warm_start_thetas(self, qubo: QUBOResult) -> np.ndarray:
-        """Derive warm-start rotation angles from classical MILP or Greedy solutions."""
+        """Compatibility helper for circuit audits; solve also reports provenance."""
+        return self._prepare_warm_start(qubo)[0]
 
-        eps = float(self.config.warm_start_epsilon)
-        num_vars = qubo.variable_count
-        classical_bits = np.full(num_vars, 0.5, dtype=float)
+    def _prepare_warm_start(self, qubo: QUBOResult) -> tuple[np.ndarray, dict[str, object]]:
+        """Prepare a biased product state from an LP relaxation, then greedy fallback.
 
-        scenario = getattr(qubo, "scenario", None)
-        if scenario is not None:
-            alloc_map: dict[tuple[str, str, str, str], int] = {}
-            unmet_map: dict[tuple[str, str], int] = {}
-            slack_map: dict[tuple[str, str], float] = {}
-            solved = False
-
+        The LP values are embedded as per-register bit marginals. This preserves
+        each relaxed register's expected integer value, but the tensor-product
+        state does not preserve cross-register constraints or guarantee feasible
+        measurements. We deliberately never fall back to an optimal MILP seed.
+        """
+        started = time.perf_counter()
+        scenario = qubo.scenario
+        allocation_values: dict[tuple[str, str, str, str], float] = {}
+        unmet_values: dict[tuple[str, str], float] = {}
+        slack_values: dict[tuple[str, str], float] = {}
+        source = "uniform_fallback"
+        seed_objective: float | None = None
+        seed_feasibility = "not_applicable"
+        fallback_reason: str | None = None
+        try:
+            from optimization.milp import MILPSolver
+            relaxation = MILPSolver().solve_relaxation(
+                scenario, qubo.objective_config, qubo.secondary_penalties, include_metadata=True
+            )
+            seed_objective = float(relaxation["objective_value"])
+            allocation_values = relaxation["allocation"]
+            unmet_values = relaxation["unmet_demand"]
+            slack_values = relaxation["slack"]
+            source = "lp_relaxation"
+            seed_feasibility = "feasible_continuous_relaxation"
+        except Exception as lp_error:
+            fallback_reason = f"LP relaxation unavailable: {type(lp_error).__name__}"
             try:
-                from optimization.milp import MILPSolver
-                milp_solver = MILPSolver()
-                if hasattr(milp_solver, "solve_relaxation"):
-                    lp_res = milp_solver.solve_relaxation(
-                        scenario,
-                        qubo.objective_config,
-                        getattr(qubo, "secondary_penalties", None),
-                    )
-                    alloc_map = lp_res["allocation"]
-                    unmet_map = lp_res["unmet_demand"]
-                    slack_map = lp_res["slack"]
-                    solved = True
+                from optimization.constraints import validate_allocation
+                from optimization.greedy import GreedyAllocator
+                greedy = GreedyAllocator().solve(
+                    scenario, qubo.objective_config, qubo.secondary_penalties
+                )
+                report = validate_allocation(scenario, greedy.allocation, greedy.unmet_demand)
+                if not report["feasible"]:
+                    raise ValueError("greedy seed failed independent feasibility validation")
+                allocation_values = {
+                    (row.source, row.destination, row.blood_group, row.recipient_group): float(row.quantity)
+                    for row in greedy.allocation
+                }
+                unmet_values = {key: float(value) for key, value in greedy.unmet_demand.items()}
+                seed_objective = float(greedy.objective_breakdown.total_objective)
+                seed_feasibility = "feasible_integer"
+                source = "greedy_fallback"
+                fallback_reason = f"{fallback_reason}; using validated greedy seed"
+            except Exception as greedy_error:
+                fallback_reason = f"{fallback_reason}; greedy fallback unavailable: {type(greedy_error).__name__}"
+
+        if source != "uniform_fallback":
+            used_stock: dict[tuple[str, str], float] = {}
+            for key, quantity in allocation_values.items():
+                bank_id, _, supplied_group, _ = key
+                used_stock[(bank_id, supplied_group)] = used_stock.get((bank_id, supplied_group), 0.0) + quantity
+            if not slack_values:
+                slack_values = {
+                    (bank.id, group): max(0.0, float(available) - used_stock.get((bank.id, group), 0.0))
+                    for bank in scenario.blood_banks
+                    for group, available in bank.inventory.items()
+                    if available > 0
+                }
+            bit_probabilities = np.zeros(qubo.variable_count, dtype=float)
+            for (kind, key), bit_pairs in qubo._integer_bit_indices.items():
+                if kind == "allocation":
+                    value = allocation_values.get(key, 0.0)
+                elif kind == "unmet":
+                    value = unmet_values.get(key, 0.0)
                 else:
-                    milp_res = milp_solver.solve(
-                        scenario,
-                        qubo.objective_config,
-                        getattr(qubo, "secondary_penalties", None),
-                    )
-                    for dec in milp_res.allocation:
-                        alloc_map[(dec.source, dec.destination, dec.blood_group, dec.recipient_group)] = dec.quantity
-                    unmet_map = dict(milp_res.unmet_demand)
-                    solved = True
-            except Exception:
-                pass
+                    value = slack_values.get(key, 0.0)
+                for bit_index, probability in encode_register_probabilities(float(value), bit_pairs).items():
+                    bit_probabilities[bit_index] = probability
+        else:
+            bit_probabilities = np.full(qubo.variable_count, 0.5, dtype=float)
 
-            if not solved:
-                try:
-                    from optimization.greedy import GreedyAllocator
-                    greedy_res = GreedyAllocator().solve(
-                        scenario,
-                        qubo.objective_config,
-                        getattr(qubo, "secondary_penalties", None),
-                    )
-                    for dec in greedy_res.allocation:
-                        alloc_map[(dec.source, dec.destination, dec.blood_group, dec.recipient_group)] = dec.quantity
-                    unmet_map = dict(greedy_res.unmet_demand)
-                    solved = True
-                except Exception:
-                    pass
-
-            if solved and hasattr(qubo, "_integer_bit_indices"):
-                if not slack_map:
-                    used_stock: dict[tuple[str, str], float] = {}
-                    for dec_key, qty in alloc_map.items():
-                        src, _, b_grp, _ = dec_key
-                        used_stock[(src, b_grp)] = used_stock.get((src, b_grp), 0.0) + float(qty)
-
-                    slack_map = {}
-                    for bank in scenario.blood_banks:
-                        for grp, avail in bank.inventory.items():
-                            if avail > 0:
-                                used = used_stock.get((bank.id, grp), 0.0)
-                                slack_map[(bank.id, grp)] = max(0.0, float(avail) - used)
-
-                for (kind, key), bit_pairs in qubo._integer_bit_indices.items():
-                    if kind == "allocation":
-                        val = alloc_map.get(key, 0.0)
-                    elif kind == "unmet":
-                        val = unmet_map.get(key, 0.0)
-                    elif kind == "slack":
-                        val = slack_map.get(key, 0.0)
-                    else:
-                        val = 0.0
-
-                    probabilities = encode_register_probabilities(float(val), bit_pairs)
-                    for bit_idx, probability in probabilities.items():
-                        classical_bits[bit_idx] = probability
-
-        c_reg = eps + (1.0 - 2.0 * eps) * classical_bits
-        c_reg = np.clip(c_reg, 1e-4, 1.0 - 1e-4)
-        return 2.0 * np.arcsin(np.sqrt(c_reg))
+        epsilon = float(self.config.warm_start_epsilon)
+        regularized = np.clip(epsilon + (1.0 - 2.0 * epsilon) * bit_probabilities, 1e-4, 1.0 - 1e-4)
+        thetas = 2.0 * np.arcsin(np.sqrt(regularized))
+        metadata: dict[str, object] = {
+            "seed_source": source,
+            "seed_objective": seed_objective,
+            "seed_feasibility": seed_feasibility,
+            "seed_preprocessing_seconds": time.perf_counter() - started,
+        }
+        if fallback_reason:
+            metadata["seed_fallback_reason"] = fallback_reason
+        return thetas, metadata
 
     def _compute_xy_pairs(self, qubo: QUBOResult) -> tuple[tuple[int, int], ...]:
         """Compute excitation-preserving exchange pairs for the XY mixer."""
@@ -301,8 +309,8 @@ class QAOASolver:
                     circuit.rzz(2 * gamma * coefficient, left, right)
 
             # Mixer unitary U_M(beta)
-            if mixer == "xy" and xy_pairs:
-                for left, right in xy_pairs:
+            if mixer == "xy":
+                for left, right in xy_pairs or ():
                     circuit.rxx(beta, left, right)
                     circuit.ryy(beta, left, right)
             elif (mixer == "warm_start" or (self.config.warm_start and mixer == "x")) and thetas is not None:
@@ -332,7 +340,13 @@ class QAOASolver:
         ising, cost_scale = normalize_ising(original_ising) if self.config.normalize_cost else (original_ising, 1.0)
 
         use_warm_start = self.config.warm_start or self.config.mixer == "warm_start"
-        thetas = self._compute_warm_start_thetas(qubo) if use_warm_start else None
+        seed_metadata = {"seed_source": "uniform", "seed_objective": None,
+                         "seed_feasibility": "not_applicable", "seed_preprocessing_seconds": 0.0}
+        thetas = None
+        if use_warm_start:
+            thetas, seed_metadata = self._prepare_warm_start(qubo)
+        actual_warm_start = use_warm_start and seed_metadata["seed_source"] != "uniform_fallback"
+        effective_mixer = "xy" if self.config.mixer == "xy" else ("warm_start" if use_warm_start else "x")
         xy_pairs = self._compute_xy_pairs(qubo) if self.config.mixer == "xy" else None
 
         rng = np.random.default_rng(self.config.seed)
@@ -365,6 +379,9 @@ class QAOASolver:
             )
             simulator = AerSimulator()
             compiled = transpile(measured, simulator, optimization_level=0)
+            circuit_depth = compiled.depth()
+            circuit_operations = compiled.count_ops()
+            two_qubit_gates = sum(instruction.operation.num_qubits == 2 for instruction in compiled.data)
             job = simulator.run(
                 compiled, shots=self.config.shots, seed_simulator=self.config.seed
             )
@@ -388,14 +405,16 @@ class QAOASolver:
         if not candidates:
             raise QAOASolverError("local simulator returned no measured candidates")
         mean_energy = sum(item.energy * item.count for item in candidates) / self.config.shots
+        from optimization.decoder import evaluate_quantum_solution
         feasible_candidates = []
         feasible_shots = 0
         for candidate in candidates:
-            assignment = qubo.evaluate_assignment(tuple(int(bit) for bit in candidate.bitstring.replace(" ", "")[::-1]))
-            if assignment.total_penalty == 0:
+            evaluation = evaluate_quantum_solution(qubo, candidate.bitstring)
+            if evaluation.feasibility:
                 feasible_shots += candidate.count
-                feasible_candidates.append((assignment.classical_objective, candidate.bitstring))
+                feasible_candidates.append((evaluation.total_objective, candidate.bitstring))
         best_feasible = min(feasible_candidates) if feasible_candidates else None
+        measured_shots = sum(counts.values())
         return QAOAResult(
             best_bitstring=candidates[0].bitstring,
             objective_value=candidates[0].energy,
@@ -409,13 +428,23 @@ class QAOASolver:
                 "message": str(optimized.message),
                 "iterations": int(getattr(optimized, "nit", 0)),
                 "function_evaluations": sum(int(getattr(run, "nfev", 0)) for run in runs),
+                "parameter_count": 2 * self.config.p,
+                "circuit_depth": circuit_depth,
+                "two_qubit_gate_count": two_qubit_gates,
+                "compiled_operation_counts": {str(name): int(count) for name, count in circuit_operations.items()},
+                "warm_start_requested": use_warm_start,
+                "requested_mixer": self.config.mixer,
+                "effective_mixer": effective_mixer,
+                **seed_metadata,
                 "restarts": self.config.restarts,
                 "selected_restart": selected,
                 "restart_expected_energies": [float(run.fun) * cost_scale for run in runs],
                 "cost_scale": cost_scale,
                 "preparation_seconds": preparation_seconds,
                 "warm_start_epsilon": self.config.warm_start_epsilon,
-                "feasible_shot_rate": feasible_shots / self.config.shots,
+                "measured_shots": measured_shots,
+                "feasible_shots": feasible_shots,
+                "feasible_shot_rate": feasible_shots / measured_shots if measured_shots else 0.0,
                 "best_feasible_objective": best_feasible[0] if best_feasible else None,
                 "best_feasible_bitstring": best_feasible[1] if best_feasible else None,
                 "final_expected_energy": float(optimized.fun) * cost_scale,
@@ -426,6 +455,6 @@ class QAOASolver:
             variable_mapping=qubo.variable_mapping,
             cost_hamiltonian=original_ising.cost_hamiltonian,
             measured_mean_energy=mean_energy,
-            warm_start_used=use_warm_start,
-            mixer_type=self.config.mixer,
+            warm_start_used=actual_warm_start,
+            mixer_type=effective_mixer,
         )
