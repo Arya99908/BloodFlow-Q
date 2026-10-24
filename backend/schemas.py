@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
@@ -84,6 +84,20 @@ class QAOAConfigInput(StrictModel):
     normalize_cost: bool = True
     restarts: int = Field(default=1, ge=1, le=10)
     mixer: Literal["x", "xy", "warm_start"] = "x"
+    parameter_initialization: Literal["random", "zero_first", "provided"] = "random"
+    initial_parameters: list[Annotated[float, Field(allow_inf_nan=False)]] | None = None
+    retain_initial_state: bool = False
+    warm_start_source: Literal["lp", "greedy"] = "lp"
+
+    @model_validator(mode="after")
+    def validate_initial_parameters(self):
+        if self.parameter_initialization == "provided":
+            if self.initial_parameters is None or len(self.initial_parameters) != 2 * self.p:
+                raise ValueError("provided initialization requires exactly 2*p parameters")
+        elif self.initial_parameters is not None:
+            raise ValueError("initial_parameters requires provided initialization")
+        return self
+
 
 
 class OptimizeRequest(StrictModel):

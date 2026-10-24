@@ -1,0 +1,27 @@
+{
+  "study": "full_review_20261024",
+  "primary_seeds": [401, 402, 403, 404, 405],
+  "additional_seeds": [401, 402, 403],
+  "base": {"p": 2, "shots": 256, "max_iterations": 40, "restarts": 2, "warm_start_epsilon": 0.1, "normalize_cost": true},
+  "max_qubits": 14,
+  "run_timeout_seconds": 60,
+  "primary_variants": {
+    "standard": {}, "warm": {"warm_start": true}, "xy": {"mixer": "xy"},
+    "warm_xy": {"warm_start": true, "mixer": "xy"},
+    "warm_keep": {"warm_start": true, "retain_initial_state": true},
+    "warm_zero": {"warm_start": true, "parameter_initialization": "zero_first"},
+    "warm_zero_keep": {"warm_start": true, "parameter_initialization": "zero_first", "retain_initial_state": true},
+    "greedy_warm": {"warm_start": true, "warm_start_source": "greedy"}
+  },
+  "ablation_scenarios": ["normal_reference", "emergency_16", "multi_facility"],
+  "ablations": {
+    "warm_epsilon025": {"warm_start": true, "warm_start_epsilon": 0.25},
+    "warm_depth1": {"warm_start": true, "p": 1},
+    "warm_depth3": {"warm_start": true, "p": 3},
+    "warm_shots64": {"warm_start": true, "shots": 64},
+    "warm_powell": {"warm_start": true, "optimizer": "Powell", "max_iterations": 2},
+    "warm_nelder_mead": {"warm_start": true, "optimizer": "Nelder-Mead"},
+    "warm_interpolated": {"warm_start": true, "parameter_initialization": "provided"}
+  },
+  "notes": ["Frozen before measuring new controls. Five paired optimizer seeds on the 15 established compact/held-out cases; three on additional boundary and historical cases.", "Only primary warm_keep versus warm is a mechanistic expected-energy retention check; other contrasts exploratory. Retention costs one extra statevector evaluation.", "Powell iteration budgets are not equivalent to COBYLA function budgets; actual calls and time are reported.", "Depth interpolation includes a separate p=1 training run on the same instance/seed and charges its entire runtime.", "Exact references and validation are separately timed analysis work; not part of solver wall time. No hardware runtime inferred."]
+}

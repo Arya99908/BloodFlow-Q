@@ -1,0 +1,182 @@
+[
+  {
+    "scenario": "normal_reference",
+    "family": "primary",
+    "qubits": 10,
+    "input_file": "normal_reference_case.json"
+  },
+  {
+    "scenario": "inventory_shortage",
+    "family": "primary",
+    "qubits": 7,
+    "input_file": "inventory_shortage_case.json"
+  },
+  {
+    "scenario": "demand_below_inventory",
+    "family": "primary",
+    "qubits": 8,
+    "input_file": "demand_below_inventory_case.json"
+  },
+  {
+    "scenario": "transport_disruption",
+    "family": "primary",
+    "qubits": 6,
+    "input_file": "transport_disruption_case.json"
+  },
+  {
+    "scenario": "critical_shortage",
+    "family": "primary",
+    "qubits": 9,
+    "input_file": "critical_shortage_case.json"
+  },
+  {
+    "scenario": "emergency_16",
+    "family": "primary",
+    "qubits": 13,
+    "input_file": "emergency_16_case.json"
+  },
+  {
+    "scenario": "multi_facility",
+    "family": "primary",
+    "qubits": 13,
+    "input_file": "multi_facility_case.json"
+  },
+  {
+    "scenario": "holdout_00",
+    "family": "primary",
+    "qubits": 4,
+    "input_file": "holdout_00_case.json"
+  },
+  {
+    "scenario": "holdout_01",
+    "family": "primary",
+    "qubits": 8,
+    "input_file": "holdout_01_case.json"
+  },
+  {
+    "scenario": "holdout_02",
+    "family": "primary",
+    "qubits": 8,
+    "input_file": "holdout_02_case.json"
+  },
+  {
+    "scenario": "holdout_03",
+    "family": "primary",
+    "qubits": 10,
+    "input_file": "holdout_03_case.json"
+  },
+  {
+    "scenario": "holdout_04",
+    "family": "primary",
+    "qubits": 13,
+    "input_file": "holdout_04_case.json"
+  },
+  {
+    "scenario": "holdout_05",
+    "family": "primary",
+    "qubits": 6,
+    "input_file": "holdout_05_case.json"
+  },
+  {
+    "scenario": "holdout_06",
+    "family": "primary",
+    "qubits": 7,
+    "input_file": "holdout_06_case.json"
+  },
+  {
+    "scenario": "holdout_07",
+    "family": "primary",
+    "qubits": 12,
+    "input_file": "holdout_07_case.json"
+  },
+  {
+    "scenario": "legacy_normal_reference",
+    "family": "historical_input_current_algorithms",
+    "qubits": 10,
+    "input_file": "legacy_normal_reference_case.json"
+  },
+  {
+    "scenario": "legacy_inventory_shortage",
+    "family": "historical_input_current_algorithms",
+    "qubits": 7,
+    "input_file": "legacy_inventory_shortage_case.json"
+  },
+  {
+    "scenario": "legacy_transport_cost_tradeoff",
+    "family": "historical_input_current_algorithms",
+    "qubits": 3,
+    "input_file": "legacy_transport_cost_tradeoff_case.json"
+  },
+  {
+    "scenario": "legacy_emergency_demand_spike",
+    "family": "historical_input_current_algorithms",
+    "qubits": 13,
+    "input_file": "legacy_emergency_demand_spike_case.json"
+  },
+  {
+    "scenario": "legacy_transport_disruption",
+    "family": "historical_input_current_algorithms",
+    "qubits": 6,
+    "input_file": "legacy_transport_disruption_case.json"
+  },
+  {
+    "scenario": "legacy_multi_facility_tradeoff",
+    "family": "historical_input_current_algorithms",
+    "qubits": 13,
+    "input_file": "legacy_multi_facility_tradeoff_case.json"
+  },
+  {
+    "scenario": "synthetic_default",
+    "family": "full_dataset",
+    "qubits": 222,
+    "input_file": "synthetic_default_case.json"
+  },
+  {
+    "scenario": "demo_normal",
+    "family": "demo_before",
+    "qubits": 10,
+    "input_file": "demo_normal_case.json"
+  },
+  {
+    "scenario": "demo_emergency_demand_spike",
+    "family": "demo_before",
+    "qubits": 10,
+    "input_file": "demo_emergency_demand_spike_case.json"
+  },
+  {
+    "scenario": "demo_emergency_demand_spike_emergency",
+    "family": "demo_after",
+    "qubits": 13,
+    "input_file": "demo_emergency_demand_spike_emergency_case.json"
+  },
+  {
+    "scenario": "demo_transport_disruption",
+    "family": "demo_before",
+    "qubits": 10,
+    "input_file": "demo_transport_disruption_case.json"
+  },
+  {
+    "scenario": "demo_transport_disruption_emergency",
+    "family": "demo_after",
+    "qubits": 7,
+    "input_file": "demo_transport_disruption_emergency_case.json"
+  },
+  {
+    "scenario": "zero_inventory",
+    "family": "boundary",
+    "qubits": 3,
+    "input_file": "zero_inventory_case.json"
+  },
+  {
+    "scenario": "zero_demand",
+    "family": "boundary",
+    "qubits": 3,
+    "input_file": "zero_demand_case.json"
+  },
+  {
+    "scenario": "zero_inventory_and_demand",
+    "family": "boundary",
+    "qubits": 0,
+    "input_file": "zero_inventory_and_demand_case.json"
+  }
+]

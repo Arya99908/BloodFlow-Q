@@ -1,0 +1,69 @@
+[
+  {
+    "job": "boundary_corrected",
+    "cwd": "/Users/shreeshaks/Documents/BloodFlow-Q-main 3",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "experiments.run_full_review",
+      "--output",
+      "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/experiments/results/full_review_20261024/boundary_corrected",
+      "--scenarios",
+      "zero_inventory",
+      "zero_demand",
+      "zero_inventory_and_demand"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 5.404435459000524
+  },
+  {
+    "job": "warm_audit",
+    "cwd": "/Users/shreeshaks/Documents/BloodFlow-Q-main 3",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "experiments.audit_warm_qaoa",
+      "--output",
+      "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/experiments/results/full_review_20261024/warm_audit.json"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 21.974101084007998
+  },
+  {
+    "job": "historical_recovered",
+    "cwd": "/tmp/bloodflow-round2-recovery-20261024",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "experiments.run_experiments",
+      "--suite",
+      "round2",
+      "--scenarios",
+      "6",
+      "--repetitions",
+      "10",
+      "--seed",
+      "301",
+      "--p",
+      "1",
+      "--shots",
+      "128",
+      "--optimizer",
+      "COBYLA",
+      "--max-iterations",
+      "15",
+      "--penalty-weight",
+      "10000",
+      "--max-exact-states",
+      "50000",
+      "--run-id",
+      "round2-recovered-20261024"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 7.307805875010672,
+    "source_revision": "d3ec6d218db1d4eabb1ed990402173d8b1a86883"
+  }
+]

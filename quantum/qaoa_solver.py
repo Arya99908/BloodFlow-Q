@@ -81,6 +81,10 @@ class QAOAConfig:
     warm_start_epsilon: float = 0.25
     normalize_cost: bool = True
     restarts: int = 1
+    parameter_initialization: str = "random"
+    initial_parameters: tuple[float, ...] | None = None
+    retain_initial_state: bool = False
+    warm_start_source: str = "lp"
 
     def __post_init__(self) -> None:
         if isinstance(self.p, bool) or not isinstance(self.p, int) or self.p < 1:
@@ -97,6 +101,21 @@ class QAOAConfig:
             raise ValueError("normalize_cost must be boolean")
         if not isinstance(self.warm_start, bool):
             raise ValueError("warm_start must be boolean")
+        if isinstance(self.seed, bool) or not isinstance(self.seed, int) or not 0 <= self.seed <= 4_294_967_295:
+            raise ValueError("seed must be an integer from 0 to 4294967295")
+        if not isinstance(self.retain_initial_state, bool):
+            raise ValueError("retain_initial_state must be boolean")
+        if self.parameter_initialization not in {"random", "zero_first", "provided"}:
+            raise ValueError("parameter_initialization must be random, zero_first, or provided")
+        if self.warm_start_source not in {"lp", "greedy"}:
+            raise ValueError("warm_start_source must be lp or greedy")
+        if self.parameter_initialization == "provided":
+            if self.initial_parameters is None or len(self.initial_parameters) != 2 * self.p:
+                raise ValueError("initial_parameters must contain exactly 2*p finite values")
+            if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in self.initial_parameters):
+                raise ValueError("initial_parameters must contain exactly 2*p finite values")
+        elif self.initial_parameters is not None:
+            raise ValueError("initial_parameters requires parameter_initialization=provided")
         if self.optimizer not in {"COBYLA", "Nelder-Mead", "Powell"}:
             raise ValueError("optimizer must be one of: COBYLA, Nelder-Mead, Powell")
         if self.mixer not in {"x", "xy", "warm_start"}:
@@ -162,19 +181,21 @@ class QAOASolver:
         seed_objective: float | None = None
         seed_feasibility = "not_applicable"
         fallback_reason: str | None = None
-        try:
-            from optimization.milp import MILPSolver
-            relaxation = MILPSolver().solve_relaxation(
-                scenario, qubo.objective_config, qubo.secondary_penalties, include_metadata=True
-            )
-            seed_objective = float(relaxation["objective_value"])
-            allocation_values = relaxation["allocation"]
-            unmet_values = relaxation["unmet_demand"]
-            slack_values = relaxation["slack"]
-            source = "lp_relaxation"
-            seed_feasibility = "feasible_continuous_relaxation"
-        except Exception as lp_error:
-            fallback_reason = f"LP relaxation unavailable: {type(lp_error).__name__}"
+        if self.config.warm_start_source == "lp":
+            try:
+                from optimization.milp import MILPSolver
+                relaxation = MILPSolver().solve_relaxation(
+                    scenario, qubo.objective_config, qubo.secondary_penalties, include_metadata=True
+                )
+                seed_objective = float(relaxation["objective_value"])
+                allocation_values = relaxation["allocation"]
+                unmet_values = relaxation["unmet_demand"]
+                slack_values = relaxation["slack"]
+                source = "lp_relaxation"
+                seed_feasibility = "feasible_continuous_relaxation"
+            except Exception as lp_error:
+                fallback_reason = f"LP relaxation unavailable: {type(lp_error).__name__}"
+        if source == "uniform_fallback":
             try:
                 from optimization.constraints import validate_allocation
                 from optimization.greedy import GreedyAllocator
@@ -191,10 +212,11 @@ class QAOASolver:
                 unmet_values = {key: float(value) for key, value in greedy.unmet_demand.items()}
                 seed_objective = float(greedy.objective_breakdown.total_objective)
                 seed_feasibility = "feasible_integer"
-                source = "greedy_fallback"
-                fallback_reason = f"{fallback_reason}; using validated greedy seed"
+                source = "greedy" if self.config.warm_start_source == "greedy" else "greedy_fallback"
+                if fallback_reason:
+                    fallback_reason += "; using validated greedy seed"
             except Exception as greedy_error:
-                fallback_reason = f"{fallback_reason}; greedy fallback unavailable: {type(greedy_error).__name__}"
+                fallback_reason = (f"{fallback_reason}; " if fallback_reason else "") + f"greedy fallback unavailable: {type(greedy_error).__name__}"
 
         if source != "uniform_fallback":
             used_stock: dict[tuple[str, str], float] = {}
@@ -281,8 +303,16 @@ class QAOASolver:
         """Construct state preparation, alternating Ising-cost and mixer layers."""
 
         expected = 2 * self.config.p
-        if len(angles) != expected:
-            raise ValueError(f"angles must contain {expected} values for p={self.config.p}")
+        angles = np.asarray(angles, dtype=float)
+        if angles.shape != (expected,) or not np.all(np.isfinite(angles)):
+            raise ValueError(f"angles must contain {expected} finite values for p={self.config.p}")
+        if thetas is not None:
+            thetas = np.asarray(thetas, dtype=float)
+            if thetas.shape != (ising.num_qubits,) or not np.all(np.isfinite(thetas)):
+                raise ValueError("thetas must contain one finite rotation per qubit")
+        if xy_pairs is not None:
+            if any(len(pair) != 2 or any(isinstance(i, bool) or not isinstance(i, (int, np.integer)) or i < 0 or i >= ising.num_qubits for i in pair) or pair[0] == pair[1] for pair in xy_pairs):
+                raise ValueError("XY pairs must contain two distinct valid qubit indices")
         circuit = QuantumCircuit(ising.num_qubits)
 
         # Initial state preparation: warm-start Ry bias or uniform superposition H
@@ -356,38 +386,70 @@ class QAOASolver:
         ))
         preparation_seconds = time.perf_counter() - started
 
+        timing = {"circuit_construction_seconds": 0.0, "statevector_simulation_seconds": 0.0}
+        objective_calls = 0
+
         def expected_energy(angles: np.ndarray) -> float:
+            nonlocal objective_calls
+            t = time.perf_counter()
             circuit = self.build_circuit(ising, angles, thetas=thetas, xy_pairs=xy_pairs)
+            timing["circuit_construction_seconds"] += time.perf_counter() - t
+            t = time.perf_counter()
             state = Statevector.from_instruction(circuit)
-            return float(state.expectation_value(ising.cost_hamiltonian).real)
+            value = float(state.expectation_value(ising.cost_hamiltonian).real)
+            timing["statevector_simulation_seconds"] += time.perf_counter() - t
+            objective_calls += 1
+            return value
 
         try:
+            reference_energy = expected_energy(np.zeros(2 * self.config.p)) if self.config.retain_initial_state else None
+            t_opt = time.perf_counter()
             runs = []
             starts = []
             for restart in range(self.config.restarts):
                 if restart:
                     initial = np.concatenate((rng.uniform(0, 2 * math.pi, self.config.p),
                                               rng.uniform(0, math.pi, self.config.p)))
+                elif self.config.parameter_initialization == "zero_first":
+                    initial = np.zeros(2 * self.config.p)
+                elif self.config.parameter_initialization == "provided":
+                    initial = np.asarray(self.config.initial_parameters, dtype=float)
                 starts.append(initial.copy())
                 runs.append(minimize(expected_energy, initial, method=self.config.optimizer,
                                      options={"maxiter": self.config.max_iterations}))
-            selected = min(range(len(runs)), key=lambda index: runs[index].fun)
+            optimization_seconds = time.perf_counter() - t_opt
+            finite_runs = [index for index, run in enumerate(runs) if math.isfinite(float(run.fun)) and np.all(np.isfinite(run.x))]
+            if not finite_runs:
+                raise QAOASolverError("all optimizer restarts returned non-finite results")
+            selected = min(finite_runs, key=lambda index: runs[index].fun)
             optimized = runs[selected]
             initial = starts[selected]
+            retain = reference_energy is not None and reference_energy < float(optimized.fun)
+            final_parameters = np.zeros(2 * self.config.p) if retain else np.asarray(optimized.x, dtype=float)
+            final_energy = reference_energy if retain else float(optimized.fun)
+            selected_source = "initial_state" if retain else "optimized_restart"
+            t = time.perf_counter()
             measured = self.build_circuit(
-                ising, optimized.x, measure=True, thetas=thetas, xy_pairs=xy_pairs
+                ising, final_parameters, measure=True, thetas=thetas, xy_pairs=xy_pairs
             )
+            timing["circuit_construction_seconds"] += time.perf_counter() - t
             simulator = AerSimulator()
+            t = time.perf_counter()
             compiled = transpile(measured, simulator, optimization_level=0)
+            compilation_seconds = time.perf_counter() - t
             circuit_depth = compiled.depth()
             circuit_operations = compiled.count_ops()
             two_qubit_gates = sum(instruction.operation.num_qubits == 2 for instruction in compiled.data)
+            t = time.perf_counter()
             job = simulator.run(
                 compiled, shots=self.config.shots, seed_simulator=self.config.seed
             )
             counts = {str(key): int(value) for key, value in job.result().get_counts().items()}
+            sampling_seconds = time.perf_counter() - t
         except Exception as error:
             raise QAOASolverError(f"local QAOA run failed: {error}") from error
+
+        post_started = time.perf_counter()
 
         candidates = [
             QAOACandidate(
@@ -426,8 +488,23 @@ class QAOASolver:
                 "name": self.config.optimizer,
                 "success": bool(optimized.success),
                 "message": str(optimized.message),
-                "iterations": int(getattr(optimized, "nit", 0)),
+                "iterations": int(optimized.nit) if getattr(optimized, "nit", None) is not None else None,
                 "function_evaluations": sum(int(getattr(run, "nfev", 0)) for run in runs),
+                "objective_evaluations_total": objective_calls,
+                "reference_evaluations": int(reference_energy is not None),
+                "initial_state_expected_energy": reference_energy * cost_scale if reference_energy is not None else None,
+                "optimized_expected_energy": float(optimized.fun) * cost_scale,
+                "selected_source": selected_source,
+                "parameter_initialization": self.config.parameter_initialization,
+                "warm_start_source_requested": self.config.warm_start_source,
+                "restart_results": [{"success": bool(run.success), "message": str(run.message),
+                                     "evaluations": int(getattr(run, "nfev", 0))} for run in runs],
+                "timing": {**timing, "preprocessing_seconds": preparation_seconds,
+                           "optimization_seconds_inclusive": optimization_seconds,
+                           "compilation_seconds": compilation_seconds,
+                           "final_sampling_seconds": sampling_seconds,
+                           "postprocessing_seconds": time.perf_counter() - post_started,
+                           "note": "Circuit construction and statevector time overlap optimizer time; do not sum inclusive fields."},
                 "parameter_count": 2 * self.config.p,
                 "circuit_depth": circuit_depth,
                 "two_qubit_gate_count": two_qubit_gates,
@@ -447,9 +524,9 @@ class QAOASolver:
                 "feasible_shot_rate": feasible_shots / measured_shots if measured_shots else 0.0,
                 "best_feasible_objective": best_feasible[0] if best_feasible else None,
                 "best_feasible_bitstring": best_feasible[1] if best_feasible else None,
-                "final_expected_energy": float(optimized.fun) * cost_scale,
+                "final_expected_energy": final_energy * cost_scale,
                 "initial_parameters": initial.tolist(),
-                "final_parameters": np.asarray(optimized.x, dtype=float).tolist(),
+                "final_parameters": final_parameters.tolist(),
             },
             runtime_seconds=time.perf_counter() - started,
             variable_mapping=qubo.variable_mapping,

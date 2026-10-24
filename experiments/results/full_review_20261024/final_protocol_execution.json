@@ -1,0 +1,95 @@
+[
+  {
+    "job": "baseline_replay",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "experiments.run_experiments",
+      "--scenarios",
+      "5",
+      "--seed",
+      "7",
+      "--p",
+      "1",
+      "--shots",
+      "128",
+      "--optimizer",
+      "COBYLA",
+      "--max-iterations",
+      "15",
+      "--penalty-weight",
+      "10000",
+      "--max-exact-states",
+      "50000",
+      "--run-id",
+      "baseline-review-20261024"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 1.2156989170034649
+  },
+  {
+    "job": "paired_replay",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "experiments.run_warm_qaoa_comparison",
+      "--scenarios",
+      "6",
+      "--seeds",
+      "10",
+      "--seed-start",
+      "301",
+      "--p",
+      "1",
+      "--shots",
+      "64",
+      "--max-iterations",
+      "8",
+      "--run-id",
+      "warm-review-20261024"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 10.997473874987918
+  },
+  {
+    "job": "necessity_v2",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.run",
+      "--output",
+      "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/experiments/results/full_review_20261024/necessity_v2"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 10.133924291993026
+  },
+  {
+    "job": "necessity_v2_analysis",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.analyze",
+      "--input",
+      "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/experiments/results/full_review_20261024/necessity_v2"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 0.180332958989311
+  },
+  {
+    "job": "necessity_v2_validation",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.validate",
+      "--input",
+      "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/experiments/results/full_review_20261024/necessity_v2"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 1.6527312919934047
+  }
+]

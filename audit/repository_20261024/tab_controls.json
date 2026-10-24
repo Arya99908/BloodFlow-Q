@@ -1,0 +1,1083 @@
+[
+  {
+    "component": "frontend/src/pages/About.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": []
+  },
+  {
+    "component": "frontend/src/pages/BloodBanks.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getScenario"
+    ],
+    "handlers": [
+      {
+        "line": 74,
+        "events": [
+          "onAction"
+        ],
+        "source": "return <SwipeRow key={bank.id} className=\"blood-bank-swipe-row\" label={`Blood bank ${bank.name}`} height={138} radius={15} actionWidth={86} actions={[{id:'copy-id',label:copiedBank === bank.id ? 'Copied' : 'Copy ID',color:'#ef233c'}]} actionColor=\"#ef233c\" drawerColor=\"#2b2d42\" rowColor=\"var(--bg-surface)\" textColor=\"var(--text-primary)\" haptic={false} onAction={() => { navigator.clipboard?.writeText(bank.id); setCopiedBank(bank.id); window.setTimeout(() => setCopiedBank(''), 1800); }}>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Coordination.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 28,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!state ? <section className=\"panel\"><div className=\"empty-state\"><strong>No request session is active</strong><p>Start the synthetic request workflow first.</p><button className=\"button button-primary\" onClick={() => onNavigate('emergency-requests')}>Open Emergency Blood Request</button></div></section> : <>"
+      },
+      {
+        "line": 31,
+        "events": [
+          "onClick"
+        ],
+        "source": "{state.next_actions?.filter((action) => actions[action]).map((action) => <button key={action} className=\"button button-primary coordination-action\" disabled={busy} onClick={() => step(action)}>{busy ? 'Updating\u2026' : actions[action]}</button>)}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Dashboard.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getDonorNetworkDashboard",
+      "getHealth",
+      "getResults",
+      "getScenario"
+    ],
+    "handlers": [
+      {
+        "line": 137,
+        "events": [
+          "onClick"
+        ],
+        "source": "action={<ClickSpark className=\"dashboard-run-spark\" style={{width:'auto',height:'auto'}} sparkColor=\"#ef233c\" sparkCount={8}><SpecularButton size=\"md\" radius={11} tint=\"#2b2d42\" tintOpacity={0.08} textColor=\"#fff\" lineColor=\"#ff8e9c\" baseColor=\"#d90429\" glow={0.6} className=\"dashboard-run-button\" onClick={handleRun}><Play size={15} fill=\"currentColor\" /> Run optimization</SpecularButton></ClickSpark>} />"
+      },
+      {
+        "line": 140,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "<div className=\"dashboard-capability-copy\"><span className=\"eyebrow\">NETWORK DECISION SUPPORT \u00b7 SYNTHETIC RESEARCH</span><TextType as=\"h2\" text=\"Model the network. Re-plan when conditions change.\" typingSpeed={22} loop={false} showCursor={false} typeEffect=\"fade\" startOnVisible /><p>Investigate allocation strategies across simulated blood banks, hospitals, supply, demand and routes. Compare classical and quantum-assisted methods, then test resilience under disruption.</p><div className=\"dashboard-hero-actions\"><button className=\"button button-primary\" onClick={() => onNavigate('emergency')}><Siren size={15} /> Simulate disruption</button><button className=\"button button-secondary\" onClick={() => onNavigate('quantum-lab')}>Explore Quantum Lab <ArrowUpRight size={15} /></button></div></div>"
+      },
+      {
+        "line": 155,
+        "events": [
+          "onClick",
+          "onClick",
+          "onClick"
+        ],
+        "source": "<button onClick={() => onNavigate('network')}><span>01</span><strong>Network intelligence</strong><small>Supply \u00b7 demand \u00b7 routes</small><ArrowUpRight size={15} /></button><button onClick={() => onNavigate('optimization')}><span>02</span><strong>Allocation optimization</strong><small>Compare methods and validate</small><ArrowUpRight size={15} /></button><button onClick={() => onNavigate('emergency')}><span>03</span><strong>Emergency resilience</strong><small>Disrupt \u00b7 re-optimize \u00b7 review</small><ArrowUpRight size={15} /></button></div>"
+      },
+      {
+        "line": 181,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={reload}"
+      },
+      {
+        "line": 217,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"donor-dashboard-heading\"><div><span className=\"eyebrow\">DONOR COORDINATION</span><h2 id=\"donor-dashboard-title\">Donor network activity</h2><p>Private counts are shown only in an authenticated platform-administrator session. Synthetic coordination walkthroughs are available in Donor Network.</p></div><button type=\"button\" className=\"button button-secondary button-small\" onClick={() => onNavigate('donor-network')}>Open Donor Network <ArrowUpRight size={14} /></button></div>"
+      },
+      {
+        "line": 259,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button className=\"text-button\" onClick={() => onNavigate('results')}>View results <ArrowUpRight size={15} /></button>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/DemoMode.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getDemoScenarios",
+      "getExperimentDefaults",
+      "getPrecomputedDemo",
+      "runDemo"
+    ],
+    "handlers": [
+      {
+        "line": 128,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button type=\"button\" role=\"radio\" aria-checked={mode === 'live'} className={mode === 'live' ? 'demo-mode-active' : ''} onClick={() => setMode('live')}><strong>LIVE COMPUTATION</strong><span>New request to the running optimization backend</span></button>"
+      },
+      {
+        "line": 129,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button type=\"button\" role=\"radio\" aria-checked={mode === 'precomputed'} className={mode === 'precomputed' ? 'demo-mode-active' : ''} onClick={switchToPrecomputed} disabled={!storedRuns.length}><strong>PRECOMPUTED EXPERIMENT</strong><span>{storedRuns.length ? 'Saved measurements with configuration and provenance' : precomputedLoading ? 'Loading stored experiment\u2026' : 'No stored experiment is available'}</span></button>"
+      },
+      {
+        "line": 131,
+        "events": [
+          "onClick"
+        ],
+        "source": "{mode === 'live' && error && <div className=\"notice notice-info demo-api-status\" role=\"status\"><Activity size={16} /><span><strong>API is offline.</strong> The workflow remains available with the fixed synthetic scenario catalog. Live run requests need the backend.</span><button type=\"button\" className=\"button button-secondary button-small\" onClick={reload}>Retry</button></div>}"
+      },
+      {
+        "line": 135,
+        "events": [
+          "onClick"
+        ],
+        "source": "{cases.map((item, index) => <button type=\"button\" role=\"radio\" aria-checked={scenarioId === item.id} key={item.id} className={`demo-case ${scenarioId === item.id ? 'demo-case-selected' : ''}`} onClick={() => { setScenarioId(item.id); setResult(null); }}>"
+      },
+      {
+        "line": 144,
+        "events": [
+          "onChange"
+        ],
+        "source": "<GlideSelect ariaLabel=\"Optimization method\" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP \u00b7 HiGHS classical optimal'},{value:'exact',label:'Exact small-instance solver'},{value:'qaoa',label:'QAOA local simulator'}]} value={method} onChange={(value) => { setMethod(value); setConfigStep(0); }} showTags={false} accentColor=\"#ef233c\" surfaceColor=\"var(--bg-surface)\" highlightColor=\"var(--bg-hover)\" textColor=\"var(--text-primary)\" className=\"demo-glide-select\" />"
+      },
+      {
+        "line": 145,
+        "events": [
+          "onChange"
+        ],
+        "source": "<details className=\"demo-objective-settings\"><summary>Objective weights</summary><div className=\"demo-settings-grid\">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min=\"0\" onChange={(next) => setWeight(key, next)} />)}</div></details></>}"
+      },
+      {
+        "line": 147,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button type=\"button\" className=\"button button-secondary button-small\" disabled={running} onClick={() => {"
+      },
+      {
+        "line": 153,
+        "events": [
+          "onChange"
+        ],
+        "source": "<QAOAVariantSelect id=\"demo-qaoa-variant\" value={qaoaVariant} onChange={setQaoaVariant} disabled={running} />"
+      },
+      {
+        "line": 155,
+        "events": [
+          "onChange"
+        ],
+        "source": "<NumberField label=\"Random seed\" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min=\"0\" />"
+      },
+      {
+        "line": 156,
+        "events": [
+          "onChange"
+        ],
+        "source": "<NumberField label=\"QAOA depth (p)\" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min=\"1\" max=\"5\" />"
+      },
+      {
+        "line": 157,
+        "events": [
+          "onChange"
+        ],
+        "source": "<NumberField label=\"Shots\" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min=\"1\" max=\"10000\" />"
+      },
+      {
+        "line": 158,
+        "events": [
+          "onChange"
+        ],
+        "source": "<NumberField label=\"Optimizer restarts\" value={qaoaSettings.restarts} onChange={(value) => setQaoaValue('restarts', value)} min=\"1\" max=\"10\" />"
+      },
+      {
+        "line": 159,
+        "events": [
+          "onChange"
+        ],
+        "source": "{warmStart && <NumberField label=\"Warm-start epsilon\" value={qaoaSettings.warm_start_epsilon} onChange={(value) => setQaoaValue('warm_start_epsilon', value)} min=\"0.01\" max=\"0.49\" />}"
+      },
+      {
+        "line": 160,
+        "events": [
+          "onChange"
+        ],
+        "source": "<NumberField label=\"Optimizer iterations per restart\" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min=\"1\" max=\"500\" />"
+      },
+      {
+        "line": 161,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"demo-field\">Classical optimizer<GlideSelect ariaLabel=\"Classical optimizer\" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor=\"#ef233c\" surfaceColor=\"var(--bg-surface)\" highlightColor=\"var(--bg-hover)\" textColor=\"var(--text-primary)\" className=\"demo-glide-select\" /></label>"
+      },
+      {
+        "line": 166,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"demo-settings-grid demo-penalties\"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>"
+      },
+      {
+        "line": 170,
+        "events": [
+          "onClick",
+          "onClick",
+          "onClick"
+        ],
+        "source": "<div className=\"demo-step-actions\">{configStep > 0 && <button type=\"button\" className=\"button button-secondary\" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type=\"button\" className=\"button button-primary\" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <ClickSpark className=\"demo-run-spark\" style={{width:'auto',height:'auto'}} sparkColor=\"#edf2f4\"><SpecularButton size=\"md\" radius={10} tint=\"#d90429\" textColor=\"#fff\" lineColor=\"#ff9aa8\" baseColor=\"#d90429\" className=\"run-optimization-button\" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE\u2026' : 'RUN DEMO'}</SpecularButton></ClickSpark>}</div>"
+      },
+      {
+        "line": 175,
+        "events": [
+          "onChange"
+        ],
+        "source": "<select id=\"precomputed-run\" className=\"field-control\" value={selectedStoredRun?.run_id || ''} onChange={(event) => chooseStoredRun(event.target.value)}>{storedRuns.map((item) => <option key={item.run_id} value={item.run_id}>{item.scenario_id.replaceAll('_', ' ').toUpperCase()} \u00b7 {item.method.toUpperCase()}</option>)}</select>"
+      },
+      {
+        "line": 194,
+        "events": [
+          "onClick"
+        ],
+        "source": "{mode === 'live' && runError && <><ErrorState message={runError} />{storedRuns.length > 0 && <button type=\"button\" className=\"button button-secondary demo-fallback-button\" onClick={switchToPrecomputed}>Show a PRECOMPUTED EXPERIMENT</button>}</>}"
+      },
+      {
+        "line": 414,
+        "events": [
+          "onChange"
+        ],
+        "source": "return <label className=\"demo-field\">{label}<input className=\"field-control\" type=\"number\" value={value} min={min} max={max} step=\"any\" onChange={(event) => onChange(event.target.value)} /></label>;"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/DonorNetwork.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 213,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"donor-account-strip\"><span>Signed in as <strong>{user.email || user.phone || 'verified account'}</strong></span><button type=\"button\" className=\"button button-secondary button-small\" onClick={() => client.auth.signOut()}>Sign out</button></div>"
+      },
+      {
+        "line": 218,
+        "events": [
+          "onSubmit"
+        ],
+        "source": "<form className=\"donor-profile-form\" onSubmit={save}>"
+      },
+      {
+        "line": 219,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Full name<input name=\"full_name\" className=\"field-control\" type=\"text\" required maxLength=\"120\" autoComplete=\"name\" value={profile.full_name || ''} onChange={(event) => setProfile((current) => ({ ...current, full_name: event.target.value }))} /></label>"
+      },
+      {
+        "line": 220,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Blood group<select name=\"blood_group\" className=\"field-control\" required value={profile.blood_group || ''} onChange={(event) => setProfile((current) => ({ ...current, blood_group: event.target.value }))}><option value=\"\">Choose a group</option>{BLOOD_GROUPS.map((group) => <option key={group}>{group}</option>)}</select></label>"
+      },
+      {
+        "line": 221,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Phone number<input name=\"phone\" className=\"field-control\" type=\"tel\" required minLength=\"7\" maxLength=\"40\" autoComplete=\"tel\" value={profile.phone || ''} onChange={(event) => setProfile((current) => ({ ...current, phone: event.target.value }))} /></label>"
+      },
+      {
+        "line": 222,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Email address <span className=\"field-optional\">optional</span><input name=\"email\" className=\"field-control\" type=\"email\" maxLength=\"254\" autoComplete=\"email\" value={profile.email || ''} onChange={(event) => setProfile((current) => ({ ...current, email: event.target.value }))} /></label>"
+      },
+      {
+        "line": 223,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>City<input name=\"city\" className=\"field-control\" type=\"text\" required maxLength=\"120\" autoComplete=\"address-level2\" value={profile.city || ''} onChange={(event) => setProfile((current) => ({ ...current, city: event.target.value }))} /></label>"
+      },
+      {
+        "line": 224,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Approximate area<input name=\"approximate_area\" className=\"field-control\" type=\"text\" required maxLength=\"120\" placeholder=\"District or neighborhood\" value={profile.approximate_area || ''} onChange={(event) => setProfile((current) => ({ ...current, approximate_area: event.target.value }))} /></label>"
+      },
+      {
+        "line": 225,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Availability<select name=\"availability\" className=\"field-control\" value={profile.availability || 'temporarily_unavailable'} onChange={(event) => setProfile((current) => ({ ...current, availability: event.target.value }))}><option value=\"available\">Available</option><option value=\"temporarily_unavailable\">Temporarily unavailable</option><option value=\"do_not_contact\">Do not contact</option></select></label>"
+      },
+      {
+        "line": 226,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Preferred contact<select name=\"preferred_contact\" className=\"field-control\" value={profile.preferred_contact || 'phone'} onChange={(event) => setProfile((current) => ({ ...current, preferred_contact: event.target.value }))}><option value=\"phone\">Phone</option><option value=\"email\">Email</option></select></label>"
+      },
+      {
+        "line": 227,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"donor-consent-preview\"><label><input name=\"consent_receive_requests\" type=\"checkbox\" checked={Boolean(profile.consent_receive_requests)} onChange={(event) => setProfile((current) => ({ ...current, consent_receive_requests: event.target.checked }))} /> I consent to receive voluntary, in-app blood donation requests. I can withdraw this consent at any time.</label><label><input name=\"consent_share_contact\" type=\"checkbox\" checked={Boolean(profile.consent_share_contact)} onChange={(event) => setProfile((current) => ({ ...current, consent_share_contact: event.target.checked }))} /> Separate consent: I allow necessary contact details to be shared with verified hospital or blood-bank personnel only after I accept a request.</label></div>"
+      },
+      {
+        "line": 231,
+        "events": [
+          "onChange"
+        ],
+        "source": "{profileExists && <div className=\"availability-control\"><label htmlFor=\"availability-quick\">Availability toggle</label><select id=\"availability-quick\" className=\"field-control\" value={profile.availability} onChange={(event) => changeAvailability(event.target.value)}><option value=\"available\" disabled={!profile.consent_receive_requests}>Available</option><option value=\"temporarily_unavailable\">Temporarily unavailable</option><option value=\"do_not_contact\">Do not contact</option></select><p className=\"helper-text\">\u201cAvailable\u201d is self-reported coordination availability, not a blood unit or a medical eligibility determination.</p></div>}"
+      },
+      {
+        "line": 236,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"donor-inbox-controls\"><label>Filter status<select className=\"field-control\" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value=\"all\">All requests</option><option value=\"contacted\">Awaiting response</option><option value=\"accepted\">Accepted</option><option value=\"declined\">Declined</option><option value=\"withdrawn\">Withdrawn</option></select></label><label>Search<input className=\"field-control\" type=\"search\" value={search} onChange={(event) => setSearch(event.target.value)} placeholder=\"Request, group, or city\" /></label></div>"
+      },
+      {
+        "line": 245,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "{notification.status === 'contacted' && <div className=\"button-row\"><button type=\"button\" className=\"button button-primary\" disabled={Boolean(busyNotification) || !profile.consent_receive_requests} onClick={() => respond(notification.id, 'accepted')}>{busyNotification === notification.id ? 'Recording\u2026' : 'Accept request'}</button><button type=\"button\" className=\"button button-secondary\" disabled={Boolean(busyNotification)} onClick={() => respond(notification.id, 'declined')}>Decline</button></div>}"
+      },
+      {
+        "line": 257,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "return <article className=\"donor-request-card\" key={appointment.id}><div className=\"donor-request-heading\"><strong>{request?.request_code || 'Collection visit'}</strong><span className=\"status-badge\">{appointment.status}</span></div><p>{facility?.name || 'Verified licensed facility'} \u00b7 {facility?.city || 'Location withheld'}</p><p>{new Date(appointment.scheduled_at).toLocaleString()}</p>{appointment.status === 'proposed' && <div className=\"button-row\"><button className=\"button button-primary\" disabled={Boolean(busyNotification)} onClick={() => respondToAppointment(appointment.id, true)}>Confirm visit</button><button className=\"button button-secondary\" disabled={Boolean(busyNotification)} onClick={() => respondToAppointment(appointment.id, false)}>Decline visit</button></div>}</article>;"
+      },
+      {
+        "line": 261,
+        "events": [
+          "onClick"
+        ],
+        "source": "{profileExists && <div className=\"coordination-columns donor-bottom-grid\"><section className=\"panel\"><div className=\"panel-heading\"><div><h2>Consent history</h2><p>Consent changes are recorded with a timestamp.</p></div><ShieldCheck size={18} className=\"muted-icon\" /></div>{consentHistory.length ? <div className=\"consent-event-list\">{consentHistory.map((item) => <div key={item.id}><strong>{item.consent_kind === 'receive_requests' ? 'Receive requests' : 'Share contact'}</strong><span>{item.granted ? 'Granted' : 'Withdrawn'} \u00b7 {new Date(item.recorded_at).toLocaleString()}</span></div>)}</div> : <p className=\"helper-text\">No consent changes were recorded.</p>}</section><section className=\"panel consent-withdraw-panel\"><div className=\"panel-heading\"><div><h2>Stop requests</h2><p>Withdraw both optional consents and stop new outreach.</p></div><UserRoundX size={18} className=\"muted-icon\" /></div><button type=\"button\" className=\"button button-danger\" onClick={withdrawConsent} disabled={!profile.consent_receive_requests && !profile.consent_share_contact}>Withdraw consent and stop requests</button><p className=\"helper-text\">This sets availability to Do Not Contact and withdraws pending in-app notifications.</p></section></div>}"
+      },
+      {
+        "line": 267,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!sandboxOpen && <button className=\"button button-secondary\" type=\"button\" onClick={() => setSandboxOpen(true)}>Open synthetic profile</button>}"
+      },
+      {
+        "line": 269,
+        "events": [
+          "onSubmit"
+        ],
+        "source": "<form className=\"donor-profile-form\" onSubmit={saveSandboxProfile}>"
+      },
+      {
+        "line": 270,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Full name<input className=\"field-control\" required maxLength=\"120\" value={sandboxProfile.full_name} onChange={(event) => setSandboxProfile((current) => ({ ...current, full_name: event.target.value }))} /></label>"
+      },
+      {
+        "line": 271,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Blood group<select className=\"field-control\" required value={sandboxProfile.blood_group} onChange={(event) => setSandboxProfile((current) => ({ ...current, blood_group: event.target.value }))}>{BLOOD_GROUPS.map((group) => <option key={group}>{group}</option>)}</select></label>"
+      },
+      {
+        "line": 272,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Sample phone<input className=\"field-control\" type=\"tel\" required minLength=\"7\" maxLength=\"40\" value={sandboxProfile.phone} onChange={(event) => setSandboxProfile((current) => ({ ...current, phone: event.target.value }))} /></label>"
+      },
+      {
+        "line": 273,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Sample email <span className=\"field-optional\">optional</span><input className=\"field-control\" type=\"email\" maxLength=\"254\" value={sandboxProfile.email} onChange={(event) => setSandboxProfile((current) => ({ ...current, email: event.target.value }))} /></label>"
+      },
+      {
+        "line": 274,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>City<input className=\"field-control\" required maxLength=\"120\" value={sandboxProfile.city} onChange={(event) => setSandboxProfile((current) => ({ ...current, city: event.target.value }))} /></label>"
+      },
+      {
+        "line": 275,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Approximate area<input className=\"field-control\" required maxLength=\"120\" value={sandboxProfile.approximate_area} onChange={(event) => setSandboxProfile((current) => ({ ...current, approximate_area: event.target.value }))} /></label>"
+      },
+      {
+        "line": 276,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Availability<select className=\"field-control\" value={sandboxProfile.availability} onChange={(event) => setSandboxProfile((current) => ({ ...current, availability: event.target.value }))}><option value=\"available\">Available</option><option value=\"temporarily_unavailable\">Temporarily unavailable</option><option value=\"do_not_contact\">Do not contact</option></select></label>"
+      },
+      {
+        "line": 277,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Preferred contact<select className=\"field-control\" value={sandboxProfile.preferred_contact} onChange={(event) => setSandboxProfile((current) => ({ ...current, preferred_contact: event.target.value }))}><option value=\"phone\">Phone</option><option value=\"email\">Email</option></select></label>"
+      },
+      {
+        "line": 278,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"donor-consent-preview\"><label><input type=\"checkbox\" checked={sandboxProfile.consent_receive_requests} onChange={(event) => setSandboxProfile((current) => ({ ...current, consent_receive_requests: event.target.checked }))} /> I consent to simulated voluntary requests.</label><label><input type=\"checkbox\" checked={sandboxProfile.consent_share_contact} onChange={(event) => setSandboxProfile((current) => ({ ...current, consent_share_contact: event.target.checked }))} /> Separate simulated consent to share necessary details with verified staff after accepting.</label></div>"
+      },
+      {
+        "line": 279,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"button-row form-span-two\"><button className=\"button button-primary\" type=\"submit\">{sandboxSaved ? 'Save profile changes' : 'Register synthetic donor'}</button>{sandboxSaved && <button className=\"button button-danger\" type=\"button\" onClick={withdrawSandboxConsent} disabled={!sandboxProfile.consent_receive_requests && !sandboxProfile.consent_share_contact}>Withdraw both consents</button>}</div>"
+      },
+      {
+        "line": 287,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!demoState && <button className=\"button button-secondary\" type=\"button\" disabled={demoBusy} onClick={runDemo}>{demoBusy ? 'Starting\u2026' : 'Open deterministic synthetic inbox'}</button>}"
+      },
+      {
+        "line": 288,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "{demoState && <><div className=\"demo-watermark\">{demoState.simulation_label}</div><p className=\"helper-text\">{demoState.request.units_requested} synthetic units requested; {demoState.inventory_check.accessible_units} synthetic unit accessible; shortfall {demoState.inventory_check.shortfall_units}. No real donor was contacted.</p>{demoState.donor_notifications.map((item) => <article className=\"donor-request-card\" key={item.notification_id}><div className=\"donor-request-heading\"><strong>{demoState.request.id}</strong><span className=\"status-badge\">{item.status}</span></div><dl className=\"donor-request-details\"><div><dt>Requested</dt><dd>{demoState.request.blood_group} \u00b7 {demoState.request.component}</dd></div><div><dt>Approximate area</dt><dd>{item.area}</dd></div></dl>{item.status === 'contacted' && <div className=\"button-row\"><button type=\"button\" className=\"button button-primary\" disabled={demoBusy || !demoState.next_actions?.includes('accept_donor')} onClick={() => respondDemo('accept_donor', item.donor_id)}>Accept simulated request</button><button type=\"button\" className=\"button button-secondary\" disabled={demoBusy || !demoState.next_actions?.includes('decline_donor')} onClick={() => respondDemo('decline_donor', item.donor_id)}>Decline simulated request</button></div>}</article>)}<p className=\"privacy-footnote\"><ShieldCheck size={15} /> No phone, email, exact address, or GPS is in the synthetic session.</p></>}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/EmergencyRequests.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 62,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!state && <button type=\"button\" className=\"button button-primary\" onClick={start} disabled={busy}><Play size={15} fill=\"currentColor\" /> {busy ? 'Starting demo\u2026' : 'Start synthetic emergency request'}</button>}"
+      },
+      {
+        "line": 71,
+        "events": [
+          "onClick"
+        ],
+        "source": "{state.next_actions?.filter((action) => ACTION_LABELS[action]).map((action) => <button key={action} type=\"button\" className=\"button button-primary workflow-action\" disabled={busy} onClick={() => step(action)}>{busy ? 'Updating simulated workflow\u2026' : ACTION_LABELS[action]}</button>)}"
+      },
+      {
+        "line": 319,
+        "events": [
+          "onClick"
+        ],
+        "source": "<PageHeader eyebrow=\"HOSPITAL COORDINATION\" title=\"Emergency Blood Request\" description=\"Inventory-first request entry for verified institutions, plus a clearly labelled synthetic presentation workflow.\" action={user && <button className=\"button button-secondary button-small\" type=\"button\" onClick={refresh} disabled={busy}><RefreshCw size={14} /> Refresh requests</button>} />"
+      },
+      {
+        "line": 330,
+        "events": [
+          "onSubmit"
+        ],
+        "source": "{!!hospitalMemberships.length && <form className=\"emergency-request-form\" onSubmit={submitRequest}>"
+      },
+      {
+        "line": 331,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label>Verified hospital<select className=\"field-control\" value={hospitalId} onChange={(event) => setHospitalId(event.target.value)} required>{hospitalMemberships.map((membership) => { const institution = related(membership.authorized_institutions); return <option key={membership.institution_id} value={membership.institution_id}>{institution.name} \u00b7 {membership.institution_id}</option>; })}</select></label>"
+      },
+      {
+        "line": 350,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"donor-inbox-controls\"><label>Filter<select className=\"field-control\" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value=\"active\">Active requests</option><option value=\"all\">All statuses</option>{Object.entries(STATUS_LABELS).map(([key,label]) => <option value={key} key={key}>{label}</option>)}</select></label><label>Search<input className=\"field-control\" type=\"search\" value={search} onChange={(event) => setSearch(event.target.value)} placeholder=\"ID, group, or area\" /></label></div>"
+      },
+      {
+        "line": 353,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"hospital-request-list\">{filteredRequests.map((request) => <button type=\"button\" className={`hospital-request-row ${selectedId === request.id ? 'hospital-request-row-selected' : ''}`} key={request.id} onClick={() => { setSelectedId(request.id); setFormResult(null); }}><span><strong>{request.request_code}</strong><small>{request.blood_group} \u00b7 {String(request.component).replaceAll('_',' ')} \u00b7 {request.units_requested} units</small></span><span className={`status-badge request-status-${request.status}`}>{STATUS_LABELS[request.status] || request.status}</span><small>{request.urgency} \u00b7 {request.location_city}/{request.approximate_area}</small></button>)}</div>"
+      },
+      {
+        "line": 359,
+        "events": [
+          "onClick"
+        ],
+        "source": "{['submitted','verifying_inventory'].includes(selectedRequest.status) && isHospitalStaff && <div className=\"request-action-card\"><strong>Inventory check pending</strong><p>The request is saved but has not reached a verified stock result. Retry the authorized component-specific inventory check.</p><button className=\"button button-secondary\" disabled={busy} onClick={retryInventoryVerification}>Retry inventory verification</button></div>}"
+      },
+      {
+        "line": 361,
+        "events": [
+          "onClick"
+        ],
+        "source": "{(selectedRequest.status === 'searching_for_donors' || selectedRequest.status === 'donor_contacted') && isHospitalStaff && <div className=\"request-action-card\"><strong>Donor outreach</strong><p>One candidate is contacted at a time through the private in-app inbox. Candidate ordering uses the same declared group label, city/approximate area, self-reported availability, and consent; no numerical distance or medical compatibility is calculated. A declined candidate is not contacted again. No SMS or email notification service is configured.</p><button className=\"button button-secondary\" disabled={busy} onClick={contactNext}>Contact next consented candidate</button></div>}"
+      },
+      {
+        "line": 363,
+        "events": [
+          "onSubmit",
+          "onChange",
+          "onChange"
+        ],
+        "source": "{selectedRequest.status === 'donor_accepted' && isHospitalStaff && <form className=\"appointment-form\" onSubmit={makeAppointment}><strong>Propose licensed-centre appointment</strong><label>Verified collection centre<select className=\"field-control\" required value={appointmentCentre} onChange={(event) => setAppointmentCentre(event.target.value)}><option value=\"\">Select a verified centre</option>{centres.map((centre) => <option value={centre.id} key={centre.id}>{centre.name} \u00b7 {centre.city}/{centre.approximate_area}</option>)}</select></label><label>Appointment time<input className=\"field-control\" type=\"datetime-local\" required value={appointmentTime} onChange={(event) => setAppointmentTime(event.target.value)} /></label>{!centres.length && <p className=\"helper-text\">No licensed centre is registered and verified yet. An administrator must add one before proposing a visit.</p>}<button className=\"button button-primary\" disabled={busy || !centres.length}>Propose appointment to donor</button></form>}"
+      },
+      {
+        "line": 365,
+        "events": [
+          "onClick",
+          "onSubmit",
+          "onChange"
+        ],
+        "source": "{appointments.map((appointment) => { const centre = related(appointment.authorized_institutions); const centerStaff = memberships.some((row) => row.institution_id === appointment.collection_centre_id && row.verified && ['blood_bank_staff','collection_coordinator'].includes(row.role)); return <div className=\"appointment-card\" key={appointment.id}><strong>Centre appointment \u00b7 {appointment.status}</strong><span>{centre?.name || 'Verified centre'} \u00b7 {centre?.city}/{centre?.approximate_area}</span><span>{new Date(appointment.scheduled_at).toLocaleString()}</span>{appointment.confirmed_units !== null && <span>Units confirmed by centre: {appointment.confirmed_units}</span>}{appointment.status === 'confirmed' && centerStaff && <button className=\"button button-secondary button-small\" disabled={busy} onClick={() => confirmCentreArrival(appointment.id)}>Record donor attendance at centre</button>}{appointment.status === 'attended' && centerStaff && selectedRequest.status === 'testing_and_compatibility_checks' && <form className=\"appointment-form\" onSubmit={(event) => confirmCentreUnits(event, appointment.id)}><strong>Record units confirmed by the licensed centre</strong><p className=\"helper-text\">Enter only the quantity this authorized centre has confirmed after its own collection, screening, testing, and release procedures. Donor acceptance is not inventory; this prototype makes no medical assessment.</p><label>Confirmed quantity <input className=\"field-control\" type=\"number\" min=\"0\" max={selectedRequest.shortfall_units ?? 0} step=\"1\" required value={releaseUnits} onChange={(event) => setReleaseUnits(event.target.value)} /></label><button className=\"button button-secondary\" disabled={busy}>Record centre-confirmed quantity</button></form>}</div>; })}"
+      },
+      {
+        "line": 367,
+        "events": [
+          "onSubmit",
+          "onChange"
+        ],
+        "source": "{!assignedCollectionTeam && selectedRequest.status === 'collection_arranged' && isCentreStaff && <form className=\"appointment-form\" onSubmit={assignCollectionTeam}><strong>Assign an authorized collection team (if available)</strong><label>Available centre team<select className=\"field-control\" required value={collectionTeamId} onChange={(event) => setCollectionTeamId(event.target.value)}><option value=\"\">Choose a verified team</option>{availableCollectionTeams.map((team) => { const centre = related(team.authorized_institutions); return <option key={team.id} value={team.id}>{team.team_label} \u00b7 {centre?.name || 'Verified centre'}</option>; })}</select></label>{!availableCollectionTeams.length && <p className=\"helper-text\">No available authorized team is registered for the donor-confirmed centre. The system will not assume a team has been assigned.</p>}<button className=\"button button-secondary\" disabled={busy || !availableCollectionTeams.length}>Record confirmed team assignment</button></form>}"
+      },
+      {
+        "line": 371,
+        "events": [
+          "onClick"
+        ],
+        "source": "{isBankStaff && selectedRequest.status === 'at_authorized_blood_centre' && <button className=\"button button-secondary\" disabled={busy} onClick={() => doStatus('testing_and_compatibility_checks')}>Record testing and compatibility checks started</button>}"
+      },
+      {
+        "line": 372,
+        "events": [
+          "onClick"
+        ],
+        "source": "{isBankStaff && selectedRequest.status === 'stock_available' && <button className=\"button button-secondary\" disabled={busy} onClick={() => doStatus('testing_and_compatibility_checks')}>Record authorized testing/compatibility review</button>}"
+      },
+      {
+        "line": 373,
+        "events": [
+          "onClick"
+        ],
+        "source": "{isBankStaff && selectedRequest.status === 'testing_and_compatibility_checks' && <button className=\"button button-secondary\" disabled={busy} onClick={() => doStatus('ready_for_dispatch')}>Confirm authorized release and ready for dispatch</button>}"
+      },
+      {
+        "line": 374,
+        "events": [
+          "onSubmit",
+          "onChange",
+          "onChange",
+          "onChange"
+        ],
+        "source": "{isCoordinator && selectedRequest.status === 'ready_for_dispatch' && <form className=\"appointment-form\" onSubmit={assignTransport}><strong>Assign authorized transport</strong><label>Responsible verified institution<select className=\"field-control\" required value={transportInstitution} onChange={(event) => setTransportInstitution(event.target.value)}><option value=\"\">Choose assigned institution</option>{memberships.filter((row) => ['blood_bank_staff','collection_coordinator'].includes(row.role) && related(row.authorized_institutions)?.institution_type === 'blood_bank').map((row) => { const institution = related(row.authorized_institutions); return <option value={row.institution_id} key={row.institution_id}>{institution.name}</option>; })}</select></label><label>Estimated arrival <span className=\"field-optional\">optional; enter only if confirmed</span><input className=\"field-control\" type=\"datetime-local\" value={transportEta} onChange={(event) => setTransportEta(event.target.value)} /></label><label>Assignment reference <span className=\"field-optional\">optional</span><input className=\"field-control\" maxLength=\"120\" value={transportReference} onChange={(event) => setTransportReference(event.target.value)} /></label><button className=\"button button-secondary\" disabled={busy || !transportInstitution}>Record confirmed transport assignment</button><p className=\"helper-text\">No live GPS or tracking is displayed. Assignment is recorded only after an authorized coordinator submits it.</p></form>}"
+      },
+      {
+        "line": 375,
+        "events": [
+          "onClick"
+        ],
+        "source": "{selectedRequest.status === 'ready_for_dispatch' && isAssignedTransportStaff && <button className=\"button button-primary status-advance-button\" disabled={busy} onClick={() => doStatus('dispatched')}>Confirm dispatch</button>}"
+      },
+      {
+        "line": 376,
+        "events": [
+          "onClick"
+        ],
+        "source": "{selectedRequest.status === 'dispatched' && isHospitalStaff && <button className=\"button button-primary status-advance-button\" disabled={busy} onClick={() => doStatus('received_by_hospital')}>Confirm hospital receipt</button>}"
+      },
+      {
+        "line": 377,
+        "events": [
+          "onClick"
+        ],
+        "source": "{selectedRequest.status === 'received_by_hospital' && isHospitalStaff && <button className=\"button button-primary status-advance-button\" disabled={busy} onClick={() => doStatus('completed')}>Mark request completed</button>}"
+      },
+      {
+        "line": 378,
+        "events": [
+          "onClick"
+        ],
+        "source": "{isHospitalStaff && !['completed','cancelled'].includes(selectedRequest.status) && <button className=\"button button-danger status-cancel-button\" disabled={busy} onClick={() => doStatus('cancelled')}>Cancel request</button>}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/EmergencySimulation.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getScenario",
+      "simulateEmergency"
+    ],
+    "handlers": [
+      {
+        "line": 125,
+        "events": [
+          "onSubmit"
+        ],
+        "source": "<form ref={formRef} id=\"emergency-simulation-form\" className=\"panel form-panel\" onSubmit={submit}>"
+      },
+      {
+        "line": 131,
+        "events": [
+          "onChange"
+        ],
+        "source": "<select id=\"event-kind\" className=\"field-control\" value={kind} onChange={(event) => { setKind(event.target.value); setResult(null); }}>"
+      },
+      {
+        "line": 136,
+        "events": [
+          "onChange"
+        ],
+        "source": "<select id=\"event-entity\" className=\"field-control\" value={entity} onChange={(event) => setEntity(event.target.value)}>{entities.map((item) => <option value={item.id} key={item.id}>{item.name} \u00b7 {item.id}</option>)}</select>"
+      },
+      {
+        "line": 137,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"field-label\" htmlFor=\"event-group\">Blood group</label><select id=\"event-group\" className=\"field-control\" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>{groupOptions.map((group) => <option key={group}>{group}</option>)}</select>"
+      },
+      {
+        "line": 140,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"field-label\" htmlFor=\"new-demand\">New total demand (units)</label><input id=\"new-demand\" type=\"number\" min=\"0\" step=\"1\" required className=\"field-control\" value={quantity} onChange={(event) => setQuantity(event.target.value)} />"
+      },
+      {
+        "line": 141,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"field-label\" htmlFor=\"new-urgency\">Urgency update</label><select id=\"new-urgency\" className=\"field-control\" value={urgency} onChange={(event) => setUrgency(event.target.value)}><option value=\"keep\">Keep current urgency</option>{Object.entries(urgencyLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>"
+      },
+      {
+        "line": 142,
+        "events": [
+          "onChange"
+        ],
+        "source": "{urgency !== 'keep' && <><label className=\"field-label\" htmlFor=\"demand-priority-weight\">Priority weight (scenario value)</label><input id=\"demand-priority-weight\" type=\"number\" min=\"0.0001\" step=\"any\" required className=\"field-control\" value={priorityWeight} onChange={(event) => setPriorityWeight(event.target.value)} /></>}"
+      },
+      {
+        "line": 155,
+        "events": [
+          "onChange"
+        ],
+        "source": "onChange={(event) => setQuantity(event.target.value)}"
+      },
+      {
+        "line": 166,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "{kind === 'hospital_priority_change' && <><label className=\"field-label\" htmlFor=\"priority\">New urgency label</label><select id=\"priority\" className=\"field-control\" value={urgency === 'keep' ? 'critical' : urgency} onChange={(event) => setUrgency(event.target.value)}>{Object.entries(urgencyLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><label className=\"field-label\" htmlFor=\"priority-weight\">Priority weight (scenario value)</label><input id=\"priority-weight\" type=\"number\" min=\"0.0001\" step=\"any\" required className=\"field-control\" value={priorityWeight} onChange={(event) => setPriorityWeight(event.target.value)} /></>}"
+      },
+      {
+        "line": 167,
+        "events": [
+          "onChange"
+        ],
+        "source": "{kind === 'route_disruption' && <><label className=\"field-label\" htmlFor=\"route-choice\">Route to disrupt</label><select id=\"route-choice\" className=\"field-control\" value={routeKey || (routes[0] ? `${routes[0].source}|${routes[0].destination}` : '')} onChange={(event) => setRouteKey(event.target.value)}>{routes.map((route) => <option key={`${route.source}-${route.destination}`} value={`${route.source}|${route.destination}`}>{scenario.blood_banks.find((item) => item.id === route.source)?.name || route.source} \u2192 {scenario.hospitals.find((item) => item.id === route.destination)?.name || route.destination} \u00b7 {titleCase(route.status)}</option>)}</select><div className=\"notice notice-info\"><TriangleAlert size={16} /><span>Route values and status come from the active scenario.</span></div></>}"
+      },
+      {
+        "line": 171,
+        "events": [
+          "onChange"
+        ],
+        "source": "<select id=\"emergency-method\" className=\"field-control\" value={method} onChange={(event) => setMethod(event.target.value)}>"
+      },
+      {
+        "line": 193,
+        "events": [
+          "onChange"
+        ],
+        "source": "<input id=\"emergency-inventory-penalty\" className=\"field-control\" type=\"number\" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step=\"any\" required value={inventoryPenalty} onChange={(event) => setInventoryPenalty(event.target.value)} />"
+      },
+      {
+        "line": 195,
+        "events": [
+          "onChange"
+        ],
+        "source": "<input id=\"emergency-demand-penalty\" className=\"field-control\" type=\"number\" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step=\"any\" required value={demandPenalty} onChange={(event) => setDemandPenalty(event.target.value)} />"
+      },
+      {
+        "line": 208,
+        "events": [
+          "onClick"
+        ],
+        "source": "{formStep > 0 && <button type=\"button\" className=\"button button-secondary\" disabled={submitting} onClick={() => { setSubmitError(''); setFormStep(step => step - 1); }}>Back</button>}"
+      },
+      {
+        "line": 209,
+        "events": [
+          "onClick"
+        ],
+        "source": "{formStep < 2 && <button type=\"button\" className=\"button button-primary\" onClick={nextFormStep}>Next</button>}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/ExperimentReports.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 98,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"demo-field research-glide-field\">Synthetic scenario<GlideSelect ariaLabel=\"Synthetic scenario\" options={scenarios.map((id) => ({value:id,label:id.replaceAll('_',' ')}))} value={selectedScenario || ''} onChange={setScenarioId} showTags={false} accentColor=\"#ef233c\" surfaceColor=\"var(--bg-surface)\" highlightColor=\"var(--bg-hover)\" textColor=\"var(--text-primary)\" className=\"research-glide-select\" /></label>"
+      },
+      {
+        "line": 99,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"demo-field research-glide-field\">Paired seed<GlideSelect ariaLabel=\"Paired seed\" options={seeds.map((value) => ({value,label:value}))} value={chosenSeed || ''} onChange={setSeed} showTags={false} accentColor=\"#ef233c\" surfaceColor=\"var(--bg-surface)\" highlightColor=\"var(--bg-hover)\" textColor=\"var(--text-primary)\" className=\"research-glide-select\" /></label>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Flow.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 19,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"flow-stage-list\">{stages.map(({number,label,icon:Icon,title,body,links})=><BorderGlow key={number} className=\"flow-stage-glow\" backgroundColor=\"var(--bg-surface)\" borderRadius={16} glowRadius={12} glowColor=\"350 82 62\" colors={['#ef233c','#8d99ae','#2b2d42']}><article className=\"flow-stage-card\"><div className=\"flow-stage-marker\"><span>{number}</span><Icon size={20}/></div><div className=\"flow-stage-body\"><span className=\"eyebrow\">{label}</span><h2>{title}</h2><p>{body}</p><div className=\"flow-stage-links\">{links.map(([text,target])=><button key={target} onClick={()=>onNavigate(target)}>{text}<ArrowRight size={13}/></button>)}</div></div></article></BorderGlow>)}</div>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Home.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 39,
+        "events": [
+          "onClick"
+        ],
+        "source": "<SpecularButton className=\"home-primary-action\" size=\"md\" radius={12} tint=\"#ef233c\" textColor=\"#fff\" lineColor=\"#ff9aa8\" baseColor=\"#920942\" onClick={() => onNavigate('dashboard')}><Activity size={16} /> Open research dashboard <ArrowRight size={16} /></SpecularButton>"
+      },
+      {
+        "line": 40,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button type=\"button\" className=\"home-secondary-action\" onClick={() => onNavigate('optimization')}><Play size={15} /> Start an optimization</button>"
+      },
+      {
+        "line": 48,
+        "events": [
+          "onClick"
+        ],
+        "source": "<div className=\"home-destination-grid\">{destinations.map(({ id, icon: Icon, eyebrow, title, detail }, index) => <BorderGlow key={id} className=\"home-destination-glow\" backgroundColor={theme === 'dark' ? '#202438' : '#ffffff'} borderRadius={15} glowRadius={10} glowColor=\"350 82 62\" colors={['#e71e61', '#3aa5a0', '#0b3c65']}><button className=\"home-destination-card\" onClick={() => onNavigate(id)}><span className=\"home-destination-number\">0{index + 1}</span><span className=\"home-destination-icon\"><Icon size={20} /></span><span className=\"home-destination-copy\"><small>{eyebrow}</small><strong>{title}</strong><span>{detail}</span></span><ArrowRight className=\"home-destination-arrow\" size={17} /></button></BorderGlow>)}</div>"
+      },
+      {
+        "line": 50,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "<section className=\"home-flow-preview\" aria-labelledby=\"home-flow-title\"><div className=\"home-section-heading\"><div><span className=\"eyebrow\">THE BLOODFLOW-Q FLOW</span><h2 id=\"home-flow-title\">From network inputs to a validated plan</h2></div><button className=\"text-button\" onClick={() => onNavigate('flow')}>See how it works <ArrowRight size={14}/></button></div><div className=\"home-flow-steps\">{flowSteps.map(({icon:Icon,title,detail,route},index)=><button type=\"button\" className=\"home-flow-step\" key={title} onClick={()=>onNavigate(route)}><span className=\"home-flow-step-number\">0{index+1}</span><Icon size={19}/><strong>{title}</strong><span>{detail}</span>{index < flowSteps.length-1 && <i className=\"home-flow-connector\" aria-hidden=\"true\"/>}</button>)}</div></section>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Hospitals.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getScenario"
+    ],
+    "handlers": []
+  },
+  {
+    "component": "frontend/src/pages/Network.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "getScenario"
+    ],
+    "handlers": [
+      {
+        "line": 172,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={() => setRouteFilter('all')}"
+      },
+      {
+        "line": 179,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={() => setRouteFilter('available')}"
+      },
+      {
+        "line": 186,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={() => setRouteFilter('blocked')}"
+      },
+      {
+        "line": 214,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={() => setSelectedKey(key)}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Optimization.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "benchmark",
+      "getScenario",
+      "optimize"
+    ],
+    "handlers": [
+      {
+        "line": 131,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!scenarioLoading && scenarioError && <div className=\"notice notice-info optimization-api-notice\" role=\"status\"><Activity size={16} /><span><strong>Backend not connected.</strong> Your solver settings are ready, but runs need the BloodFlow-Q API. Start it and use Retry when available.</span><button type=\"button\" className=\"button button-secondary button-small\" onClick={reloadScenario}>Retry</button></div>}"
+      },
+      {
+        "line": 138,
+        "events": [
+          "onSubmit"
+        ],
+        "source": "<form onSubmit={submit} className=\"form-stack\">"
+      },
+      {
+        "line": 140,
+        "events": [
+          "onChange"
+        ],
+        "source": "<GlideSelect ariaLabel=\"Solver method\" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP \u00b7 HiGHS classical optimal'},{value:'exact',label:isExactDisabled ? 'Exact \u00b7 unavailable for this scenario' : 'Exact \u00b7 tiny instances only'},{value:'qaoa',label:'QAOA \u00b7 local simulator'}]} value={method} onChange={setMethod} showTags={false} accentColor=\"#ef233c\" surfaceColor=\"var(--bg-surface)\" highlightColor=\"var(--bg-hover)\" textColor=\"var(--text-primary)\" className=\"solver-glide-select\" />"
+      },
+      {
+        "line": 149,
+        "events": [
+          "onChange"
+        ],
+        "source": "<QAOAVariantSelect id=\"optimization-qaoa-variant\" value={qaoaVariant} onChange={setQaoaVariant} disabled={loading} />"
+      },
+      {
+        "line": 160,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button type=\"button\" className=\"button button-secondary button-small\" onClick={() => onNavigate?.('demo')}>"
+      },
+      {
+        "line": 178,
+        "events": [
+          "onChange"
+        ],
+        "source": "onChange={(event) => setInventoryPenalty(event.target.value)}"
+      },
+      {
+        "line": 192,
+        "events": [
+          "onChange"
+        ],
+        "source": "onChange={(event) => setDemandPenalty(event.target.value)}"
+      },
+      {
+        "line": 204,
+        "events": [
+          "onClick"
+        ],
+        "source": "{!loading && qaoaInstanceTooLarge && <div className=\"notice notice-info\" role=\"note\"><div><strong>The full scenario exceeds the local simulator limit.</strong><p>Use the compact, deterministic scenario in Demo mode to run the same real QUBO \u2192 QAOA \u2192 decoder \u2192 validator pipeline. The full-scenario request above was not replaced with a demo result.</p><button type=\"button\" className=\"button button-secondary button-small\" onClick={() => onNavigate?.('demo')}>Open compact QAOA demo</button></div></div>}"
+      },
+      {
+        "line": 223,
+        "events": [
+          "onChange"
+        ],
+        "source": "<input type=\"checkbox\" checked={includeQAOA} onChange={(event) => setIncludeQAOA(event.target.checked)} />"
+      },
+      {
+        "line": 233,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={runComparison}"
+      },
+      {
+        "line": 243,
+        "events": [
+          "onChange"
+        ],
+        "source": "<QAOAVariantSelect id=\"comparison-qaoa-variant\" value={qaoaVariant} onChange={setQaoaVariant} disabled={compareLoading} />"
+      },
+      {
+        "line": 257,
+        "events": [
+          "onChange"
+        ],
+        "source": "onChange={(event) => setInventoryPenalty(event.target.value)}"
+      },
+      {
+        "line": 272,
+        "events": [
+          "onChange"
+        ],
+        "source": "onChange={(event) => setDemandPenalty(event.target.value)}"
+      },
+      {
+        "line": 606,
+        "events": [
+          "onClick"
+        ],
+        "source": "onClick={() => onNavigate?.('demo')}"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/QuantumLab.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [],
+    "handlers": [
+      {
+        "line": 47,
+        "events": [
+          "onClick"
+        ],
+        "source": "<PageHeader eyebrow=\"MEASURED QUANTUM PIPELINE\" title=\"Quantum Optimization Lab\" description=\"Follow an actual saved QAOA sample from binary model to decoded, independently validated allocation.\" action={<button className=\"button button-secondary\" onClick={exportJson}><Download size={15} /> Export selected scenario</button>} />"
+      },
+      {
+        "line": 56,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "<div className=\"qlab-controls\"><label className=\"demo-field\">Synthetic scenario<select className=\"field-control\" value={scenarioId} onChange={(event) => { setScenarioId(event.target.value); const next = (study.results || []).find((row) => row.method === 'qaoa' && row.scenario_id === event.target.value); if (next) setSeed(String(next.seed)); }}><option value=\"multi_facility_tradeoff\">Multi-facility tradeoff</option>{Object.keys(scenarios).filter((id) => id !== 'multi_facility_tradeoff').map((id) => <option key={id} value={id}>{LABELS[id] || id.replaceAll('_', ' ')}</option>)}</select></label><label className=\"demo-field\">Experiment seed<select className=\"field-control\" value={record ? String(record.seed) : seed} onChange={(event) => setSeed(event.target.value)}>{qaoaRuns.map((row) => <option key={row.seed} value={row.seed}>{row.seed} \u00b7 {row.status}</option>)}</select></label><div className=\"qlab-run-id\"><span>Case</span><strong>{record?.scenario_id || 'No run'}</strong></div></div>"
+      },
+      {
+        "line": 66,
+        "events": [
+          "onClick",
+          "onClick"
+        ],
+        "source": "<section className=\"qlab-research-note\"><div><span className=\"eyebrow\">SCIENTIFIC INTERPRETATION</span><h2>What this study supports</h2><p>This small synthetic study evaluates whether a QAOA-derived feasible candidate helps a bounded classical local search. It does not demonstrate quantum advantage. Infeasible raw samples remain visible; the hybrid skips them instead of repairing them.</p><p><strong>Next research direction:</strong> paired post-disruption reallocation on larger multi-bank / multi-hospital networks, comparing QAOA initialization against greedy and seeded feasible classical starts under the same one-unit neighborhood and evaluation budget, across preregistered seeds. Record feasibility, validated objective, time-to-target, runtime, and variability.</p></div><div className=\"qlab-note-actions\"><button className=\"button button-secondary\" onClick={() => onNavigate('results')}><RotateCcw size={14} /> Solver Lab</button><button className=\"button button-secondary\" onClick={() => onNavigate('reports')}><FileChartColumn size={14} /> Experiment reports</button></div></section>"
+      }
+    ]
+  },
+  {
+    "component": "frontend/src/pages/Results.jsx",
+    "source_revision": "ebd8f30",
+    "api_calls": [
+      "benchmark",
+      "getExperimentDefaults",
+      "getResults",
+      "getScenario"
+    ],
+    "handlers": [
+      {
+        "line": 82,
+        "events": [
+          "onClick"
+        ],
+        "source": "<PageHeader eyebrow=\"MEASURED COMPARISON\" title=\"Solver Lab\" description=\"Compare live backend outputs with the saved paired-seed research study. Each evidence source is labeled separately.\" action={<button className=\"button button-secondary\" onClick={reload}><Clock3 size={15} /> Refresh history</button>} />"
+      },
+      {
+        "line": 87,
+        "events": [
+          "onChange"
+        ],
+        "source": "<label className=\"checkbox-label\"><input type=\"checkbox\" checked={includeQAOA} onChange={(event) => setIncludeQAOA(event.target.checked)} /> Include a measured QAOA simulator run</label>"
+      },
+      {
+        "line": 90,
+        "events": [
+          "onClick"
+        ],
+        "source": "<button className=\"button button-primary run-benchmark-btn\" onClick={runBenchmark} disabled={benchmarkLoading}><Play size={14} />{benchmarkLoading ? 'RUNNING BENCHMARK\u2026' : 'RUN BENCHMARK'}</button>"
+      },
+      {
+        "line": 93,
+        "events": [
+          "onChange"
+        ],
+        "source": "<QAOAVariantSelect id=\"lab-qaoa-variant\" value={qaoaVariant} onChange={setQaoaVariant} disabled={benchmarkLoading} />"
+      },
+      {
+        "line": 96,
+        "events": [
+          "onChange"
+        ],
+        "source": "<input className=\"field-control\" type=\"number\" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step=\"any\" value={inventoryPenalty} onChange={(event) => setInventoryPenalty(event.target.value)} />"
+      },
+      {
+        "line": 99,
+        "events": [
+          "onChange"
+        ],
+        "source": "<input className=\"field-control\" type=\"number\" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step=\"any\" value={demandPenalty} onChange={(event) => setDemandPenalty(event.target.value)} />"
+      },
+      {
+        "line": 104,
+        "events": [
+          "onChange"
+        ],
+        "source": "<details className=\"demo-objective-settings results-repro-controls\"><summary>Experiment configuration \u00b7 objective weights</summary><div className=\"demo-settings-grid\">{Object.entries(objectiveWeights).map(([key, value]) => <label className=\"demo-field\" key={key}>{key.replaceAll('_', ' ')}<input className=\"field-control\" type=\"number\" min=\"0\" step=\"any\" value={value} onChange={(event) => setObjectiveWeights((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}</div></details>"
+      },
+      {
+        "line": 105,
+        "events": [
+          "onChange",
+          "onChange"
+        ],
+        "source": "{includeQAOA && <div className=\"demo-settings-grid results-qaoa-settings\">{[['seed','Random seed'],['p','QAOA depth'],['shots','Shots'],['max_iterations','Optimizer iterations']].map(([key,label]) => <label className=\"demo-field\" key={key}>{label}<input className=\"field-control\" type=\"number\" min=\"0\" value={qaoaConfig[key]} onChange={(event) => setQaoaConfig((current) => ({ ...current, [key]: Number(event.target.value) }))} /></label>)}<label className=\"demo-field\">Classical optimizer<select className=\"field-control\" value={qaoaConfig.optimizer} onChange={(event) => setQaoaConfig((current) => ({ ...current, optimizer: event.target.value }))}><option>COBYLA</option><option>Nelder-Mead</option><option>Powell</option></select></label></div>}"
+      },
+      {
+        "line": 138,
+        "events": [
+          "onClick"
+        ],
+        "source": "<section className=\"results-history-section\"><div className=\"results-history-heading\"><div><span className=\"eyebrow\">BACKEND SESSION</span><h2>Saved results</h2><p>Recent optimization, emergency, and benchmark responses held in backend memory.</p></div><button className=\"button button-secondary button-small\" onClick={reload}><RotateCcw size={13} /> Refresh</button></div>"
+      }
+    ]
+  }
+]

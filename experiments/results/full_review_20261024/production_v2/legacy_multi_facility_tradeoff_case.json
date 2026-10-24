@@ -1,0 +1,108 @@
+{
+  "scenario": {
+    "id": "legacy_multi_facility_tradeoff",
+    "blood_groups": [
+      "O"
+    ],
+    "blood_banks": [
+      {
+        "id": "bank_a",
+        "name": "Bank A",
+        "location_id": "LOC_BANK_A",
+        "inventory": {
+          "O": 2
+        }
+      },
+      {
+        "id": "bank_b",
+        "name": "Synthetic Bank B",
+        "location_id": "location_b",
+        "inventory": {
+          "O": 1
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "hospital_1",
+        "name": "Hospital 1",
+        "location_id": "LOC_HOSPITAL_1",
+        "demand": {
+          "O": 2
+        },
+        "urgency": {
+          "O": {
+            "category": "medium",
+            "priority_weight": 1.0
+          }
+        }
+      },
+      {
+        "id": "hospital_2",
+        "name": "Synthetic Hospital 2",
+        "location_id": "location_c",
+        "demand": {
+          "O": 2
+        },
+        "urgency": {
+          "O": {
+            "category": "critical",
+            "priority_weight": 3.0
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "bank_a",
+        "destination": "hospital_1",
+        "travel_time_minutes": 5.0,
+        "distance_km": 2.0,
+        "transport_cost": 1.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_a",
+        "destination": "hospital_2",
+        "travel_time_minutes": 25.0,
+        "distance_km": 12.0,
+        "transport_cost": 6.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_b",
+        "destination": "hospital_1",
+        "travel_time_minutes": 18.0,
+        "distance_km": 9.0,
+        "transport_cost": 5.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_b",
+        "destination": "hospital_2",
+        "travel_time_minutes": 4.0,
+        "distance_km": 1.5,
+        "transport_cost": 0.8,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "family": "historical_input_current_algorithms",
+  "qubits": 13,
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "penalty": 162
+}

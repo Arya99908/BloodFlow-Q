@@ -1,0 +1,82 @@
+{
+  "external_commit": "d3ec6d218db1d4eabb1ed990402173d8b1a86883",
+  "temporary_checkout": "/tmp/bloodflow-round2-recovery-20261024",
+  "results": [
+    {
+      "file": "data/blood_banks.json",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "data/hospitals.json",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "data/routes.json",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "data/compatibility.json",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "backend/scenario_factory.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "experiments/analyze_results.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "experiments/search_methods.py",
+      "status": "exact"
+    },
+    {
+      "file": "docs/QUANTUM_VALUE_PROTOCOL.md",
+      "status": "exact"
+    },
+    {
+      "file": "optimization/models.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/objective.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/constraints.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/greedy.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/milp.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/exact.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "optimization/decoder.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "quantum/qubo.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "quantum/ising.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "quantum/qaoa_solver.py",
+      "status": "line-ending-only"
+    },
+    {
+      "file": "experiments/run_experiments.py",
+      "status": "line-ending-only"
+    }
+  ]
+}

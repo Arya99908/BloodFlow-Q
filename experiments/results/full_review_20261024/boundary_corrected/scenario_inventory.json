@@ -1,0 +1,20 @@
+[
+  {
+    "scenario": "zero_inventory",
+    "family": "boundary",
+    "qubits": 3,
+    "input_file": "zero_inventory_case.json"
+  },
+  {
+    "scenario": "zero_demand",
+    "family": "boundary",
+    "qubits": 3,
+    "input_file": "zero_demand_case.json"
+  },
+  {
+    "scenario": "zero_inventory_and_demand",
+    "family": "boundary",
+    "qubits": 0,
+    "input_file": "zero_inventory_and_demand_case.json"
+  }
+]

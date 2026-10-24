@@ -1,0 +1,1340 @@
+{
+  "scope": "Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No general speedup or inferential significance claim. Intervals descriptive; ties do not prove equivalence.",
+  "records": 240,
+  "cases": 12,
+  "scaling_cases": 16,
+  "summary": [
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "method": "milp",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7366666666666661,
+      "gap_case_bootstrap95": [
+        3.552713678800501e-15,
+        5.209999999999972
+      ],
+      "optimal_runs": 25,
+      "improved_runs": 2,
+      "mean_seconds_including_setup": 0.011946454233839176,
+      "mean_table_evaluations": 0,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    },
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "method": "table_lookup",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7366666666666661,
+      "gap_case_bootstrap95": [
+        3.552713678800501e-15,
+        5.209999999999972
+      ],
+      "optimal_runs": 25,
+      "improved_runs": 2,
+      "mean_seconds_including_setup": 0.031410636068418776,
+      "mean_table_evaluations": 3754.6666666666665,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    },
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "method": "quantum",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7366666666666661,
+      "gap_case_bootstrap95": [
+        3.552713678800501e-15,
+        5.209999999999972
+      ],
+      "optimal_runs": 25,
+      "improved_runs": 2,
+      "mean_seconds_including_setup": 0.034906799935076074,
+      "mean_table_evaluations": 3754.6666666666665,
+      "mean_oracle_calls": 175.1,
+      "mean_measurement_shots": 80.9,
+      "round_overruns": 0
+    },
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "method": "uniform",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.8166666666666653,
+      "gap_case_bootstrap95": [
+        3.552713678800501e-15,
+        5.44999999999997
+      ],
+      "optimal_runs": 25,
+      "improved_runs": 0,
+      "mean_seconds_including_setup": 0.004885411000092669,
+      "mean_table_evaluations": 0,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    },
+    {
+      "variant": "original",
+      "method": "milp",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7333333333333434,
+      "gap_case_bootstrap95": [
+        0.03333333333335098,
+        4.8666666666666565
+      ],
+      "optimal_runs": 15,
+      "improved_runs": 0,
+      "mean_seconds_including_setup": 0.01102455289462038,
+      "mean_table_evaluations": 0,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    },
+    {
+      "variant": "original",
+      "method": "table_lookup",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7333333333333434,
+      "gap_case_bootstrap95": [
+        0.03333333333335098,
+        4.8666666666666565
+      ],
+      "optimal_runs": 15,
+      "improved_runs": 0,
+      "mean_seconds_including_setup": 0.031481961128883997,
+      "mean_table_evaluations": 3754.6666666666665,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    },
+    {
+      "variant": "original",
+      "method": "quantum",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7333333333333434,
+      "gap_case_bootstrap95": [
+        0.03333333333335098,
+        4.8666666666666565
+      ],
+      "optimal_runs": 15,
+      "improved_runs": 0,
+      "mean_seconds_including_setup": 0.03515076962891423,
+      "mean_table_evaluations": 3754.6666666666665,
+      "mean_oracle_calls": 175.4,
+      "mean_measurement_shots": 80.6,
+      "round_overruns": 0
+    },
+    {
+      "variant": "original",
+      "method": "uniform",
+      "runs": 30,
+      "instances": 6,
+      "mean_absolute_gap": 1.7333333333333434,
+      "gap_case_bootstrap95": [
+        0.03333333333335098,
+        4.8666666666666565
+      ],
+      "optimal_runs": 15,
+      "improved_runs": 0,
+      "mean_seconds_including_setup": 0.005095816729590297,
+      "mean_table_evaluations": 0,
+      "mean_oracle_calls": 0,
+      "mean_measurement_shots": 0,
+      "round_overruns": 0
+    }
+  ],
+  "paired": [
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "classical_replacement": "milp",
+      "mean_quantum_minus_classical": 0.0,
+      "case_bootstrap95": [
+        0.0,
+        0.0
+      ],
+      "quantum_wins": 0,
+      "ties": 30,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020677874999819323
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020675042003858835
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0207477500080131
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02101774897892028
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02141454200318549
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02924449899001047
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02807995800685603
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02879120799480006
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027585499992710538
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03317391700693406
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.007398958012345247
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0022783760068705305
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0040992069989442825
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.005428459000540897
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.012892874990939163
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02268233300128486
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.014226290993974544
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02750895801000297
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.023162084005889483
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.033041583010344766
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03307350000250153
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030811624994385056
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03353025000251364
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03591637501085643
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.031073624995769933
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.016940625006100163
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.022610375002841465
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02465420799853746
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.032502750007552095
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02356987399980426
+        }
+      ]
+    },
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "classical_replacement": "table_lookup",
+      "mean_quantum_minus_classical": 0.0,
+      "case_bootstrap95": [
+        0.0,
+        0.0
+      ],
+      "quantum_wins": 0,
+      "ties": 30,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.002805541007546708
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0028957920003449544
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0022415409912355244
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0028802499873563647
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0024173749989131466
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0030833749915473163
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0031139580096350983
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0033749580034054816
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0034823330061044544
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.00412720900203567
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0038318750011967495
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003426916999160312
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0038425409875344485
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0031317499961005524
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0039279169868677855
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003996667001047172
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0035762909974437207
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0038536669890163466
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004139083001064137
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0039162080065580085
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003579249998438172
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0030327090062201023
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0038436670001829043
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003657542009023018
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004085667009348981
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0037920830072835088
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004218666988890618
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0036299580096965656
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0034437090071151033
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0035364159994060174
+        }
+      ]
+    },
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "classical_replacement": "uniform",
+      "mean_quantum_minus_classical": -0.07999999999999924,
+      "case_bootstrap95": [
+        -0.2399999999999977,
+        0.0
+      ],
+      "quantum_wins": 2,
+      "ties": 28,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020694916005595587
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02095479200943373
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020699667002190836
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.021379082987550646
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020995958999264985
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030202250010916032
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029480499011697248
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029891707992646843
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.028862582999863662
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.033814916998380795
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03124908299650997
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.028340208998997696
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027870624006027356
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.028567583998665214
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029966040994622745
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": -1.1999999999999886,
+          "seconds_quantum_minus_classical": 0.03260491602122784
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03235904099710751
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029499750002287328
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0347477499890374
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": -1.1999999999999886,
+          "seconds_quantum_minus_classical": 0.0345267920056358
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03414950099249836
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03223495901329443
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03485354199074209
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.037058917005197145
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.032692876004148275
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.033467834000475705
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0316100420022849
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03255670801445376
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0337604590022238
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.031548665996524505
+        }
+      ]
+    },
+    {
+      "variant": "original",
+      "classical_replacement": "milp",
+      "mean_quantum_minus_classical": 0.0,
+      "case_bootstrap95": [
+        0.0,
+        0.0
+      ],
+      "quantum_wins": 0,
+      "ties": 30,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": -0.004384999992907979
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": -0.007616083021275699
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": -0.006990416019107215
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": -0.007727916992735118
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": -0.006585834009456448
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02947383299760986
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02938933299446944
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029154624993680045
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.028104583019739948
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.032703250006306916
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02938020801229868
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027491542001371272
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.018998041996383108
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027064042005804367
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02226633401005529
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03111754199198913
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030717750007170253
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027531583997188136
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03331566700944677
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03463249999913387
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03370120900217444
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.031203624996123835
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.033903750008903444
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03615370800253004
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03145120799308643
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03312304100836627
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030104626013780944
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03186141699552536
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0334372910001548
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030811042001005262
+        }
+      ]
+    },
+    {
+      "variant": "original",
+      "classical_replacement": "table_lookup",
+      "mean_quantum_minus_classical": 0.0,
+      "case_bootstrap95": [
+        0.0,
+        0.0
+      ],
+      "quantum_wins": 0,
+      "ties": 30,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.005278542012092657
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.002863332993001677
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003176458994857967
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0024527909990865737
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0029409590060822666
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0035093750047963113
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004339540988439694
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0037914999993517995
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003955250009312294
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003407625001273118
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003406832998734899
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003877166993333958
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0037220419908408076
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0036765010008821264
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.00389504199847579
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0034997509937966242
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003593959001591429
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0032377090101363137
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003561709003406577
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004319333995226771
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.00377654199837707
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0036753749882336706
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0038516670028911904
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0037644999974872917
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003610041007050313
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0042280420020688325
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003100041998550296
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.004126041996642016
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0036919989943271503
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.003734583020559512
+        }
+      ]
+    },
+    {
+      "variant": "original",
+      "classical_replacement": "uniform",
+      "mean_quantum_minus_classical": 0.0,
+      "case_bootstrap95": [
+        0.0,
+        0.0
+      ],
+      "quantum_wins": 0,
+      "ties": 30,
+      "quantum_losses": 0,
+      "pairs": [
+        {
+          "scenario": "necessity_00",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02347808399645146
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02096079199691303
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.021334832985303365
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.020882332988549024
+        },
+        {
+          "scenario": "necessity_00",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02118187499581836
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.031038792003528215
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030484332994092256
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03005966599448584
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029365876005613245
+        },
+        {
+          "scenario": "necessity_01",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03308300000207964
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.029984500011778437
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.028624458980630152
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.027908124990062788
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.02811850100988522
+        },
+        {
+          "scenario": "necessity_02",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.030457333006779663
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03176033400814049
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03166804199281614
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.0288637929916149
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03422508299991023
+        },
+        {
+          "scenario": "necessity_03",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03499145900423173
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.034243542002514005
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03228095799568109
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03482645799522288
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03694470800110139
+        },
+        {
+          "scenario": "necessity_04",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.032081583005492575
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 41,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03359987500880379
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 42,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.031072666999534704
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 43,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03270562499528751
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 44,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03414437500759959
+        },
+        {
+          "scenario": "necessity_05",
+          "seed": 45,
+          "objective_quantum_minus_classical": 0.0,
+          "seconds_quantum_minus_classical": 0.03127758300979622
+        }
+      ]
+    }
+  ],
+  "classical_scaling": [
+    {
+      "variant": "fixed_dispatch_hypothesis",
+      "cases": 8,
+      "milp_proven_optimal": 8,
+      "max_variables": 1728,
+      "max_milp_seconds": 1.9863957079942338,
+      "max_lp_seconds": 0.018328165999264456,
+      "lp_strict_lower_than_milp_incumbent": 8,
+      "unproven": []
+    },
+    {
+      "variant": "original",
+      "cases": 8,
+      "milp_proven_optimal": 8,
+      "max_variables": 1728,
+      "max_milp_seconds": 0.015901708000455983,
+      "max_lp_seconds": 0.007229291004478,
+      "lp_strict_lower_than_milp_incumbent": 0,
+      "unproven": []
+    }
+  ]
+}

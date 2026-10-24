@@ -13,12 +13,24 @@ def fees_for(s,seed):
     rng=np.random.default_rng(seed)
     return {(r.source,r.destination):int(rng.integers(3,13)) for r in s.routes}
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+
+
+def source_snapshot(repository_root=REPOSITORY_ROOT):
+    """Portable, conservative coverage of production and experiment Python code."""
+    paths = set()
+    for directory in ('optimization', 'quantum', 'experiments', 'research/quantum_experiments'):
+        paths.update((repository_root / directory).rglob('*.py'))
+    return {p.relative_to(repository_root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(paths)}
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);parser.add_argument('--pilot',action='store_true');args=parser.parse_args()
     out=args.output;out.mkdir(parents=True,exist_ok=True)
     if (out/'protocol.json').exists():raise FileExistsError('Use a fresh output directory')
     root=Path(__file__).parent
-    protocol={'pilot':args.pilot,'python':platform.python_version(),'versions':{x:importlib.metadata.version(x) for x in ('numpy','scipy','qiskit')},'seeds':[41] if args.pilot else list(range(41,46)),'rounds':1 if args.pilot else 4,'bit_cap':10,'round_seconds':.1,'query_cap':64,'source_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in root.glob('*.py')},'plan_sha256':hashlib.sha256((root/'PROTOCOL.md').read_bytes()).hexdigest()}
+    protocol={'pilot':args.pilot,'python':platform.python_version(),'versions':{x:importlib.metadata.version(x) for x in ('numpy','scipy','qiskit')},'seeds':[41] if args.pilot else list(range(41,46)),'rounds':1 if args.pilot else 4,'bit_cap':10,'round_seconds':.1,'query_cap':64,'source_sha256':source_snapshot(),'source_path_format':'repository-relative-v1','source_coverage':'All Python files in optimization, quantum, experiments, and research/quantum_experiments; excludes external dependencies and non-Python input files','plan_sha256':hashlib.sha256((root/'PROTOCOL.md').read_bytes()).hexdigest()}
     (out/'protocol.json').write_text(json.dumps(protocol,indent=2));start=time.perf_counter()
     specs=[(3,3,('O',)),(3,3,('O','A')),(4,3,('O',)),(3,4,('O','A')),(4,4,('O','A')),(5,5,('O',))]
     with (out/'runs.jsonl').open('x') as f,(out/'cases.jsonl').open('x') as cases:

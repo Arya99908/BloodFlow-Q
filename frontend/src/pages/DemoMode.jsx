@@ -160,6 +160,12 @@ export default function DemoMode() {
               <NumberField label="Optimizer iterations per restart" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
             <label className="demo-field">Classical optimizer<GlideSelect ariaLabel="Classical optimizer" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
             </div>
+            <details className="demo-objective-settings"><summary>Research controls · optional ablations</summary>
+              <label className="demo-field">First parameter start<select className="field-control" value={qaoa.parameter_initialization || 'random'} onChange={event => setQaoa(current => ({ ...current, parameter_initialization: event.target.value }))}><option value="random">Seeded random (baseline)</option><option value="zero_first">Zero angles on first restart</option></select></label>
+              {warmStart && <label className="demo-field">Classical state source<select className="field-control" value={qaoa.warm_start_source || 'lp'} onChange={event => setQaoa(current => ({ ...current, warm_start_source: event.target.value }))}><option value="lp">LP relaxation, with validated fallback</option><option value="greedy">Validated greedy allocation</option></select></label>}
+              <label className="checkbox-label"><input type="checkbox" checked={Boolean(qaoa.retain_initial_state)} onChange={event => setQaoa(current => ({ ...current, retain_initial_state: event.target.checked }))} />Retain initial circuit if optimizer worsens expected energy</label>
+              <p className="comparison-help">Retention adds one exact statevector evaluation. It does not guarantee a higher probability of feasible or optimal shots.</p>
+            </details>
             <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
           </>}
           {method === 'qaoa' && configStep === 2 && <>

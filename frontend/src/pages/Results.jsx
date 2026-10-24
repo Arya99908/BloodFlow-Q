@@ -1,3 +1,4 @@
+import { isFiniteMeasurement } from '../utils/measurementValues';
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
@@ -185,7 +186,7 @@ function BenchmarkCharts({ rows }) {
     { key: 'average_transport_time', label: 'Average transport time', lowerBetter: true, suffix: 'min' },
   ];
   return <div className="results-charts"><div className="results-chart-heading"><div><h3>Measured metric charts</h3><p>Each chart scales only the completed values shown in this benchmark.</p></div></div><div className="results-chart-grid">{metrics.map((metricSpec) => {
-    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && Number.isFinite(Number(row[metricSpec.key]))).map((row) => ({ methodKey: row.method, method: row.method_label || methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
+    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && isFiniteMeasurement(row[metricSpec.key])).map((row) => ({ methodKey: row.method, method: row.method_label || methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
     const max = Math.max(...entries.map((item) => item.value), 0);
     return <article className="results-chart-card" key={metricSpec.key}><div className="results-chart-card-heading"><strong>{metricSpec.label}</strong><span>MEASURED</span></div>
       {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.methodKey}`} key={entry.methodKey}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(3, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}

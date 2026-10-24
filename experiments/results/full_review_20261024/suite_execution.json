@@ -1,0 +1,94 @@
+[
+  {
+    "job": "research_pilot",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.run_study",
+      "--pilot",
+      "--output",
+      "experiments/results/full_review_20261024/research_pilot"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 1.8928946250089211
+  },
+  {
+    "job": "research_study",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.run_study",
+      "--output",
+      "experiments/results/full_review_20261024/research_study"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 133.99691533399164
+  },
+  {
+    "job": "research_analysis",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.analyze",
+      "--input",
+      "experiments/results/full_review_20261024/research_study"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 0.44284587500442285
+  },
+  {
+    "job": "supplementary",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.supplementary",
+      "--output",
+      "experiments/results/full_review_20261024/supplementary"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 6.946329625003273
+  },
+  {
+    "job": "necessity",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.run",
+      "--output",
+      "experiments/results/full_review_20261024/necessity"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 10.692598291003378
+  },
+  {
+    "job": "necessity_analysis",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.analyze",
+      "--input",
+      "experiments/results/full_review_20261024/necessity"
+    ],
+    "status": "completed",
+    "exit_code": 0,
+    "seconds": 0.1854522089997772
+  },
+  {
+    "job": "necessity_validation",
+    "command": [
+      "/Users/shreeshaks/Documents/BloodFlow-Q1/.venv/bin/python",
+      "-m",
+      "research.quantum_experiments.necessity.validate",
+      "--input",
+      "experiments/results/full_review_20261024/necessity"
+    ],
+    "status": "failed",
+    "exit_code": 1,
+    "seconds": 1.7880389170022681
+  }
+]

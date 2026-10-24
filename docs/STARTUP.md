@@ -11,7 +11,7 @@ BloodFlow-Q's current local setup needs:
 - Node.js and npm. The inspected machine has Node.js 26.10.0 and npm 12.2.0.
 - An internet connection during the first setup, so the package managers can download dependencies.
 
-Git is useful for downloading and tracking project files, but it is not required to start a project folder you already have. Git 2.54.0 is installed on the inspected Mac; this folder is not currently initialized as a Git repository.
+Git is useful for downloading and tracking project files, but it is not required to start a project folder you already have. The audited checkout is a Git repository on `somemore-QAOA-fix`; see [repository audit](repository_audit.md) for its recorded baseline.
 
 ## 1. Open Terminal
 
@@ -24,10 +24,10 @@ The terminal is a text window where you enter commands. Commands below should be
 In Terminal, enter:
 
 ```bash
-cd "$HOME/Desktop/BLOOD UNIT DESPENSER"
+cd /path/to/BloodFlow-Q
 ```
 
-This path matches the current Mac checkout. If you saved the project elsewhere, type `cd ` (including the space), drag the project folder from Finder into Terminal, then press **Return**. The terminal prompt should now refer to the BloodFlow-Q project folder.
+Replace the example path with your checkout. Alternatively, type `cd ` (including the space), drag the project folder from Finder into Terminal, then press **Return**. The terminal prompt should now refer to the BloodFlow-Q project folder.
 
 ## 3. Activate the environment if needed
 
@@ -106,10 +106,14 @@ If the browser shows an API connection message, check that the backend terminal 
 - If you started backend and frontend separately, press **Control + C** in each terminal window.
 - Close the terminal windows only after the server has stopped.
 
-## What was checked on the current development computer
+## Historical setup inspection
 
-The inspected computer is an Apple Silicon Mac running macOS (Darwin 27.0). Python 3.14.7, pip 26.2.1, Node.js 26.10.0, npm 12.2.0, and Git 2.54.0 are available. The local Python environment has FastAPI 0.142.2, Uvicorn 0.54.0, Qiskit 2.5.2, and Qiskit Aer 0.17.2. The frontend has React 18.3.1 and Vite 6.4.4 installed. No dependencies needed installing or upgrading during this inspection.
+The earlier startup inspection used an Apple Silicon Mac running macOS (Darwin 27.0). Python 3.14.7, pip 26.2.1, Node.js 26.10.0, npm 12.2.0, and Git 2.54.0 are available. The local Python environment has FastAPI 0.142.2, Uvicorn 0.54.0, Qiskit 2.5.2, and Qiskit Aer 0.17.2. The frontend has React 18.3.1 and Vite 6.4.4 installed. No dependencies needed installing or upgrading during this inspection.
 
 Qiskit Aer is tested through its supported `AerSimulator` backend workflow (`QuantumCircuit`, `transpile`, `simulator.run(...).result().get_counts()`) as shown in [official Aer simulator documentation](https://qiskit.github.io/qiskit-aer/tutorials/1_aersimulator.html). The existing BloodFlow-Q QAOA uses that workflow and imports successfully in the checked environment.
 
 This project uses synthetic logistics scenarios only. It is not a clinical system. See [docs/SECURITY_AND_SAFETY.md](SECURITY_AND_SAFETY.md).
+
+## 24 October 2026 audit environment
+
+The current checkout is `/Users/shreeshaks/Documents/BloodFlow-Q-main 3`. This session reused the existing neighboring `../BloodFlow-Q1/.venv/bin/python` rather than installing another environment. Its measured benchmark versions are recorded in `experiments/results/full_review_20261024/production_v2/protocol.json`; they supersede the historical versions above. For a portable fresh setup, use this project's `./setup.sh` and `.venv` commands. The current local frontend is http://127.0.0.1:5173 and API is http://127.0.0.1:8000.

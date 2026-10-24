@@ -79,7 +79,11 @@ class MILPSolver:
         if num_vars == 0:
             # Degenerate empty scenario
             empty_allocation: tuple[AllocationDecision, ...] = ()
-            empty_unmet: dict[tuple[str, str], int] = {}
+            empty_unmet: dict[tuple[str, str], int] = {
+                (hospital.id, group): 0
+                for hospital in scenario.hospitals
+                for group in hospital.demand
+            }
             report = validate_allocation(scenario, empty_allocation, empty_unmet)
             obj = calculate_objective(scenario, empty_allocation, objective_config, secondary_penalties=named_secondary)
             return MILPResult(
@@ -242,7 +246,16 @@ class MILPSolver:
         num_vars = num_x + num_u
 
         if num_vars == 0:
-            return {"allocation": {}, "unmet_demand": {}, "slack": {},
+            # No demand means no shipments; all positive stock remains unused.
+            # Like the general relaxation path, zero-valued quantity rows
+            # are omitted and optional metadata stays separate from maps.
+            slack = {
+                (bank.id, group): float(available)
+                for bank in scenario.blood_banks
+                for group, available in bank.inventory.items()
+                if available > 0
+            }
+            return {"allocation": {}, "unmet_demand": {}, "slack": slack,
                     **({"objective_value": float(secondary_cost),
                         "runtime_seconds": time.perf_counter() - started} if include_metadata else {})}
 

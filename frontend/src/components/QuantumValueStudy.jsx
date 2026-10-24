@@ -2,25 +2,25 @@ import { useMemo, useState } from 'react';
 import { EmptyState, ErrorState, LoadingState } from './Feedback';
 import { StatusBadge } from './DataField';
 import { useResearchStudy } from '../hooks/useResearchStudy';
+import { selectStudyTrials } from '../utils/studyTrials';
 
 const CLASSICAL_ORDER = ['milp', 'exact', 'classical_multistart', 'greedy'];
 
 export default function QuantumValueStudy() {
   const { study, error } = useResearchStudy();
   const [scenarioId, setScenarioId] = useState('multi_facility_tradeoff');
-  const [seed, setSeed] = useState('201');
+  const [seed, setSeed] = useState('');
 
-  const scenarios = Object.keys(study?.configuration?.scenario_sizes || {});
-  const rows = useMemo(() => (study?.results || []).filter((row) => row.scenario_id === scenarioId), [study, scenarioId]);
-  const size = study?.configuration?.scenario_sizes?.[scenarioId];
+  const { scenarios, selectedScenario, seeds, selectedSeed, rows } = useMemo(() => selectStudyTrials(study, scenarioId, seed), [study, scenarioId, seed]);
+  const size = study?.configuration?.scenario_sizes?.[selectedScenario];
   const byMethod = (method) => rows.find((row) => row.method === method && row.seed == null);
-  const byTrial = (method) => rows.find((row) => row.method === method && String(row.seed) === seed);
+  const byTrial = (method) => rows.find((row) => row.method === method && String(row.seed) === selectedSeed);
   const classical = useMemo(() => {
     const options = [...CLASSICAL_ORDER.map(byMethod), byTrial('classical_multistart')]
       .filter((row) => row?.feasibility === true && Number.isFinite(row.objective));
     options.sort((a, b) => a.objective - b.objective || CLASSICAL_ORDER.indexOf(a.method) - CLASSICAL_ORDER.indexOf(b.method));
     return options[0] || null;
-  }, [rows]);
+  }, [rows, selectedSeed]);
   const classicalSearch = byTrial('classical_multistart');
   const rawQaoa = byTrial('qaoa');
   const hybrid = byTrial('hybrid_qaoa_local_search');
@@ -41,13 +41,13 @@ export default function QuantumValueStudy() {
     {study && <>
       <div className="quantum-study-controls">
         <label className="demo-field">Synthetic scenario
-          <select className="field-control" value={scenarioId} onChange={(event) => setScenarioId(event.target.value)}>
+          <select className="field-control" value={selectedScenario} onChange={(event) => setScenarioId(event.target.value)}>
             {scenarios.map((id) => <option key={id} value={id}>{id.replaceAll('_', ' ')}</option>)}
           </select>
         </label>
         <label className="demo-field">Trial seed
-          <select className="field-control" value={seed} onChange={(event) => setSeed(event.target.value)}>
-            {Array.from({ length: 10 }, (_, index) => String(201 + index)).map((value) => <option key={value}>{value}</option>)}
+          <select className="field-control" value={selectedSeed} onChange={(event) => setSeed(event.target.value)}>
+            {seeds.map((value) => <option key={value}>{value}</option>)}
           </select>
         </label>
       </div>

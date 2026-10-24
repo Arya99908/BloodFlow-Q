@@ -1,0 +1,3250 @@
+{
+  "scope": "8 prespecified synthetic held-out cases, 10 paired optimizer seeds; bootstrap CIs descriptive for this small case collection, not representative population inference",
+  "null_assumption": "instance-level paired differences symmetric under sign flip; instances not shots are units in confirmatory family",
+  "multiple_comparison_family": "exactly three prespecified contrasts; all other comparisons exploratory",
+  "total_records": 992,
+  "completed": 992,
+  "per_case": [
+    {
+      "scenario": "holdout_00",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.33628177352511796,
+      "seed_bootstrap95": [
+        0.20727863931314877,
+        0.47964570995835104
+      ],
+      "min_p_optimal": 0.06948843498026402,
+      "max_p_optimal": 0.7858586319549626,
+      "mean_p_feasible": 0.4452015562069285,
+      "mean_conditional_feasible_gap": 2.376326071230882,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08449351250892505,
+      "mean_training_shots": 0,
+      "mean_evaluations": 157.6
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.8851591631858622,
+      "seed_bootstrap95": [
+        0.8576177026260554,
+        0.9111897768465814
+      ],
+      "min_p_optimal": 0.8200419667835216,
+      "max_p_optimal": 0.9448214833349923,
+      "mean_p_feasible": 0.8881326933114938,
+      "mean_conditional_feasible_gap": 0.027316240541163595,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09445310000592144,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.1
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.23867262140082968,
+      "seed_bootstrap95": [
+        0.18343914915766885,
+        0.28684500908370275
+      ],
+      "min_p_optimal": 0.07407826368728963,
+      "max_p_optimal": 0.3324625644582785,
+      "mean_p_feasible": 0.3946339763237885,
+      "mean_conditional_feasible_gap": 3.3375491231998575,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09291056259680772,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.9
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.6752166069706171,
+      "seed_bootstrap95": [
+        0.6721410971100312,
+        0.6786263061398913
+      ],
+      "min_p_optimal": 0.6657821427293754,
+      "max_p_optimal": 0.6873455798895945,
+      "mean_p_feasible": 0.676648346960464,
+      "mean_conditional_feasible_gap": 0.017027984707904766,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08913806700584245,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.9
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.2859284559992058,
+      "seed_bootstrap95": [
+        0.25987084603229377,
+        0.3153544808170958
+      ],
+      "min_p_optimal": 0.22623440759861566,
+      "max_p_optimal": 0.3636724628624446,
+      "mean_p_feasible": 0.34371410605992814,
+      "mean_conditional_feasible_gap": 1.2416583770033331,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.022836087802716065,
+      "mean_training_shots": 0,
+      "mean_evaluations": 53.9
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.9999999991365334,
+      "seed_bootstrap95": [
+        0.999999998725291,
+        0.9999999994957853
+      ],
+      "min_p_optimal": 0.9999999977703471,
+      "max_p_optimal": 0.999999999872,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 6.994078916022772e-09,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.04596158668864518,
+      "mean_training_shots": 0,
+      "mean_evaluations": 97.6
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.6130215322218214,
+      "seed_bootstrap95": [
+        0.4687591577674843,
+        0.7561220524157888
+      ],
+      "min_p_optimal": 0.27278016244988124,
+      "max_p_optimal": 0.9491716830006752,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 3.134525589003247,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.011722916085273028,
+      "mean_training_shots": 0,
+      "mean_evaluations": 28.3
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.9999999990660974,
+      "seed_bootstrap95": [
+        0.9999999985406652,
+        0.9999999995262415
+      ],
+      "min_p_optimal": 0.9999999976647289,
+      "max_p_optimal": 0.9999999999415052,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 7.56461311368639e-09,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.057028028585773424,
+      "mean_training_shots": 0,
+      "mean_evaluations": 117.2
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.5576598911218072,
+      "seed_bootstrap95": [
+        0.5576598911218074,
+        0.5576598911218074
+      ],
+      "min_p_optimal": 0.5576598911218072,
+      "max_p_optimal": 0.5576598911218072,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 3.5829548819133628,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.00017924509011209012,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.5861288650658072,
+      "seed_bootstrap95": [
+        0.42855265401843423,
+        0.7252453764680785
+      ],
+      "min_p_optimal": 0.08190988678442188,
+      "max_p_optimal": 0.874594829327956,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 3.3523561929669623,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.00018582039047032595,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_00",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.6130215322218214,
+      "seed_bootstrap95": [
+        0.4687591577674843,
+        0.7561220524157888
+      ],
+      "min_p_optimal": 0.27278016244988124,
+      "max_p_optimal": 0.9491716830006752,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 3.134525589003247,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.017969570388959254,
+      "mean_training_shots": 7296,
+      "mean_evaluations": 28.5
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.01306625824816493,
+      "seed_bootstrap95": [
+        0.005741154839111062,
+        0.02162066782996319
+      ],
+      "min_p_optimal": 0.0007078957333541711,
+      "max_p_optimal": 0.03939060266185554,
+      "mean_p_feasible": 0.2123056479718262,
+      "mean_conditional_feasible_gap": 5.225626411457679,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.12218388329929439,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.6
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.6609756891664118,
+      "seed_bootstrap95": [
+        0.6256231033482406,
+        0.7119879112537945
+      ],
+      "min_p_optimal": 0.6068373469198053,
+      "max_p_optimal": 0.8626481772722746,
+      "mean_p_feasible": 0.6697180441310207,
+      "mean_conditional_feasible_gap": 0.04207864501421739,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.14039302859891906,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0027894123039853566,
+      "seed_bootstrap95": [
+        0.0011064887295866616,
+        0.004808502526906883
+      ],
+      "min_p_optimal": 0.00020762927846774317,
+      "max_p_optimal": 0.008869012579646288,
+      "mean_p_feasible": 0.10612694001644736,
+      "mean_conditional_feasible_gap": 5.525082877002658,
+      "best_optimal_runs": 5,
+      "mean_pipeline_seconds_without_synthesis": 0.12762525419238954,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.17669577640675718,
+      "seed_bootstrap95": [
+        0.046088109691778144,
+        0.30835267005342365
+      ],
+      "min_p_optimal": 6.89964311033413e-05,
+      "max_p_optimal": 0.45403944030003573,
+      "mean_p_feasible": 0.2699999286521014,
+      "mean_conditional_feasible_gap": 2.036985518394911,
+      "best_optimal_runs": 8,
+      "mean_pipeline_seconds_without_synthesis": 0.11532294569915394,
+      "mean_training_shots": 0,
+      "mean_evaluations": 157.5
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.020795918773514402,
+      "seed_bootstrap95": [
+        0.012481654899691458,
+        0.029273426850079144
+      ],
+      "min_p_optimal": 0.0011805044929350428,
+      "max_p_optimal": 0.04474460184759792,
+      "mean_p_feasible": 0.302463890321779,
+      "mean_conditional_feasible_gap": 5.670102083030992,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.11624293699860573,
+      "mean_training_shots": 0,
+      "mean_evaluations": 154.4
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.27054282124595425,
+      "seed_bootstrap95": [
+        0.163152346946753,
+        0.3757307367005869
+      ],
+      "min_p_optimal": 0.010013171912241211,
+      "max_p_optimal": 0.5210448732485894,
+      "mean_p_feasible": 0.9373104085834858,
+      "mean_conditional_feasible_gap": 5.3016975466782785,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.10443929139582905,
+      "mean_training_shots": 0,
+      "mean_evaluations": 157.8
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.25717246984014386,
+      "seed_bootstrap95": [
+        0.21492219026525175,
+        0.32004600563079616
+      ],
+      "min_p_optimal": 0.2009988114726103,
+      "max_p_optimal": 0.5102003381706993,
+      "mean_p_feasible": 0.6897134474308952,
+      "mean_conditional_feasible_gap": 4.486956676259391,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0424765955976909,
+      "mean_training_shots": 0,
+      "mean_evaluations": 54.4
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.46215507367769704,
+      "seed_bootstrap95": [
+        0.4477997614481269,
+        0.47454354300481083
+      ],
+      "min_p_optimal": 0.4107865804063801,
+      "max_p_optimal": 0.4932684563330598,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 2.3523280543708913,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08718896229984238,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.10754549320782104,
+      "seed_bootstrap95": [
+        0.10754549320782106,
+        0.10754549320782106
+      ],
+      "min_p_optimal": 0.10754549320782104,
+      "max_p_optimal": 0.10754549320782104,
+      "mean_p_feasible": 0.8358863233788161,
+      "mean_conditional_feasible_gap": 7.928497592138754,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0002247996992082335,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.1390393580136909,
+      "seed_bootstrap95": [
+        0.0653342460685112,
+        0.2366649789067272
+      ],
+      "min_p_optimal": 6.0489955149871295e-05,
+      "max_p_optimal": 0.5102003381706993,
+      "mean_p_feasible": 0.6475942795850567,
+      "mean_conditional_feasible_gap": 5.339806499287944,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.0002227122982731089,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_01",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.24473900814062285,
+      "seed_bootstrap95": [
+        0.19295725709364567,
+        0.31379727253269063
+      ],
+      "min_p_optimal": 0.1578104568662957,
+      "max_p_optimal": 0.5102003381706993,
+      "mean_p_feasible": 0.6304778482550285,
+      "mean_conditional_feasible_gap": 4.713621853917258,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.026312782795866952,
+      "mean_training_shots": 15360,
+      "mean_evaluations": 60
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.017665037789254278,
+      "seed_bootstrap95": [
+        0.008330913623033868,
+        0.026684054551943913
+      ],
+      "min_p_optimal": 0.00043950656816202707,
+      "max_p_optimal": 0.04071430576351997,
+      "mean_p_feasible": 0.37684404239481994,
+      "mean_conditional_feasible_gap": 4.342910151516524,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.12700960400834446,
+      "mean_training_shots": 0,
+      "mean_evaluations": 156
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.7505415869783059,
+      "seed_bootstrap95": [
+        0.7011967195375828,
+        0.8004288497397045
+      ],
+      "min_p_optimal": 0.6281501874505321,
+      "max_p_optimal": 0.8726164942033594,
+      "mean_p_feasible": 0.7546144944571987,
+      "mean_conditional_feasible_gap": 0.016365259659577802,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.1721765289999894,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.005777813080232619,
+      "seed_bootstrap95": [
+        0.002480303371742,
+        0.01032226131213903
+      ],
+      "min_p_optimal": 6.998682177835832e-05,
+      "max_p_optimal": 0.023526210952067878,
+      "mean_p_feasible": 0.06813580712201522,
+      "mean_conditional_feasible_gap": 4.705301138208679,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.13523889550269813,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.4
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.43485680020877643,
+      "seed_bootstrap95": [
+        0.4323305205929149,
+        0.43717590546346424
+      ],
+      "min_p_optimal": 0.42913387645265993,
+      "max_p_optimal": 0.43902356794932795,
+      "mean_p_feasible": 0.43640442450994715,
+      "mean_conditional_feasible_gap": 0.010793672015677203,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.1330858623041422,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.037737758585777555,
+      "seed_bootstrap95": [
+        0.029744917072805008,
+        0.044927596382979836
+      ],
+      "min_p_optimal": 0.015756103483835344,
+      "max_p_optimal": 0.054327884999289526,
+      "mean_p_feasible": 0.31916974190210234,
+      "mean_conditional_feasible_gap": 4.546750749877134,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12832838730391813,
+      "mean_training_shots": 0,
+      "mean_evaluations": 150.6
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.109532053732212,
+      "seed_bootstrap95": [
+        0.06897841328989841,
+        0.14946578423569976
+      ],
+      "min_p_optimal": 0.015532913787912253,
+      "max_p_optimal": 0.1959618126056414,
+      "mean_p_feasible": 0.9504253069064624,
+      "mean_conditional_feasible_gap": 4.058686504565718,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09855156240373616,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.1918409977182762,
+      "seed_bootstrap95": [
+        0.1776435370798068,
+        0.20315050403119508
+      ],
+      "min_p_optimal": 0.14932213720421095,
+      "max_p_optimal": 0.2125374591515047,
+      "mean_p_feasible": 0.7570724901751247,
+      "mean_conditional_feasible_gap": 4.073933517877219,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.06847342870605644,
+      "mean_training_shots": 0,
+      "mean_evaluations": 115.7
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.3347775414579037,
+      "seed_bootstrap95": [
+        0.3299373402682705,
+        0.3398829497392216
+      ],
+      "min_p_optimal": 0.32152115327091657,
+      "max_p_optimal": 0.3510864856505372,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 2.095515748947512,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08953069560957375,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.008966255752390894,
+      "seed_bootstrap95": [
+        0.008966255752390894,
+        0.008966255752390894
+      ],
+      "min_p_optimal": 0.008966255752390894,
+      "max_p_optimal": 0.008966255752390894,
+      "mean_p_feasible": 0.3217740056629051,
+      "mean_conditional_feasible_gap": 5.174832693664165,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0003698621047078632,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.046427857780727645,
+      "seed_bootstrap95": [
+        0.02546092534612335,
+        0.06998375895966519
+      ],
+      "min_p_optimal": 0.006723683895166772,
+      "max_p_optimal": 0.1151417529406746,
+      "mean_p_feasible": 0.44147989663989895,
+      "mean_conditional_feasible_gap": 4.693405136310401,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.00036711640714202074,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_02",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.13683208730867966,
+      "seed_bootstrap95": [
+        0.10659834448257612,
+        0.16563446898546058
+      ],
+      "min_p_optimal": 0.054619871684047944,
+      "max_p_optimal": 0.20026491020231413,
+      "mean_p_feasible": 0.6695186745071907,
+      "mean_conditional_feasible_gap": 4.407851514664558,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.03445979150565108,
+      "mean_training_shots": 20198.4,
+      "mean_evaluations": 78.9
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.02157109432984948,
+      "seed_bootstrap95": [
+        0.014852536592660663,
+        0.028724409438011064
+      ],
+      "min_p_optimal": 0.003754665267908176,
+      "max_p_optimal": 0.03829004827522068,
+      "mean_p_feasible": 0.1555149601918413,
+      "mean_conditional_feasible_gap": 10.34891880166272,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.1958157665008912,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.1
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.5879179627574824,
+      "seed_bootstrap95": [
+        0.523080861286798,
+        0.6563043859610489
+      ],
+      "min_p_optimal": 0.4421826957340141,
+      "max_p_optimal": 0.7492387683608479,
+      "mean_p_feasible": 0.5937292111467971,
+      "mean_conditional_feasible_gap": 0.1028242716442584,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.22586779570847285,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0021223708142579243,
+      "seed_bootstrap95": [
+        0.0015743522675864768,
+        0.002651046423942789
+      ],
+      "min_p_optimal": 0.0007238520479901752,
+      "max_p_optimal": 0.0034566472274301908,
+      "mean_p_feasible": 0.028144459309879803,
+      "mean_conditional_feasible_gap": 10.104571406405295,
+      "best_optimal_runs": 8,
+      "mean_pipeline_seconds_without_synthesis": 0.17048943330446492,
+      "mean_training_shots": 0,
+      "mean_evaluations": 156.5
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.3204012509671846,
+      "seed_bootstrap95": [
+        0.24848795210212538,
+        0.35913661542085706
+      ],
+      "min_p_optimal": 0.00368833744347073,
+      "max_p_optimal": 0.37128806288819427,
+      "mean_p_feasible": 0.3248131434839022,
+      "mean_conditional_feasible_gap": 0.45732929363220565,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.1793466249044286,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.029688618781839045,
+      "seed_bootstrap95": [
+        0.018654356885050426,
+        0.04192941645034322
+      ],
+      "min_p_optimal": 0.006441281763017971,
+      "max_p_optimal": 0.06640698279931799,
+      "mean_p_feasible": 0.20061635221909163,
+      "mean_conditional_feasible_gap": 10.716671100600514,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.19855398730142043,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.6
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.1608220089617737,
+      "seed_bootstrap95": [
+        0.08480005969616991,
+        0.24591621126632543
+      ],
+      "min_p_optimal": 0.011755902318947983,
+      "max_p_optimal": 0.3748472865996396,
+      "mean_p_feasible": 0.9859374730183565,
+      "mean_conditional_feasible_gap": 5.907493860029706,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09034023010317468,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.22044232722149992,
+      "seed_bootstrap95": [
+        0.19665414410827803,
+        0.24593963561351326
+      ],
+      "min_p_optimal": 0.14853622852996018,
+      "max_p_optimal": 0.3097555015877252,
+      "mean_p_feasible": 0.7760688948068505,
+      "mean_conditional_feasible_gap": 6.4273683431088235,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.03365772150427802,
+      "mean_training_shots": 0,
+      "mean_evaluations": 65.2
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.2911320359581723,
+      "seed_bootstrap95": [
+        0.24255496245310929,
+        0.33137323528203616
+      ],
+      "min_p_optimal": 0.1166758269870121,
+      "max_p_optimal": 0.36810931833133453,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 4.2716549418964105,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08561430450063198,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.10042189154770893,
+      "seed_bootstrap95": [
+        0.10042189154770893,
+        0.10042189154770893
+      ],
+      "min_p_optimal": 0.10042189154770893,
+      "max_p_optimal": 0.10042189154770893,
+      "mean_p_feasible": 0.7048278644070003,
+      "mean_conditional_feasible_gap": 11.617429934555815,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0002907171045080759,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.012495143820387161,
+      "seed_bootstrap95": [
+        0.005412082744900588,
+        0.020733249431054347
+      ],
+      "min_p_optimal": 0.00028107749228564657,
+      "max_p_optimal": 0.036815120457747104,
+      "mean_p_feasible": 0.36236004251404347,
+      "mean_conditional_feasible_gap": 17.071953543527364,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.00029968820308567956,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_03",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.188402626889233,
+      "seed_bootstrap95": [
+        0.15601308915012743,
+        0.2205914690718796
+      ],
+      "min_p_optimal": 0.07119056734256084,
+      "max_p_optimal": 0.29702990313854166,
+      "mean_p_feasible": 0.6885854727510471,
+      "mean_conditional_feasible_gap": 6.871518461826913,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.03197452160093235,
+      "mean_training_shots": 18688,
+      "mean_evaluations": 73
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.001606488587820542,
+      "seed_bootstrap95": [
+        0.00042682579218225413,
+        0.003058521069063268
+      ],
+      "min_p_optimal": 1.003858273166092e-08,
+      "max_p_optimal": 0.0065376527696885765,
+      "mean_p_feasible": 0.10473365270506867,
+      "mean_conditional_feasible_gap": 13.057098357881621,
+      "best_optimal_runs": 6,
+      "mean_pipeline_seconds_without_synthesis": 1.167245499411365,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.5
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.5143942598558837,
+      "seed_bootstrap95": [
+        0.4419463486152393,
+        0.5936611473702316
+      ],
+      "min_p_optimal": 0.2733461065147367,
+      "max_p_optimal": 0.7705605160305942,
+      "mean_p_feasible": 0.5242340294108657,
+      "mean_conditional_feasible_gap": 0.04547329413883681,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 1.1357821662095375,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0001528974395186592,
+      "seed_bootstrap95": [
+        9.997268381514409e-05,
+        0.00020791907150771353
+      ],
+      "min_p_optimal": 3.632531695124536e-05,
+      "max_p_optimal": 0.00028423795213816997,
+      "mean_p_feasible": 0.016528879772309962,
+      "mean_conditional_feasible_gap": 10.11261855179351,
+      "best_optimal_runs": 2,
+      "mean_pipeline_seconds_without_synthesis": 0.7211069825061713,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.8
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.05190078006987031,
+      "seed_bootstrap95": [
+        7.329368209420407e-05,
+        0.12894571477024114
+      ],
+      "min_p_optimal": 3.167482150120771e-05,
+      "max_p_optimal": 0.26146462733414444,
+      "mean_p_feasible": 0.2700112179957735,
+      "mean_conditional_feasible_gap": 1.6070717055385775,
+      "best_optimal_runs": 2,
+      "mean_pipeline_seconds_without_synthesis": 0.780188320108573,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0019742303352446927,
+      "seed_bootstrap95": [
+        0.0004331014834373007,
+        0.0037806583863940293
+      ],
+      "min_p_optimal": 3.828512302907101e-06,
+      "max_p_optimal": 0.007939723752169838,
+      "mean_p_feasible": 0.16328657128858431,
+      "mean_conditional_feasible_gap": 14.49948551703849,
+      "best_optimal_runs": 5,
+      "mean_pipeline_seconds_without_synthesis": 1.0672484410039034,
+      "mean_training_shots": 0,
+      "mean_evaluations": 154.7
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.015189612349853889,
+      "seed_bootstrap95": [
+        0.008067347161855438,
+        0.02240117162744183
+      ],
+      "min_p_optimal": 0.0015200383943123825,
+      "max_p_optimal": 0.028820827741769584,
+      "mean_p_feasible": 0.3844465228012695,
+      "mean_conditional_feasible_gap": 11.711491954175784,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12110027949529467,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.8
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.04840092038126073,
+      "seed_bootstrap95": [
+        0.031679837472174045,
+        0.0654992288864986
+      ],
+      "min_p_optimal": 0.0031070721584684443,
+      "max_p_optimal": 0.09774313365191725,
+      "mean_p_feasible": 0.40394744982715475,
+      "mean_conditional_feasible_gap": 5.386565639654858,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09517405029764632,
+      "mean_training_shots": 0,
+      "mean_evaluations": 155.7
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.09815901958960226,
+      "seed_bootstrap95": [
+        0.09561185819520318,
+        0.1004923865908932
+      ],
+      "min_p_optimal": 0.09114617290559647,
+      "max_p_optimal": 0.10346444817203446,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 3.9516743146588933,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09383067959861364,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.012099690705139873,
+      "seed_bootstrap95": [
+        0.012099690705139873,
+        0.012099690705139873
+      ],
+      "min_p_optimal": 0.012099690705139873,
+      "max_p_optimal": 0.012099690705139873,
+      "mean_p_feasible": 0.4222042264302596,
+      "mean_conditional_feasible_gap": 6.601933780202991,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0005560628938837908,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.004680301825341987,
+      "seed_bootstrap95": [
+        0.002839157406971978,
+        0.006644264844133708
+      ],
+      "min_p_optimal": 0.0011200964998766532,
+      "max_p_optimal": 0.008971917834631688,
+      "mean_p_feasible": 0.21913993976675786,
+      "mean_conditional_feasible_gap": 10.315742699056921,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0005676795932231471,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_04",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.030186789068453807,
+      "seed_bootstrap95": [
+        0.023942473143094355,
+        0.03652596841703126
+      ],
+      "min_p_optimal": 0.016340149071485503,
+      "max_p_optimal": 0.05081925634098525,
+      "mean_p_feasible": 0.3152468256181254,
+      "mean_conditional_feasible_gap": 6.774132231000093,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.03719994189596036,
+      "mean_training_shots": 19968,
+      "mean_evaluations": 78
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.13941366034448324,
+      "seed_bootstrap95": [
+        0.048420076286748284,
+        0.24494227894027074
+      ],
+      "min_p_optimal": 5.892393740695271e-05,
+      "max_p_optimal": 0.4225903436488512,
+      "mean_p_feasible": 0.3215459915736417,
+      "mean_conditional_feasible_gap": 4.316990949887592,
+      "best_optimal_runs": 8,
+      "mean_pipeline_seconds_without_synthesis": 0.09827352961001452,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.2
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.7281137062661642,
+      "seed_bootstrap95": [
+        0.6867328379130094,
+        0.7723687682460508
+      ],
+      "min_p_optimal": 0.619164985886854,
+      "max_p_optimal": 0.8429187719605169,
+      "mean_p_feasible": 0.7314501806561396,
+      "mean_conditional_feasible_gap": 0.01887846221955698,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.16458501261513447,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.027483771121612613,
+      "seed_bootstrap95": [
+        0.018880013787287826,
+        0.03704016370908394
+      ],
+      "min_p_optimal": 0.007923227720741687,
+      "max_p_optimal": 0.05678181869515796,
+      "mean_p_feasible": 0.17211873976162198,
+      "mean_conditional_feasible_gap": 4.900823688087877,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12309899200918153,
+      "mean_training_shots": 0,
+      "mean_evaluations": 154.9
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.5489825553235295,
+      "seed_bootstrap95": [
+        0.5469785802232152,
+        0.5509393653641509
+      ],
+      "min_p_optimal": 0.543242067181731,
+      "max_p_optimal": 0.5538999378690029,
+      "mean_p_feasible": 0.5548653158117285,
+      "mean_conditional_feasible_gap": 0.045806595270331485,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12082661300955806,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.19778330169444508,
+      "seed_bootstrap95": [
+        0.16275967563456153,
+        0.22837379749664788
+      ],
+      "min_p_optimal": 0.0740450396251061,
+      "max_p_optimal": 0.2751307234836804,
+      "mean_p_feasible": 0.2985050372503945,
+      "mean_conditional_feasible_gap": 1.7719579083133215,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08908824210811872,
+      "mean_training_shots": 0,
+      "mean_evaluations": 112.2
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.9407612008982094,
+      "seed_bootstrap95": [
+        0.8979808883282332,
+        0.9763930951233338
+      ],
+      "min_p_optimal": 0.7837168157518488,
+      "max_p_optimal": 0.9999993723334107,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 0.2060967884578755,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.08265639139572159,
+      "mean_training_shots": 0,
+      "mean_evaluations": 149.5
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.358106545780197,
+      "seed_bootstrap95": [
+        0.2831985824680201,
+        0.4388656123728392
+      ],
+      "min_p_optimal": 0.20068007558212692,
+      "max_p_optimal": 0.5571381289568922,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 3.5136576354443037,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.015872666395443956,
+      "mean_training_shots": 0,
+      "mean_evaluations": 35.6
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.7090672011276564,
+      "seed_bootstrap95": [
+        0.6507573787342995,
+        0.7713392210857808
+      ],
+      "min_p_optimal": 0.516080616205374,
+      "max_p_optimal": 0.9319023520104697,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 1.1973241846502098,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09382023699727142,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.3531215306995665,
+      "seed_bootstrap95": [
+        0.3531215306995664,
+        0.3531215306995664
+      ],
+      "min_p_optimal": 0.3531215306995665,
+      "max_p_optimal": 0.3531215306995665,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 3.643243803249675,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.00021807479788549244,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.25684427138463223,
+      "seed_bootstrap95": [
+        0.14014510588273932,
+        0.38963298175599304
+      ],
+      "min_p_optimal": 0.0018760735618907989,
+      "max_p_optimal": 0.6859043970071863,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 4.11996810180816,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0002130993947503157,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_05",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.32477627159979683,
+      "seed_bootstrap95": [
+        0.2590354498279749,
+        0.39723677541105806
+      ],
+      "min_p_optimal": 0.19130644886837989,
+      "max_p_optimal": 0.5546324514026644,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 3.536916447827417,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.015352707997953985,
+      "mean_training_shots": 9344,
+      "mean_evaluations": 36.5
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.026201321335363424,
+      "seed_bootstrap95": [
+        0.004349375387430959,
+        0.05880106314724744
+      ],
+      "min_p_optimal": 9.90073540122096e-06,
+      "max_p_optimal": 0.15739304421846592,
+      "mean_p_feasible": 0.1951889082089045,
+      "mean_conditional_feasible_gap": 11.144391154071286,
+      "best_optimal_runs": 7,
+      "mean_pipeline_seconds_without_synthesis": 0.10701556279673241,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.9
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.7210637786510898,
+      "seed_bootstrap95": [
+        0.6490481823522597,
+        0.7941017619114932
+      ],
+      "min_p_optimal": 0.500706281644958,
+      "max_p_optimal": 0.9296000654656333,
+      "mean_p_feasible": 0.7254308103566214,
+      "mean_conditional_feasible_gap": 0.048246509635161416,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12937135859101545,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.013949388963856281,
+      "seed_bootstrap95": [
+        0.007976443255541185,
+        0.02066072941098842
+      ],
+      "min_p_optimal": 0.0012468600550335379,
+      "max_p_optimal": 0.03187395721781047,
+      "mean_p_feasible": 0.0762323726389221,
+      "mean_conditional_feasible_gap": 6.692838636428567,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.11451360869396013,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.9
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.44371245192408304,
+      "seed_bootstrap95": [
+        0.37087545202416433,
+        0.48101236306514417
+      ],
+      "min_p_optimal": 0.11806346573345074,
+      "max_p_optimal": 0.48418216832739425,
+      "mean_p_feasible": 0.4471298891370148,
+      "mean_conditional_feasible_gap": 0.19235832754561813,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.1269983378922916,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.06990260197183844,
+      "seed_bootstrap95": [
+        0.04242574557956299,
+        0.1004315214575082
+      ],
+      "min_p_optimal": 0.005369690749405188,
+      "max_p_optimal": 0.15173411375866883,
+      "mean_p_feasible": 0.2785063954042005,
+      "mean_conditional_feasible_gap": 6.937619301494948,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.10295530439616414,
+      "mean_training_shots": 0,
+      "mean_evaluations": 152.1
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.102509709647166,
+      "seed_bootstrap95": [
+        0.05792928074400238,
+        0.15156989163738369
+      ],
+      "min_p_optimal": 0.0062880328337413674,
+      "max_p_optimal": 0.2260956448098573,
+      "mean_p_feasible": 0.971009158164232,
+      "mean_conditional_feasible_gap": 6.242495633552544,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09909116630296921,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.6
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.2742534913211112,
+      "seed_bootstrap95": [
+        0.2400465231562476,
+        0.3244301659608433
+      ],
+      "min_p_optimal": 0.20166185020745214,
+      "max_p_optimal": 0.47550225549614417,
+      "mean_p_feasible": 0.6232295793213319,
+      "mean_conditional_feasible_gap": 5.374218859994857,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.03176759519992629,
+      "mean_training_shots": 0,
+      "mean_evaluations": 41.3
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.4330503125282706,
+      "seed_bootstrap95": [
+        0.42495114617042246,
+        0.44041390133477737
+      ],
+      "min_p_optimal": 0.40875269208857773,
+      "max_p_optimal": 0.447920986027555,
+      "mean_p_feasible": 1.0,
+      "mean_conditional_feasible_gap": 1.8643904222373315,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.12104537900158903,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.14334352011284843,
+      "seed_bootstrap95": [
+        0.1433435201128484,
+        0.1433435201128484
+      ],
+      "min_p_optimal": 0.14334352011284843,
+      "max_p_optimal": 0.14334352011284843,
+      "mean_p_feasible": 0.4855577294408998,
+      "mean_conditional_feasible_gap": 5.45555336724297,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.00024875810195226224,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0443313254497888,
+      "seed_bootstrap95": [
+        0.019184375955878706,
+        0.07374424527496093
+      ],
+      "min_p_optimal": 0.0018364720551898315,
+      "max_p_optimal": 0.1467393567104501,
+      "mean_p_feasible": 0.6493413056517818,
+      "mean_conditional_feasible_gap": 9.621712151585903,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0002865081027266569,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_06",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.2580752926567816,
+      "seed_bootstrap95": [
+        0.21289134852946953,
+        0.3072136605716923
+      ],
+      "min_p_optimal": 0.1645453342439659,
+      "max_p_optimal": 0.40844993276134745,
+      "mean_p_feasible": 0.6657167821791038,
+      "mean_conditional_feasible_gap": 6.006832446636297,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.027571133102173916,
+      "mean_training_shots": 13209.6,
+      "mean_evaluations": 51.6
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "standard",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0012808693456780734,
+      "seed_bootstrap95": [
+        0.0003768514781316252,
+        0.002329478225738341
+      ],
+      "min_p_optimal": 1.2403550087747214e-05,
+      "max_p_optimal": 0.00432990410643355,
+      "mean_p_feasible": 0.08482110617530728,
+      "mean_conditional_feasible_gap": 47.62591087847844,
+      "best_optimal_runs": 4,
+      "mean_pipeline_seconds_without_synthesis": 0.7363177745995927,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.4
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "warm",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.6202539531297464,
+      "seed_bootstrap95": [
+        0.5188132525847036,
+        0.707260439929833
+      ],
+      "min_p_optimal": 0.28492157163398957,
+      "max_p_optimal": 0.8009086205136148,
+      "mean_p_feasible": 0.6257376984967259,
+      "mean_conditional_feasible_gap": 0.2725740052065543,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.7506833537889179,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0003404764345147798,
+      "seed_bootstrap95": [
+        0.00018144322898876468,
+        0.000537382425117698
+      ],
+      "min_p_optimal": 3.836324327063211e-05,
+      "max_p_optimal": 0.0010598774390635697,
+      "mean_p_feasible": 0.005289515788526262,
+      "mean_conditional_feasible_gap": 43.92303381440972,
+      "best_optimal_runs": 3,
+      "mean_pipeline_seconds_without_synthesis": 0.5907359242017265,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "warm_xy",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.2287162048054779,
+      "seed_bootstrap95": [
+        0.14369078229471774,
+        0.287000322006013
+      ],
+      "min_p_optimal": 4.874623487633519e-05,
+      "max_p_optimal": 0.29612065549582073,
+      "mean_p_feasible": 0.23070778179011397,
+      "mean_conditional_feasible_gap": 4.262235486394691,
+      "best_optimal_runs": 8,
+      "mean_pipeline_seconds_without_synthesis": 0.5909762784955092,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "qubo_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.0011963835775863911,
+      "seed_bootstrap95": [
+        0.0002205787048299974,
+        0.002268667503114404
+      ],
+      "min_p_optimal": 2.7248239723075328e-05,
+      "max_p_optimal": 0.00417087859927347,
+      "mean_p_feasible": 0.134677336558627,
+      "mean_conditional_feasible_gap": 47.228255395914054,
+      "best_optimal_runs": 5,
+      "mean_pipeline_seconds_without_synthesis": 0.7530233118945034,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.9
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "reduced",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.03578107067433232,
+      "seed_bootstrap95": [
+        0.010946988713807879,
+        0.07383571730795566
+      ],
+      "min_p_optimal": 0.000533499374064352,
+      "max_p_optimal": 0.18962537836768256,
+      "mean_p_feasible": 0.5573878374580074,
+      "mean_conditional_feasible_gap": 41.902436320280344,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.10712898810306797,
+      "mean_training_shots": 0,
+      "mean_evaluations": 159.1
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "reduced_cvar",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.08183670641096899,
+      "seed_bootstrap95": [
+        0.04885849603569612,
+        0.12049289138093473
+      ],
+      "min_p_optimal": 0.01376382270371476,
+      "max_p_optimal": 0.19039891199325312,
+      "mean_p_feasible": 0.48517087522476937,
+      "mean_conditional_feasible_gap": 35.02067152241845,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.10575928780453978,
+      "mean_training_shots": 0,
+      "mean_evaluations": 158.9
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "feasible_grover",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.40353703805565727,
+      "seed_bootstrap95": [
+        0.37260698255240293,
+        0.44164227167295683
+      ],
+      "min_p_optimal": 0.3431642976702362,
+      "max_p_optimal": 0.5120459449841972,
+      "mean_p_feasible": 1,
+      "mean_conditional_feasible_gap": 18.7641663343335,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.09708872120681918,
+      "mean_training_shots": 0,
+      "mean_evaluations": 160
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "transfer_only",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.016454571023977297,
+      "seed_bootstrap95": [
+        0.016454571023977297,
+        0.016454571023977297
+      ],
+      "min_p_optimal": 0.016454571023977297,
+      "max_p_optimal": 0.016454571023977297,
+      "mean_p_feasible": 0.4160048533978521,
+      "mean_conditional_feasible_gap": 43.55064524417878,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.0020757337057148106,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "random_schedule",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.00404765170479813,
+      "seed_bootstrap95": [
+        0.001799628652844438,
+        0.006922796826142388
+      ],
+      "min_p_optimal": 0.0003013113391197845,
+      "max_p_optimal": 0.014390783916957833,
+      "mean_p_feasible": 0.215115540012236,
+      "mean_conditional_feasible_gap": 44.37302543918336,
+      "best_optimal_runs": 9,
+      "mean_pipeline_seconds_without_synthesis": 0.0020867129060206935,
+      "mean_training_shots": 0,
+      "mean_evaluations": 0
+    },
+    {
+      "scenario": "holdout_07",
+      "method": "reduced_cvar_shot",
+      "seeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110
+      ],
+      "n": 10,
+      "mean_p_optimal": 0.04635559587706171,
+      "seed_bootstrap95": [
+        0.027133241407482807,
+        0.06695120786621689
+      ],
+      "min_p_optimal": 0.00212991022316881,
+      "max_p_optimal": 0.10831036133305114,
+      "mean_p_feasible": 0.35673494925023014,
+      "mean_conditional_feasible_gap": 35.271074468293214,
+      "best_optimal_runs": 10,
+      "mean_pipeline_seconds_without_synthesis": 0.039289125305367635,
+      "mean_training_shots": 19968,
+      "mean_evaluations": 78
+    }
+  ],
+  "aggregate": [
+    {
+      "method": "standard",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.0696358129382165,
+      "instance_bootstrap95": [
+        0.011479017586172317,
+        0.1519128653702656
+      ],
+      "mean_p_feasible": 0.23701948317854227,
+      "best_optimal_runs": 63,
+      "mean_pipeline_seconds_without_synthesis": 0.32979439159189494,
+      "mean_evaluations": 158.5375,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "warm",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.6835525124988683,
+      "instance_bootstrap95": [
+        0.6117256884783203,
+        0.7593286263868945
+      ],
+      "mean_p_feasible": 0.6891308952458579,
+      "best_optimal_runs": 80,
+      "mean_pipeline_seconds_without_synthesis": 0.35166404306473853,
+      "mean_evaluations": 159.8875,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "xy",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.03641109394485099,
+      "instance_bootstrap95": [
+        0.0030289559398623527,
+        0.0957114605771204
+      ],
+      "mean_p_feasible": 0.1084013363416889,
+      "best_optimal_runs": 57,
+      "mean_pipeline_seconds_without_synthesis": 0.25946495662592495,
+      "mean_evaluations": 158.675,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "warm_xy",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.360060303334537,
+      "instance_bootstrap95": [
+        0.229107424057507,
+        0.49477611041672265
+      ],
+      "mean_p_feasible": 0.4013225060426307,
+      "best_optimal_runs": 68,
+      "mean_pipeline_seconds_without_synthesis": 0.26698538117743736,
+      "mean_evaluations": 159.55,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "qubo_cvar",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.08062590871493143,
+      "instance_bootstrap95": [
+        0.021211777798623904,
+        0.154620713897846
+      ],
+      "mean_p_feasible": 0.2551174288755884,
+      "best_optimal_runs": 70,
+      "mean_pipeline_seconds_without_synthesis": 0.30978458735116876,
+      "mean_evaluations": 137.05,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "reduced",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.3293923095807544,
+      "instance_bootstrap95": [
+        0.0970058070675702,
+        0.626823361519377
+      ],
+      "mean_p_feasible": 0.8483145883664767,
+      "best_optimal_runs": 79,
+      "mean_pipeline_seconds_without_synthesis": 0.09365868698605481,
+      "mean_evaluations": 150.3,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "reduced_cvar",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.2556343738619099,
+      "instance_bootstrap95": [
+        0.15265819514580725,
+        0.37855325557304786
+      ],
+      "mean_p_feasible": 0.7169003420982658,
+      "best_optimal_runs": 80,
+      "mean_pipeline_seconds_without_synthesis": 0.05061303269885684,
+      "mean_evaluations": 81.8875,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "feasible_grover",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.46648477768263213,
+      "instance_bootstrap95": [
+        0.2996597359604456,
+        0.6586975660848845
+      ],
+      "mean_p_feasible": 1.0,
+      "best_optimal_runs": 80,
+      "mean_pipeline_seconds_without_synthesis": 0.09064337597501435,
+      "mean_evaluations": 154.65,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "transfer_only",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.16245160552140753,
+      "instance_bootstrap95": [
+        0.05217321050987545,
+        0.30012378520218197
+      ],
+      "mean_p_feasible": 0.6482818753397166,
+      "best_optimal_runs": 80,
+      "mean_pipeline_seconds_without_synthesis": 0.0005204066872465773,
+      "mean_evaluations": 0,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "random_schedule",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.13674934688064674,
+      "instance_bootstrap95": [
+        0.03149864883617118,
+        0.2812137137064504
+      ],
+      "mean_p_feasible": 0.5668788755212218,
+      "best_optimal_runs": 77,
+      "mean_pipeline_seconds_without_synthesis": 0.0005286671619614935,
+      "mean_evaluations": 0,
+      "mean_training_shots": 0
+    },
+    {
+      "method": "reduced_cvar_shot",
+      "instances": 8,
+      "runs": 80,
+      "mean_p_optimal": 0.23029865047030637,
+      "instance_bootstrap95": [
+        0.12264172311079352,
+        0.3613827868071429
+      ],
+      "mean_p_feasible": 0.6657850690700907,
+      "best_optimal_runs": 80,
+      "mean_pipeline_seconds_without_synthesis": 0.028766196824108192,
+      "mean_evaluations": 60.5625,
+      "mean_training_shots": 15504.0
+    }
+  ],
+  "comparisons": [
+    {
+      "candidate": "qubo_cvar",
+      "control": "standard",
+      "n_independent_instances": 8,
+      "instance_mean_differences": [
+        -0.05035331752591215,
+        0.0077296605253494724,
+        0.02007272079652328,
+        0.008117524451989565,
+        0.00036774174742415066,
+        0.05836964134996183,
+        0.043701280636475014,
+        -8.448576809168231e-05
+      ],
+      "paired_seeds": [
+        {
+          "scenario": "holdout_00",
+          "paired_seed_differences": [
+            -0.26007264232951705,
+            0.008759398533448093,
+            -0.42218616909251805,
+            -0.19658218239166653,
+            0.17570456587235322,
+            -0.07105006860617585,
+            -0.1279181754533063,
+            0.18669362536246537,
+            0.15480971345111721,
+            0.04830875939467841
+          ]
+        },
+        {
+          "scenario": "holdout_01",
+          "paired_seed_differences": [
+            0.00047260875958087174,
+            -0.012726521710517014,
+            0.014447447741939033,
+            0.011292017784774872,
+            -0.00018199501661020833,
+            0.01943766629486336,
+            0.018252999597989223,
+            0.010268801287585332,
+            0.019268642395738757,
+            -0.003235061881849501
+          ]
+        },
+        {
+          "scenario": "holdout_02",
+          "paired_seed_differences": [
+            0.00046637347829329295,
+            0.022369159368827867,
+            0.03230779076606728,
+            0.039132004073920486,
+            0.02582982623313499,
+            0.027902253706402005,
+            0.047262512289976605,
+            0.020043599218596747,
+            -0.006944575045983826,
+            -0.007641736124002662
+          ]
+        },
+        {
+          "scenario": "holdout_03",
+          "paired_seed_differences": [
+            -0.026154822381221313,
+            0.011968273816228454,
+            0.00924261559880206,
+            -0.015450911020503999,
+            0.025384273923659013,
+            0.03143540816660936,
+            0.003826575610305444,
+            0.03793080101420705,
+            0.008408729956987195,
+            -0.005415700165177618
+          ]
+        },
+        {
+          "scenario": "holdout_04",
+          "paired_seed_differences": [
+            0.002647114225624296,
+            0.0038604741869031024,
+            1.6254080107405664e-05,
+            -0.000995968198180203,
+            2.3623893740623617e-05,
+            -0.0007766531623682654,
+            1.8700435056368173e-05,
+            -0.004015161933378411,
+            2.808675059877699e-05,
+            0.002870947196137813
+          ]
+        },
+        {
+          "scenario": "holdout_05",
+          "paired_seed_differences": [
+            0.17634908337100888,
+            -0.2061375000525001,
+            -0.03121174172993252,
+            0.2748922320882708,
+            0.07398611568769915,
+            0.20035157759350722,
+            0.017583923261727724,
+            0.14337292795014944,
+            -0.1957875871716996,
+            0.13029738250138734
+          ]
+        },
+        {
+          "scenario": "holdout_06",
+          "paired_seed_differences": [
+            0.009621430098720296,
+            0.1447515135252726,
+            0.0998021118129732,
+            0.050949680000668816,
+            0.030077170163259462,
+            0.04846748408463022,
+            0.020949917935418366,
+            -0.0076568135394790016,
+            -0.005332085965610683,
+            0.04538239824889688
+          ]
+        },
+        {
+          "scenario": "holdout_07",
+          "paired_seed_differences": [
+            -2.100833872783167e-05,
+            -0.003915470572973581,
+            -2.455653976396654e-05,
+            -0.0012827684486554397,
+            -0.0004082328336645091,
+            -4.199301138789069e-05,
+            0.0006465721240260084,
+            3.2054616495821707e-05,
+            0.004158475049185722,
+            1.2070274548842829e-05
+          ]
+        }
+      ],
+      "mean_difference": 0.010990095776714935,
+      "instance_bootstrap95": [
+        -0.0104377740920827,
+        0.0315402416674425
+      ],
+      "two_sided_exact_sign_permutation_p": 0.296875,
+      "holm_adjusted_p": 0.296875
+    },
+    {
+      "candidate": "reduced",
+      "control": "standard",
+      "n_independent_instances": 8,
+      "instance_mean_differences": [
+        0.6637182256114155,
+        0.2574765629977893,
+        0.09186701594295774,
+        0.13925091463192424,
+        0.013583123762033347,
+        0.801347540553726,
+        0.07630838831180259,
+        0.034500201328654244
+      ],
+      "paired_seeds": [
+        {
+          "scenario": "holdout_00",
+          "paired_seed_differences": [
+            0.3962977081813269,
+            0.6614230878044012,
+            0.2141413672008846,
+            0.5311887807078006,
+            0.9104333043965439,
+            0.6662118605704379,
+            0.6195398465309034,
+            0.9305115642099102,
+            0.8853603848438829,
+            0.8220743516680626
+          ]
+        },
+        {
+          "scenario": "holdout_01",
+          "paired_seed_differences": [
+            0.08592305300842568,
+            0.0630717259663543,
+            0.00018470510674407914,
+            0.21254073622748978,
+            0.46013862264169064,
+            0.30778732033686973,
+            0.5201161780300895,
+            0.35865900774124715,
+            0.13155177077003846,
+            0.43479251014894404
+          ]
+        },
+        {
+          "scenario": "holdout_02",
+          "paired_seed_differences": [
+            -0.01729502569635448,
+            0.16792451277307593,
+            0.11701552547793645,
+            0.04608082803022826,
+            0.0446365711386955,
+            0.1754085823546414,
+            0.11355408021596457,
+            0.015091218791140271,
+            0.13064753375180407,
+            0.12560633259244533
+          ]
+        },
+        {
+          "scenario": "holdout_03",
+          "paired_seed_differences": [
+            0.07283166651787831,
+            0.06162181317414157,
+            0.19343982422892045,
+            0.3365572383244189,
+            0.3416267797066411,
+            0.01699720602868504,
+            0.2834846461947183,
+            -0.0052346608097263905,
+            0.00431253287729344,
+            0.08687210007627151
+          ]
+        },
+        {
+          "scenario": "holdout_04",
+          "paired_seed_differences": [
+            0.028229806267194284,
+            0.024641581284572358,
+            0.009178346220742734,
+            0.0009722963000024375,
+            0.0033135083405918474,
+            0.027426717980234418,
+            0.017255067590459215,
+            -0.005017614375376194,
+            0.004270251331141373,
+            0.025561276680770996
+          ]
+        },
+        {
+          "scenario": "holdout_05",
+          "paired_seed_differences": [
+            0.8751399454965755,
+            0.5894247432849284,
+            0.6955189771451759,
+            0.9996690614080745,
+            0.9262258437473776,
+            0.9915423442574984,
+            0.5579082660719402,
+            0.8786840300218077,
+            0.5036924227853162,
+            0.9956697713185664
+          ]
+        },
+        {
+          "scenario": "holdout_06",
+          "paired_seed_differences": [
+            0.016176455290663735,
+            0.18880992315274261,
+            0.2091079066999973,
+            0.07936066246166104,
+            0.006257532215736396,
+            0.02297765681648164,
+            0.08704896093256434,
+            -0.1484017887043578,
+            0.21539386809484143,
+            0.08635270615769516
+          ]
+        },
+        {
+          "scenario": "holdout_07",
+          "paired_seed_differences": [
+            0.062215248817903836,
+            0.185295474261249,
+            0.0063885733616546375,
+            0.0072747335731649584,
+            0.0039410372691476014,
+            0.010810489636508372,
+            -0.0022318059045817193,
+            0.028744514027220384,
+            0.01777315182167339,
+            0.024790596422601938
+          ]
+        }
+      ],
+      "mean_difference": 0.25975649664253786,
+      "instance_bootstrap95": [
+        0.0842330054696662,
+        0.47196122738130186
+      ],
+      "two_sided_exact_sign_permutation_p": 0.0078125,
+      "holm_adjusted_p": 0.0234375
+    },
+    {
+      "candidate": "feasible_grover",
+      "control": "reduced",
+      "n_independent_instances": 8,
+      "instance_mean_differences": [
+        -7.043597927136603e-11,
+        0.19161225243174274,
+        0.22524548772569172,
+        0.13031002699639854,
+        0.08296940723974837,
+        -0.2316939997705529,
+        0.3305406028811046,
+        0.367755967381325
+      ],
+      "paired_seeds": [
+        {
+          "scenario": "holdout_00",
+          "paired_seed_differences": [
+            1.578913666477888e-10,
+            2.0198964723050494e-10,
+            4.612261683689667e-10,
+            -1.1629517349120988e-09,
+            1.9200772083394213e-09,
+            -1.8088605058252938e-09,
+            1.0528788951802426e-09,
+            -4.4214409911091934e-10,
+            -1.1539720290443256e-09,
+            6.9505290412053e-11
+          ]
+        },
+        {
+          "scenario": "holdout_01",
+          "paired_seed_differences": [
+            0.39124663056490694,
+            0.3500685220813968,
+            0.4007734084941389,
+            0.22856908226445363,
+            0.0001396208389429221,
+            0.13298621316824094,
+            -0.036194047555120124,
+            0.10013364803180008,
+            0.3184780894405766,
+            0.029921356988090675
+          ]
+        },
+        {
+          "scenario": "holdout_02",
+          "paired_seed_differences": [
+            0.31217416621705174,
+            0.13301195692541307,
+            0.19259417557833075,
+            0.28377913421034606,
+            0.285611764743508,
+            0.15512467304489577,
+            0.20752756648679,
+            0.316611696146814,
+            0.1852036714995626,
+            0.18081607240420514
+          ]
+        },
+        {
+          "scenario": "holdout_03",
+          "paired_seed_differences": [
+            0.2166763371483808,
+            0.3012176971326933,
+            0.04651621445315113,
+            -0.0067379682683050834,
+            -0.10622258606845114,
+            0.06470704632561843,
+            -0.018777218192313705,
+            0.2664990381329432,
+            0.2708567653958808,
+            0.26836494390438764
+          ]
+        },
+        {
+          "scenario": "holdout_04",
+          "paired_seed_differences": [
+            0.06817400835426336,
+            0.0705856983350606,
+            0.08764064766342841,
+            0.10091232661117198,
+            0.10013724408234463,
+            0.06232534516382689,
+            0.07446255086565301,
+            0.09959718860545884,
+            0.09299950626403333,
+            0.07285955645224267
+          ]
+        },
+        {
+          "scenario": "holdout_05",
+          "paired_seed_differences": [
+            0.005627640404215928,
+            -0.2948351053399957,
+            -0.4102193577678964,
+            -0.30155711847356226,
+            -0.2427740307525802,
+            -0.2982636514066588,
+            -0.05458674332457336,
+            -0.225713248718187,
+            -0.2272080547737263,
+            -0.2674103275525651
+          ]
+        },
+        {
+          "scenario": "holdout_06",
+          "paired_seed_differences": [
+            0.3744852657461404,
+            0.23526730483357305,
+            0.20594617250242397,
+            0.35981946228875095,
+            0.4378487974668017,
+            0.3972160539417334,
+            0.3106581165983335,
+            0.43621808447832183,
+            0.21195426642163243,
+            0.33599250453333457
+          ]
+        },
+        {
+          "scenario": "holdout_07",
+          "paired_seed_differences": [
+            0.3120312238095293,
+            0.1703548167226942,
+            0.33665515095176984,
+            0.3651709250318946,
+            0.5009466504558193,
+            0.37321021634624796,
+            0.3975905974800329,
+            0.36605447698935917,
+            0.49426038961243607,
+            0.3612852264134663
+          ]
+        }
+      ],
+      "mean_difference": 0.13709246810187775,
+      "instance_bootstrap95": [
+        0.00305913677820753,
+        0.25040279186011516
+      ],
+      "two_sided_exact_sign_permutation_p": 0.109375,
+      "holm_adjusted_p": 0.21875
+    }
+  ]
+}

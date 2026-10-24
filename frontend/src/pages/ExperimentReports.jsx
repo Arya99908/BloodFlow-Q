@@ -1,3 +1,4 @@
+import FullReviewStudy from '../components/FullReviewStudy';
 import WarmQAOAComparison from '../components/WarmQAOAComparison';
 import ResearchFollowup from '../components/ResearchFollowup';
 import { useMemo, useState } from 'react';
@@ -34,6 +35,7 @@ export default function ExperimentReports() {
 
   return <>
     <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
+    <FullReviewStudy />
     <ResearchFollowup />
     <WarmQAOAComparison />
     {error && <ErrorState message={error} />}

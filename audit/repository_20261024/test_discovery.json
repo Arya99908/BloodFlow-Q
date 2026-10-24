@@ -1,0 +1,47 @@
+[
+  {
+    "module": "tests.test_milp_solver",
+    "unittest_discovered": 0,
+    "classes": [
+      {
+        "class": "TestMILPSolver",
+        "unittest_subclass": false,
+        "test_methods": [
+          "test_milp_beats_or_equals_greedy_on_bundled_dataset",
+          "test_milp_matches_exact_solver_on_small_instance",
+          "test_milp_respects_compatibility_and_disruptions"
+        ]
+      }
+    ]
+  },
+  {
+    "module": "tests.test_parameter_sensitivity",
+    "unittest_discovered": 0,
+    "classes": [
+      {
+        "class": "TestParameterSensitivity",
+        "unittest_subclass": false,
+        "test_methods": [
+          "test_transport_weight_minimizes_distance_when_urgency_weight_low",
+          "test_unmet_demand_penalty_forces_full_available_supply_usage",
+          "test_urgency_priority_overcomes_distance_when_urgency_weight_high"
+        ]
+      }
+    ]
+  },
+  {
+    "module": "tests.test_independent_qubo_proof",
+    "unittest_discovered": 0,
+    "classes": [
+      {
+        "class": "TestIndependentQUBOProof",
+        "unittest_subclass": false,
+        "test_methods": [
+          "test_exhaustive_10_qubit_qubo_and_ising_exact_match",
+          "test_exhaustive_6_qubit_qubo_energy_exact_match",
+          "test_randomized_samples_on_emergency_scenario"
+        ]
+      }
+    ]
+  }
+]

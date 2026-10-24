@@ -1,0 +1,44 @@
+{
+  "recorded_at_utc": "2026-10-24T11:40:09.237947+00:00",
+  "api_base_url": "https://bloodflow-q-api.vercel.app",
+  "runs": [
+    {
+      "label": "tests",
+      "command": "npm --prefix frontend test",
+      "exit_code": 0,
+      "elapsed_seconds": 0.95,
+      "log": "frontend_tests.log",
+      "output_tail": ", group, direct-neighbor and allocation filters use real attributes (0.2605ms)\n\u2714 fit includes complete node bounds and zoom keeps the anchored world point fixed (0.304708ms)\n\u2714 malformed graph endpoints and duplicate IDs are diagnosed instead of silently drawn (0.1205ms)\n\u2714 allocation overlay requires matching scenario and current feasibility constraints (0.702791ms)\n\u2714 overlay selects latest usable optimize proposal and never interprets missing as zero (0.1835ms)\n\u2714 bundled production scenario graphs have resolvable data and every route stays visible without filters (1.739625ms)\n\u2714 malformed scenario quantities and compatibility never produce a fabricated allocation overlay (0.872ms)\n\u2714 changed stock invalidates an otherwise feasible historical proposal (0.136375ms)\n\u2714 fit and filters handle a 24-bank 24-hospital graph without dropping routes (0.905459ms)\n\u2714 each visible QAOA variant forwards the correct initialization and mixer to the API (2.075583ms)\n\u2714 saved research shows every measured method without dropping XY or controls (1.611917ms)\n\u2714 missing settings are not labeled as a known standard run (0.402583ms)\n\u2714 saved study summary matches raw confirmatory artifact denominators (1.39175ms)\n\u2714 rates and runtime formatting retain denominators, units, and missing values (0.146ms)\n\u2714 failed, infeasible, skipped, and missing measurements are not coerced to success (0.163625ms)\n\u2714 historical seed 201 resolves to an actual confirmatory trial (5.878542ms)\n\u2714 empty or changing artifacts do not invent trial identifiers (0.535459ms)\n\u2714 reports prominently connect the paired experiment to its recorded artifact (0.736416ms)\n\u2714 the legacy benchmark retains its original method labels and separate-study label (0.109084ms)\n\u2714 feasible shot rate retains infeasible shots in its denominator (0.266458ms)\n\u2714 failed and unsupported attempts remain visible but do not gain fabricated metrics (0.100333ms)\n\u2714 empty data yields unavailable values rather than zero-valued success (0.515167ms)\n\u2714 runtime summaries use the conventional even-sample median (0.105458ms)\n\u2714 all public navigation routes resolve and malformed URLs show not-found (0.690834ms)\n\u2714 API boundary forwards methods, content types, settings and action logs (0.807125ms)\n\u2714 offline assistant does not invent zero inventory or claim an action ran (0.735042ms)\n\u2714 follow-up snapshot is sourced from current saved experiment analyses (2.103709ms)\n\u2139 tests 53\n\u2139 suites 0\n\u2139 pass 53\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 509.058084\n"
+    },
+    {
+      "label": "production_build",
+      "command": "npm --prefix frontend run build",
+      "exit_code": 0,
+      "elapsed_seconds": 3.784,
+      "log": "frontend_production_build.log",
+      "output_tail": "s              0.44 kB \u2502 gzip:   0.32 kB\ndist/assets/clipboard-check-_8Qis5hI.js         0.47 kB \u2502 gzip:   0.33 kB\ndist/assets/badge-check-C57zGkpJ.js             0.48 kB \u2502 gzip:   0.31 kB\ndist/assets/shield-check-BZY8n1VP.js            0.49 kB \u2502 gzip:   0.35 kB\ndist/assets/building-2-JGRrqS-a.js              0.61 kB \u2502 gzip:   0.35 kB\ndist/assets/QAOAVariantSelect-DJd-4oyd.js       0.63 kB \u2502 gzip:   0.37 kB\ndist/assets/qaoaVariants-DEPx0LxE.js            2.01 kB \u2502 gzip:   0.76 kB\ndist/assets/scenarioBounds-B-DHjOXf.js          2.94 kB \u2502 gzip:   0.91 kB\ndist/assets/BorderGlow-CQTIimL4.js              3.64 kB \u2502 gzip:   1.82 kB\ndist/assets/DataField-BwLjAPpq.js               3.84 kB \u2502 gzip:   1.49 kB\ndist/assets/useSupabaseAuth-DQSpEdW1.js         4.05 kB \u2502 gzip:   1.70 kB\ndist/assets/Coordination-Z0SCt-W_.js            4.26 kB \u2502 gzip:   1.66 kB\ndist/assets/Flow-Bvyhb9b3.js                    4.39 kB \u2502 gzip:   1.80 kB\ndist/assets/Hospitals-BpF96BF0.js               4.88 kB \u2502 gzip:   1.75 kB\ndist/assets/GlideSelect-DZvInMUZ.js             6.35 kB \u2502 gzip:   2.72 kB\ndist/assets/donorNetwork-C65w9L1g.js            7.42 kB \u2502 gzip:   2.06 kB\ndist/assets/About-C8X8Q6gg.js                   9.15 kB \u2502 gzip:   3.07 kB\ndist/assets/QuantumLab-ZFrwyIpB.js             11.54 kB \u2502 gzip:   4.12 kB\ndist/assets/ExperimentReports-BgRPhSlv.js      12.17 kB \u2502 gzip:   4.32 kB\ndist/assets/BloodBanks-BRrptqqh.js             14.01 kB \u2502 gzip:   5.72 kB\ndist/assets/ResearchFollowup-BI1INEnu.js       19.10 kB \u2502 gzip:   6.12 kB\ndist/assets/Network-BlVLW6t9.js                23.47 kB \u2502 gzip:   7.52 kB\ndist/assets/Results-B_UIWGOq.js                23.77 kB \u2502 gzip:   7.57 kB\ndist/assets/DonorNetwork-Dmv3ui91.js           26.29 kB \u2502 gzip:   6.82 kB\ndist/assets/Optimization-DCGps6NA.js           28.91 kB \u2502 gzip:   8.42 kB\ndist/assets/EmergencySimulation-BBH3YhF7.js    28.93 kB \u2502 gzip:   8.64 kB\ndist/assets/DemoMode-J4cQqQDA.js               30.51 kB \u2502 gzip:   8.59 kB\ndist/assets/EmergencyRequests-ByY8B6hz.js      32.38 kB \u2502 gzip:   8.67 kB\ndist/assets/Home-H8QEKE7p.js                   48.59 kB \u2502 gzip:  17.64 kB\ndist/assets/Tooltip-BQKlpS0i.js                57.18 kB \u2502 gzip:  20.22 kB\ndist/assets/Dashboard-BzdKNKiH.js              81.34 kB \u2502 gzip:  28.08 kB\ndist/assets/SpecularButton-BMGxNbXG.js         86.12 kB \u2502 gzip:  34.14 kB\ndist/assets/supabase-B2d-Xk-i.js              227.12 kB \u2502 gzip:  59.00 kB\ndist/assets/index-lr5dbLM_.js                 467.61 kB \u2502 gzip: 150.97 kB\n\u2713 built in 3.21s\n"
+    }
+  ],
+  "browser": {
+    "status": "partial; remaining checks blocked",
+    "verified": [
+      "loaded graph 6 facilities 9 routes",
+      "Bank A selection and inventory inspector",
+      "zoom 106% to 128%",
+      "direct-neighbor view 4 facilities 3 routes",
+      "focus metadata readout"
+    ],
+    "unverified": [
+      "search typing",
+      "dropdown filters",
+      "reset and fit clicks",
+      "edge selection",
+      "pointer drag",
+      "mobile viewport",
+      "full keyboard traversal",
+      "console errors",
+      "allocation refresh UI"
+    ],
+    "reason": "Native browser active presentation observed during read-only final check. No interactions performed to avoid interfering. Browser connector inventory empty."
+  }
+}

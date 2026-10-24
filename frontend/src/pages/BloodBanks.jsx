@@ -1,3 +1,4 @@
+import { copyText } from '../utils/clipboard';
 import { useMemo, useState } from 'react';
 import { Boxes, Droplet, MapPin } from 'lucide-react';
 import { api } from '../services/api';
@@ -12,6 +13,12 @@ import SwipeRow from '../components/SwipeRow';
 export default function BloodBanks() {
   const { data, loading, error, reload } = useApi(api.getScenario, []);
   const [copiedBank, setCopiedBank] = useState('');
+  const [copyError, setCopyError] = useState('');
+  const copyBankId = async (bankId) => {
+    setCopiedBank(''); setCopyError('');
+    try { await copyText(bankId); setCopiedBank(bankId); }
+    catch (issue) { setCopyError(issue.message || 'Could not copy the bank ID.'); }
+  };
   const groups = data?.blood_groups || [];
   const banks = data?.blood_banks || [];
   const maxima = useMemo(() => Object.fromEntries(groups.map((group) => [
@@ -24,6 +31,8 @@ export default function BloodBanks() {
 
   return <>
     <PageHeader eyebrow="SUPPLY NETWORK" title="Blood banks" description="Inventory by source, loaded directly from the active synthetic scenario." />
+    {copyError && <p className="inline-error" role="alert">{copyError}</p>}
+    {copiedBank && <p className="helper-text" role="status">Copied bank ID: {copiedBank}</p>}
     {loading && <LoadingState label="Loading blood-bank inventory…" />}
     {!loading && error && <ErrorState message={error} onRetry={reload} />}
     {!loading && !error && data && data.synthetic === true && <>
@@ -71,7 +80,7 @@ export default function BloodBanks() {
           <div className="blood-bank-cards" aria-label="Blood bank inventory cards">
             {banks.map((bank) => {
               const total = groups.reduce((sum, group) => sum + (bank.inventory?.[group] || 0), 0);
-              return <SwipeRow key={bank.id} className="blood-bank-swipe-row" label={`Blood bank ${bank.name}`} height={138} radius={15} actionWidth={86} actions={[{id:'copy-id',label:copiedBank === bank.id ? 'Copied' : 'Copy ID',color:'#ef233c'}]} actionColor="#ef233c" drawerColor="#2b2d42" rowColor="var(--bg-surface)" textColor="var(--text-primary)" haptic={false} onAction={() => { navigator.clipboard?.writeText(bank.id); setCopiedBank(bank.id); window.setTimeout(() => setCopiedBank(''), 1800); }}>
+              return <SwipeRow key={bank.id} className="blood-bank-swipe-row" label={`Blood bank ${bank.name}`} height={138} radius={15} actionWidth={86} actions={[{id:'copy-id',label:copiedBank === bank.id ? 'Copied' : 'Copy ID',color:'#ef233c'}]} actionColor="#ef233c" drawerColor="#2b2d42" rowColor="var(--bg-surface)" textColor="var(--text-primary)" haptic={false} onAction={() => copyBankId(bank.id)}>
                 <BorderGlow className="blood-bank-glow" backgroundColor="var(--bg-surface)" borderRadius={15} glowRadius={14} glowColor="350 82 62" colors={['#ef233c', '#8d99ae', '#2b2d42']}>
                 <article className="blood-bank-card">
                   <div className="blood-bank-identity"><span className="table-avatar bank-avatar"><Droplet size={17} /></span><div><strong>{bank.name}</strong><span><MapPin size={12}/> Location {bank.location_id || 'not reported'}</span><code>{bank.id}</code></div></div>

@@ -1,0 +1,5 @@
+{
+  "status": "interrupted_by_engineer",
+  "completed_rows_preserved": 276,
+  "reason": "Harness solver-wall excluded shared QUBO construction. Rerun in production_v2 explicitly charges fresh QUBO construction per run; these partial rows are excluded from final aggregate."
+}

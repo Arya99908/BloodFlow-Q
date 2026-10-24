@@ -1,0 +1,29 @@
+{
+  "pilot": false,
+  "python": "3.14.7",
+  "versions": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "qiskit": "2.6.0"
+  },
+  "seeds": [
+    41,
+    42,
+    43,
+    44,
+    45
+  ],
+  "rounds": 4,
+  "bit_cap": 10,
+  "round_seconds": 0.1,
+  "query_cap": 64,
+  "source_sha256": {
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/run.py": "5264d73d8c36d4a08974c02189e3cd083175c1002793cb5ff305a5068bda2853",
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/ablation.py": "10fe2eda83525d861e256be6e1e8c27657a8eff6a6eeb9d3ab2a6669f4174a57",
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/__init__.py": "185a760e00adf5d3da4c51c4441ed467f0abf7e194ee08d5b75b59c3ba72507f",
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/model.py": "26c9e22414be4601874c7e242f16129f0c8d2ebaa4a4ec856ae35eca5ddbb4ca",
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/validate.py": "e47bc6a64ee7bdbf9bb10c5b4b1c6e4677514a08b7ca27c69aaf6e0eb7ad78c6",
+    "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/analyze.py": "88887e69dcdb888c0bf9692d3abbdf1f0936817400bd81e90ce1cab5e79dc6a1"
+  },
+  "plan_sha256": "1340023eb1da552706a1fac919ac3e7fdf214552f6d96c6d96f13bd39777cbdb"
+}

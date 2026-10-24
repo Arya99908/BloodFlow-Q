@@ -1,0 +1,83 @@
+[
+  {
+    "ref": "refs/heads/fixing-warm-QAOA",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/heads/main",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/heads/quantum-warm-optimization-fix",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/heads/somemore-QAOA-fix",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/remotes/origin/fixing-warm-QAOA",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/remotes/origin/main",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/remotes/origin/quantum-optimizer-fix",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/remotes/origin/quantum-warm-optimization-fix",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  },
+  {
+    "ref": "refs/remotes/origin/somemore-QAOA-fix",
+    "paths": {
+      "experiments/search_methods.py": false,
+      "docs/QUANTUM_VALUE_PROTOCOL.md": false
+    },
+    "runner_mentions_round2": false,
+    "runner_mentions_repetitions": false
+  }
+]

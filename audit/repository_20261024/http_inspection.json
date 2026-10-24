@@ -1,0 +1,190 @@
+[
+  {
+    "url": "http://127.0.0.1:5173/",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/dashboard",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/blood-banks",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/hospitals",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/network",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/optimization",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/emergency",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/demo",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/donor-network",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/emergency-requests",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/coordination",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/results",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/reports",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/quantum-lab",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/flow",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:5173/about",
+    "status": 200,
+    "app_shell": true,
+    "verification": "HTTP shell only; not browser rendering"
+  },
+  {
+    "url": "http://127.0.0.1:8000/health",
+    "status": 200,
+    "json_keys": [
+      "qaoa_available",
+      "status",
+      "synthetic_data_only"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/scenario",
+    "status": 200,
+    "json_keys": [
+      "blood_banks",
+      "blood_groups",
+      "compatibility",
+      "hospitals",
+      "id",
+      "routes",
+      "synthetic"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/results",
+    "status": 200,
+    "json_keys": [
+      "results"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/demo-scenarios",
+    "status": 200,
+    "json_keys": [
+      "scenarios",
+      "synthetic_only"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/experiment-defaults",
+    "status": 200,
+    "json_keys": [
+      "note",
+      "objective_weights",
+      "qaoa_available",
+      "qaoa_config",
+      "qaoa_penalties",
+      "qaoa_unavailable_reason"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/precomputed-demo",
+    "status": 200,
+    "json_keys": [
+      "created_at_utc",
+      "label",
+      "record_type",
+      "reproducibility",
+      "runs",
+      "synthetic_data_only"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/coordination/capabilities",
+    "status": 200,
+    "json_keys": [
+      "external_notifications",
+      "live_inventory_integration",
+      "live_location_or_tracking",
+      "live_records_enabled",
+      "live_records_reason",
+      "synthetic_demo_enabled",
+      "synthetic_only"
+    ],
+    "verification": "Live read-only HTTP"
+  },
+  {
+    "url": "http://127.0.0.1:8000/coordination/dashboard",
+    "status": 200,
+    "json_keys": [
+      "available",
+      "message",
+      "metrics",
+      "source"
+    ],
+    "verification": "Live read-only HTTP"
+  }
+]

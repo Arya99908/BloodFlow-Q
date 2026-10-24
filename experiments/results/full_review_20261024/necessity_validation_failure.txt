@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/validate.py", line 44, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/Users/shreeshaks/Documents/BloodFlow-Q-main 3/research/quantum_experiments/necessity/validate.py", line 36, in main
+    for path,digest in snap.items():assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest,path
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: quantum/qaoa_solver.py
