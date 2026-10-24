@@ -62,6 +62,7 @@ class FullPipelineIntegrationTests(unittest.TestCase):
         self.assertEqual(qubo.variable_count, 10)
         qaoa_config = QAOAConfig(
             p=1, shots=64, max_iterations=10, seed=3, max_qubits=16,
+            normalize_cost=False,  # Preserve the historical measured fixture.
         )
         measured_run = QAOASolver(qaoa_config).solve(qubo)
         self.assertEqual(sum(measured_run.counts.values()), 64)
@@ -91,7 +92,7 @@ class FullPipelineIntegrationTests(unittest.TestCase):
             },
             "qaoa_config": {
                 "p": 1, "shots": 64, "optimizer": "COBYLA",
-                "max_iterations": 10, "seed": 3,
+                "max_iterations": 10, "seed": 3, "normalize_cost": False,
             },
         })
         self.assertEqual(response.status_code, 200, response.text)

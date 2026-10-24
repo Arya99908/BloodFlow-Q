@@ -1,0 +1,111 @@
+{
+  "scenario": {
+    "id": "holdout_07",
+    "blood_groups": [
+      "O",
+      "A"
+    ],
+    "blood_banks": [
+      {
+        "id": "b0",
+        "name": "Bank0",
+        "location_id": "B0",
+        "inventory": {
+          "O": 1,
+          "A": 1
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "h0",
+        "name": "Hospital0",
+        "location_id": "H0",
+        "demand": {
+          "O": 1,
+          "A": 1
+        },
+        "urgency": {
+          "O": {
+            "category": "high",
+            "priority_weight": 3.0
+          },
+          "A": {
+            "category": "high",
+            "priority_weight": 2.0
+          }
+        }
+      },
+      {
+        "id": "h1",
+        "name": "Hospital1",
+        "location_id": "H1",
+        "demand": {
+          "O": 1,
+          "A": 1
+        },
+        "urgency": {
+          "O": {
+            "category": "medium",
+            "priority_weight": 1.0
+          },
+          "A": {
+            "category": "medium",
+            "priority_weight": 2.0
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "b0",
+        "destination": "h0",
+        "travel_time_minutes": 10.0,
+        "distance_km": 2.0,
+        "transport_cost": 4.0,
+        "status": "available"
+      },
+      {
+        "source": "b0",
+        "destination": "h1",
+        "travel_time_minutes": 16.0,
+        "distance_km": 6.0,
+        "transport_cost": 15.0,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      },
+      {
+        "donor": "O",
+        "recipient": "A",
+        "allowed": true
+      },
+      {
+        "donor": "A",
+        "recipient": "O",
+        "allowed": false
+      },
+      {
+        "donor": "A",
+        "recipient": "A",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "family": "primary",
+  "qubits": 12,
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "penalty": 203
+}

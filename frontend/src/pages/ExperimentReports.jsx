@@ -1,3 +1,6 @@
+import FullReviewStudy from '../components/FullReviewStudy';
+import WarmQAOAComparison from '../components/WarmQAOAComparison';
+import ResearchFollowup from '../components/ResearchFollowup';
 import { useMemo, useState } from 'react';
 import { Download, FileChartColumn, Info, Microscope } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -32,6 +35,9 @@ export default function ExperimentReports() {
 
   return <>
     <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
+    <FullReviewStudy />
+    <ResearchFollowup />
+    <WarmQAOAComparison />
     {error && <ErrorState message={error} />}
     {!study && !error && <LoadingState label="Loading saved experiment artifact…" />}
     {study && <>
@@ -43,7 +49,7 @@ export default function ExperimentReports() {
         return <>
       <section className="research-intro panel">
         <div className="research-intro-mark"><Microscope size={21} /></div>
-        <div><span className="eyebrow">CONFIRMATORY STUDY · SYNTHETIC INSTANCES</span><h2>Small-instance results favor the classical baseline</h2>
+        <div><span className="eyebrow">LEGACY CONFIRMATORY BENCHMARK · SEPARATE STUDY</span><h2>Legacy three-method benchmark</h2><p>This historical study tested classical multistart, raw QAOA and hybrid refinement only. <a href="#qaoa-mixer-study">See warm-start, XY and all newer methods above.</a></p>
           <p>Across {scenarios.length} synthetic scenarios and {pairedSeedCount} paired seeds, classical multistart matched the Exact reference in {classical.exactMatches}/{classical.feasible} feasible trials. Raw QAOA produced infeasible candidates, and hybrid refinement did not meet the preregistered success screen. These local simulator observations do not demonstrate quantum advantage.</p>
         </div>
         <a className="button button-secondary button-small" href="/quantum-value-study.json" download><Download size={14} /> Raw data</a>

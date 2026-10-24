@@ -1,0 +1,5 @@
+
+# Preserve byte-exact historical sources used by recorded SHA256 provenance.
+experiments/results/full_review_20261024/production_v2/source_snapshot/** -whitespace
+# The downloaded report preserves Markdown hard line breaks from historical prose.
+frontend/public/full-review-report.md whitespace=-blank-at-eol

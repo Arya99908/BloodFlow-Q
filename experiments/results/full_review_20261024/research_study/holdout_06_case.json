@@ -1,0 +1,395 @@
+{
+  "scenario": {
+    "id": "holdout_06",
+    "blood_groups": [
+      "O",
+      "A"
+    ],
+    "blood_banks": [
+      {
+        "id": "b0",
+        "name": "Bank0",
+        "location_id": "B0",
+        "inventory": {
+          "O": 1,
+          "A": 1
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "h0",
+        "name": "Hospital0",
+        "location_id": "H0",
+        "demand": {
+          "O": 1,
+          "A": 1
+        },
+        "urgency": {
+          "O": {
+            "category": "high",
+            "priority_weight": 1.0
+          },
+          "A": {
+            "category": "high",
+            "priority_weight": 2.0
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "b0",
+        "destination": "h0",
+        "travel_time_minutes": 29.0,
+        "distance_km": 9.0,
+        "transport_cost": 9.0,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      },
+      {
+        "donor": "O",
+        "recipient": "A",
+        "allowed": true
+      },
+      {
+        "donor": "A",
+        "recipient": "O",
+        "allowed": false
+      },
+      {
+        "donor": "A",
+        "recipient": "A",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "split": "heldout",
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "classical": {
+    "exact": {
+      "status": "completed",
+      "objective": 23.8,
+      "feasible": true,
+      "seconds": 0.000312374992063269
+    },
+    "milp": {
+      "status": "completed",
+      "objective": 23.8,
+      "feasible": true,
+      "seconds": 0.0018804999999701977
+    },
+    "greedy": {
+      "status": "completed",
+      "objective": 26.9,
+      "feasible": true,
+      "seconds": 6.962499173823744e-05
+    },
+    "lp": {
+      "status": "completed",
+      "integral": true,
+      "feasible": true,
+      "objective": 23.8,
+      "seconds": 0.0008264589996542782,
+      "values": {
+        "allocation": {
+          "('b0', 'h0', 'O', 'O')": 1.0,
+          "('b0', 'h0', 'A', 'A')": 1.0
+        },
+        "unmet_demand": {},
+        "slack": {
+          "('b0', 'O')": 0.0,
+          "('b0', 'A')": 0.0
+        }
+      }
+    },
+    "enumeration_lookup": {
+      "objective": 23.8,
+      "seconds": 7.833300333004445e-05,
+      "status": "completed",
+      "states_scanned": 8,
+      "note": "same exhaustive truth table required by reduced prototype"
+    }
+  },
+  "encoding_validation": {
+    "full": {
+      "states": 128,
+      "feasible_states": 5,
+      "optimal_states": 1,
+      "objective": 23.8
+    },
+    "reduced": {
+      "states": 8,
+      "feasible_states": 5,
+      "optimal_states": 1,
+      "objective": 23.8
+    }
+  },
+  "skips": [],
+  "resources": {
+    "standard": {
+      "qubits": 7,
+      "logical_depth": 14,
+      "logical_operations": {
+        "rzz": 16,
+        "rx": 14,
+        "rz": 12,
+        "h": 7
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 40,
+      "cx_count": 32,
+      "basis_operations": {
+        "rz": 72,
+        "sx": 35,
+        "cx": 32
+      },
+      "two_qubit_gate_count": 32,
+      "synthesis_seconds": 0.005947208002908155
+    },
+    "warm": {
+      "qubits": 7,
+      "logical_depth": 18,
+      "logical_operations": {
+        "ry": 35,
+        "rz": 26,
+        "rzz": 16
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 41,
+      "cx_count": 32,
+      "basis_operations": {
+        "rz": 72,
+        "sx": 42,
+        "cx": 32
+      },
+      "two_qubit_gate_count": 32,
+      "synthesis_seconds": 0.0035587080055847764
+    },
+    "xy": {
+      "qubits": 7,
+      "logical_depth": 37,
+      "logical_operations": {
+        "rxx": 26,
+        "ryy": 26,
+        "rzz": 16,
+        "rz": 12,
+        "h": 7
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 178,
+      "cx_count": 136,
+      "basis_operations": {
+        "rz": 244,
+        "cx": 136,
+        "sx": 125
+      },
+      "two_qubit_gate_count": 136,
+      "synthesis_seconds": 0.004788083999301307
+    },
+    "warm_xy": {
+      "qubits": 7,
+      "logical_depth": 37,
+      "logical_operations": {
+        "rxx": 26,
+        "ryy": 26,
+        "rzz": 16,
+        "rz": 12,
+        "ry": 7
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 179,
+      "cx_count": 136,
+      "basis_operations": {
+        "rz": 244,
+        "cx": 136,
+        "sx": 132
+      },
+      "two_qubit_gate_count": 136,
+      "synthesis_seconds": 0.0050489589921198785
+    },
+    "qubo_cvar": {
+      "qubits": 7,
+      "logical_depth": 14,
+      "logical_operations": {
+        "rzz": 16,
+        "rx": 14,
+        "rz": 12,
+        "h": 7
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 40,
+      "cx_count": 32,
+      "basis_operations": {
+        "rz": 72,
+        "sx": 35,
+        "cx": 32
+      },
+      "two_qubit_gate_count": 32,
+      "synthesis_seconds": 0.002864207999664359
+    },
+    "reduced": {
+      "qubits": 3,
+      "logical_depth": 5,
+      "logical_operations": {
+        "rx": 6,
+        "h": 3,
+        "diagonal": 2
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 29,
+      "cx_count": 12,
+      "basis_operations": {
+        "rz": 30,
+        "sx": 15,
+        "cx": 12
+      },
+      "two_qubit_gate_count": 12,
+      "synthesis_seconds": 0.004092375005711801
+    },
+    "reduced_cvar": {
+      "qubits": 3,
+      "logical_depth": 5,
+      "logical_operations": {
+        "rx": 6,
+        "h": 3,
+        "diagonal": 2
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 29,
+      "cx_count": 12,
+      "basis_operations": {
+        "rz": 30,
+        "sx": 15,
+        "cx": 12
+      },
+      "two_qubit_gate_count": 12,
+      "synthesis_seconds": 0.0032977920054690912
+    },
+    "feasible_grover": {
+      "qubits": 3,
+      "logical_depth": 13,
+      "logical_operations": {
+        "x": 12,
+        "state_preparation": 3,
+        "diagonal": 2,
+        "state_preparation_dg": 2,
+        "mcphase": 2
+      },
+      "basis": [
+        "rz",
+        "sx",
+        "x",
+        "cx"
+      ],
+      "connectivity": "all_to_all_unrouted",
+      "status": "compiled",
+      "basis_depth": 86,
+      "cx_count": 34,
+      "basis_operations": {
+        "rz": 62,
+        "cx": 34,
+        "sx": 30
+      },
+      "two_qubit_gate_count": 34,
+      "synthesis_seconds": 0.013178459004848264
+    }
+  },
+  "controls": {
+    "uniform_full": {
+      "p_optimal_feasible": 0.0078125,
+      "p_feasible": 0.0390625,
+      "p_optimal_given_feasible": 0.2,
+      "expected_penalized_energy": 379.85,
+      "conditional_feasible_objective": 30.9,
+      "conditional_feasible_absolute_gap": 7.099999999999998,
+      "optimality_reference": 23.8,
+      "probability_success_1024_iid": 0.9996749116999551,
+      "shots_for_99_percent_success_iid": 588
+    },
+    "uniform_reduced": {
+      "p_optimal_feasible": 0.125,
+      "p_feasible": 0.625,
+      "p_optimal_given_feasible": 0.2,
+      "expected_penalized_energy": 88.60000000000001,
+      "conditional_feasible_objective": 30.9,
+      "conditional_feasible_absolute_gap": 7.099999999999998,
+      "optimality_reference": 23.8,
+      "probability_success_1024_iid": 1.0,
+      "shots_for_99_percent_success_iid": 35
+    },
+    "uniform_feasible": {
+      "p_optimal_feasible": 0.2,
+      "p_feasible": 1,
+      "p_optimal_given_feasible": 0.2,
+      "expected_penalized_energy": 30.900000000000002,
+      "conditional_feasible_objective": 30.9,
+      "conditional_feasible_absolute_gap": 7.099999999999998,
+      "optimality_reference": 23.8,
+      "probability_success_1024_iid": 1.0,
+      "shots_for_99_percent_success_iid": 21
+    }
+  }
+}

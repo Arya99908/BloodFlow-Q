@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "study_date": "2026-10-24",
+  "status": "complete",
+  "counts": {
+    "completed": 66,
+    "failed": 0,
+    "skipped": 15,
+    "blocked": 0
+  },
+  "methods": [],
+  "notes": [
+    "Primary-family methods only. Scenario counts differ for ablations; compare matched cases.",
+    "Means include recorded completed runs only. Operational feasible-shot rates do not prove encoded slack equality.",
+    "Wall time includes QUBO, warm preprocessing, and interpolation training when applicable; exact proof and diagnostic analysis are excluded.",
+    "Failed and skipped records remain in counts. Simulated quantum execution; no hardware evidence or advantage claim."
+  ],
+  "report_url": "/full-review-report.md"
+}

@@ -1,0 +1,7 @@
+{
+  "states": 256,
+  "max_ising_error": 5.684341886080802e-14,
+  "reference_optimum": 17.0,
+  "ground_states_feasible": true,
+  "validation_seconds": 0.011819749997812323
+}

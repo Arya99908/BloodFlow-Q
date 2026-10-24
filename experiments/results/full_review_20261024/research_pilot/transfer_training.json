@@ -1,0 +1,21 @@
+{
+  "training_ids": [
+    "normal_reference",
+    "inventory_shortage",
+    "multi_facility"
+  ],
+  "seed": 44,
+  "objective": "average normalized mean energy; no optimum used",
+  "evaluations": 160,
+  "statevector_evaluations": 480,
+  "preprocessing_seconds": 0.0005198749713599682,
+  "total_seconds": 0.10539062500174623,
+  "parameters": [
+    1.7280429260506165,
+    1.6033490544191018,
+    2.06275643903953,
+    3.9391939085943735
+  ],
+  "success": false,
+  "message": "Return from COBYLA because the objective function has been evaluated MAXFUN times."
+}

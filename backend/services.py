@@ -217,7 +217,14 @@ def _qaoa_config(value: QAOAConfigInput | None) -> QAOAConfig | None:
         max_iterations=value.max_iterations,
         seed=value.seed,
         warm_start=value.warm_start,
+        warm_start_epsilon=value.warm_start_epsilon,
+        normalize_cost=value.normalize_cost,
+        restarts=value.restarts,
         mixer=value.mixer,
+        parameter_initialization=value.parameter_initialization,
+        initial_parameters=tuple(value.initial_parameters) if value.initial_parameters is not None else None,
+        retain_initial_state=value.retain_initial_state,
+        warm_start_source=value.warm_start_source,
     )
 
 
@@ -570,6 +577,13 @@ class BackendService:
                     "seed": solver.config.seed,
                     "warm_start": getattr(solver.config, "warm_start", False),
                     "mixer": getattr(solver.config, "mixer", "x"),
+                    "warm_start_epsilon": getattr(solver.config, "warm_start_epsilon", 0.25),
+                    "normalize_cost": getattr(solver.config, "normalize_cost", True),
+                    "restarts": getattr(solver.config, "restarts", 1),
+                    "parameter_initialization": solver.config.parameter_initialization,
+                    "initial_parameters": solver.config.initial_parameters,
+                    "retain_initial_state": solver.config.retain_initial_state,
+                    "warm_start_source": solver.config.warm_start_source,
                 },
                 "objective_weights": asdict(weights),
                 "penalty_weights": asdict(penalties),

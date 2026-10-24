@@ -1,3 +1,6 @@
+import { isFiniteMeasurement } from '../utils/measurementValues';
+import QAOAVariantSelect from '../components/QAOAVariantSelect';
+import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, BarChart3, Clock3, Play, RotateCcw } from 'lucide-react';
 import { api } from '../services/api';
@@ -16,6 +19,7 @@ export default function Results() {
   const { data: scenario, loading: scenarioLoading } = useApi(api.getScenario, []);
   const { data: experimentDefaults } = useApi(api.getExperimentDefaults, []);
   const [includeQAOA, setIncludeQAOA] = useState(false);
+  const [qaoaVariant, setQaoaVariant] = useState('standard');
   const [inventoryPenalty, setInventoryPenalty] = useState('');
   const [demandPenalty, setDemandPenalty] = useState('');
   const [records, setRecords] = useState(null);
@@ -42,8 +46,9 @@ export default function Results() {
   const rows = useMemo(() => {
     if (!benchmarkRows) return [];
     const thisScenario = benchmarkRows.filter((row) => !activeScenarioId || row.scenario_id === activeScenarioId);
-    return METHODS.map((method) => thisScenario.find((row) => row.method === method) || { method, status: 'not_available', detail: 'No record was returned for this method.' });
-  }, [benchmarkRows, activeScenarioId]);
+    const config = experimentConfiguration || savedBenchmarkEntry?.experiment_configuration;
+    return METHODS.map((method) => ({ ...(thisScenario.find((row) => row.method === method) || { method, status: 'not_available', detail: 'No record was returned for this method.' }), method_label: method === 'qaoa' ? qaoaConfigLabel(config?.qaoa) : methodNames[method] }));
+  }, [benchmarkRows, activeScenarioId, experimentConfiguration, savedBenchmarkEntry]);
   const criticalTotal = useMemo(() => {
     if (!scenario) return null;
     return (scenario.hospitals || []).reduce((sum, hospital) => sum + Object.entries(hospital.demand || {}).reduce((subtotal, [group, amount]) => {
@@ -64,7 +69,7 @@ export default function Results() {
           throw new Error(`QUBO penalty weights must strictly exceed this scenario's theoretical objective bound (> ${objectiveBound.toFixed(1)}). Please enter larger values (e.g. ${Math.ceil(objectiveBound * 1.5)} or 10000).`);
         }
         request.qaoa_penalties = { inventory_penalty_weight: inv, demand_penalty_weight: dem };
-        request.qaoa_config = qaoaConfig;
+        request.qaoa_config = { ...qaoaConfig, ...qaoaVariantConfig(qaoaVariant) };
       }
       const response = await api.benchmark(request);
       setRecords(response.results || []);
@@ -86,6 +91,7 @@ export default function Results() {
         <button className="button button-primary run-benchmark-btn" onClick={runBenchmark} disabled={benchmarkLoading}><Play size={14} />{benchmarkLoading ? 'RUNNING BENCHMARK…' : 'RUN BENCHMARK'}</button>
       </div>
       {includeQAOA && <>
+        <QAOAVariantSelect id="lab-qaoa-variant" value={qaoaVariant} onChange={setQaoaVariant} disabled={benchmarkLoading} />
         <div className="comparison-qaoa-inputs results-penalties">
           <label className="field-label-wrap">Inventory penalty weight (min &gt; {objectiveBound != null ? objectiveBound.toFixed(1) : '—'})
             <input className="field-control" type="number" min={objectiveBound ? Number((objectiveBound + 0.1).toFixed(1)) : undefined} placeholder={objectiveBound ? `e.g. ${Math.ceil(objectiveBound * 1.5)}` : ''} step="any" value={inventoryPenalty} onChange={(event) => setInventoryPenalty(event.target.value)} />
@@ -145,7 +151,7 @@ function BenchmarkRow({ row, criticalTotal }) {
   const gap = row.approximation_gap == null ? (row.approximation_gap_status?.startsWith('unavailable') || row.approximation_gap_status?.startsWith('undefined') ? 'Not available' : '—') : `${(row.approximation_gap * 100).toFixed(2)}%`;
 
   return <tr>
-    <td><strong className="method-label">{methodNames[row.method] || row.method}</strong></td>
+    <td><strong className="method-label">{row.method_label || methodNames[row.method] || row.method}</strong></td>
     <td>
       <StatusBadge
         tone={complete ? (row.feasibility === false ? 'warning' : 'success') : 'neutral'}
@@ -180,7 +186,7 @@ function BenchmarkCharts({ rows }) {
     { key: 'average_transport_time', label: 'Average transport time', lowerBetter: true, suffix: 'min' },
   ];
   return <div className="results-charts"><div className="results-chart-heading"><div><h3>Measured metric charts</h3><p>Each chart scales only the completed values shown in this benchmark.</p></div></div><div className="results-chart-grid">{metrics.map((metricSpec) => {
-    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && Number.isFinite(Number(row[metricSpec.key]))).map((row) => ({ methodKey: row.method, method: methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
+    const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && isFiniteMeasurement(row[metricSpec.key])).map((row) => ({ methodKey: row.method, method: row.method_label || methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
     const max = Math.max(...entries.map((item) => item.value), 0);
     return <article className="results-chart-card" key={metricSpec.key}><div className="results-chart-card-heading"><strong>{metricSpec.label}</strong><span>MEASURED</span></div>
       {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.methodKey}`} key={entry.methodKey}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(3, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}

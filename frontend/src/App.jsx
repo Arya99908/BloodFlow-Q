@@ -9,6 +9,7 @@ import SquishSwitch from './components/SquishSwitch';
 import Stepper, { Step } from './components/Stepper';
 import ClickSpark from './components/ClickSpark';
 import Breadcrumbs from './components/Breadcrumbs';
+import HeartbeatBackground from './components/HeartbeatBackground';
 import NavigationTransition from './components/NavigationTransition';
 import { NAV_GROUPS, NAV_ITEMS, NAV_BY_ID, PAGE_TITLES, resolveRoute, routePath } from './navigation';
 
@@ -117,7 +118,7 @@ export default function App() {
   };
 
   const runQuickOptimization = async () => {
-    setPage('optimization'); setOptimizationLoading(true); setOptimizationError('');
+    navigate('optimization'); setOptimizationResult(null); setOptimizationLoading(true); setOptimizationError('');
     try { setOptimizationResult(await api.optimize({ method: 'greedy' })); setToast({ kind: 'success', message: 'Optimization completed. Results are ready to review.' }); }
     catch (issue) { setOptimizationError(issue.message || 'Optimization could not be completed.'); setToast({ kind: 'error', message: issue.message || 'Optimization could not be completed.' }); }
     finally { setOptimizationLoading(false); }
@@ -165,6 +166,7 @@ export default function App() {
   };
 
   return <ClickSpark className="app-interaction-layer" sparkColor={theme === 'dark' ? ['#ff8795', '#ef233c'] : ['#d90429', '#ef233c']} sparkCount={7} sparkSize={10} sparkRadius={23} duration={360} glow={0.12} style={{ position: 'relative', width: '100%', minHeight: '100vh' }}><div className="app-shell">
+    <HeartbeatBackground />
     {toast && <div className={`app-toast app-toast-${toast.kind}`} role={toast.kind === 'error' ? 'alert' : 'status'}><span>{toast.message}</span><button onClick={() => setToast(null)} aria-label="Dismiss notification">×</button></div>}
     <a className="skip-link" href="#main-content">Skip to main content</a>
     <div className="main-shell">

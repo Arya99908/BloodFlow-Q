@@ -1,3 +1,5 @@
+import QAOAVariantSelect from '../components/QAOAVariantSelect';
+import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, CheckCircle2, Play, RotateCcw, TriangleAlert } from 'lucide-react';
 import { api } from '../services/api';
@@ -17,18 +19,24 @@ import {
 export default function Optimization({ initialRun, initialLoading, initialError, onNavigate }) {
   const { data: scenario, loading: scenarioLoading, error: scenarioError, reload: reloadScenario } = useApi(api.getScenario, []);
   const [method, setMethod] = useState('greedy');
+  const [qaoaVariant, setQaoaVariant] = useState('standard');
   const [inventoryPenalty, setInventoryPenalty] = useState('');
   const [demandPenalty, setDemandPenalty] = useState('');
-  const [localResult, setLocalResult] = useState(null);
+  const [localResult, setLocalResult] = useState(initialRun ?? null);
   const [localLoading, setLocalLoading] = useState(false);
-  const [localError, setLocalError] = useState('');
+  const [localError, setLocalError] = useState(initialError || '');
   const [comparison, setComparison] = useState(null);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [includeQAOA, setIncludeQAOA] = useState(false);
-  const result = localResult || initialRun;
+  const result = localResult;
   const loading = localLoading || initialLoading;
-  const error = localError || initialError;
+  const error = localError;
+
+  // A global Quick Optimization must replace any older page-local run.
+  useEffect(() => {
+    setLocalResult(initialRun ?? null); setLocalError(initialError || ''); setComparison(null);
+  }, [initialRun, initialLoading, initialError]);
 
   const candidateStates = useMemo(() => estimateCandidateStates(scenario), [scenario]);
   const isExactDisabled = candidateStates > 50000;
@@ -71,6 +79,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
       }
       const request = { method };
       if (method === 'qaoa') {
+        request.qaoa_config = qaoaVariantConfig(qaoaVariant);
         if (!inventoryPenalty || !demandPenalty) throw new Error('Enter both explicit QUBO penalty weights before running QAOA.');
         const inv = Number(inventoryPenalty);
         const dem = Number(demandPenalty);
@@ -95,6 +104,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
     try {
       const request = { include_qaoa: includeQAOA, include_milp: true };
       if (includeQAOA) {
+        request.qaoa_config = qaoaVariantConfig(qaoaVariant);
         if (!inventoryPenalty || !demandPenalty) throw new Error('Enter both QUBO penalty weights before including QAOA in the comparison.');
         const inv = Number(inventoryPenalty);
         const dem = Number(demandPenalty);
@@ -107,7 +117,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
         };
       }
       const response = await api.benchmark(request);
-      setComparison(response.results || []);
+      setComparison((response.results || []).map(row => ({ ...row, method_label: row.method === 'qaoa' ? qaoaConfigLabel(response.experiment_configuration?.qaoa) : row.method?.toUpperCase() })));
     } catch (issue) {
       setCompareError(issue.message || 'The benchmark comparison could not be completed.');
     } finally {
@@ -136,6 +146,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
           )}
           {method === 'qaoa' && (
             <div className="qaoa-config-box">
+              <QAOAVariantSelect id="optimization-qaoa-variant" value={qaoaVariant} onChange={setQaoaVariant} disabled={loading} />
               <div className="notice notice-info">
                 <TriangleAlert size={16} />
                 <span>QUBO penalty weights must be explicit and strictly exceed this scenario’s objective bound (&gt; {objectiveBound}). Insufficient values will be rejected.</span>
@@ -229,6 +240,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
 
         {includeQAOA && (
           <div className="qaoa-comparison-params">
+            <QAOAVariantSelect id="comparison-qaoa-variant" value={qaoaVariant} onChange={setQaoaVariant} disabled={compareLoading} />
             <div className="qaoa-params-grid">
               <div className="form-field">
                 <label className="field-label" htmlFor="comp-inv-penalty">
@@ -389,6 +401,7 @@ function ScenarioPreview({ scenario, variableCount }) {
 
 function OptimizationResult({ result, scenario }) {
   const qaoa = result.method === 'qaoa';
+  const solverLabel = qaoa ? qaoaConfigLabel(result.experiment_configuration?.qaoa) : result.method?.toUpperCase();
   const missingMethodValue = qaoa ? 'Unavailable' : 'Not applicable';
   const banks = Object.fromEntries((scenario?.blood_banks || []).map((bank) => [bank.id, bank.name]));
   const hospitals = Object.fromEntries((scenario?.hospitals || []).map((hospital) => [hospital.id, hospital.name]));
@@ -399,13 +412,13 @@ function OptimizationResult({ result, scenario }) {
       <div className="result-status-header">
         <StatusBadge
           status={result.feasibility === false ? 'infeasible' : result.status}
-          label={`${result.method?.toUpperCase()} · ${result.feasibility === false ? 'INFEASIBLE' : 'FEASIBLE'}`}
+          label={`${solverLabel} · ${result.feasibility === false ? 'INFEASIBLE' : 'FEASIBLE'}`}
         />
-        <span className="result-timestamp">Method: <strong>{result.method}</strong></span>
+        <span className="result-timestamp">Method: <strong>{solverLabel}</strong></span>
       </div>
 
       <div className="result-kpi-grid">
-        <StatItem label="Solver method" value={result.method?.toUpperCase()} />
+        <StatItem label="Solver method" value={solverLabel} />
         <StatItem
           label="Objective value"
           value={result.total_objective != null ? Number(result.total_objective).toFixed(2) : '—'}
@@ -549,7 +562,7 @@ function BenchmarkTable({ records, includeQAOA, onNavigate }) {
               const status = record.method === 'qaoa' && !includeQAOA && record.status === 'not_requested' ? 'Not run' : record.status;
               return (
                 <tr key={record.method}>
-                  <td><strong>{record.method?.toUpperCase()}</strong></td>
+                  <td><strong>{record.method_label || record.method?.toUpperCase()}</strong></td>
                   <td><StatusBadge status={status} label={status?.replaceAll('_', ' ')} /></td>
                   <td className="text-right num-cell">{record.objective_value != null ? Number(record.objective_value).toFixed(2) : '—'}</td>
                   <td className="text-right num-cell">{record.critical_unmet_demand ?? '—'}</td>

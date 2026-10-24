@@ -1,343 +1,109 @@
-import { useMemo, useState } from 'react';
-import { ArrowRight, Boxes, Droplet, Hospital, MapPin, Route as RouteIcon, ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, Focus, Minus, Plus, RefreshCw, RotateCcw, Search } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
-import { StatItem, StatusBadge } from '../components/DataField';
+import { StatusBadge } from '../components/DataField';
+import { buildNetwork, DEFAULT_NETWORK_FILTERS, filterNetwork, fitNetwork, GRAPH_SIZE, latestNetworkAllocation, quantityTotal, zoomNetwork } from '../utils/networkGraph';
+import './Network.css';
+
+const format = value => Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Not recorded';
+const edgeLabel = edge => `${edge.sourceNode.name || edge.source} → ${edge.destinationNode.name || edge.destination}`;
+const edgeDetails = edge => `${edgeLabel(edge)} · ${edge.status || 'status not recorded'} · ${format(edge.travel_time_minutes)} min · ${format(edge.distance_km)} km · ${format(edge.transport_cost)} cost points/unit`;
+const activate = action => event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action(); } };
 
 export default function Network() {
-  const { data, loading, error, reload } = useApi(api.getScenario, []);
-  const [selectedKey, setSelectedKey] = useState('');
-  const [routeFilter, setRouteFilter] = useState('all'); // 'all' | 'available' | 'blocked'
+  const scenario = useApi(api.getScenario, []);
+  const history = useApi(api.getResults, []);
+  const [filters, setFilters] = useState(DEFAULT_NETWORK_FILTERS);
+  const [selection, setSelection] = useState(null);
+  const [hover, setHover] = useState(null);
+  const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
+  const svg = useRef(null);
+  const drag = useRef(null);
+  const graph = useMemo(() => buildNetwork(scenario.data), [scenario.data]);
+  const proposal = useMemo(() => latestNetworkAllocation(scenario.data, history.data?.results), [scenario.data, history.data]);
+  const visible = useMemo(() => filterNetwork(graph, filters, selection, proposal?.totals), [graph, filters, selection, proposal]);
+  const node = selection?.kind === 'node' ? graph.nodes.find(item => item.key === selection.key) : null;
+  const edge = selection?.kind === 'edge' ? graph.edges.find(item => item.key === selection.key) : null;
+  const selectedVisible = !selection || (node ? visible.nodes.some(item => item.key === node.key) : edge ? visible.edges.some(item => item.key === edge.key) : false);
+  const nodeSignature = graph.nodes.map(item => item.key).join('|');
+  useEffect(() => { setView(fitNetwork(graph.nodes)); setHover(null); }, [nodeSignature]);
+  useEffect(() => {
+    if (selection && !(selection.kind === 'node' ? graph.nodes : graph.edges).some(item => item.key === selection.key)) {
+      setSelection(null); setFilters(current => ({ ...current, neighbors: false }));
+    }
+  }, [graph, selection]);
+  useEffect(() => { setHover(null); }, [graph]);
+  useEffect(() => { if (!proposal) setFilters(current => current.allocatedOnly ? { ...current, allocatedOnly: false } : current); }, [proposal]);
+  const updateFilter = (key, value) => { setFilters(current => ({ ...current, [key]: value })); setHover(null); };
+  const choose = (kind, key) => { setSelection({ kind, key }); if (kind !== 'node') updateFilter('neighbors', false); };
+  const reset = () => { setFilters(DEFAULT_NETWORK_FILTERS); setSelection(null); setHover(null); setView(fitNetwork(graph.nodes)); };
+  const point = event => new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.current.getScreenCTM().inverse());
+  const startPan = event => {
+    if (event.button !== 0 || event.target.closest('[data-network-item]')) return;
+    const p = point(event); drag.current = { pointerId: event.pointerId, p, view };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const movePan = event => { if (drag.current?.pointerId === event.pointerId) { const p = point(event); setView({ ...drag.current.view, x: drag.current.view.x + p.x - drag.current.p.x, y: drag.current.view.y + p.y - drag.current.p.y }); } };
+  const stopPan = () => { drag.current = null; };
+  const keyboardView = event => {
+    if (event.key === 'Escape') { setSelection(null); updateFilter('neighbors', false); return; }
+    if (event.target !== event.currentTarget) return;
+    const shifts = { ArrowLeft: [35, 0], ArrowRight: [-35, 0], ArrowUp: [0, 35], ArrowDown: [0, -35] };
+    if (shifts[event.key]) { event.preventDefault(); setView(current => ({ ...current, x: current.x + shifts[event.key][0], y: current.y + shifts[event.key][1] })); }
+    if (['+', '=', '-'].includes(event.key)) { event.preventDefault(); setView(current => zoomNetwork(current, event.key === '-' ? 1 / 1.2 : 1.2)); }
+    if (event.key === 'Home') { event.preventDefault(); setView(fitNetwork(visible.nodes)); }
+  };
+  const groups = [...new Set(graph.nodes.flatMap(item => Object.keys(item.quantities)))].sort();
+  const neighbors = node ? graph.edges.filter(item => item.sourceNode.key === node.key || item.destinationNode.key === node.key) : [];
 
-  const routes = data?.routes || [];
-  const banks = data?.blood_banks || [];
-  const hospitals = data?.hospitals || [];
-
-  const availableRoutes = useMemo(() => routes.filter((r) => r.status === 'available'), [routes]);
-  const blockedRoutes = useMemo(() => routes.filter((r) => r.status === 'blocked'), [routes]);
-
-  const filteredRoutes = useMemo(() => {
-    if (routeFilter === 'available') return availableRoutes;
-    if (routeFilter === 'blocked') return blockedRoutes;
-    return routes;
-  }, [routes, availableRoutes, blockedRoutes, routeFilter]);
-
-  const selected = useMemo(() => {
-    if (!selectedKey && routes.length > 0) return routes[0];
-    return routes.find((r) => `${r.source}|${r.destination}` === selectedKey) || null;
-  }, [routes, selectedKey]);
-
-  const selectedSource = useMemo(() => {
-    return selected ? banks.find((b) => b.id === selected.source) : null;
-  }, [selected, banks]);
-
-  const selectedDestination = useMemo(() => {
-    return selected ? hospitals.find((h) => h.id === selected.destination) : null;
-  }, [selected, hospitals]);
-
-  return (
-    <>
-      <PageHeader
-        eyebrow="SUPPLY & DISTRIBUTION NETWORK"
-        title="Transport Network"
-        description="Inspect supply sources, hospital demand destinations, and inter-facility transport route constraints."
-      />
-
-      {loading && <LoadingState label="Loading logistics network model…" />}
-      {!loading && error && <ErrorState message={error} onRetry={reload} />}
-
-      {!loading && !error && data && data.synthetic === true && (
-        <div className="network-page-flow">
-          {/* Top Network Summary KPI Strip */}
-          <section className="network-kpi-grid" aria-label="Network high-level metrics">
-            <StatItem label="Supply sources" value={banks.length} unit="blood banks" />
-            <StatItem label="Destinations" value={hospitals.length} unit="hospitals" />
-            <StatItem label="Active routes" value={availableRoutes.length} unit="available" tone="success" />
-            <StatItem
-              label="Blocked routes"
-              value={blockedRoutes.length}
-              unit={blockedRoutes.length === 1 ? 'disruption' : 'disruptions'}
-              tone={blockedRoutes.length > 0 ? 'warning' : 'default'}
-            />
-          </section>
-
-          {/* Side-by-side facility columns: Sources and Destinations */}
-          <div className="network-facilities-grid">
-            {/* Supply Sources */}
-            <section className="panel facility-column-panel">
-              <div className="panel-heading">
-                <div>
-                  <h2>Blood banks</h2>
-                  <p>Regional supply facilities holding inventory</p>
-                </div>
-                <span className="count-pill">
-                  <Boxes size={13} /> {banks.length} sources
-                </span>
-              </div>
-              <div className="facility-card-list">
-                {banks.map((bank) => {
-                  const totalUnits = Object.values(bank.inventory || {}).reduce((sum, u) => sum + Number(u || 0), 0);
-                  const groupsCount = Object.keys(bank.inventory || {}).length;
-                  return (
-                    <article className="facility-card facility-bank-card" key={bank.id}>
-                      <div className="facility-card-header">
-                        <span className="facility-avatar bank-avatar">
-                          <Droplet size={15} />
-                        </span>
-                        <div className="facility-title-wrap">
-                          <strong className="facility-name">{bank.name}</strong>
-                          <span className="facility-location">
-                            <MapPin size={11} aria-hidden="true" />
-                            <span>Location: {bank.location_id}</span>
-                            <code className="facility-id-code">{bank.id}</code>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="facility-meta-pills">
-                        <span className="meta-subline">
-                          Total stock: <strong>{totalUnits.toLocaleString()} units</strong>
-                        </span>
-                        <span className="meta-subline">
-                          Groups: <strong>{groupsCount}</strong>
-                        </span>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Demand Destinations */}
-            <section className="panel facility-column-panel">
-              <div className="panel-heading">
-                <div>
-                  <h2>Hospitals</h2>
-                  <p>Clinical destinations requesting blood units</p>
-                </div>
-                <span className="count-pill">
-                  <Hospital size={13} /> {hospitals.length} destinations
-                </span>
-              </div>
-              <div className="facility-card-list">
-                {hospitals.map((hospital) => {
-                  const totalDemand = Object.values(hospital.demand || {}).reduce((sum, u) => sum + Number(u || 0), 0);
-                  const hasCritical = Object.values(hospital.urgency || {}).some(
-                    (u) => u?.category === 'critical' || u?.category === 'high'
-                  );
-                  return (
-                    <article className="facility-card facility-hospital-card" key={hospital.id}>
-                      <div className="facility-card-header">
-                        <span className="facility-avatar hospital-avatar">
-                          <Hospital size={15} />
-                        </span>
-                        <div className="facility-title-wrap">
-                          <strong className="facility-name">{hospital.name}</strong>
-                          <span className="facility-location">
-                            <MapPin size={11} aria-hidden="true" />
-                            <span>Location: {hospital.location_id}</span>
-                            <code className="facility-id-code">{hospital.id}</code>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="facility-meta-pills">
-                        <span className="meta-subline">
-                          Total demand: <strong>{totalDemand.toLocaleString()} units</strong>
-                        </span>
-                        {hasCritical && (
-                          <span className="critical-demand-pill">
-                            <AlertTriangle size={11} /> High / Critical
-                          </span>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
+  return <div className="network-explorer">
+    <PageHeader eyebrow="SUPPLY & DISTRIBUTION NETWORK" title="Transport Network" description="Explore actual scenario inventory, demand and transport connections. Select a facility or route to inspect its constraints." action={<button className="button button-secondary" onClick={() => { scenario.reload(); history.reload(); }} disabled={scenario.loading || history.loading}><RefreshCw size={14} /> Refresh data</button>} />
+    {scenario.loading && <LoadingState label="Loading network scenario…" />}
+    {!scenario.loading && scenario.error && <ErrorState message={scenario.error} onRetry={scenario.reload} />}
+    {!scenario.loading && !scenario.error && scenario.data?.synthetic !== true && <EmptyState title="Synthetic scenario unavailable" detail="The API must explicitly identify this scenario as synthetic before it can be explored." />}
+    {!scenario.loading && !scenario.error && scenario.data?.synthetic === true && <>
+      <div className="nx-summary"><span><strong>{graph.nodes.filter(item => item.kind === 'bank').length}</strong> blood banks</span><span><strong>{graph.nodes.filter(item => item.kind === 'hospital').length}</strong> hospitals</span><span><strong>{graph.edges.filter(item => item.status === 'available').length}</strong> available routes</span><span><strong>{graph.edges.filter(item => item.status === 'blocked').length}</strong> blocked routes</span><span>Scenario <code>{scenario.data.id}</code></span></div>
+      {graph.warnings.length > 0 && <div className="notice notice-error" role="alert">{graph.warnings.join(' ')}</div>}
+      <section className="panel nx-toolbar" aria-label="Network filters">
+        <label className="nx-search"><span><Search size={14} /> Search facilities</span><input className="field-control" type="search" placeholder="Name, ID, location or blood group" value={filters.query} onChange={event => updateFilter('query', event.target.value)} /></label>
+        <label><span>Facility type</span><select className="field-control" value={filters.category} onChange={event => updateFilter('category', event.target.value)}><option value="all">All facilities</option><option value="bank">Blood banks</option><option value="hospital">Hospitals</option></select></label>
+        <label><span>Route status</span><select className="field-control" value={filters.status} onChange={event => updateFilter('status', event.target.value)}><option value="all">All routes</option><option value="available">Available</option><option value="blocked">Blocked</option></select></label>
+        <label><span>Positive stock / demand</span><select className="field-control" value={filters.bloodGroup} onChange={event => updateFilter('bloodGroup', event.target.value)}><option value="all">All blood groups</option>{groups.map(group => <option key={group}>{group}</option>)}</select></label>
+        <button className="button button-secondary" onClick={reset}><RotateCcw size={14} /> Reset all</button>
+        <div className="nx-filter-toggles"><label><input type="checkbox" checked={filters.neighbors} disabled={!node} onChange={event => updateFilter('neighbors', event.target.checked)} /> Selected facility and direct neighbors</label><label><input type="checkbox" checked={filters.allocatedOnly} disabled={!proposal} onChange={event => updateFilter('allocatedOnly', event.target.checked)} /> Routes with proposed shipments</label></div>
+      </section>
+      <div className="nx-workspace">
+        <section className="panel nx-map-panel" aria-label="Interactive logistics graph">
+          <div className="nx-map-top"><p role="status" aria-live="polite"><strong>{visible.nodes.length}/{graph.nodes.length}</strong> facilities · <strong>{visible.edges.length}/{graph.edges.length}</strong> routes visible</p><div className="nx-view-tools"><button className="button button-secondary button-small" aria-label="Zoom out" disabled={view.scale <= 0.1} onClick={() => setView(current => zoomNetwork(current, 1 / 1.2))}><Minus size={16} /></button><output aria-label="Zoom level">{Math.round(view.scale * 100)}%</output><button className="button button-secondary button-small" aria-label="Zoom in" disabled={view.scale >= 4} onClick={() => setView(current => zoomNetwork(current, 1.2))}><Plus size={16} /></button><button className="button button-secondary button-small" disabled={!visible.nodes.length} onClick={() => setView(fitNetwork(visible.nodes))}><Focus size={14} /> Fit visible</button></div></div>
+          <p id="nx-instructions" className="nx-help">Drag empty space to pan. Use zoom buttons, or focus the canvas and use + / −, arrows and Home. Tab to a facility or route; Enter selects, Escape clears. Positions are schematic, not a geographic map.</p>
+          <div className="nx-canvas-wrap">
+            <svg ref={svg} className="nx-canvas" viewBox={`0 0 ${GRAPH_SIZE.width} ${GRAPH_SIZE.height}`} role="group" aria-label="Supply and demand graph" aria-describedby="nx-instructions" tabIndex={0} onKeyDown={keyboardView} onPointerDown={startPan} onPointerMove={movePan} onPointerUp={stopPan} onPointerCancel={stopPan} onLostPointerCapture={stopPan}>
+              <defs><pattern id="nx-grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="currentColor" /></pattern></defs>
+              <rect width="900" height="520" className="nx-grid" fill="url(#nx-grid)" />
+              <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
+                {visible.edges.map(item => { const selected = edge?.key === item.key; const amount = proposal?.totals[item.key] || 0; const d = `M ${item.sourceNode.x + 110} ${item.sourceNode.y} C 430 ${item.sourceNode.y}, 470 ${item.destinationNode.y}, ${item.destinationNode.x - 110} ${item.destinationNode.y}`; return <g data-network-item="edge" key={item.key} role="button" tabIndex={0} aria-label={`${edgeDetails(item)}${proposal ? ` · ${amount} proposed units` : ''}`} aria-pressed={selected} className={`nx-edge ${item.status === 'blocked' ? 'nx-edge-blocked' : ''} ${amount > 0 ? 'nx-edge-allocated' : ''} ${selected ? 'nx-selected' : ''}`} onClick={() => choose('edge', item.key)} onKeyDown={activate(() => choose('edge', item.key))} onPointerEnter={() => setHover({ kind: 'edge', item })} onPointerLeave={() => setHover(null)} onFocus={() => setHover({ kind: 'edge', item })} onBlur={() => setHover(null)}><title>{edgeDetails(item)}</title><path className="nx-edge-hit" d={d} /><path className="nx-edge-line" d={d} /></g>; })}
+                {visible.nodes.map(item => <g data-network-item="node" key={item.key} transform={`translate(${item.x} ${item.y})`} role="button" tabIndex={0} aria-label={`${item.name || item.id}, ${item.kind === 'bank' ? 'blood bank inventory' : 'hospital demand'} ${quantityTotal(item.quantities)} units`} aria-pressed={node?.key === item.key} className={`nx-node nx-node-${item.kind} ${node?.key === item.key ? 'nx-selected' : ''}`} onClick={() => choose('node', item.key)} onKeyDown={activate(() => choose('node', item.key))} onPointerEnter={() => setHover({ kind: 'node', item })} onPointerLeave={() => setHover(null)} onFocus={() => setHover({ kind: 'node', item })} onBlur={() => setHover(null)}><title>{item.name || item.id} · {item.id} · {item.location_id || 'Location not recorded'} · {quantityTotal(item.quantities)} units</title><rect x="-110" y="-37" width="220" height="74" rx="12" /><circle cx="-90" cy="-14" r="5" /><text x="-77" y="-10" className="nx-node-name">{(item.name || item.id).length > 22 ? `${(item.name || item.id).slice(0, 21)}…` : item.name || item.id}</text><text x="-90" y="15" className="nx-node-meta">{item.kind === 'bank' ? 'Stock' : 'Demand'} · {format(quantityTotal(item.quantities))} units</text></g>)}
+              </g>
+            </svg>
+            {!visible.nodes.length && <div className="nx-no-matches"><EmptyState title="No facilities match" detail="Reset filters or choose another facility type, route status or blood group." /><button className="button button-secondary" onClick={reset}>Reset filters and view</button></div>}
           </div>
-
-          {/* Transport Routes Grid & Inspector */}
-          <section className="panel routes-section-panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Transport connections</h2>
-                <p>Click any route to inspect its transit constraints and connected nodes</p>
-              </div>
-              <div className="route-filter-controls" role="group" aria-label="Route status filter">
-                <button
-                  type="button"
-                  className={`filter-btn ${routeFilter === 'all' ? 'filter-btn-active' : ''}`}
-                  onClick={() => setRouteFilter('all')}
-                >
-                  All ({routes.length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-btn ${routeFilter === 'available' ? 'filter-btn-active' : ''}`}
-                  onClick={() => setRouteFilter('available')}
-                >
-                  Available ({availableRoutes.length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-btn ${routeFilter === 'blocked' ? 'filter-btn-active' : ''}`}
-                  onClick={() => setRouteFilter('blocked')}
-                >
-                  Blocked ({blockedRoutes.length})
-                </button>
-              </div>
-            </div>
-
-            {filteredRoutes.length === 0 ? (
-              <EmptyState
-                title="No routes match this filter"
-                detail="Switch filter to view all scenario routes."
-              />
-            ) : (
-              <div className="network-routes-grid" role="group" aria-label="Transport routes">
-                {filteredRoutes.map((route) => {
-                  const key = `${route.source}|${route.destination}`;
-                  const source = banks.find((item) => item.id === route.source);
-                  const destination = hospitals.find((item) => item.id === route.destination);
-                  const isSelected = selected && `${selected.source}|${selected.destination}` === key;
-                  const isBlocked = route.status === 'blocked';
-
-                  return (
-                    <button
-                      type="button"
-                      key={key}
-                      className={`route-card-item ${isSelected ? 'route-card-selected' : ''} ${
-                        isBlocked ? 'route-card-blocked' : ''
-                      }`}
-                      onClick={() => setSelectedKey(key)}
-                      aria-pressed={Boolean(isSelected)}
-                      aria-label={`${source?.name || route.source} to ${destination?.name || route.destination}, ${isBlocked ? 'blocked' : 'available'}${isSelected ? ', selected' : ''}`}
-                    >
-                      <div className="route-card-header">
-                        <div className="route-endpoints-flow">
-                          <span className="endpoint-name origin-name">{source?.name || route.source}</span>
-                          <ArrowRight size={13} className="endpoint-arrow" aria-hidden="true" />
-                          <span className="endpoint-name destination-name">{destination?.name || route.destination}</span>
-                        </div>
-                        <StatusBadge
-                          status={route.status}
-                          label={isBlocked ? 'Blocked' : 'Available'}
-                        />
-                      </div>
-
-                      <div className="route-metrics-strip">
-                        <div className="route-metric-entry">
-                          <span className="entry-label">TIME</span>
-                          <strong className="entry-value">{route.travel_time_minutes} min</strong>
-                        </div>
-                        <span className="entry-divider" />
-                        <div className="route-metric-entry">
-                          <span className="entry-label">DISTANCE</span>
-                          <strong className="entry-value">{route.distance_km} km</strong>
-                        </div>
-                        <span className="entry-divider" />
-                        <div className="route-metric-entry">
-                          <span className="entry-label">COST</span>
-                          <strong className="entry-value">{route.transport_cost} pts</strong>
-                        </div>
-                      </div>
-
-                      {isBlocked && (
-                        <div className="route-blocked-alert" role="note">
-                          <AlertTriangle size={12} />
-                          <span>Marked blocked in this scenario</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          {/* Selected Route Inspector Panel */}
-          {selected && (
-            <section className="panel selected-route-inspector" aria-live="polite">
-              <div className="panel-heading">
-                <div>
-                  <span className="eyebrow">ROUTE INSPECTOR</span>
-                  <h2>
-                    {selectedSource?.name || selected.source} <ArrowRight size={16} /> {selectedDestination?.name || selected.destination}
-                  </h2>
-                  <p className="route-path-subtitle">
-                    Identifier path: <code>{selected.source}</code> → <code>{selected.destination}</code>
-                  </p>
-                </div>
-                <StatusBadge
-                  status={selected.status}
-                  label={selected.status === 'blocked' ? 'Route Disrupted / Blocked' : 'Route Fully Operational'}
-                />
-              </div>
-
-              <div className="route-inspector-metrics">
-                <StatItem label="Transit duration" value={selected.travel_time_minutes} unit="minutes" />
-                <StatItem label="Road distance" value={selected.distance_km} unit="km" />
-                <StatItem label="Transport cost" value={selected.transport_cost} unit="objective points" />
-                <StatItem
-                  label="Scenario availability"
-                  value={selected.status === 'blocked' ? 'Blocked' : 'Available'}
-                  tone={selected.status === 'blocked' ? 'danger' : 'success'}
-                  hint={selected.status === 'blocked' ? 'Zero shipment capacity permitted' : 'Eligible for shipment'}
-                />
-              </div>
-
-              <div className="inspector-nodes-split">
-                <div className="node-detail-card">
-                  <div className="node-detail-head">
-                    <Droplet size={14} className="icon-red" />
-                    <strong>Origin Blood Bank</strong>
-                  </div>
-                  <div className="node-detail-body">
-                    <p className="node-name">{selectedSource?.name || selected.source}</p>
-                    <p className="node-meta">Location: <code>{selectedSource?.location_id || '—'}</code></p>
-                    <div className="node-sub-info">
-                      <span>Available inventory:</span>
-                      <strong>
-                        {Object.values(selectedSource?.inventory || {}).reduce((s, v) => s + Number(v || 0), 0)} units
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="node-detail-card">
-                  <div className="node-detail-head">
-                    <Hospital size={14} className="icon-blue" />
-                    <strong>Destination Hospital</strong>
-                  </div>
-                  <div className="node-detail-body">
-                    <p className="node-name">{selectedDestination?.name || selected.destination}</p>
-                    <p className="node-meta">Location: <code>{selectedDestination?.location_id || '—'}</code></p>
-                    <div className="node-sub-info">
-                      <span>Total requested demand:</span>
-                      <strong>
-                        {Object.values(selectedDestination?.demand || {}).reduce((s, v) => s + Number(v || 0), 0)} units
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          <p className="small-disclaimer">
-            Route travel times, distances, and unit costs represent fixed parameters within this synthetic scenario.
-            Blocked routes are isolated and cannot be assigned shipments by any compliant optimizer.
-          </p>
-        </div>
-      )}
-
-      {!loading && !error && data && data.synthetic !== true && (
-        <div className="notice notice-error">
-          The backend did not identify this scenario as synthetic. Network information is not displayed.
-        </div>
-      )}
-    </>
-  );
+          <div className="nx-hover" role="status">{hover ? hover.kind === 'edge' ? edgeDetails(hover.item) : `${hover.item.name || hover.item.id} · ${hover.item.id} · ${hover.item.location_id || 'No location recorded'} · ${format(quantityTotal(hover.item.quantities))} ${hover.item.kind === 'bank' ? 'stock' : 'demand'} units` : 'Hover or focus a facility or route for a quick readout; select it for full details.'}</div>
+          <div className="nx-legend" aria-label="Graph legend"><span><i className="nx-bank-dot" /> Blood bank</span><span><i className="nx-hospital-dot" /> Hospital</span><span><i className="nx-route-line" /> Available</span><span><i className="nx-blocked-line" /> Blocked</span><span><i className="nx-allocated-line" /> Proposed allocation</span></div>
+        </section>
+        <aside className="panel nx-inspector" aria-label="Selection details">
+          <span className="eyebrow">NETWORK INSPECTOR</span>
+          {!selection && <EmptyState title="Select a facility or route" detail="Inspect stock, demand, compatibility and the actual route parameters. Use the graph or the accessible lists below." />}
+          {selection && !selectedVisible && <p className="nx-filtered-note" role="status">This selection is hidden by the current filters. <button onClick={() => setFilters(DEFAULT_NETWORK_FILTERS)}>Clear filters</button></p>}
+          {node && <><h2>{node.name || node.id}</h2><p><code>{node.id}</code> · {node.kind === 'bank' ? 'Blood bank' : 'Hospital'}</p><p>Location: {node.location_id || 'Not recorded'}</p><h3>{node.kind === 'bank' ? 'Available inventory' : 'Requested demand'}</h3><table className="data-table"><thead><tr><th>Group</th><th>Units</th>{node.kind === 'hospital' && <th>Urgency</th>}</tr></thead><tbody>{Object.entries(node.quantities).map(([group, amount]) => <tr key={group}><th>{group}</th><td>{format(amount)}</td>{node.kind === 'hospital' && <td>{node.urgency?.[group]?.category || 'Not recorded'}</td>}</tr>)}</tbody></table><h3>{neighbors.length} connected routes</h3><div className="nx-neighbors">{neighbors.map(item => <button className="button button-secondary button-small" key={item.key} onClick={() => choose('edge', item.key)}>{node.kind === 'bank' ? item.destinationNode.name || item.destination : item.sourceNode.name || item.source} <ArrowRight size={12} /><span>{item.status}</span></button>)}</div><button className="button button-secondary" onClick={() => setFilters({ ...DEFAULT_NETWORK_FILTERS, neighbors: true })}>Explore direct neighbors</button></>}
+          {edge && <><h2>{edgeLabel(edge)}</h2><StatusBadge status={edge.status} /><dl><dt>Travel time</dt><dd>{format(edge.travel_time_minutes)} min</dd><dt>Distance</dt><dd>{format(edge.distance_km)} km</dd><dt>Transport cost</dt><dd>{format(edge.transport_cost)} points per unit</dd><dt>Shipment capacity</dt><dd>{edge.status === 'blocked' ? 'Blocked: no shipments allowed' : 'Limited by source inventory and destination demand; no route-specific capacity is modeled.'}</dd><dt>Proposed shipments</dt><dd>{proposal ? `${format(proposal.totals[edge.key] || 0)} units` : 'No matching validated proposal loaded'}</dd></dl><h3>Compatible groups with stock and demand</h3><p className="nx-help">Eligibility only; group quantities share inventory and do not sum to an independent route capacity.</p><ul className="nx-compatibility">{(Array.isArray(scenario.data.compatibility) ? scenario.data.compatibility : []).filter(item => item?.allowed && edge.sourceNode.quantities[item.donor_group] > 0 && edge.destinationNode.quantities[item.recipient_group] > 0).map(item => <li key={`${item.donor_group}-${item.recipient_group}`}>{item.donor_group} → {item.recipient_group}{edge.status === 'blocked' ? ' · route blocked' : ''}</li>)}</ul><div className="nx-neighbors"><button className="button button-secondary" onClick={() => choose('node', edge.sourceNode.key)}>Inspect source</button><button className="button button-secondary" onClick={() => choose('node', edge.destinationNode.key)}>Inspect destination</button></div></>}
+        </aside>
+      </div>
+      <section className="panel nx-proposal"><h2>Allocation overlay</h2>{history.loading ? <p role="status">Loading session results…</p> : history.error ? <p role="status">Session results unavailable: {history.error} <button className="button button-secondary button-small" onClick={history.reload}>Retry results</button></p> : proposal ? <p>Showing a saved <strong>{proposal.method}</strong> proposal from {proposal.createdAt || 'an unrecorded time'}. Its scenario ID matches, the backend marked it feasible, and this view rechecked stock, demand accounting, compatibility and available routes against the displayed scenario. Colored routes are proposed shipments, not dispatches or finalized deliveries.</p> : <p>No saved feasible optimization matches this scenario and passes the current allocation checks. <a href="/optimization">Run an optimization</a>, then refresh data. A missing proposal is not a zero-allocation result.</p>}</section>
+      <details className="panel nx-accessible-list"><summary>Explore visible facilities and routes as a list</summary><div className="nx-list-grid"><div><h3>Facilities</h3>{visible.nodes.map(item => <button key={item.key} className="button button-secondary" aria-pressed={node?.key === item.key} onClick={() => choose('node', item.key)}>{item.name || item.id} · {item.kind} · {format(quantityTotal(item.quantities))} units</button>)}</div><div><h3>Routes</h3>{visible.edges.map(item => <button key={item.key} className="button button-secondary" aria-pressed={edge?.key === item.key} onClick={() => choose('edge', item.key)}>{edgeDetails(item)}</button>)}</div></div></details>
+      <p className="nx-help">Blood-group filters show positive stock and demand for the selected group; they do not imply cross-group compatibility. The selected route inspector lists compatibility from the scenario. Synthetic data only.</p>
+    </>}
+  </div>;
 }

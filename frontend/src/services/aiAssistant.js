@@ -22,6 +22,11 @@ export async function askAiAssistant(message, history = [], context = {}) {
 export function generateClientDomainResponse(message, context = {}) {
   const msg = String(message || '').toLowerCase().trim();
   const scenario = context.scenario || null;
+  if (!scenario) return {
+    reply: 'The backend assistant is unavailable and no scenario data is loaded. Open the dashboard or retry when the API is available; inventory and demand cannot be reported yet.',
+    suggested_actions: [{ id: 'load-dashboard', label: 'Open dashboard', type: 'navigate', payload: 'dashboard' }],
+    data_citations: [],
+  };
   const banks = scenario?.blood_banks || [];
   const hospitals = scenario?.hospitals || [];
   const routes = scenario?.routes || [];
@@ -168,7 +173,7 @@ BloodFlow-Q provides 4 complementary allocation solvers:
     if (blockedRoutes.length > 0) {
       reply += `⛔ **Active Disruptions:**\n`;
       blockedRoutes.forEach((br) => {
-        reply += `- Route \`${br.source} ➔ ${br.destination}\`: ${br.distance_km} km (${br.transport_time_hours} hrs)\n`;
+        reply += `- Route \`${br.source} ➔ ${br.destination}\`: ${br.distance_km} km (${br.travel_time_minutes} minutes)\n`;
       });
       reply += `\n*The optimization solver automatically routes around blocked corridors to avoid delayed life-saving transfusions.*\n`;
     } else {
@@ -189,7 +194,7 @@ BloodFlow-Q provides 4 complementary allocation solvers:
 
   // 7. Direct Action / Optimize
   if (/run|solve|optimize|start|execute/i.test(msg)) {
-    const reply = `Starting an operational allocation run using the Greedy baseline solver. You can also evaluate with MILP or QAOA.`;
+    const reply = `Use the action below to run the Greedy baseline solver. No optimization has started yet. You can also evaluate with MILP or QAOA.`;
     actions.push({ id: 'act-do-opt', label: '⚡ Run Optimization Now', type: 'optimize' });
     actions.push({ id: 'act-nav-opt', label: '⚙️ Solver Workspace', type: 'navigate', payload: 'optimization' });
     return { reply, suggested_actions: actions, data_citations: citations };

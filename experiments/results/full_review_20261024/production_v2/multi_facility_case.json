@@ -1,0 +1,108 @@
+{
+  "scenario": {
+    "id": "multi_facility",
+    "blood_groups": [
+      "O"
+    ],
+    "blood_banks": [
+      {
+        "id": "a",
+        "name": "A",
+        "location_id": "A",
+        "inventory": {
+          "O": 2
+        }
+      },
+      {
+        "id": "b",
+        "name": "B",
+        "location_id": "B",
+        "inventory": {
+          "O": 1
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "h1",
+        "name": "H1",
+        "location_id": "H1",
+        "demand": {
+          "O": 2
+        },
+        "urgency": {
+          "O": {
+            "category": "critical",
+            "priority_weight": 3
+          }
+        }
+      },
+      {
+        "id": "h2",
+        "name": "H2",
+        "location_id": "H2",
+        "demand": {
+          "O": 2
+        },
+        "urgency": {
+          "O": {
+            "category": "medium",
+            "priority_weight": 1
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "a",
+        "destination": "h1",
+        "travel_time_minutes": 10,
+        "distance_km": 1,
+        "transport_cost": 6,
+        "status": "available"
+      },
+      {
+        "source": "a",
+        "destination": "h2",
+        "travel_time_minutes": 10,
+        "distance_km": 1,
+        "transport_cost": 1,
+        "status": "available"
+      },
+      {
+        "source": "b",
+        "destination": "h1",
+        "travel_time_minutes": 10,
+        "distance_km": 1,
+        "transport_cost": 1,
+        "status": "available"
+      },
+      {
+        "source": "b",
+        "destination": "h2",
+        "travel_time_minutes": 10,
+        "distance_km": 1,
+        "transport_cost": 6,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "family": "primary",
+  "qubits": 13,
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "penalty": 161
+}

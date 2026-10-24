@@ -1,0 +1,302 @@
+{
+  "scenario": {
+    "id": "synthetic_default",
+    "blood_groups": [
+      "O",
+      "A",
+      "B",
+      "AB"
+    ],
+    "blood_banks": [
+      {
+        "id": "bank_a",
+        "name": "Bank A",
+        "location_id": "LOC_BANK_A",
+        "inventory": {
+          "O": 12,
+          "A": 8,
+          "B": 3,
+          "AB": 2
+        }
+      },
+      {
+        "id": "bank_b",
+        "name": "Bank B",
+        "location_id": "LOC_BANK_B",
+        "inventory": {
+          "O": 7,
+          "A": 4,
+          "B": 9,
+          "AB": 3
+        }
+      },
+      {
+        "id": "bank_c",
+        "name": "Bank C",
+        "location_id": "LOC_BANK_C",
+        "inventory": {
+          "O": 5,
+          "A": 6,
+          "B": 4,
+          "AB": 8
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "hospital_1",
+        "name": "Hospital 1",
+        "location_id": "LOC_HOSPITAL_1",
+        "demand": {
+          "O": 4,
+          "A": 6,
+          "B": 2,
+          "AB": 1
+        },
+        "urgency": {
+          "O": {
+            "category": "high",
+            "priority_weight": 3.0
+          },
+          "A": {
+            "category": "medium",
+            "priority_weight": 2.0
+          },
+          "B": {
+            "category": "low",
+            "priority_weight": 1.0
+          },
+          "AB": {
+            "category": "medium",
+            "priority_weight": 2.0
+          }
+        }
+      },
+      {
+        "id": "hospital_2",
+        "name": "Hospital 2",
+        "location_id": "LOC_HOSPITAL_2",
+        "demand": {
+          "O": 3,
+          "A": 4,
+          "B": 5,
+          "AB": 2
+        },
+        "urgency": {
+          "O": {
+            "category": "medium",
+            "priority_weight": 2.0
+          },
+          "A": {
+            "category": "high",
+            "priority_weight": 3.0
+          },
+          "B": {
+            "category": "medium",
+            "priority_weight": 2.0
+          },
+          "AB": {
+            "category": "low",
+            "priority_weight": 1.0
+          }
+        }
+      },
+      {
+        "id": "hospital_3",
+        "name": "Hospital 3",
+        "location_id": "LOC_HOSPITAL_3",
+        "demand": {
+          "O": 2,
+          "A": 2,
+          "B": 3,
+          "AB": 4
+        },
+        "urgency": {
+          "O": {
+            "category": "low",
+            "priority_weight": 1.0
+          },
+          "A": {
+            "category": "medium",
+            "priority_weight": 2.0
+          },
+          "B": {
+            "category": "high",
+            "priority_weight": 3.0
+          },
+          "AB": {
+            "category": "medium",
+            "priority_weight": 2.0
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "bank_a",
+        "destination": "hospital_1",
+        "travel_time_minutes": 18,
+        "distance_km": 7.2,
+        "transport_cost": 4.5,
+        "status": "available"
+      },
+      {
+        "source": "bank_a",
+        "destination": "hospital_2",
+        "travel_time_minutes": 31,
+        "distance_km": 13.4,
+        "transport_cost": 7.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_a",
+        "destination": "hospital_3",
+        "travel_time_minutes": 25,
+        "distance_km": 10.1,
+        "transport_cost": 5.8,
+        "status": "available"
+      },
+      {
+        "source": "bank_b",
+        "destination": "hospital_1",
+        "travel_time_minutes": 29,
+        "distance_km": 12.0,
+        "transport_cost": 6.4,
+        "status": "available"
+      },
+      {
+        "source": "bank_b",
+        "destination": "hospital_2",
+        "travel_time_minutes": 16,
+        "distance_km": 6.5,
+        "transport_cost": 4.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_b",
+        "destination": "hospital_3",
+        "travel_time_minutes": 34,
+        "distance_km": 15.8,
+        "transport_cost": 8.1,
+        "status": "available"
+      },
+      {
+        "source": "bank_c",
+        "destination": "hospital_1",
+        "travel_time_minutes": 27,
+        "distance_km": 11.3,
+        "transport_cost": 6.0,
+        "status": "available"
+      },
+      {
+        "source": "bank_c",
+        "destination": "hospital_2",
+        "travel_time_minutes": 42,
+        "distance_km": 20.6,
+        "transport_cost": 9.7,
+        "status": "blocked"
+      },
+      {
+        "source": "bank_c",
+        "destination": "hospital_3",
+        "travel_time_minutes": 19,
+        "distance_km": 8.0,
+        "transport_cost": 4.8,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      },
+      {
+        "donor": "O",
+        "recipient": "A",
+        "allowed": true
+      },
+      {
+        "donor": "O",
+        "recipient": "B",
+        "allowed": true
+      },
+      {
+        "donor": "O",
+        "recipient": "AB",
+        "allowed": true
+      },
+      {
+        "donor": "A",
+        "recipient": "O",
+        "allowed": false
+      },
+      {
+        "donor": "A",
+        "recipient": "A",
+        "allowed": true
+      },
+      {
+        "donor": "A",
+        "recipient": "B",
+        "allowed": false
+      },
+      {
+        "donor": "A",
+        "recipient": "AB",
+        "allowed": true
+      },
+      {
+        "donor": "B",
+        "recipient": "O",
+        "allowed": false
+      },
+      {
+        "donor": "B",
+        "recipient": "A",
+        "allowed": false
+      },
+      {
+        "donor": "B",
+        "recipient": "B",
+        "allowed": true
+      },
+      {
+        "donor": "B",
+        "recipient": "AB",
+        "allowed": true
+      },
+      {
+        "donor": "AB",
+        "recipient": "O",
+        "allowed": false
+      },
+      {
+        "donor": "AB",
+        "recipient": "A",
+        "allowed": false
+      },
+      {
+        "donor": "AB",
+        "recipient": "B",
+        "allowed": false
+      },
+      {
+        "donor": "AB",
+        "recipient": "AB",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "family": "full_dataset",
+  "qubits": 222,
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "penalty": 3325
+}

@@ -1,0 +1,42 @@
+.app-shell { isolation: isolate; }
+.heartbeat-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  color: var(--primary, #ef233c);
+}
+.heartbeat-background__row {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: clamp(100px, 17vw, 190px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.heartbeat-background__row--0 { top: 16%; }
+.heartbeat-background__row--1 { top: 46%; transform: scaleX(-1); }
+.heartbeat-background__row--2 { top: 77%; }
+.heartbeat-background__track { opacity: .07; }
+.heartbeat-background__signal {
+  opacity: .23;
+  stroke-dasharray: 95 1105;
+  animation: bloodflow-heartbeat-trace 12s linear infinite;
+}
+.heartbeat-background__row--1 .heartbeat-background__signal { animation-delay: -4s; }
+.heartbeat-background__row--2 .heartbeat-background__signal { animation-delay: -8s; }
+:root[data-theme="dark"] .heartbeat-background__track { opacity: .11; }
+:root[data-theme="dark"] .heartbeat-background__signal { opacity: .32; }
+@keyframes bloodflow-heartbeat-trace { from { stroke-dashoffset: 1200; } to { stroke-dashoffset: 0; } }
+@media (max-width: 640px) {
+  .heartbeat-background__row { width: 180%; left: -40%; }
+  .heartbeat-background__row--2 { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heartbeat-background__signal { animation: none; opacity: 0; }
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import itertools
 import unittest
+from unittest.mock import patch
 
 from optimization.models import BloodBank, Hospital, Route, Scenario, Urgency
 from optimization.objective import ObjectiveConfig
@@ -74,7 +75,14 @@ class QAOASolverTests(unittest.TestCase):
         ))
         result = solver.solve(qubo)
         self.assertTrue(result.warm_start_used)
-        self.assertEqual(result.mixer_type, "x")
+        self.assertEqual(result.mixer_type, "warm_start")
+        self.assertEqual(sum(result.counts.values()), 64)
+
+    def test_warm_start_recovers_when_lp_solver_fails(self) -> None:
+        solver = QAOASolver(QAOAConfig(warm_start=True, shots=64, max_iterations=5))
+        with patch("optimization.milp.MILPSolver.solve_relaxation", side_effect=RuntimeError("LP failed")):
+            result = solver.solve(tiny_qubo())
+        self.assertTrue(result.warm_start_used)
         self.assertEqual(sum(result.counts.values()), 64)
 
     def test_xy_mixer_qaoa_executes_and_flags_metadata(self) -> None:

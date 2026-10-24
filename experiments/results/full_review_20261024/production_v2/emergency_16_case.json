@@ -1,0 +1,62 @@
+{
+  "scenario": {
+    "id": "emergency_16",
+    "blood_groups": [
+      "O"
+    ],
+    "blood_banks": [
+      {
+        "id": "bank_a",
+        "name": "Bank A",
+        "location_id": "LOC_BANK_A",
+        "inventory": {
+          "O": 12
+        }
+      }
+    ],
+    "hospitals": [
+      {
+        "id": "hospital_1",
+        "name": "Hospital 1",
+        "location_id": "LOC_HOSPITAL_1",
+        "demand": {
+          "O": 16
+        },
+        "urgency": {
+          "O": {
+            "category": "critical",
+            "priority_weight": 3
+          }
+        }
+      }
+    ],
+    "routes": [
+      {
+        "source": "bank_a",
+        "destination": "hospital_1",
+        "travel_time_minutes": 18.0,
+        "distance_km": 7.2,
+        "transport_cost": 4.5,
+        "status": "available"
+      }
+    ],
+    "compatibility": [
+      {
+        "donor": "O",
+        "recipient": "O",
+        "allowed": true
+      }
+    ],
+    "synthetic": true
+  },
+  "family": "primary",
+  "qubits": 13,
+  "weights": {
+    "critical_unmet_weight": 10,
+    "total_unmet_weight": 5,
+    "transportation_cost_weight": 1,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0
+  },
+  "penalty": 954
+}

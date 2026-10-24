@@ -1,0 +1,7 @@
+{
+  "source": "runs.jsonl",
+  "source_sha256": "2837dcf1b305d2d2a385f49ec1b39d6c56f3386b2e0df3579aba54a65ae31abf",
+  "matplotlib": "3.11.2",
+  "plot": "primary_comparison.svg",
+  "scope": "Descriptive pooled distributions; cases are heterogeneous and repeated seeds are not independent instances."
+}

@@ -1,0 +1,7 @@
+{
+  "status": "completed",
+  "records": 198,
+  "source_commit": "d3ec6d218db1d4eabb1ed990402173d8b1a86883",
+  "evidence": "../followup_execution.json",
+  "note": "Original recovered runner used JSON output, not a complete marker; this marker records its successful subprocess exit and copied result."
+}

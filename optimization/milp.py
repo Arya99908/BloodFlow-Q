@@ -79,7 +79,11 @@ class MILPSolver:
         if num_vars == 0:
             # Degenerate empty scenario
             empty_allocation: tuple[AllocationDecision, ...] = ()
-            empty_unmet: dict[tuple[str, str], int] = {}
+            empty_unmet: dict[tuple[str, str], int] = {
+                (hospital.id, group): 0
+                for hospital in scenario.hospitals
+                for group in hospital.demand
+            }
             report = validate_allocation(scenario, empty_allocation, empty_unmet)
             obj = calculate_objective(scenario, empty_allocation, objective_config, secondary_penalties=named_secondary)
             return MILPResult(
@@ -219,8 +223,16 @@ class MILPSolver:
         scenario: Scenario,
         objective_config: ObjectiveConfig,
         secondary_penalties: Mapping[str, float] | None = None,
-    ) -> dict[str, dict]:
-        """Solve the continuous LP relaxation, returning fractional values for warm-starting."""
+        *,
+        include_metadata: bool = False,
+    ) -> dict[str, object]:
+        """Return relaxed quantity maps; optionally include objective and timing.
+
+        Metadata is opt-in to preserve research callers that iterate the maps.
+        """
+        started = time.perf_counter()
+        secondary = _validate_secondary_penalties(secondary_penalties)
+        secondary_cost = objective_config.secondary_penalty_weight * sum(secondary.values())
         allocation_vars = scenario.allocation_variables()
         routes = {(r.source, r.destination): r for r in scenario.routes}
 
@@ -234,7 +246,18 @@ class MILPSolver:
         num_vars = num_x + num_u
 
         if num_vars == 0:
-            return {"allocation": {}, "unmet_demand": {}, "slack": {}}
+            # No demand means no shipments; all positive stock remains unused.
+            # Like the general relaxation path, zero-valued quantity rows
+            # are omitted and optional metadata stays separate from maps.
+            slack = {
+                (bank.id, group): float(available)
+                for bank in scenario.blood_banks
+                for group, available in bank.inventory.items()
+                if available > 0
+            }
+            return {"allocation": {}, "unmet_demand": {}, "slack": slack,
+                    **({"objective_value": float(secondary_cost),
+                        "runtime_seconds": time.perf_counter() - started} if include_metadata else {})}
 
         c = np.zeros(num_vars, dtype=float)
         lb = np.zeros(num_vars, dtype=float)
@@ -323,4 +346,6 @@ class MILPSolver:
             "allocation": alloc_dict,
             "unmet_demand": unmet_dict,
             "slack": slack_dict,
+            **({"objective_value": float(res.fun + secondary_cost),
+                "runtime_seconds": time.perf_counter() - started} if include_metadata else {}),
         }

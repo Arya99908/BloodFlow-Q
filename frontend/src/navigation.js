@@ -52,7 +52,9 @@ export const PAGE_TITLES = Object.fromEntries(NAV_ITEMS.map(({ id, label }) => [
 export function resolveRoute(pathname = window.location.pathname) {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/') return 'home';
-  const id = decodeURIComponent(path.slice(1));
+  let id;
+  try { id = decodeURIComponent(path.slice(1)); }
+  catch { return 'not-found'; }
   return NAV_BY_ID[id] ? id : 'not-found';
 }
 

@@ -1,0 +1,128 @@
+{
+  "configuration": {
+    "study": "full_review_20261024",
+    "primary_seeds": [
+      401,
+      402,
+      403,
+      404,
+      405
+    ],
+    "additional_seeds": [
+      401,
+      402,
+      403
+    ],
+    "base": {
+      "p": 2,
+      "shots": 256,
+      "max_iterations": 40,
+      "restarts": 2,
+      "warm_start_epsilon": 0.1,
+      "normalize_cost": true
+    },
+    "max_qubits": 14,
+    "run_timeout_seconds": 60,
+    "primary_variants": {
+      "standard": {},
+      "warm": {
+        "warm_start": true
+      },
+      "xy": {
+        "mixer": "xy"
+      },
+      "warm_xy": {
+        "warm_start": true,
+        "mixer": "xy"
+      },
+      "warm_keep": {
+        "warm_start": true,
+        "retain_initial_state": true
+      },
+      "warm_zero": {
+        "warm_start": true,
+        "parameter_initialization": "zero_first"
+      },
+      "warm_zero_keep": {
+        "warm_start": true,
+        "parameter_initialization": "zero_first",
+        "retain_initial_state": true
+      },
+      "greedy_warm": {
+        "warm_start": true,
+        "warm_start_source": "greedy"
+      }
+    },
+    "ablation_scenarios": [
+      "normal_reference",
+      "emergency_16",
+      "multi_facility"
+    ],
+    "ablations": {
+      "warm_epsilon025": {
+        "warm_start": true,
+        "warm_start_epsilon": 0.25
+      },
+      "warm_depth1": {
+        "warm_start": true,
+        "p": 1
+      },
+      "warm_depth3": {
+        "warm_start": true,
+        "p": 3
+      },
+      "warm_shots64": {
+        "warm_start": true,
+        "shots": 64
+      },
+      "warm_powell": {
+        "warm_start": true,
+        "optimizer": "Powell",
+        "max_iterations": 2
+      },
+      "warm_nelder_mead": {
+        "warm_start": true,
+        "optimizer": "Nelder-Mead"
+      },
+      "warm_interpolated": {
+        "warm_start": true,
+        "parameter_initialization": "provided"
+      }
+    },
+    "notes": [
+      "Frozen before measuring new controls. Five paired optimizer seeds on the 15 established compact/held-out cases; three on additional boundary and historical cases.",
+      "Only primary warm_keep versus warm is a mechanistic expected-energy retention check; other contrasts exploratory. Retention costs one extra statevector evaluation.",
+      "Powell iteration budgets are not equivalent to COBYLA function budgets; actual calls and time are reported.",
+      "Depth interpolation includes a separate p=1 training run on the same instance/seed and charges its entire runtime.",
+      "Exact references and validation are separately timed analysis work; not part of solver wall time. No hardware runtime inferred."
+    ]
+  },
+  "pilot": false,
+  "source_sha256": {
+    "quantum/qaoa_solver.py": "0dbd09fa30a15d219b4d6099051648caab691ee6800e01cd5f8919aaacab10fe",
+    "quantum/qubo.py": "2e26596a8dbb965e210908eef4cebf7305283a6b3ec9930a7a1a9b1aaf7f4bbe",
+    "quantum/ising.py": "38b70015db5f2197b35179c97fc656664d33c8969140411d59bd20d4694284dc",
+    "optimization/milp.py": "72bd813791bd21ab8a8822b316e9d12f7acf7a1f16f5a4dc39b02b6f72aeff86",
+    "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+    "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+    "optimization/objective.py": "cc612ba79c819ae388d0dc4f87af8e014c764391242e5bd7c92bc58b004ac2d5",
+    "experiments/run_full_review.py": "065ddf8f0ddccfb2af04ca54d49cdd868a19484a8d5acbae4c231f50d19f9195",
+    "experiments/configs/full_review_20261024.json": "c1a18d713f36b7a1e3e5b80c25fbdbf0ff4e279234218279ecd53cea428ad018"
+  },
+  "python": "3.14.7",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "cpu_count": 10,
+  "versions": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "qiskit": "2.6.0",
+    "qiskit-aer": "0.17.2"
+  },
+  "thread_limits": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "timing": "serial warm-process timings; repetitions are not independent problem instances; ru_maxrss is process lifetime high-water; references and analysis are excluded and separately timed",
+  "hardware": "Apple M1 Pro\n17179869184"
+}

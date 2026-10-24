@@ -118,3 +118,40 @@ class TestMILPSolver:
             assert not (alloc.source == "B1" and alloc.destination == "H1")
             # Verify compatibility
             assert scenario.compatibility.get((alloc.blood_group, alloc.recipient_group), False) is True
+
+
+@pytest.mark.parametrize('stock', [0, 3])
+def test_zero_demand_milp_returns_feasible_explicit_zero_rows(stock):
+    scenario = Scenario(
+        'zero_demand', ('O',),
+        (BloodBank('b', 'Bank', 'B', {'O': stock}),),
+        (Hospital('h', 'Hospital', 'H', {'O': 0}, {'O': Urgency('high', 1)}),),
+        (Route('b', 'h', 1, 1, 1, 'available'),), {('O', 'O'): True},
+    )
+    result = MILPSolver().solve(scenario, ObjectiveConfig(1, 1, 1, 1, 2), {'fixed': 3})
+    assert result.status == 'completed'
+    assert result.feasibility_report['feasible'] is True
+    assert result.unmet_demand == {('h', 'O'): 0}
+    assert result.allocation == ()
+    assert result.objective_value == 6
+
+
+@pytest.mark.parametrize('stock', [0, 3])
+def test_zero_demand_relaxation_preserves_unused_stock_and_metadata(stock):
+    scenario = Scenario(
+        'zero_demand', ('O',),
+        (BloodBank('b', 'Bank', 'B', {'O': stock}),),
+        (Hospital('h', 'Hospital', 'H', {'O': 0}, {'O': Urgency('high', 1)}),),
+        (Route('b', 'h', 1, 1, 1, 'available'),), {('O', 'O'): True},
+    )
+    solver = MILPSolver()
+    weights = ObjectiveConfig(1, 1, 1, 1, 2)
+    quantities = solver.solve_relaxation(scenario, weights, {'fixed': 3})
+    enriched = solver.solve_relaxation(scenario, weights, {'fixed': 3}, include_metadata=True)
+    assert quantities == {
+        'allocation': {}, 'unmet_demand': {},
+        'slack': {('b', 'O'): float(stock)} if stock else {},
+    }
+    assert {key: enriched[key] for key in quantities} == quantities
+    assert enriched['objective_value'] == 6
+    assert enriched['runtime_seconds'] >= 0

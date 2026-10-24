@@ -1,3 +1,6 @@
+import FullReviewStudy from '../components/FullReviewStudy';
+import WarmQAOAComparison from '../components/WarmQAOAComparison';
+import ResearchFollowup from '../components/ResearchFollowup';
 import { useMemo, useState } from 'react';
 import { Atom, ArrowRight, Check, CircleHelp, Download, FileChartColumn, FlaskConical, RotateCcw } from 'lucide-react';
 import { useResearchStudy } from '../hooks/useResearchStudy';
@@ -32,8 +35,8 @@ export default function QuantumLab({ onNavigate }) {
   const classical = scenarioRuns.filter((row) => row.method === 'classical_multistart' && row.status === 'completed' && row.feasibility === true);
   const hybrid = scenarioRuns.filter((row) => row.method === 'hybrid_qaoa_local_search' && row.status === 'completed' && row.feasibility === true);
 
-  if (error) return <><PageHeader eyebrow="QUANTUM METHODS" title="Quantum Optimization Lab" description="Inspect the measured QUBO, Ising and QAOA experiment artifact." /><ErrorState message={error} /></>;
-  if (!study) return <><PageHeader eyebrow="QUANTUM METHODS" title="Quantum Optimization Lab" description="Inspect the measured QUBO, Ising and QAOA experiment artifact." /><LoadingState label="Loading saved experiment measurements…" /></>;
+  if (error) return <><PageHeader eyebrow="QUANTUM METHODS" title="Quantum Optimization Lab" description="Inspect the measured QUBO, Ising and QAOA experiment artifact." /><FullReviewStudy /><ErrorState message={error} /></>;
+  if (!study) return <><PageHeader eyebrow="QUANTUM METHODS" title="Quantum Optimization Lab" description="Inspect the measured QUBO, Ising and QAOA experiment artifact." /><FullReviewStudy /><LoadingState label="Loading saved experiment measurements…" /></>;
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify({ configuration, results: [...qaoaRuns] }, null, 2)], { type: 'application/json' });
@@ -43,6 +46,9 @@ export default function QuantumLab({ onNavigate }) {
 
   return <>
     <PageHeader eyebrow="MEASURED QUANTUM PIPELINE" title="Quantum Optimization Lab" description="Follow an actual saved QAOA sample from binary model to decoded, independently validated allocation." action={<button className="button button-secondary" onClick={exportJson}><Download size={15} /> Export selected scenario</button>} />
+    <FullReviewStudy />
+    <ResearchFollowup />
+    <WarmQAOAComparison />
     <section className="qlab-intro"><div className="qlab-orb"><Atom size={24} /></div><div><span className="eyebrow">RESEARCH ARTIFACT · LOCAL QISKIT AER SIMULATOR</span><h2>Optimization as an inspectable pipeline</h2><p>The binary model encodes shipment, unmet-demand and inventory-slack quantities. The Ising operator preserves its energy; QAOA samples candidate bitstrings; the shared classical decoder and validator check the resulting allocation.</p></div><div className="qlab-context"><strong>{configuration.suite || 'Research suite'}</strong><span>{configuration.qaoa_repetitions || 0} seeds per scenario</span><span>Synthetic scenarios</span></div></section>
     <section className="qlab-pipeline" aria-label="Actual solver pipeline">
       {['Allocation model', 'QUBO', 'Ising Z / ZZ', 'QAOA simulator', 'Decode sample', 'Independent validation', 'Classical reference'].map((step, index) => <div className="qlab-step" key={step}><span className="qlab-step-index">0{index + 1}</span><strong>{step}</strong>{index < 6 && <ArrowRight className="qlab-step-arrow" size={14} aria-hidden="true" />}</div>)}

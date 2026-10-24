@@ -1,0 +1,62 @@
+{
+  "pilot": true,
+  "primary_methods": [
+    "standard",
+    "warm",
+    "xy",
+    "warm_xy",
+    "qubo_cvar",
+    "reduced",
+    "reduced_cvar",
+    "feasible_grover"
+  ],
+  "heldout_seeds": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110
+  ],
+  "training_seeds": [
+    11,
+    19
+  ],
+  "generation_seed": 20261023,
+  "config": {
+    "method": "standard",
+    "p": 2,
+    "max_evaluations": 80,
+    "restarts": 2,
+    "shots": 1024,
+    "seed": 101,
+    "epsilon": 0.1,
+    "alpha": 1.0,
+    "training_shots": 0
+  },
+  "training_shot_control": 256,
+  "versions": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "qiskit": "2.6.0",
+    "qiskit-aer": "0.17.2"
+  },
+  "python": "3.14.7",
+  "source_sha256": {
+    "research/quantum_experiments/metrics.py": "26ee44af1d1cce2603d1270b2897ed459c5c62eb5903d0cde44016bd90206b19",
+    "research/quantum_experiments/run_study.py": "55602481acf6673eb68351d40146bac78d650ac6c0c7e3fc386492c1836a467d",
+    "research/quantum_experiments/supplementary.py": "739d0e142fc74d9747c0b77df0b9b023087b0d213b8769f08e82a93043f8d2fd",
+    "research/quantum_experiments/verify_production.py": "d3b5cfcb24ccdd3c98d052529e9890e45f529696b28269e1afcfd78c5ee50f35",
+    "research/quantum_experiments/algorithms.py": "3caa04bd6552870433b3a012dd6a9831850330a0d249a27d1a54fdc2161e3c91",
+    "research/quantum_experiments/grover_search.py": "7db534e277139e19d410623c37f9e0407e84d5ca8ace644dbcd6a1b9621cdc07",
+    "research/quantum_experiments/encodings.py": "5ed67d4e437b4c4ee52de74092a7c220e7140e9c9c70c92cf0ae7ba4cd1a11a3",
+    "research/quantum_experiments/instances.py": "bfc239798b0f07818094f1911776590a90c104db75b1a3d79863532f1bafdbf4",
+    "research/quantum_experiments/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research/quantum_experiments/classical.py": "9860c2213c990e4d5a3979aa27c9dcac16507f2fb5d92335b6b3e6dbbcf3f2b5",
+    "research/quantum_experiments/analyze.py": "de7c3da59b83d7904a17c90ee8e261355c7c0b05ca827151351f9b5b63b77606"
+  }
+}

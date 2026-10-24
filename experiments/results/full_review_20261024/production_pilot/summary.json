@@ -1,0 +1,1790 @@
+{
+  "source": "experiments/results/full_review_20261024/production_pilot/runs.jsonl",
+  "source_sha256": "602074715eb7d049a8c97f0467b9514e4cbc435522dfc22e3e6a63a8bc2e32d9",
+  "complete_marker_present": true,
+  "records": 12,
+  "statuses": {
+    "completed": 12
+  },
+  "definitions": "feasible_shot_rate is operational allocation/shortage feasibility; final_feasible_probability and optimal_shot_rate use strict encoded equality proof masks. Statistics use only finite recorded values, with n per metric. Feasibility mean is returned-solution feasibility, distinct from feasible-shot rate. Sample standard deviation uses n-1 and is null for n<2. Aggregate methods use primary-family rows only; ablations have fewer scenarios and must not be ranked against full methods. Runtime/objective means across different instances are descriptive, not paired significance evidence. Failed/skipped rows remain in status counts; missing metrics are never zero.",
+  "scenario_method": [
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "exact",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.00013462500646710396,
+        "median": 0.00013462500646710396,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "greedy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 8.895801147446036e-05,
+        "median": 8.895801147446036e-05,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "greedy_warm",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5621684580110013,
+        "median": 0.5621684580110013,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5621684580110013,
+        "median": 0.5621684580110013,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "lp",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.001740833991789259,
+        "median": 0.001740833991789259,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "milp",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.0009098750015255064,
+        "median": 0.0009098750015255064,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "standard",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.47326116600015666,
+        "median": 0.47326116600015666,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.47326116600015666,
+        "median": 0.47326116600015666,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.2109375,
+        "median": 0.2109375,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.0078125,
+        "median": 0.0078125,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.028017909103471808,
+        "median": 0.028017909103471808,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 8018.599999999991,
+        "median": 8018.599999999991,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 6359.216924884196,
+        "median": 6359.216924884196,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "warm",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5514686670067022,
+        "median": 0.5514686670067022,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5514686670067022,
+        "median": 0.5514686670067022,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "warm_keep",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5918278750032187,
+        "median": 0.5918278750032187,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5918278750032187,
+        "median": 0.5918278750032187,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "warm_xy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5844001249934081,
+        "median": 0.5844001249934081,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5844001249934081,
+        "median": 0.5844001249934081,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.5859375,
+        "median": 0.5859375,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.29296875,
+        "median": 0.29296875,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.2932912108801286,
+        "median": 0.2932912108801286,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.8799999999974,
+        "median": 1623.8799999999974,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1460.5358892554832,
+        "median": 1460.5358892554832,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "warm_zero",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5578351660078624,
+        "median": 0.5578351660078624,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5578351660078624,
+        "median": 0.5578351660078624,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.58203125,
+        "median": 0.58203125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.4375,
+        "median": 0.4375,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.47011743751748913,
+        "median": 0.47011743751748913,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 659.8581538195381,
+        "median": 659.8581538195381,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "warm_zero_keep",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5705725840089144,
+        "median": 0.5705725840089144,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5705725840089144,
+        "median": 0.5705725840089144,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.58203125,
+        "median": 0.58203125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.4375,
+        "median": 0.4375,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.47011743751748913,
+        "median": 0.47011743751748913,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 659.8581538195381,
+        "median": 659.8581538195381,
+        "sample_std": null
+      }
+    },
+    {
+      "family": "primary",
+      "scenario": "normal_reference",
+      "method": "xy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5714071249967674,
+        "median": 0.5714071249967674,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5714071249967674,
+        "median": 0.5714071249967674,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.23828125,
+        "median": 0.23828125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.01825527170228594,
+        "median": 0.01825527170228594,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 8018.599999999991,
+        "median": 8018.599999999991,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 7269.309678469522,
+        "median": 7269.309678469522,
+        "sample_std": null
+      }
+    }
+  ],
+  "primary_method": [
+    {
+      "method": "exact",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.00013462500646710396,
+        "median": 0.00013462500646710396,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "greedy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 8.895801147446036e-05,
+        "median": 8.895801147446036e-05,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "greedy_warm",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5621684580110013,
+        "median": 0.5621684580110013,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5621684580110013,
+        "median": 0.5621684580110013,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "lp",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.001740833991789259,
+        "median": 0.001740833991789259,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "milp",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.0009098750015255064,
+        "median": 0.0009098750015255064,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "standard",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.47326116600015666,
+        "median": 0.47326116600015666,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.47326116600015666,
+        "median": 0.47326116600015666,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.2109375,
+        "median": 0.2109375,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.0078125,
+        "median": 0.0078125,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.028017909103471808,
+        "median": 0.028017909103471808,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 8018.599999999991,
+        "median": 8018.599999999991,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 6359.216924884196,
+        "median": 6359.216924884196,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "warm",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5514686670067022,
+        "median": 0.5514686670067022,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5514686670067022,
+        "median": 0.5514686670067022,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "warm_keep",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5918278750032187,
+        "median": 0.5918278750032187,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5918278750032187,
+        "median": 0.5918278750032187,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.6875,
+        "median": 0.6875,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.515625,
+        "median": 0.515625,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.5382645443778206,
+        "median": 0.5382645443778206,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1408.424346725163,
+        "median": 1408.424346725163,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "warm_xy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5844001249934081,
+        "median": 0.5844001249934081,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5844001249934081,
+        "median": 0.5844001249934081,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.5859375,
+        "median": 0.5859375,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.29296875,
+        "median": 0.29296875,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.2932912108801286,
+        "median": 0.2932912108801286,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.8799999999974,
+        "median": 1623.8799999999974,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 1460.5358892554832,
+        "median": 1460.5358892554832,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "warm_zero",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5578351660078624,
+        "median": 0.5578351660078624,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5578351660078624,
+        "median": 0.5578351660078624,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.58203125,
+        "median": 0.58203125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.4375,
+        "median": 0.4375,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.47011743751748913,
+        "median": 0.47011743751748913,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 659.8581538195381,
+        "median": 659.8581538195381,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "warm_zero_keep",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5705725840089144,
+        "median": 0.5705725840089144,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5705725840089144,
+        "median": 0.5705725840089144,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.58203125,
+        "median": 0.58203125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.4375,
+        "median": 0.4375,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.47011743751748913,
+        "median": 0.47011743751748913,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 1623.879999999997,
+        "median": 1623.879999999997,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 659.8581538195381,
+        "median": 659.8581538195381,
+        "sample_std": null
+      }
+    },
+    {
+      "method": "xy",
+      "records": 1,
+      "statuses": {
+        "completed": 1
+      },
+      "wall_seconds": {
+        "n": 1,
+        "mean": 0.5714071249967674,
+        "median": 0.5714071249967674,
+        "sample_std": null
+      },
+      "solver_wall_seconds": {
+        "n": 1,
+        "mean": 0.5714071249967674,
+        "median": 0.5714071249967674,
+        "sample_std": null
+      },
+      "qubo_construction_seconds": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "sample_std": null
+      },
+      "objective": {
+        "n": 1,
+        "mean": 25.2,
+        "median": 25.2,
+        "sample_std": null
+      },
+      "absolute_gap": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "feasibility": {
+        "n": 1,
+        "mean": 1,
+        "median": 1,
+        "sample_std": null
+      },
+      "feasible_shot_rate": {
+        "n": 1,
+        "mean": 0.23828125,
+        "median": 0.23828125,
+        "sample_std": null
+      },
+      "optimal_shot_rate": {
+        "n": 1,
+        "mean": 0.0,
+        "median": 0.0,
+        "sample_std": null
+      },
+      "final_feasible_probability": {
+        "n": 1,
+        "mean": 0.01825527170228594,
+        "median": 0.01825527170228594,
+        "sample_std": null
+      },
+      "initial_expected_energy": {
+        "n": 1,
+        "mean": 8018.599999999991,
+        "median": 8018.599999999991,
+        "sample_std": null
+      },
+      "final_expected_energy": {
+        "n": 1,
+        "mean": 7269.309678469522,
+        "median": 7269.309678469522,
+        "sample_std": null
+      }
+    }
+  ]
+}

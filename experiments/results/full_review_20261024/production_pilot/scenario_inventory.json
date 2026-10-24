@@ -1,0 +1,8 @@
+[
+  {
+    "scenario": "normal_reference",
+    "family": "primary",
+    "qubits": 10,
+    "input_file": "normal_reference_case.json"
+  }
+]

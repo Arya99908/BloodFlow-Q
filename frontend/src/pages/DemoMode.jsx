@@ -1,5 +1,7 @@
+import QAOAVariantSelect from '../components/QAOAVariantSelect';
+import { QAOA_VARIANTS, getQAOAVariant, qaoaVariantConfig } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Play, ShieldCheck, Settings2 } from 'lucide-react';
+import { Activity, ArrowRight, Play, ShieldCheck, Settings2 } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
@@ -12,7 +14,7 @@ import ClickSpark from '../components/ClickSpark';
 import GlideSelect from '../components/GlideSelect';
 
 const FALLBACK_WEIGHTS = { critical_unmet_weight: 10, total_unmet_weight: 5, transportation_cost_weight: 1, transportation_time_weight: 0.1, secondary_penalty_weight: 0 };
-const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7 };
+const FALLBACK_QAOA = { p: 1, shots: 256, optimizer: 'COBYLA', max_iterations: 40, seed: 7, restarts: 1, warm_start_epsilon: 0.25, normalize_cost: true };
 const FALLBACK_CASES = [
   { id: 'normal', name: 'NORMAL', description: 'Bundled synthetic Bank A to Hospital 1 O-group allocation.' },
   { id: 'emergency_demand_spike', name: 'EMERGENCY DEMAND SPIKE', description: 'Raises the same synthetic demand and escalates its logistics urgency.' },
@@ -28,6 +30,8 @@ export default function DemoMode() {
   const [method, setMethod] = useState('qaoa');
   const [weights, setWeights] = useState(FALLBACK_WEIGHTS);
   const [qaoa, setQaoa] = useState(FALLBACK_QAOA);
+  const [qaoaVariant, setQaoaVariant] = useState('standard');
+  const warmStart = getQAOAVariant(qaoaVariant).warm_start;
   const [penalties, setPenalties] = useState({ inventory_penalty_weight: '10000', demand_penalty_weight: '10000' });
   const [result, setResult] = useState(null);
   const [liveRuns, setLiveRuns] = useState({});
@@ -39,11 +43,11 @@ export default function DemoMode() {
 
   useEffect(() => {
     if (defaults?.objective_weights) setWeights(defaults.objective_weights);
-    if (defaults?.qaoa_config) setQaoa(defaults.qaoa_config);
+    if (defaults?.qaoa_config) setQaoa({ ...FALLBACK_QAOA, ...defaults.qaoa_config });
   }, [defaults]);
 
   const objectiveWeights = weights;
-  const qaoaSettings = qaoa;
+  const qaoaSettings = { ...qaoa, ...qaoaVariantConfig(qaoaVariant) };
   const cases = catalog?.scenarios?.length ? catalog.scenarios : FALLBACK_CASES;
   const storedRuns = precomputed?.runs || [];
   const selectedCase = cases.find((item) => item.id === scenarioId) || FALLBACK_CASES[0];
@@ -55,9 +59,9 @@ export default function DemoMode() {
   const allocations = output?.after_allocation || output?.allocation || [];
   const actualScenario = output?.modified_scenario || output?.scenario || null;
   const comparableRuns = useMemo(() => {
-    if (mode === 'precomputed') return storedRuns.filter((run) => run.scenario_id === 'normal');
-    return ['greedy', 'milp', 'exact', 'qaoa'].map((solver) => liveRuns[`normal:${solver}`]).filter(Boolean);
-  }, [liveRuns, mode, storedRuns]);
+    if (mode === 'precomputed') return storedRuns.filter((run) => run.scenario_id === scenarioId);
+    return ['greedy', 'milp', 'exact', ...QAOA_VARIANTS.map(variant => `qaoa-${variant.id}`)].map((solver) => liveRuns[`${scenarioId}:${solver}`]).filter(Boolean);
+  }, [liveRuns, mode, storedRuns, scenarioId]);
 
   const setWeight = (key, value) => setWeights((current) => ({ ...current, [key]: Number(value) }));
   const setQaoaValue = (key, value) => setQaoa((current) => ({ ...current, [key]: key === 'optimizer' ? value : Number(value) }));
@@ -104,8 +108,10 @@ export default function DemoMode() {
     }
     try {
       const measured = await api.runDemo(request);
-      setResult(measured);
-      setLiveRuns((current) => ({ ...current, [`${scenarioId}:${method}`]: measured }));
+      const runKey = method === 'qaoa' ? `qaoa-${qaoaVariant}` : method;
+      const labeledRun = { ...measured, demo_method_label: method === 'qaoa' ? getQAOAVariant(qaoaVariant).label : method.toUpperCase() };
+      setResult(labeledRun);
+      setLiveRuns((current) => ({ ...current, [`${scenarioId}:${runKey}`]: labeledRun }));
     } catch (issue) { setRunError(issue.message || 'The requested demo run failed.'); }
     finally { setRunning(false); }
   };
@@ -138,20 +144,36 @@ export default function DemoMode() {
           <GlideSelect ariaLabel="Optimization method" options={[{value:'greedy',label:'Greedy baseline'},{value:'milp',label:'MILP · HiGHS classical optimal'},{value:'exact',label:'Exact small-instance solver'},{value:'qaoa',label:'QAOA local simulator'}]} value={method} onChange={(value) => { setMethod(value); setConfigStep(0); }} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" />
           <details className="demo-objective-settings"><summary>Objective weights</summary><div className="demo-settings-grid">{Object.entries(objectiveWeights).map(([key, value]) => <NumberField key={key} label={key.replaceAll('_', ' ')} value={value} min="0" onChange={(next) => setWeight(key, next)} />)}</div></details></>}
           {method === 'qaoa' && configStep === 1 && <>
+            <button type="button" className="button button-secondary button-small" disabled={running} onClick={() => {
+              setQaoa((current) => ({ ...current, p: 2, shots: 512, max_iterations: 80, restarts: 3, warm_start_epsilon: 0.1, normalize_cost: true }));
+              const recommended = String(Math.max(1, Math.ceil(demoBound * 1.5)));
+              setPenalties({ inventory_penalty_weight: recommended, demand_penalty_weight: recommended });
+            }}>Use audited comparison settings</button>
+            <p className="comparison-help">Preset: depth 2, 512 shots, 3 starts × 80 optimizer iterations; warm-start epsilon 0.1. Uses more compute. Compare all four variants with the same budget.</p>
+            <QAOAVariantSelect id="demo-qaoa-variant" value={qaoaVariant} onChange={setQaoaVariant} disabled={running} />
             <div className="demo-settings-grid">
               <NumberField label="Random seed" value={qaoaSettings.seed} onChange={(value) => setQaoaValue('seed', value)} min="0" />
               <NumberField label="QAOA depth (p)" value={qaoaSettings.p} onChange={(value) => setQaoaValue('p', value)} min="1" max="5" />
               <NumberField label="Shots" value={qaoaSettings.shots} onChange={(value) => setQaoaValue('shots', value)} min="1" max="10000" />
-              <NumberField label="Optimizer iterations" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
+              <NumberField label="Optimizer restarts" value={qaoaSettings.restarts} onChange={(value) => setQaoaValue('restarts', value)} min="1" max="10" />
+              {warmStart && <NumberField label="Warm-start epsilon" value={qaoaSettings.warm_start_epsilon} onChange={(value) => setQaoaValue('warm_start_epsilon', value)} min="0.01" max="0.49" />}
+              <NumberField label="Optimizer iterations per restart" value={qaoaSettings.max_iterations} onChange={(value) => setQaoaValue('max_iterations', value)} min="1" max="500" />
             <label className="demo-field">Classical optimizer<GlideSelect ariaLabel="Classical optimizer" options={['COBYLA','Nelder-Mead','Powell']} value={qaoaSettings.optimizer} onChange={(value) => setQaoaValue('optimizer', value)} showTags={false} accentColor="#ef233c" surfaceColor="var(--bg-surface)" highlightColor="var(--bg-hover)" textColor="var(--text-primary)" className="demo-glide-select" /></label>
             </div>
-            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} optimizer iterations`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} optimizer iterations`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
+            <details className="demo-objective-settings"><summary>Research controls · optional ablations</summary>
+              <label className="checkbox-label"><input type="checkbox" checked={Boolean(qaoaSettings.normalize_cost)} disabled={running} onChange={event => setQaoa(current => ({ ...current, normalize_cost: event.target.checked }))} />Normalize the Ising cost for optimizer stability</label>
+              <label className="demo-field">First parameter start<select className="field-control" value={qaoa.parameter_initialization || 'random'} onChange={event => setQaoa(current => ({ ...current, parameter_initialization: event.target.value }))}><option value="random">Seeded random (baseline)</option><option value="zero_first">Zero angles on first restart</option></select></label>
+              {warmStart && <label className="demo-field">Classical state source<select className="field-control" value={qaoa.warm_start_source || 'lp'} onChange={event => setQaoa(current => ({ ...current, warm_start_source: event.target.value }))}><option value="lp">LP relaxation, with validated fallback</option><option value="greedy">Validated greedy allocation</option></select></label>}
+              <label className="checkbox-label"><input type="checkbox" checked={Boolean(qaoa.retain_initial_state)} onChange={event => setQaoa(current => ({ ...current, retain_initial_state: event.target.checked }))} />Retain initial circuit if optimizer worsens expected energy</label>
+              <p className="comparison-help">Retention adds one exact statevector evaluation. It does not guarantee a higher probability of feasible or optimal shots.</p>
+            </details>
+            <div className="qaoa-tuning-readout" aria-label={`${qaoaSettings.shots} shots and ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`}><span className="eyebrow">ENGINE BUDGET</span><TextType as="strong" text={`${Number(qaoaSettings.shots).toLocaleString()} shots · ${qaoaSettings.max_iterations} iterations × ${qaoaSettings.restarts} restarts`} typingSpeed={18} loop={false} showCursor={false} typeEffect="fade" /></div>
           </>}
           {method === 'qaoa' && configStep === 2 && <>
             <div className="demo-settings-grid demo-penalties"><NumberField label={`Inventory penalty weight (min > ${demoBound})`} value={penalties.inventory_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, inventory_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /><NumberField label={`Demand penalty weight (min > ${demoBound})`} value={penalties.demand_penalty_weight} onChange={(value) => setPenalties((current) => ({ ...current, demand_penalty_weight: value }))} min={(demoBound + 0.1).toFixed(1)} placeholder={`> ${demoBound}`} /></div>
             <p className="comparison-help"><strong>Minimum penalty weight: &gt; {demoBound}</strong>. Required by QUBO formulation: penalty weights must strictly exceed the theoretical objective upper bound so that constraint violations cannot be chosen over valid allocations.</p>
           </>}
-          <p className="comparison-help">To build a same-scenario comparison, run Greedy, Exact, then QAOA in turn. Completed responses stay visible for this browser session.</p>
+          <p className="comparison-help">To build a same-scenario comparison, run Greedy, MILP, Exact, Standard QAOA, Warm-start QAOA, XY and Warm-start + XY in turn. Completed responses stay visible for this browser session.</p>
           <div className="demo-step-actions">{configStep > 0 && <button type="button" className="button button-secondary" onClick={() => setConfigStep((step) => step - 1)}>Back</button>}{configStep < configLastStep ? <button type="button" className="button button-primary" onClick={() => setConfigStep((step) => step + 1)}>Next step <ArrowRight size={15} /></button> : <ClickSpark className="demo-run-spark" style={{width:'auto',height:'auto'}} sparkColor="#edf2f4"><SpecularButton size="md" radius={10} tint="#d90429" textColor="#fff" lineColor="#ff9aa8" baseColor="#d90429" className="run-optimization-button" onClick={run} disabled={running || !selectedCase}><Play size={15} />{running ? 'RUNNING REAL PIPELINE…' : 'RUN DEMO'}</SpecularButton></ClickSpark>}</div>
           <p className="demo-qaoa-status"><ShieldCheck size={14} /> QAOA availability reported by backend: <strong>{defaults?.qaoa_available == null ? 'checking' : defaults.qaoa_available ? 'available' : 'unavailable'}</strong>. {defaults?.qaoa_unavailable_reason || 'A failed QAOA request stays an error.'}</p>
         </section> : <section className="panel demo-config">
@@ -191,7 +213,7 @@ export default function DemoMode() {
               </span>
               <StatusBadge
                 status={afterMetrics?.feasibility ? 'feasible' : 'infeasible'}
-                label={`${shownResult.method?.toUpperCase()} · ${afterMetrics?.feasibility ? 'FEASIBLE' : 'INFEASIBLE'}`}
+                label={`${shownResult.demo_method_label || shownResult.method?.toUpperCase()} · ${afterMetrics?.feasibility ? 'FEASIBLE' : 'INFEASIBLE'}`}
               />
             </div>
             {mode === 'precomputed' && <p className="comparison-help">This is the saved response from the experiment capture date, not a computation performed now.</p>}
@@ -203,7 +225,10 @@ export default function DemoMode() {
               <div className="panel solver-metadata-panel">
                 <div className="metadata-panel-heading">QAOA circuit & execution telemetry</div>
                 <div className="metadata-row-grid">
+                  <MetaRow label="Initialization source" value={(output?.after_qaoa || output)?.optimizer_information?.seed_source ?? 'Not recorded'} />
+                  <MetaRow label="Effective mixer" value={(output?.after_qaoa || output)?.optimizer_information?.effective_mixer ?? 'Not recorded'} />
                   <MetaRow label="QUBO variables" value={(output?.after_qaoa || output)?.qubo_variable_count ?? 'Not available'} />
+                  <MetaRow label="Feasible shot rate" value={(output?.after_qaoa || output)?.optimizer_information?.feasible_shot_rate == null ? 'Not available' : `${(100 * (output?.after_qaoa || output).optimizer_information.feasible_shot_rate).toFixed(1)}%`} />
                   <MetaRow label="Ansatz depth (p)" value={(output?.after_qaoa || output)?.qaoa_depth ?? 'Not available'} />
                   <MetaRow label="Circuit shots" value={(output?.after_qaoa || output)?.shots ?? 'Not available'} />
                   <div className="bitstring-box">
@@ -224,7 +249,7 @@ export default function DemoMode() {
           </>}
         </section>
       </div>
-      <section className="panel demo-comparison"><div className="panel-heading"><div><h2>Greedy · MILP · Exact · QAOA comparison</h2><p>{mode === 'precomputed' ? 'Historical measured runs for the same compact normal scenario.' : 'Live results collected from this page session for the same compact normal scenario.'}</p></div></div>
+      <section className="panel demo-comparison"><div className="panel-heading"><div><h2>Greedy · MILP · Exact · QAOA comparison</h2><p>{mode === 'precomputed' ? `Historical measured runs for ${scenarioId.replaceAll('_', ' ')}.` : `Live results collected from this page session for ${scenarioId.replaceAll('_', ' ')}.`}</p></div></div>
         {comparableRuns.length ? (
           <div className="table-scroll" role="region" aria-label="Solver comparison" tabIndex={0}>
             <table className="data-table">
@@ -245,8 +270,8 @@ export default function DemoMode() {
                   // once more. Normalize both shapes before rendering.
                   const row = getComparableResult(record);
                   return (
-                    <tr key={record.run_id || `${record.scenario_id}-${record.method}`}>
-                      <td><strong>{record.method.toUpperCase()}</strong></td>
+                    <tr key={record.run_id || `${record.scenario_id}-${record.demo_method_label || record.method}`}>
+                      <td><strong>{record.demo_method_label || record.method.toUpperCase()}</strong></td>
                       <td className="text-right num-cell">{showMetric(row?.total_objective)}</td>
                       <td className="text-right num-cell">{row?.critical_satisfaction?.rate == null ? 'Not available' : `${(row.critical_satisfaction.rate * 100).toFixed(1)}%`}</td>
                       <td className="text-right num-cell">{showMetric(row?.total_unmet_demand)}</td>

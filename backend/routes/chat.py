@@ -168,7 +168,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
         if blocked_routes:
             reply += "⛔ **Currently Blocked Distribution Links:**\n"
             for br in blocked_routes:
-                reply += f"- Route `{br.get('source')} ➔ {br.get('destination')}` ({br.get('distance_km')} km, {br.get('transport_time_hours')} hrs)\n"
+                reply += f"- Route `{br.get('source')} ➔ {br.get('destination')}` ({br.get('distance_km')} km, {br.get('travel_time_minutes')} minutes)\n"
             reply += "\n*Blocked corridors are excluded during allocation to preserve patient delivery safety.*\n"
         else:
             reply += "✅ All distribution corridors are fully operational with normal transit times.\n"
@@ -183,7 +183,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
 
     # 7. Action Execution Requests
     elif any(k in msg for k in ["run", "execute", "solve", "start optimization"]):
-        reply = "I'm initiating an allocation optimization using the fast Greedy baseline solver. You can also benchmark with MILP and QAOA."
+        reply = "Use the action below to run the Greedy baseline solver. No optimization has started yet. You can also benchmark with MILP and QAOA."
         actions.append(ActionSuggestion(id="act-do-opt", label="⚡ Run Optimization Now", type="optimize"))
         actions.append(ActionSuggestion(id="act-nav-opt", label="⚙️ View Optimization Settings", type="navigate", payload="optimization"))
 
