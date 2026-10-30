@@ -1,0 +1,545 @@
+{
+  "schema_version": 1,
+  "generated_from_saved_experiment_reports": true,
+  "interpretation": "Recorded synthetic local-simulator experiments only; no quantum advantage is established.",
+  "sources": {
+    "full-review-study.json": "4b8af3c117d669e85b58f4d3aa15da05950ae9de36d9c4a448ce96e4323ce49e",
+    "warm-qaoa-paired-20261022.json": "82afb7026177639da8a1b50a8780789d9033edf6a22d62e505adb2636bd8abe9",
+    "quantum-value-study.json": "a04933c93ff4da1b109a82726ba326e4c0599d5038e39da11b57a0bdf8a34fe1"
+  },
+  "datasets": {
+    "full_review": {
+      "study_date": "2026-10-24",
+      "status": "complete",
+      "counts": {
+        "completed": 1377,
+        "failed": 0,
+        "skipped": 33,
+        "blocked": 0
+      },
+      "methods": [
+        {
+          "method": "exact",
+          "label": "exact",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.00026839726662728934,
+          "mean_feasible_shot_probability": null
+        },
+        {
+          "method": "greedy",
+          "label": "greedy",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 5.468177356912444e-05,
+          "mean_feasible_shot_probability": null
+        },
+        {
+          "method": "greedy_warm",
+          "label": "greedy warm",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5607253850253376,
+          "mean_feasible_shot_probability": 0.7118229166666666
+        },
+        {
+          "method": "lp",
+          "label": "lp",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.0007710249471710995,
+          "mean_feasible_shot_probability": null
+        },
+        {
+          "method": "milp",
+          "label": "milp",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.0027589533732195076,
+          "mean_feasible_shot_probability": null
+        },
+        {
+          "method": "standard",
+          "label": "standard",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.4578763216935719,
+          "mean_feasible_shot_probability": 0.33401041666666664
+        },
+        {
+          "method": "warm",
+          "label": "warm",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5623348666682917,
+          "mean_feasible_shot_probability": 0.714375
+        },
+        {
+          "method": "warm_depth1",
+          "label": "warm depth1",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 0.6968116445311655,
+          "mean_feasible_shot_probability": 0.57109375
+        },
+        {
+          "method": "warm_depth3",
+          "label": "warm depth3",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 1.5321016279320854,
+          "mean_feasible_shot_probability": 0.5380208333333333
+        },
+        {
+          "method": "warm_epsilon025",
+          "label": "warm epsilon025",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 1.131275375065161,
+          "mean_feasible_shot_probability": 0.25859375
+        },
+        {
+          "method": "warm_interpolated",
+          "label": "warm interpolated",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 1.8198839724636249,
+          "mean_feasible_shot_probability": 0.6557291666666667
+        },
+        {
+          "method": "warm_keep",
+          "label": "warm keep",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5675618267200965,
+          "mean_feasible_shot_probability": 0.714375
+        },
+        {
+          "method": "warm_nelder_mead",
+          "label": "warm nelder mead",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 1.8127100694682061,
+          "mean_feasible_shot_probability": 0.51796875
+        },
+        {
+          "method": "warm_powell",
+          "label": "warm powell",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 2.155626375069066,
+          "mean_feasible_shot_probability": 0.6138020833333333
+        },
+        {
+          "method": "warm_shots64",
+          "label": "warm shots64",
+          "scenario_count": 3,
+          "completed": 15,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 15,
+          "evaluated_trials": 15,
+          "mean_runtime_seconds": 1.1168546945322304,
+          "mean_feasible_shot_probability": 0.5708333333333333
+        },
+        {
+          "method": "warm_xy",
+          "label": "warm xy",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5808409917199363,
+          "mean_feasible_shot_probability": 0.5459895833333334
+        },
+        {
+          "method": "warm_zero",
+          "label": "warm zero",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5605931678654936,
+          "mean_feasible_shot_probability": 0.8223958333333333
+        },
+        {
+          "method": "warm_zero_keep",
+          "label": "warm zero keep",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.567165558906078,
+          "mean_feasible_shot_probability": 0.8223958333333333
+        },
+        {
+          "method": "xy",
+          "label": "xy",
+          "scenario_count": 15,
+          "completed": 75,
+          "failed": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "feasible_trials": 75,
+          "evaluated_trials": 75,
+          "mean_runtime_seconds": 0.5846157283588157,
+          "mean_feasible_shot_probability": 0.19645833333333335
+        }
+      ],
+      "notes": [
+        "Primary-family methods only. Scenario counts differ for ablations; compare matched cases.",
+        "Means include recorded completed runs only. Operational feasible-shot rates do not prove encoded slack equality.",
+        "Wall time includes QUBO, warm preprocessing, and interpolation training when applicable; exact proof and diagnostic analysis are excluded.",
+        "Failed and skipped records remain in counts. Simulated quantum execution; no hardware evidence or advantage claim."
+      ],
+      "scope": "Primary full-review and ablation summary; method case counts vary."
+    },
+    "warm_paired": {
+      "created_at_utc": "2026-10-21T21:05:39.130071+00:00",
+      "protocol": {
+        "module": "experiments.run_warm_qaoa_comparison",
+        "arguments": [
+          "--scenarios",
+          "6",
+          "--seeds",
+          "10",
+          "--seed-start",
+          "301",
+          "--p",
+          "1",
+          "--shots",
+          "64",
+          "--max-iterations",
+          "8",
+          "--run-id",
+          "warm-qaoa-paired-20261022"
+        ]
+      },
+      "run_count": 120,
+      "completed_runs": 120,
+      "paired_seed_count": 10,
+      "scenario_count": 6,
+      "variants": [
+        {
+          "variant": "standard",
+          "attempts": 60,
+          "completed": 60,
+          "mean_feasible_shot_rate": 0.17682291666666666,
+          "median_runtime_seconds": 0.1353380999989895,
+          "exact_optimum_runs": 45,
+          "feasible_shots": 679,
+          "total_shots": 3840
+        },
+        {
+          "variant": "lp_warm_start",
+          "attempts": 60,
+          "completed": 60,
+          "mean_feasible_shot_rate": 0.32057291666666665,
+          "median_runtime_seconds": 0.13673130000097444,
+          "exact_optimum_runs": 60,
+          "feasible_shots": 1231,
+          "total_shots": 3840
+        }
+      ],
+      "scenarios": [
+        {
+          "scenario_id": "normal_reference",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.25625,
+          "warm_start_mean_feasible_shot_rate": 0.378125,
+          "mean_paired_difference_warm_minus_standard": 0.121875,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            0.0671875,
+            0.1703125
+          ],
+          "seeds_warm_better": 9,
+          "seeds_tied": 0,
+          "seeds_warm_worse": 1,
+          "standard_median_runtime_seconds": 0.1077941000003193,
+          "warm_start_median_runtime_seconds": 0.11056205000022601,
+          "standard_optimal_runs": 8,
+          "warm_start_optimal_runs": 10
+        },
+        {
+          "scenario_id": "inventory_shortage",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.1421875,
+          "warm_start_mean_feasible_shot_rate": 0.2859375,
+          "mean_paired_difference_warm_minus_standard": 0.14375,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            0.1203125,
+            0.1671875
+          ],
+          "seeds_warm_better": 10,
+          "seeds_tied": 0,
+          "seeds_warm_worse": 0,
+          "standard_median_runtime_seconds": 0.12741574999927252,
+          "warm_start_median_runtime_seconds": 0.12715355000000272,
+          "standard_optimal_runs": 9,
+          "warm_start_optimal_runs": 10
+        },
+        {
+          "scenario_id": "demand_below_inventory",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.390625,
+          "warm_start_mean_feasible_shot_rate": 0.425,
+          "mean_paired_difference_warm_minus_standard": 0.034375,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            -0.04375,
+            0.109375
+          ],
+          "seeds_warm_better": 5,
+          "seeds_tied": 1,
+          "seeds_warm_worse": 4,
+          "standard_median_runtime_seconds": 0.13936995000040042,
+          "warm_start_median_runtime_seconds": 0.13969940000060888,
+          "standard_optimal_runs": 10,
+          "warm_start_optimal_runs": 10
+        },
+        {
+          "scenario_id": "transport_disruption",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.1,
+          "warm_start_mean_feasible_shot_rate": 0.4578125,
+          "mean_paired_difference_warm_minus_standard": 0.3578125,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            0.253125,
+            0.475
+          ],
+          "seeds_warm_better": 10,
+          "seeds_tied": 0,
+          "seeds_warm_worse": 0,
+          "standard_median_runtime_seconds": 0.1222328000003472,
+          "warm_start_median_runtime_seconds": 0.12936509999963164,
+          "standard_optimal_runs": 7,
+          "warm_start_optimal_runs": 10
+        },
+        {
+          "scenario_id": "critical_shortage",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.10625,
+          "warm_start_mean_feasible_shot_rate": 0.2484375,
+          "mean_paired_difference_warm_minus_standard": 0.1421875,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            0.1046875,
+            0.1796875
+          ],
+          "seeds_warm_better": 10,
+          "seeds_tied": 0,
+          "seeds_warm_worse": 0,
+          "standard_median_runtime_seconds": 0.13488799999868206,
+          "warm_start_median_runtime_seconds": 0.13655719999951543,
+          "standard_optimal_runs": 7,
+          "warm_start_optimal_runs": 10
+        },
+        {
+          "scenario_id": "demo_emergency_demand_spike_emergency",
+          "paired_completed_seeds": 10,
+          "standard_mean_feasible_shot_rate": 0.065625,
+          "warm_start_mean_feasible_shot_rate": 0.128125,
+          "mean_paired_difference_warm_minus_standard": 0.0625,
+          "paired_difference_bootstrap_95_percentile_ci": [
+            0.034375,
+            0.0921875
+          ],
+          "seeds_warm_better": 8,
+          "seeds_tied": 2,
+          "seeds_warm_worse": 0,
+          "standard_median_runtime_seconds": 0.20942889999969339,
+          "warm_start_median_runtime_seconds": 0.21981305000008433,
+          "standard_optimal_runs": 4,
+          "warm_start_optimal_runs": 10
+        }
+      ],
+      "status_counts": {
+        "completed": 120
+      },
+      "scope": "Six synthetic scenarios, paired seeds and fixed p=1/64-shot protocol. Separate from other studies."
+    },
+    "legacy": {
+      "created_at_utc": "2026-10-14T19:44:36.367639+00:00",
+      "invocation": {
+        "module": "experiments.run_experiments",
+        "arguments": [
+          "--suite",
+          "round2",
+          "--scenarios",
+          "6",
+          "--repetitions",
+          "10",
+          "--seed",
+          "301",
+          "--p",
+          "1",
+          "--shots",
+          "128",
+          "--optimizer",
+          "COBYLA",
+          "--max-iterations",
+          "15",
+          "--penalty-weight",
+          "10000",
+          "--max-exact-states",
+          "50000",
+          "--run-id",
+          "quantum-value-confirmatory-seed301-20261015"
+        ]
+      },
+      "attempts": 198,
+      "status_counts": {
+        "completed": 184,
+        "infeasible": 7,
+        "skipped_infeasible_qaoa_seed": 7
+      },
+      "methods": [
+        {
+          "method": "greedy",
+          "attempts": 6,
+          "evaluated": 6,
+          "feasible": 6,
+          "infeasible": 0,
+          "skipped": 0,
+          "exact_reference_matches": 5,
+          "mean_runtime_seconds": 5.346666633461913e-05,
+          "mean_feasible_objective": 98.43333333333334
+        },
+        {
+          "method": "exact",
+          "attempts": 6,
+          "evaluated": 6,
+          "feasible": 6,
+          "infeasible": 0,
+          "skipped": 0,
+          "exact_reference_matches": 0,
+          "mean_runtime_seconds": 0.00025628333302544587,
+          "mean_feasible_objective": 92.43333333333334
+        },
+        {
+          "method": "milp",
+          "attempts": 6,
+          "evaluated": 6,
+          "feasible": 6,
+          "infeasible": 0,
+          "skipped": 0,
+          "exact_reference_matches": 0,
+          "mean_runtime_seconds": 0.0036404833332805233,
+          "mean_feasible_objective": 92.43333333333334
+        },
+        {
+          "method": "classical_multistart",
+          "attempts": 60,
+          "evaluated": 60,
+          "feasible": 60,
+          "infeasible": 0,
+          "skipped": 0,
+          "exact_reference_matches": 60,
+          "mean_runtime_seconds": 0.0007468883332573266,
+          "mean_feasible_objective": 92.43333333333334
+        },
+        {
+          "method": "qaoa",
+          "attempts": 60,
+          "evaluated": 60,
+          "feasible": 53,
+          "infeasible": 7,
+          "skipped": 0,
+          "exact_reference_matches": 29,
+          "mean_runtime_seconds": 0.1391530366666302,
+          "mean_feasible_objective": 128.78490566037735
+        },
+        {
+          "method": "hybrid_qaoa_local_search",
+          "attempts": 60,
+          "evaluated": 53,
+          "feasible": 53,
+          "infeasible": 0,
+          "skipped": 7,
+          "exact_reference_matches": 52,
+          "mean_runtime_seconds": 0.13937435666663683,
+          "mean_feasible_objective": 90.56981132075471
+        }
+      ],
+      "scope": "Historical confirmatory experiment; do not pool with October 24 or warm-start paired studies."
+    }
+  }
+}
