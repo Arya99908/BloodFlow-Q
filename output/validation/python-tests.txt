@@ -1,0 +1,12 @@
+...................................................................... [ 30%]
+............................................................. [ 56%]
+.................................................................... [ 85%]
+.................................                                    [100%]
+=============================== warnings summary ===============================
+tests/test_warm_qaoa.py::WarmQAOAEncodingTests::test_feasible_shot_rate_uses_independent_operational_validator
+tests/test_warm_qaoa.py::WarmQAOAEncodingTests::test_lp_failure_falls_back_to_validated_greedy_not_milp_optimum
+  /Users/shreeshaks/Documents/BloodFlow-Q-main 3/.venv/lib/python3.14/site-packages/scipy/_external/pyprima/common/preproc.py:68: UserWarning: COBYLA: Invalid MAXFUN; it should be at least num_vars + 2; it is set to 4
+    warn(f'{solver}: Invalid MAXFUN; it should be at least {min_maxfun_str}; it is set to {maxfun}')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+232 passed, 2 warnings, 21 subtests passed in 6.74s

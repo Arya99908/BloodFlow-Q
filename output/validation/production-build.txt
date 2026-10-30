@@ -1,0 +1,76 @@
+
+> bloodflow-q-frontend@0.1.0 build
+> vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 2749 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                         1.80 kB │ gzip:   0.71 kB
+dist/assets/DemoMode-ARt0FQgW.css                       1.81 kB │ gzip:   0.68 kB
+dist/assets/SpecularButton-BO_OJfCv.css                 2.52 kB │ gzip:   0.93 kB
+dist/assets/AllocationSankey-BtS1AJ8V.css               2.66 kB │ gzip:   0.91 kB
+dist/assets/BloodBanks-CYNymmwR.css                     3.55 kB │ gzip:   1.09 kB
+dist/assets/Home-BQcXx8K3.css                           4.12 kB │ gzip:   1.09 kB
+dist/assets/GlideSelect-Dm5kDGE5.css                    4.20 kB │ gzip:   1.25 kB
+dist/assets/BorderGlow-C6qf57Js.css                     6.32 kB │ gzip:   1.28 kB
+dist/assets/EmergencySimulation-CgBXj2oA.css            6.72 kB │ gzip:   1.80 kB
+dist/assets/Network-CxOKyQY3.css                        8.09 kB │ gzip:   2.24 kB
+dist/assets/ComparativeEvidenceExplorer-CeGalfDQ.css    9.00 kB │ gzip:   2.10 kB
+dist/assets/Dashboard-BA_765_f.css                     22.17 kB │ gzip:   4.44 kB
+dist/assets/index-D3EjIWnj.css                        216.51 kB │ gzip:  39.14 kB
+dist/assets/play-BV4JnIzV.js                            0.30 kB │ gzip:   0.25 kB
+dist/assets/circle-dot-OLTJ16YN.js                      0.35 kB │ gzip:   0.25 kB
+dist/assets/clock-3-CO_NhixG.js                         0.35 kB │ gzip:   0.27 kB
+dist/assets/PageHeader-0FfvV3_Z.js                      0.35 kB │ gzip:   0.21 kB
+dist/assets/rotate-ccw-CSpUc76l.js                      0.37 kB │ gzip:   0.28 kB
+dist/assets/info-CjljfdGX.js                            0.37 kB │ gzip:   0.28 kB
+dist/assets/droplet-D8vZ_sYU.js                         0.38 kB │ gzip:   0.29 kB
+dist/assets/circle-help-CdgEiUt7.js                     0.40 kB │ gzip:   0.30 kB
+dist/assets/useResearchStudy-CRA8OQfh.js                0.41 kB │ gzip:   0.30 kB
+dist/assets/route-yXNp59Zu.js                           0.42 kB │ gzip:   0.30 kB
+dist/assets/map-pin-C54c7IUY.js                         0.42 kB │ gzip:   0.32 kB
+dist/assets/triangle-alert-aO3Sdy0d.js                  0.43 kB │ gzip:   0.31 kB
+dist/assets/git-branch-CeFgZomo.js                      0.44 kB │ gzip:   0.32 kB
+dist/assets/clipboard-check-DxlgqBbP.js                 0.47 kB │ gzip:   0.33 kB
+dist/assets/badge-check-wf6R6Ikb.js                     0.48 kB │ gzip:   0.31 kB
+dist/assets/shield-check-DXzsccG2.js                    0.49 kB │ gzip:   0.35 kB
+dist/assets/building-2-Cx5C36dy.js                      0.61 kB │ gzip:   0.35 kB
+dist/assets/QAOAVariantSelect-CztPUqcb.js               0.63 kB │ gzip:   0.38 kB
+dist/assets/qaoaVariants-DEPx0LxE.js                    2.01 kB │ gzip:   0.76 kB
+dist/assets/scenarioBounds-B-DHjOXf.js                  2.94 kB │ gzip:   0.91 kB
+dist/assets/BorderGlow-_Ylkb3uy.js                      3.64 kB │ gzip:   1.82 kB
+dist/assets/DataField-DUC0_Pi9.js                       3.84 kB │ gzip:   1.49 kB
+dist/assets/useSupabaseAuth-B5XKQNXY.js                 4.05 kB │ gzip:   1.70 kB
+dist/assets/Coordination-BKf0x2UN.js                    4.34 kB │ gzip:   1.71 kB
+dist/assets/Flow-BvMZYRD0.js                            4.39 kB │ gzip:   1.80 kB
+dist/assets/Hospitals-n-wfemFV.js                       4.88 kB │ gzip:   1.74 kB
+dist/assets/networkGraph-B4bmza92.js                    5.54 kB │ gzip:   2.14 kB
+dist/assets/GlideSelect-BKpvyDF2.js                     6.35 kB │ gzip:   2.72 kB
+dist/assets/donorNetwork-DBbqMK10.js                    7.42 kB │ gzip:   2.07 kB
+dist/assets/AllocationSankey-Diy9bhCC.js                7.99 kB │ gzip:   3.15 kB
+dist/assets/About-DiqQTjd6.js                           9.15 kB │ gzip:   3.07 kB
+dist/assets/BloodBanks-BccIMynQ.js                     14.01 kB │ gzip:   5.72 kB
+dist/assets/QuantumLab-Csgcfiur.js                     18.01 kB │ gzip:   6.08 kB
+dist/assets/Network-CXWiandx.js                        21.29 kB │ gzip:   6.68 kB
+dist/assets/Results-DEGAZtgP.js                        23.77 kB │ gzip:   7.57 kB
+dist/assets/DonorNetwork-CXDA9qua.js                   26.29 kB │ gzip:   6.82 kB
+dist/assets/EmergencySimulation-BeSgvkhk.js            29.32 kB │ gzip:   8.77 kB
+dist/assets/Optimization-cmBeCRy2.js                   29.61 kB │ gzip:   8.67 kB
+dist/assets/EmergencyRequests-DSMgOA_c.js              32.38 kB │ gzip:   8.67 kB
+dist/assets/ExperimentReports-BtUOjQ_n.js              35.35 kB │ gzip:  11.43 kB
+dist/assets/DemoMode-CYc7Fy3_.js                       42.58 kB │ gzip:  11.94 kB
+dist/assets/Home-CU2Sdk-i.js                           48.59 kB │ gzip:  17.64 kB
+dist/assets/Tooltip-Dx8AtyWn.js                        57.47 kB │ gzip:  20.41 kB
+dist/assets/Dashboard-BtEQLIY0.js                      80.85 kB │ gzip:  28.03 kB
+dist/assets/SpecularButton-BwnwP7ut.js                 86.12 kB │ gzip:  34.14 kB
+dist/assets/supabase-B21xbK19.js                      227.16 kB │ gzip:  59.02 kB
+dist/assets/index-D7r2mDJh.js                         469.71 kB │ gzip: 151.72 kB
+dist/assets/ComparativeEvidenceExplorer-CP2xeO0o.js   652.96 kB │ gzip: 221.74 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.45s

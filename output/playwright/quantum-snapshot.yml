@@ -1,0 +1,190 @@
+- generic [ref=f1e4]:
+  - link "Skip to main content" [ref=f1e5] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f1e6]:
+    - banner [ref=f1e7]:
+      - link "BloodFlow-Q" [ref=f1e8] [cursor=pointer]:
+        - /url: /
+      - navigation "Breadcrumb" [ref=f1e10]:
+        - button "Research" [ref=f1e11] [cursor=pointer]
+        - strong [ref=f1e12]: Quantum Optimization Lab
+      - generic [ref=f1e13]:
+        - 'button "Emergency Alerts: 4 active notifications" [ref=f1e68] [cursor=pointer]':
+          - generic [ref=f1e74]: "4"
+        - alert
+        - switch "Toggle dark theme" [ref=f1e21] [cursor=pointer]
+    - main "Quantum Optimization Lab" [active] [ref=f1e24]:
+      - generic [ref=f1e25]:
+        - generic [ref=f1e75]:
+          - generic [ref=f1e76]:
+            - generic [ref=f1e77]: MEASURED QUANTUM PIPELINE
+            - heading "Quantum Optimization Lab" [level=1] [ref=f1e78]
+            - paragraph [ref=f1e79]: Follow an actual saved QAOA sample from binary model to decoded, independently validated allocation.
+          - button "Export selected scenario" [ref=f1e81] [cursor=pointer]
+        - region [ref=f1e85]:
+          - generic [ref=f1e86]:
+            - generic [ref=f1e87]:
+              - generic [ref=f1e88]: BloodFlow-Q / Execution provenance
+              - heading [level=2] [ref=f1e89]:
+                - text: Inside the
+                - emphasis [ref=f1e90]: quantum experiment
+              - paragraph [ref=f1e91]: Real circuit resources. Recorded measurements. Explicit limits.
+            - generic [ref=f1e92]:
+              - generic [ref=f1e93]: Classical simulation
+              - strong [ref=f1e94]: No physical QPU run
+              - generic [ref=f1e95]: No backend job ID or hardware calibration evidence
+          - generic [ref=f1e96]:
+            - generic [ref=f1e97]:
+              - generic [ref=f1e98]: Formulation
+              - strong [ref=f1e99]: Implemented
+              - generic [ref=f1e100]: QUBO → Ising
+            - generic [ref=f1e101]:
+              - generic [ref=f1e102]: Simulation
+              - strong [ref=f1e103]: Recorded
+              - generic [ref=f1e104]: Statevector training + Aer shots
+            - generic [ref=f1e105]:
+              - generic [ref=f1e106]: Basis decomposition
+              - strong [ref=f1e107]: Unrouted
+              - generic [ref=f1e108]: Separate all-to-all fixtures
+            - generic [ref=f1e109]:
+              - generic [ref=f1e110]: Physical hardware
+              - strong [ref=f1e111]: Not demonstrated
+              - generic [ref=f1e112]: Device execution and calibration
+          - generic [ref=f1e113]:
+            - generic [ref=f1e114]:
+              - text: Saved execution
+              - combobox "Saved execution" [ref=f1e115]:
+                - option "normal reference / Warm + XY / seed 405" [selected]
+                - option "normal reference / XY mixer / seed 401"
+                - option "normal reference / warm nelder mead / seed 401"
+                - option "normal reference / Greedy-seeded QAOA / seed 402"
+                - option "normal reference / warm interpolated / seed 405"
+                - option "normal reference / Warm zero + retain / seed 405"
+                - option "normal reference / warm depth3 / seed 403"
+                - option "normal reference / warm shots64 / seed 401"
+                - option "normal reference / warm depth1 / seed 402"
+                - option "normal reference / Standard QAOA / seed 403"
+                - option "normal reference / Warm zero angles / seed 405"
+                - option "normal reference / LP warm-start / seed 405"
+                - option "normal reference / warm epsilon025 / seed 404"
+                - option "normal reference / Warm + retain / seed 402"
+                - option "normal reference / warm powell / seed 401"
+            - paragraph [ref=f1e116]: Curated execution examples include complete counts. The observatory exposes every run.
+          - generic [ref=f1e117]:
+            - generic [ref=f1e118]:
+              - generic [ref=f1e119]: Qubits
+              - strong [ref=f1e120]: "10"
+            - generic [ref=f1e121]:
+              - generic [ref=f1e122]: QAOA layers (p)
+              - strong [ref=f1e123]: "2"
+            - generic [ref=f1e124]:
+              - generic [ref=f1e125]: Compiled depth
+              - strong [ref=f1e126]: "53"
+            - generic [ref=f1e127]:
+              - generic [ref=f1e128]: Two-qubit operations
+              - strong [ref=f1e129]: "114"
+            - generic [ref=f1e130]:
+              - generic [ref=f1e131]: Shots
+              - strong [ref=f1e132]: "256"
+            - generic [ref=f1e133]:
+              - generic [ref=f1e134]: Runtime (ms)
+              - strong [ref=f1e135]: "571.34"
+          - paragraph [ref=f1e136]: AerSimulator (local CPU); exact statevector training. Aer compiled operations; no physical topology routing. QAOA layers p are not compiled gate depth. Simulator gate counts are not hardware-native gate counts.
+          - generic [ref=f1e137]:
+            - figure [ref=f1e138]:
+              - generic [ref=f1e139]:
+                - heading "Measurement distribution" [level=3] [ref=f1e140]
+                - paragraph [ref=f1e141]: 16 most frequent bitstrings plus all remaining counts. Percentages use the complete recorded shot total.
+              - img "Measurement distribution. 16 most frequent bitstrings plus all remaining counts. Percentages use the complete recorded shot total." [ref=f1e142]:
+                - img [ref=f1e144]:
+                  - generic [ref=f1e146]:
+                    - generic [ref=f1e147]: Measured shots (%)
+                    - generic [ref=f1e148]: "0"
+                    - generic [ref=f1e149]: "20"
+                    - generic [ref=f1e150]: "40"
+                    - generic [ref=f1e151]: "60"
+                    - generic [ref=f1e152]: "80"
+                    - generic [ref=f1e153]: "100"
+                    - generic [ref=f1e154]: "1011000111"
+                    - generic [ref=f1e155]: "1011100111"
+                    - generic [ref=f1e156]: "1010000111"
+                    - generic [ref=f1e157]: "1011001111"
+                    - generic [ref=f1e158]: "1001000111"
+                    - generic [ref=f1e159]: "0011000111"
+                    - generic [ref=f1e160]: "1011010110"
+                    - generic [ref=f1e161]: "1111001111"
+                    - generic [ref=f1e162]: Other recorded outcomes
+            - generic [ref=f1e180]:
+              - heading "Feasibility, with definitions" [level=3] [ref=f1e181]
+              - generic [ref=f1e182]:
+                - generic [ref=f1e183]:
+                  - term [ref=f1e184]: Returned allocation
+                  - definition [ref=f1e185]: Feasible
+                - generic [ref=f1e186]:
+                  - term [ref=f1e187]: Operationally feasible shots
+                  - definition [ref=f1e188]: 53.91%
+                - generic [ref=f1e189]:
+                  - term [ref=f1e190]: Strict feasible probability (statevector)
+                  - definition [ref=f1e191]: 30.12%
+                - generic [ref=f1e192]:
+                  - term [ref=f1e193]: Strict optimal shots
+                  - definition [ref=f1e194]: 26.56%
+                - generic [ref=f1e195]:
+                  - term [ref=f1e196]: Objective / exact reference
+                  - definition [ref=f1e197]: 25.2 / 25.2
+                - generic [ref=f1e198]:
+                  - term [ref=f1e199]: Optimizer
+                  - definition [ref=f1e200]: COBYLA · 80 evaluations
+                - generic [ref=f1e201]:
+                  - term [ref=f1e202]: Gate counts
+                  - definition [ref=f1e203]: "rzz: 66 · rxx: 24 · ryy: 24 · rz: 20 · ry: 10 · measure: 10 · barrier: 1"
+              - paragraph [ref=f1e204]: Operational checks validate decoded logistics. Strict feasibility additionally checks the encoded equality constraints. Statevector probabilities are not finite-shot confidence estimates.
+          - group [ref=f1e205]:
+            - generic "Every observed bitstring (73)" [ref=f1e206] [cursor=pointer]
+          - generic [ref=f1e207]:
+            - heading "Circuit reconstruction" [level=3] [ref=f1e208]
+            - paragraph [ref=f1e209]: The archive records aggregate operation counts and variational parameters, but no ordered gate instructions or QASM. A faithful circuit drawing cannot be reconstructed from these counts alone.
+            - paragraph [ref=f1e210]:
+              - strong [ref=f1e211]: "Recorded final parameters (radians):"
+              - text: 5.55847, 1.17969, 3.18434, 3.34506
+          - group [ref=f1e212]:
+            - generic "Execution configuration and source record" [ref=f1e213] [cursor=pointer]
+          - group [ref=f1e214]:
+            - generic "Separate basis-decomposition fixtures" [ref=f1e215] [cursor=pointer]
+        - group [ref=f1e216]:
+          - generic "Historical studies and legacy run inspector" [ref=f1e217] [cursor=pointer]
+          - option "normal reference" [selected]
+          - option "inventory shortage"
+          - option "demand below inventory"
+          - option "transport disruption"
+          - option "critical shortage"
+          - option "Emergency demand spike"
+          - option "Multi-facility tradeoff" [selected]
+          - option "Normal reference"
+          - option "Inventory shortage"
+          - option "Transport cost tradeoff"
+          - option "Emergency demand spike"
+          - option "Transport disruption"
+          - option "301 · completed" [selected]
+          - option "302 · completed"
+          - option "303 · completed"
+          - option "304 · completed"
+          - option "305 · completed"
+          - option "306 · infeasible"
+          - option "307 · completed"
+          - option "308 · completed"
+          - option "309 · infeasible"
+          - option "310 · completed"
+        - generic [ref=f1e218]: QAOA runs use a local classical simulator, not quantum hardware. Scenarios and measurements are synthetic; the interface is not for clinical decisions or physical blood delivery.
+    - contentinfo [ref=f1e53]:
+      - generic [ref=f1e54]:
+        - text: BloodFlow-Q
+        - generic [ref=f1e57]: v2.001
+      - generic [ref=f1e58]: Aggregate logistics model Synthetic data only Not for clinical decisions
+      - generic [ref=f1e61]: Research workspace
+  - toolbar "Dock" [ref=f1e62]:
+    - button "Home" [ref=f1e63] [cursor=pointer]
+    - button "Workspace" [ref=f1e64] [cursor=pointer]
+    - button "Operations" [ref=f1e65] [cursor=pointer]
+    - button "Coordination" [ref=f1e66] [cursor=pointer]
+    - button "Research" [ref=f1e67] [cursor=pointer]

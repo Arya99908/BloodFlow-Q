@@ -1,0 +1,12 @@
+{
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "### Result\n{\"title\":\"Experiment reports | BloodFlow-Q\",\"archive\":\"1,410 observations\",\"health\":{\"status\":\"ok\",\"synthetic_data_only\":true,\"qaoa_available\":true},\"overflow\":false}\n### Ran Playwright code\n```js\nawait (async page=>{await page.goto('http://127.0.0.1:5173/reports');await page.getByRole('heading',{name:'Solver Benchmark Observatory'}).waitFor();await page.getByRole('combobox',{name:'Scenario',exact:true}).selectOption('emergency_16');await page.getByRole('tab',{name:'Quality & runtime'}).click();return {title:await page.title(),archive:await page.locator('.obs-provenance strong').innerText(),health:await page.evaluate(async()=>await(await fetch('http://127.0.0.1:8000/health')).json()),overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)};})(page);\n```\n### Events\n- New console entries: .playwright-mcp/console-2026-10-30T13-07-18-076Z.log#L13-L21"
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 57
+}

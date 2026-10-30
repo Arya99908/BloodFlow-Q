@@ -1,0 +1,86 @@
+{
+  "agent": "visual_audit",
+  "browser": "Playwright MCP headless isolated",
+  "sizes": {
+    "desktop": [
+      1440,
+      1000
+    ],
+    "mobile": [
+      390,
+      844
+    ]
+  },
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "pages": [
+    "demo",
+    "network",
+    "emergency"
+  ],
+  "checks": {
+    "flagship_blocked": {
+      "weighted_critical_served": 0,
+      "service_first_critical_served": 1,
+      "critical_demand": 2,
+      "weighted_transport": 1,
+      "service_first_transport": 41
+    },
+    "flagship_unblocked": {
+      "weighted_critical_served": 0,
+      "service_first_critical_served": 2
+    },
+    "network_default": {
+      "stock": 71,
+      "allocated": 11,
+      "remaining": 60,
+      "unmet": 27
+    },
+    "emergency_demand_spike": {
+      "hospital": "hospital_1",
+      "blood_group": "O",
+      "new_demand": 12,
+      "solver": "milp",
+      "stock": 71,
+      "allocated": 19,
+      "remaining": 52,
+      "unmet": 27
+    },
+    "journey": "Emergency form and hold action -> Inspect affected network -> snapshot quantities verified -> refresh preserves snapshot -> reset restores default. Repeated journey -> Inspect research evidence -> /reports observatory loaded.",
+    "filter": "Blocked routes:2/6 facilities,1/9 routes; allocated only:3/9 routes; hidden selection message verified.",
+    "mobile_theme_click": "Real switch click dark -> light -> dark succeeded.",
+    "overflow": "All page viewport checks passed; Network nested intrinsic overflow found and fixed, panel354px in390px viewport.",
+    "console_errors": 0,
+    "observed_api_failures": 0
+  },
+  "fixes": [
+    "Network after-view tooltip now shows unmet rather than original demand.",
+    "Network nested mobile grid min-width fixed.",
+    "Emergency completed-step contrast corrected in dark theme.",
+    "Sankey desktop sizing exposes all five stages."
+  ],
+  "screenshots": [
+    "network-mobile-light.png",
+    "emergency-desktop-light.png",
+    "network-mobile-dark.png",
+    "demo-desktop-light.png",
+    "network-desktop-dark.png",
+    "demo-mobile-dark.png",
+    "emergency-flow-mobile-dark.png",
+    "emergency-desktop-dark.png",
+    "demo-desktop-dark.png",
+    "network-inspector-mobile-dark.png",
+    "emergency-mobile-dark.png",
+    "demo-policies-mobile-dark.png",
+    "network-desktop-light.png",
+    "demo-mobile-light.png",
+    "emergency-mobile-light.png"
+  ],
+  "limits": [
+    "Mobile Sankey uses intentional internal horizontal scroll with accessible data table.",
+    "Screenshot artifact tool full-page mobile tiling avoided by viewport screenshots.",
+    "Targeted controls tested; no exhaustive combinatorial testing of all emergency form values."
+  ]
+}
