@@ -27,6 +27,20 @@ class ComputeBudgetTests(unittest.TestCase):
         self.assertTrue(result['feasibility'])
         self.assertEqual(len(service.results()['results']),1)
 
+    def test_vercel_production_runs_compute_in_request_worker(self):
+        with patch.dict(os.environ, {
+            'VERCEL': '1',
+            'BLOODFLOW_CORS_ORIGINS': 'https://bloodflow-q.vercel.app',
+        }):
+            app=create_app(environment='production')
+        self.assertFalse(app.state.service.isolate_jobs)
+        response=TestClient(app).post('/optimize',json={
+            'method':'greedy',
+            'scenario':tiny_scenario_payload(),
+        })
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertTrue(response.json()['feasibility'])
+
     def test_worker_deadline_returns_no_fabricated_result(self):
         service=BackendService();service.isolate_jobs=True
         with patch('backend.jobs.JOB_TIMEOUT_SECONDS',0):

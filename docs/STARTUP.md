@@ -11,7 +11,7 @@ BloodFlow-Q's current local setup needs:
 - Node.js and npm. The inspected machine has Node.js 26.10.0 and npm 12.2.0.
 - An internet connection during the first setup, so the package managers can download dependencies.
 
-Git is useful for downloading and tracking project files, but it is not required to start a project folder you already have. The audited checkout is a Git repository on `somemore-QAOA-fix`; see [repository audit](repository_audit.md) for its recorded baseline.
+Git is useful for downloading and tracking project files, but it is not required to start a project folder you already have. For the current source and setup instructions, use the repository's `main` branch and this guide; no separate audit checkout is needed.
 
 ## 1. Open Terminal
 
@@ -114,6 +114,6 @@ Qiskit Aer is tested through its supported `AerSimulator` backend workflow (`Qua
 
 This project uses synthetic logistics scenarios only. It is not a clinical system. See [docs/SECURITY_AND_SAFETY.md](SECURITY_AND_SAFETY.md).
 
-## 24 October 2026 audit environment
+## Historical environment note (24 October 2026)
 
-The current checkout is `<PROJECT_ROOT>`. This session reused the existing neighboring `../BloodFlow-Q1/.venv/bin/python` rather than installing another environment. Its measured benchmark versions are recorded in `experiments/results/full_review_20261024/production_v2/protocol.json`; they supersede the historical versions above. For a portable fresh setup, use this project's `./setup.sh` and `.venv` commands. The current local frontend is http://127.0.0.1:5173 and API is http://127.0.0.1:8000.
+An earlier audit reused a Python environment located beside its checkout. That path was specific to that computer and is not required here. For a portable setup, use this project's `./setup.sh` and `.venv` commands. The addresses `http://127.0.0.1:5173` and `http://127.0.0.1:8000` are local development addresses, not the hosted site.

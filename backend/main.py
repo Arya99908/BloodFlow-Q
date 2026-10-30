@@ -88,8 +88,13 @@ def create_app(
     )
     application.state.service = service or BackendService()
     application.state.environment = selected_environment
-    # Injected test services remain in-process; public production jobs are disposable.
-    application.state.service.isolate_jobs = production and service is None
+    # Vercel serverless functions must not spawn child processes: the platform
+    # can leave the request waiting until its gateway deadline. Solver inputs
+    # and iteration budgets are bounded, so run them in the function worker.
+    # Keep disposable-process isolation for other production deployments.
+    application.state.service.isolate_jobs = (
+        production and service is None and os.getenv("VERCEL") != "1"
+    )
     application.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,

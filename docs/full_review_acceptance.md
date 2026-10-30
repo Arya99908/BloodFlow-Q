@@ -1,10 +1,19 @@
 # Full review acceptance ledger — 24 October 2026
 
-Target: `somemore-QAOA-fix`, starting from clean `ebd8f30`. This ledger distinguishes completed engineering/scientific work from unavailable end-to-end verification. It does not claim every acceptance criterion is fully passed.
+Historical snapshot: 24 October 2026, target branch `somemore-QAOA-fix`, starting from `ebd8f30`. This ledger records the evidence and limitations from that review; it is not a claim that every criterion was passed or that those test counts describe the current deployment. The release recheck for the 31 October deployment is recorded below.
+
+## 31 October release recheck
+
+- GitHub main is commit `716b8c7` plus the follow-up serverless timeout fix tracked in the current release commit.
+- Backend: 241 tests and 21 subtests passed before the follow-up fix; the follow-up compute-budget suite passed 5 tests. A final full rerun is required after that fix.
+- Frontend: 83 tests passed. Production build completed successfully; the comparative chart bundle remains above Vite's 500 kB advisory threshold.
+- Live GET checks passed for `/health`, `/scenario`, `/demo-scenarios`, `/experiment-defaults`, `/precomputed-demo`, `/coordination/capabilities`, `/coordination/dashboard`, `/results`, and `/reports/telemetry`.
+- A live POST to `/optimize` timed out before the follow-up fix. The serverless-specific fix is being deployed and this entry must not be read as a verified post-fix live result until that check is repeated.
+- Private donor records remain disabled in the public deployment; the donor and collection walkthrough is deterministic synthetic demo data. No database migration was applied in this release.
 
 | Requirement | Disposition and evidence |
 |---|---|
-| Accessible branches/contributors | Complete: five remote branches, four local branches, all 20 reachable commits, public GitHub contributor/PR/issue metadata. See [repository audit](repository_audit.md) and `audit/repository_20261024/`. No discovered inaccessible branch. No indiscriminate merge needed. |
+| Accessible branches/contributors | Historical metadata review reported five remote branches, four local branches, and 20 reachable commits. Its detailed repository audit export is not included in this release archive. |
 | Every application tab | All 16 destinations inspected through components, handlers, APIs and computational paths; HTTP shell/read checks recorded. Source inspection is not a browser click test. Private Supabase workflows are blocked without an authenticated configured session. |
 | Mathematical model | Reconstructed and tested bounded binary encoding, objective signs, decoding, penalty-bound logic, LP assumptions and Ising equality. Exhaustive proof JSON per eligible current scenario. Fixed zero-demand MILP shortage rows and LP stock slack; corrected boundary records separate from original runs. [Model audit](mathematical_model_audit.md). |
 | Primary research | 21 primary-source candidate assessments with applicability, limitations and implementation dispositions. [Research review](quantum_research_review.md). No hardware/advantage claim. |
@@ -17,7 +26,7 @@ Target: `somemore-QAOA-fix`, starting from clean `ebd8f30`. This ledger distingu
 | Report/artifacts | [Experiment report](EXPERIMENT_RESULTS.md) updated in place, historical content retained; generated from raw SHA-checked summary. CSV/JSON plus SVG/PNG distribution plots under `production_v2/`. Current summary published separately from historical studies in Reports and Quantum Lab. |
 | Network implementation | Actual scenario facility/route graph: pan/zoom/fit/reset, search/filters, keyboard selection, node/edge inspector, neighbors, validated saved-proposal overlay, responsive layout. Ten focused graph tests. [Network changes](network_tab_changes.md). |
 | Browser experience | Partial: live node inspector, zoom and neighbor filtering verified. Further pointer/keyboard/search/dropdown/reset/mobile/console checks blocked because native Brave is actively presenting; no browser connector available. No claim those checks passed. |
-| Regression/build | 215 Python tests +21 subtests passed (two expected small-budget COBYLA warnings); 53 frontend tests passed; production Vite build passed. 45 live HTTP checks passed against restarted current API, including four QAOA variants, new controls, emergencies, benchmark, CORS, synthetic coordination and validation errors. Evidence in `audit/full_review_20261024/`. |
+| Regression/build | Historical review recorded 215 Python tests plus 21 subtests, 53 frontend tests, and 45 live HTTP checks. Those historical counts are superseded by the dated release recheck above; its original `audit/full_review_20261024/` evidence directory is not distributed. |
 | Final diff/reproduction | Source changes reviewed; `git diff --check` clean. No dependency/cache/credential artifacts added. Recorded source snapshot preserves the pre-boundary-fix production protocol; current code reruns separately. Benchmark scripts reject conflicting resumptions. |
 
 ## Explicit limitations

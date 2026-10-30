@@ -1,6 +1,6 @@
 # Optimization UI and semantic-theme engineering report
 
-Implemented locally on 2026-10-30 in `BloodFlow-Q-main 3`, starting from `6e06f50`. These changes are not deployed. The production screenshot and reproduction were from `https://bloodflow-q.vercel.app/optimization`; after-fix verification used Vite on port 5173 and the actual local API on port 8000. The deployed build has older explanatory copy than this checkout.
+Historical work note: the UI and benchmark-status fixes described here were first implemented locally on 30 October 2026. They were subsequently included in the 31 October deployment. The original screenshots, Playwright scripts, and intermediate audit JSON referenced in the historical notes were stored in an ignored local `output/` folder and are not included in this repository. Do not treat those omitted files as evidence from the current deployment.
 
 ## Root causes and corrections
 
@@ -12,7 +12,7 @@ Implemented locally on 2026-10-30 in `BloodFlow-Q-main 3`, starting from `6e06f5
 
 ## Verification
 
-- Reproduced the production dark-mode failure with Playwright MCP and captured `output/playwright/optimization-before.png`.
+- The original local audit reproduced a production dark-mode failure and captured a screenshot in the local, non-distributed `output/` folder.
 - The original heading/body contrast measured **1.05:1 / 1.34:1**. The corrected alert measures **11.92:1 / 9.80:1** in dark mode and **13.19:1 / 8.01:1** in light mode.
 - A backend regression assertion first failed with a non-null skipped runtime. After the fix, `python -m pytest tests/test_api.py tests/test_benchmark.py -q`: **35 passed**.
 - `npm --prefix frontend test`: **77 passed**, including legacy runtime suppression, execution-state distinctions, real zero runtime, and absent/invalid runtime cases.
@@ -24,30 +24,20 @@ Implemented locally on 2026-10-30 in `BloodFlow-Q-main 3`, starting from `6e06f5
 - Research tooltips show readable paired foreground/surface colors in both themes. Mobile research dock menus are inside the viewport and pass center-point hit testing. The mobile solver dropdown is visible within the viewport. The welcome dialog occupies the browser top layer and passes center-point hit testing.
 - Screenshots were visually inspected for the mobile alert and complete Optimization page. Full-page screenshots cover Optimization, Reports, Dashboard, Results, Emergency, and Demo/Flagship in both themes and widths.
 
-## Evidence and reproduction
+## Evidence availability
 
-- [Before screenshot](../output/playwright/optimization-before.png)
-- [Dark mobile alert after](../output/playwright/audit/alert-dark-390.png)
-- [Dark desktop alert after](../output/playwright/audit/alert-dark-1440.png)
-- [Light mobile alert after](../output/playwright/audit/alert-light-390.png)
-- [Full route audit function](../output/playwright/audit-routes.cjs)
-- [Targeted recheck function](../output/playwright/audit-recheck.cjs)
-- [Initial findings](../output/playwright/audit/initial-results.json)
-- [Scrolling route audit](../output/playwright/audit/route-results.json)
-- [Final Optimization/Reports recheck](../output/playwright/audit/recheck-results.json)
-
-The browser functions are Playwright MCP `browser_run_code_unsafe` callback files. They expect the local frontend/API, onboarding dismissed, and axe-core at `/tmp/bloodflow-axe.min.js` (downloaded from the versioned cdnjs 4.10.3 distribution). Screenshot paths target this checkout.
+The prior audit's screenshots, browser callback files, and intermediate JSON outputs were not committed. The repository retains the code and regression tests, but those screenshots cannot be opened from this document. Current-release verification is reported in the root README and the latest deployment checks; rerun browser-based contrast and responsive checks before relying on the old screenshot measurements for a presentation.
 
 ## Verification limits
 
-This is a targeted visual/contrast regression audit, not a certification of every accessibility rule or every interactive state. Axe retains incomplete items for off-screen, animated, or complex backgrounds; scrolling checks, explicit alert color calculations, and screenshot inspection supplement its results. Authenticated external-service workflows and every possible chart tooltip datum were not exercised. Browser validation was in the MCP Chromium environment; physical iOS safe-area behavior was not device-tested. Deployment is still required for these changes to affect the referenced public site.
+This was a targeted visual/contrast regression audit, not a certification of every accessibility rule or every interactive state. Axe retains incomplete items for off-screen, animated, or complex backgrounds; scrolling checks, explicit alert color calculations, and screenshot inspection supplemented its results. Authenticated external-service workflows and every possible chart tooltip datum were not exercised. Browser validation was performed in an MCP Chromium environment; physical iOS safe-area behavior was not device-tested.
 
 ## Palette restoration requested by user
 
 Restored the deployed Vercel colors on 2026-10-30 by reading the live site's computed CSS variables in both themes. The newer scientific-workbench palette had overridden the deployed theme globally. Its canvas, surface, text, border, primary, and accent overrides now match Vercel: dark canvas `#171a2a`, surface `#202438`, vivid red primary `#d90429`; light canvas `#f5f7fb`, surface `#ffffff`, primary `#920942`. Both primary buttons use white foregrounds again. This supersedes the earlier pale-pink button pairing described above. Existing alert contrast fixes, safe-area/dock clearance, mobile table containment, and runtime/status corrections remain. Pipeline step numbers use the existing muted token to avoid restoring their old contrast defect.
 
-Repeated the eight Optimization/Reports desktop/mobile and light/dark scrolling checks after restoration: zero reported axe contrast violations, no document horizontal overflow, and footer clearance passed. Evidence: [palette recheck](../output/playwright/audit/palette-restoration-results.json), [restored dark palette](../output/playwright/audit/restored-vercel-palette.png). The full-page Optimization/Reports screenshots now show the restored palette; earlier focused alert images document the preceding palette. Production build passes. Changes remain local and are not deployed.
+Repeated the eight Optimization/Reports desktop/mobile and light/dark scrolling checks after restoration: zero reported axe contrast violations, no document horizontal overflow, and footer clearance passed in that audit. The associated screenshots remain in the excluded local `output/` folder. The change has since been deployed; the historical check is not a new live browser run.
 
 ### Final original-palette match
 
-A second direct comparison against deployed computed component styles found remaining research CSS overrides: new cyan/blue visualization accents, a brighter information border, a different font stack, and an opacity of 0.2 on the original red heartbeat backdrop. Removed the global research palette/surface/font overrides altogether, so the original `styles.css` theme is authoritative. Research visualization tokens now reference original application accents. Information borders match the original light/dark colors; corrected text foregrounds remain readable. Sampled dark-mode canvas, panels, controls, table, alert surface/border, topbar, dock, and font styles now match production (excluding transient reveal-animation opacity). The eight Optimization/Reports contrast/overflow/clearance checks pass again. [Final matched screenshot](../output/playwright/audit/original-palette-matched.png). Changes remain local.
+A second direct comparison against deployed computed component styles found remaining research CSS overrides: cyan/blue visualization accents, a brighter information border, a different font stack, and reduced opacity on the heartbeat backdrop. The global research palette/surface/font overrides were removed so the original `styles.css` theme is authoritative. Research visualization tokens use the existing application accents. The historical audit reported matching sampled theme styles and passing Optimization/Reports contrast, overflow, and footer-clearance checks. Its final screenshot was not included in the repository.
