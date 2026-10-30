@@ -9,6 +9,7 @@ import { Tooltip } from '../components/Tooltip';
 import { useResearchStudy } from '../hooks/useResearchStudy';
 import { formatPercent, formatRuntime, summarizeResearchRows } from '../utils/researchMetrics';
 import GlideSelect from '../components/GlideSelect';
+import ComparativeEvidenceExplorer from '../components/ComparativeEvidenceExplorer';
 
 const METHOD_LABEL = {
   classical_multistart: 'Classical multistart',
@@ -35,6 +36,7 @@ export default function ExperimentReports() {
 
   return <>
     <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
+    <ComparativeEvidenceExplorer />
     <FullReviewStudy />
     <ResearchFollowup />
     <WarmQAOAComparison />
