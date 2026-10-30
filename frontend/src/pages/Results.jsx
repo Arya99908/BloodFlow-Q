@@ -9,7 +9,6 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { calculateObjectiveUpperBound } from '../utils/scenarioBounds';
-import QuantumValueStudy from '../components/QuantumValueStudy';
 
 const METHODS = ['greedy', 'milp', 'exact', 'qaoa'];
 const methodNames = { greedy: 'Greedy baseline', milp: 'MILP (HiGHS)', exact: 'Exact', qaoa: 'QAOA' };
@@ -141,7 +140,15 @@ export default function Results() {
       {!loading && !error && !(data?.results || []).length && <section className="panel"><EmptyState title="No saved results in this backend session" detail="Run an optimization, emergency simulation, or benchmark first. Results reset when the backend restarts." /></section>}
       {!loading && !error && (data?.results || []).length > 0 && <div className="results-list">{[...(data.results || [])].reverse().map((entry, index) => <ResultCard key={`${entry.created_at}-${index}`} entry={entry} />)}</div>}
     </section>
-    <QuantumValueStudy />
+    
+    <section className="panel qlab-reference-banner">
+      <div className="qlab-reference-copy">
+        <span className="eyebrow">RESEARCH ARCHIVE & BENCHMARKS</span>
+        <h3>Explore precomputed empirical studies</h3>
+        <p>Looking for paired multi-seed benchmark datasets, warm-start ablation trials, or the 6-stage evidence pipeline? All reproducible experiment records are consolidated in the reports hub.</p>
+      </div>
+      <a className="button button-secondary" href="/reports">View experiment reports</a>
+    </section>
   </>;
 }
 

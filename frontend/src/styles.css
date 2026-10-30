@@ -7100,3 +7100,112 @@ dialog.welcome-backdrop::backdrop { background: rgba(0,0,0,.55); }
   color: #0b1220;
   border-color: #60a5fa;
 }
+
+/* ==========================================================================
+   Modern Quantum Research Tab Switcher (Inspired by IBM Quantum & Xanadu)
+   Neo-minimalist layout to eliminate information overload and endless scrolling.
+   ========================================================================== */
+
+.research-tab-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 18px 0 24px;
+}
+
+.research-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md, 12px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-primary);
+}
+
+.research-tab-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.research-tab-btn-active {
+  background: var(--bg-surface) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 1px var(--primary), 0 4px 16px -2px rgba(239, 35, 60, 0.18);
+}
+
+:root[data-theme="dark"] .research-tab-btn-active {
+  box-shadow: 0 0 0 1px #38bdf8, 0 4px 20px -2px rgba(56, 189, 248, 0.22);
+  border-color: #38bdf8 !important;
+}
+
+.research-tab-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+.research-tab-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.research-tab-btn-active .research-tab-title {
+  color: var(--primary);
+}
+
+:root[data-theme="dark"] .research-tab-btn-active .research-tab-title {
+  color: #38bdf8;
+}
+
+.study-container {
+  animation: fadeInStudy 0.25s ease-out;
+}
+
+@keyframes fadeInStudy {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.qlab-reference-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 20px 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg, 16px);
+}
+
+.qlab-reference-copy h3 {
+  margin: 4px 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.qlab-reference-copy p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 680px;
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  .research-tab-bar {
+    grid-template-columns: 1fr;
+  }
+  .qlab-reference-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

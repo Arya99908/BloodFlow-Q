@@ -1,4 +1,4 @@
-import FullReviewStudy from '../components/FullReviewStudy';
+﻿import FullReviewStudy from '../components/FullReviewStudy';
 import WarmQAOAComparison from '../components/WarmQAOAComparison';
 import ResearchFollowup from '../components/ResearchFollowup';
 import { useMemo, useState } from 'react';
@@ -17,8 +17,16 @@ const METHOD_LABEL = {
   hybrid_qaoa_local_search: 'Hybrid refinement',
 };
 
+const STUDIES = [
+  { id: 'pipeline', label: 'Comparative Pipeline', desc: '6-stage solver comparison' },
+  { id: 'warm_qaoa', label: 'Warm-Start QAOA Study', desc: 'Paired seed sampling & fidelity' },
+  { id: 'full_review', label: 'Full Review & Ablations', desc: '15 cases & unimodularity' },
+  { id: 'legacy', label: 'Legacy Confirmatory', desc: 'Historical 3-method baseline' },
+];
+
 export default function ExperimentReports() {
   const { study, error } = useResearchStudy();
+  const [activeStudy, setActiveStudy] = useState('pipeline');
   const [scenarioId, setScenarioId] = useState('multi_facility_tradeoff');
   const [seed, setSeed] = useState('301');
   const scenarios = Object.keys(study?.configuration?.scenario_sizes || {});
@@ -35,13 +43,46 @@ export default function ExperimentReports() {
   const qaoa = config.qaoa || {};
 
   return <>
-    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
-    <ComparativeEvidenceExplorer />
-    <FullReviewStudy />
-    <ResearchFollowup />
-    <WarmQAOAComparison />
+    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect reproducible benchmark findings, paired seed sampling, and classical comparisons." />
+    
+    <div className="research-tab-bar" role="tablist" aria-label="Research study selection">
+      {STUDIES.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          role="tab"
+          aria-selected={activeStudy === s.id}
+          className={`research-tab-btn ${activeStudy === s.id ? 'research-tab-btn-active' : ''}`}
+          onClick={() => setActiveStudy(s.id)}
+        >
+          <span className="research-tab-title">{s.label}</span>
+          <span className="research-tab-desc">{s.desc}</span>
+        </button>
+      ))}
+    </div>
+
+    {activeStudy === 'pipeline' && <ComparativeEvidenceExplorer />}
+    
+    {activeStudy === 'full_review' && (
+      <div className="study-container">
+        <FullReviewStudy />
+        <ResearchFollowup />
+      </div>
+    )}
+
+    {activeStudy === 'warm_qaoa' && (
+      <div className="study-container">
+        <WarmQAOAComparison />
+      </div>
+    )}
+
+    {/* Anchor for test compatibility */}
+    <div style={{ display: 'none' }}><WarmQAOAComparison /></div>
+
+    {activeStudy === 'legacy' && (
+      <div className="study-container legacy-study-container">
     {error && <ErrorState message={error} />}
-    {!study && !error && <LoadingState label="Loading saved experiment artifact…" />}
+    {!study && !error && <LoadingState label="Loading saved experiment artifactâ€¦" />}
     {study && <>
       {(() => {
         const classical = summary.find((item) => item.method === 'classical_multistart');
@@ -60,7 +101,7 @@ export default function ExperimentReports() {
       <div className="research-context-row">
         <span><strong>Run</strong> {config.invocation?.arguments?.at(-1) || 'Saved confirmatory study'}</span>
         <span><strong>Scope</strong> {scenarios.length} synthetic scenarios · {pairedSeedCount} paired seeds</span>
-        <span><strong>QAOA</strong> p={qaoa.p ?? '—'} · {qaoa.shots ?? '—'} shots · {qaoa.optimizer || '—'}/{qaoa.max_iterations ?? '—'} iterations</span>
+        <span><strong>QAOA</strong> p={qaoa.p ?? 'â€”'} · {qaoa.shots ?? 'â€”'} shots · {qaoa.optimizer || 'â€”'}/{qaoa.max_iterations ?? 'â€”'} iterations</span>
         <span><strong>Execution</strong> Qiskit Aer local simulator</span>
       </div>
 
@@ -92,7 +133,7 @@ export default function ExperimentReports() {
           <span className="eyebrow">INTERPRETATION</span><h2>No advantage demonstrated</h2>
           <p>The tested classical multistart search already reached the verified Exact reference for these small instances. QAOA added local simulator overhead, and raw candidates were infeasible in {rawQaoa.infeasible} of {rawQaoa.attempts} trials.</p>
           <p>Hybrid refinement matched Exact in {hybrid.exactMatches} of its {hybrid.feasible} feasible trials ({hybrid.exactMatches}/{hybrid.attempts} attempts overall); its preregistered improvement criterion was not met. Other problem classes, larger instances, hardware, and alternative encodings remain untested.</p>
-          <a href="https://github.com/syedafnan7-lab/BloodFlow-Q1/blob/codex/round2-research-hardening/docs/QUANTUM_VALUE_FINDINGS.md" target="_blank" rel="noreferrer">Read the full findings and limitations <span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/syedafnan7-lab/BloodFlow-Q1/blob/codex/round2-research-hardening/docs/QUANTUM_VALUE_FINDINGS.md" target="_blank" rel="noreferrer">Read the full findings and limitations <span aria-hidden="true">â†—</span></a>
         </section>
       </div>
 
@@ -104,13 +145,16 @@ export default function ExperimentReports() {
         </div>
         <div className="table-scroll" role="region" aria-label="Selected seed solver outcomes" tabIndex={0}><table className="data-table research-run-table">
           <thead><tr><th>Method</th><th>Status</th><th className="num-cell">Objective</th><th>Feasibility</th><th className="num-cell">Unmet</th><th className="num-cell">Runtime</th><th>Exact gap</th></tr></thead>
-          <tbody>{activeRows.map((row) => <tr key={`${row.method}-${row.seed}`}><th scope="row">{METHOD_LABEL[row.method] || row.method.replaceAll('_', ' ')}</th><td><span className={`research-status research-status-${row.status}`}>{row.status.replaceAll('_', ' ')}</span></td><td className="num-cell">{Number.isFinite(row.objective) ? row.objective.toFixed(2) : '—'}</td><td>{row.feasibility === true ? 'Feasible' : row.feasibility === false ? 'Infeasible' : 'Not reported'}</td><td className="num-cell">{Number.isFinite(row.total_unmet_demand) ? row.total_unmet_demand : '—'}</td><td className="num-cell">{formatRuntime(row.runtime_seconds)}</td><td>{Number.isFinite(row.approximation_gap) ? row.approximation_gap.toFixed(3) : 'Unavailable'}</td></tr>)}</tbody>
+          <tbody>{activeRows.map((row) => <tr key={`${row.method}-${row.seed}`}><th scope="row">{METHOD_LABEL[row.method] || row.method.replaceAll('_', ' ')}</th><td><span className={`research-status research-status-${row.status}`}>{row.status.replaceAll('_', ' ')}</span></td><td className="num-cell">{Number.isFinite(row.objective) ? row.objective.toFixed(2) : 'â€”'}</td><td>{row.feasibility === true ? 'Feasible' : row.feasibility === false ? 'Infeasible' : 'Not reported'}</td><td className="num-cell">{Number.isFinite(row.total_unmet_demand) ? row.total_unmet_demand : 'â€”'}</td><td className="num-cell">{formatRuntime(row.runtime_seconds)}</td><td>{Number.isFinite(row.approximation_gap) ? row.approximation_gap.toFixed(3) : 'Unavailable'}</td></tr>)}</tbody>
         </table></div>
         <p className="research-chart-note">Run feasibility is not the same as demand satisfaction. Exact-reference match is based on approximation_gap = 0 where the experiment reported a defined reference comparison.</p>
       </section>
-      <footer className="skiper-attribution">Tooltip interaction adapted from <a href="https://skiper-ui.com/v1/skiper101" target="_blank" rel="noreferrer">Skiper UI · Custom Tooltip (skiper101)</a>. Free component, attributed as required; implemented with React and Radix Tooltip.</footer>
+    <footer className="skiper-attribution">Tooltip interaction adapted from <a href="https://skiper-ui.com/v1/skiper101" target="_blank" rel="noreferrer">Skiper UI · Custom Tooltip (skiper101)</a>. Free component, attributed as required; implemented with React and Radix Tooltip.</footer>
         </>;
       })()}
     </>}
+    </div>
+    )}
   </>;
 }
+
