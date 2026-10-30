@@ -87,6 +87,8 @@ def create_app(
     )
     application.state.service = service or BackendService()
     application.state.environment = selected_environment
+    # Injected test services remain in-process; public production jobs are disposable.
+    application.state.service.isolate_jobs = production and service is None
     application.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
@@ -96,6 +98,18 @@ def create_app(
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type"],
     )
+
+    @application.middleware("http")
+    async def bound_request_body(request: Request, call_next):
+        if request.method == "POST":
+            chunks, size = [], 0
+            async for chunk in request.stream():
+                size += len(chunk)
+                if size > 1_048_576:
+                    return JSONResponse(status_code=413, content={"error": "request_too_large", "detail": "Request exceeds the 1 MiB demo limit."})
+                chunks.append(chunk)
+            request._body = b"".join(chunks)
+        return await call_next(request)
 
     @application.exception_handler(APIServiceError)
     async def handle_service_error(_request: Request, error: APIServiceError):

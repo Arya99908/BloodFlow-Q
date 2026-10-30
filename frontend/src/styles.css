@@ -7075,3 +7075,8 @@ select.field-control option { color:#2b2d42; background:#edf2f4; }
 
 .qaoa-variant-control { display: grid; gap: 8px; margin: 12px 0; }
 #qaoa-mixer-study { scroll-margin-top: 100px; }
+
+/* Native dialog supplies focus containment, inert background and Escape. */
+dialog.welcome-backdrop { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0; color: var(--text-primary); }
+dialog.welcome-backdrop::backdrop { background: rgba(0,0,0,.55); }
+#main-content:focus { outline: none; }

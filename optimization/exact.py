@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from itertools import product
 from math import prod
+import time
 from typing import Mapping
 
 from optimization.constraints import validate_allocation
@@ -107,7 +108,10 @@ def solve_exact(
     feasible_count = 0
     ranges = (range(variable.upper_bound + 1) for variable in variables)
 
+    deadline = time.monotonic() + 10
     for candidate_quantities in product(*ranges):
+        if time.monotonic() > deadline:
+            raise ExactSolverLimitError("Exact search exceeded its 10-second budget")
         examined += 1
         candidate = tuple(
             AllocationDecision(

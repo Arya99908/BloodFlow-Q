@@ -1,0 +1,30 @@
+[
+  {
+    "path": "audit/deep_qaoa_20261023/verified/summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/boundary_corrected/primary_method_summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/boundary_corrected/scenario_method_summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/production_pilot/primary_method_summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/production_pilot/scenario_method_summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/production_v2/primary_method_summary.csv",
+    "equal_after_newline_normalization": true
+  },
+  {
+    "path": "experiments/results/full_review_20261024/production_v2/scenario_method_summary.csv",
+    "equal_after_newline_normalization": true
+  }
+]

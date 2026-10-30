@@ -211,6 +211,7 @@ def _qaoa_config(value: QAOAConfigInput | None) -> QAOAConfig | None:
     if QAOAConfig is None:
         return None
     return QAOAConfig(
+        seed_only=value.seed_only,
         p=value.p,
         shots=value.shots,
         optimizer=value.optimizer,
@@ -535,8 +536,14 @@ class BackendService:
                                   "qaoa_not_implemented")
         if penalties is None:
             raise APIServiceError(422, "qaoa_penalties are required for QAOA", "missing_qaoa_penalties")
+        # Count registers before allocating a dense QUBO matrix.
+        from quantum.qubo import estimate_qubo_variables
+        limit = getattr(getattr(solver, "config", None), "max_qubits", 16)
+        size = estimate_qubo_variables(scenario)
+        if size > limit:
+            raise APIServiceError(422, f"local QAOA limited to {limit} qubits; this scenario needs {size} binary variables", "qaoa_instance_too_large")
         try:
-            qubo = build_qubo(scenario, weights, penalties, secondary_penalties)
+            qubo = build_qubo(scenario, weights, penalties, secondary_penalties, max_variables=limit)
         except QUBOInputError as error:
             raise APIServiceError(422, str(error), "invalid_qubo_configuration") from error
         try:
@@ -570,6 +577,7 @@ class BackendService:
             "optimizer_information": sample_value("optimizer_information"),
             "experiment_configuration": {
                 "qaoa": {
+                    "seed_only": solver.config.seed_only,
                     "p": solver.config.p,
                     "shots": solver.config.shots,
                     "optimizer": solver.config.optimizer,

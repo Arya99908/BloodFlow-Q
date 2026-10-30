@@ -69,8 +69,8 @@ class Ansatz:
             ids=np.arange(1<<enc.n)
             for i,j in self.pairs:
                 a=ids[((ids>>i)&1)==0];a=a[((a>>j)&1)==1];b=a^((1<<i)|(1<<j));self.exchanges.append((a,b))
-        self.effective_mixer='feasible_rank_one' if self.grover else ('xy' if self.pairs else ('warm' if self.theta is not None and method!='warm_xy' else 'x'))
-        if method in ('xy','warm_xy') and not self.pairs:self.provenance['mixer_fallback']='empty_graph_uses_x_like_production'
+        self.effective_mixer='feasible_rank_one' if self.grover else ('xy' if method in ('xy','warm_xy') else ('warm' if self.theta is not None and method!='warm_xy' else 'x'))
+        if method in ('xy','warm_xy') and not self.pairs:self.provenance['mixer_fallback']='empty_graph_identity_like_production'
         self.provenance['effective_mixer']=self.effective_mixer
         self.initial=np.zeros(1<<enc.n,complex);self.initial[0]=1
         if self.grover:

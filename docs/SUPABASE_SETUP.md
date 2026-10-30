@@ -1,3 +1,5 @@
+> Private pilot gate: apply and role-test `202610250001_donor_contact_lifecycle.sql` before setting `VITE_ENABLE_PRIVATE_PILOT=true`. URL/key configuration alone intentionally leaves the pilot disabled. See [competition deployment boundaries](COMPETITION_DEMO.md#operational-boundaries). The migration has not been applied to a hosted database by the implementation task.
+
 # Supabase setup record
 
 This guide records the disposable Supabase project used to verify BloodFlow-Q's donor/emergency database setup. It contains schema only; it has no real donor, hospital, patient, or contact records.

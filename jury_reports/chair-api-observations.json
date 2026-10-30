@@ -1,0 +1,459 @@
+[
+  {
+    "method": "greedy",
+    "http_status": 200,
+    "http_wall_seconds": 0.012077541992766783,
+    "result": {
+      "scenario_id": "synthetic_default",
+      "method": "greedy",
+      "status": "completed",
+      "feasibility": true,
+      "violations": [],
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "A",
+          "quantity": 6
+        },
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "AB",
+          "quantity": 1
+        },
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "B",
+          "quantity": 1
+        },
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "B",
+          "recipient_group": "B",
+          "quantity": 1
+        },
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 4
+        },
+        {
+          "source": "bank_b",
+          "destination": "hospital_2",
+          "blood_group": "O",
+          "recipient_group": "A",
+          "quantity": 4
+        },
+        {
+          "source": "bank_b",
+          "destination": "hospital_2",
+          "blood_group": "A",
+          "recipient_group": "AB",
+          "quantity": 2
+        },
+        {
+          "source": "bank_b",
+          "destination": "hospital_2",
+          "blood_group": "B",
+          "recipient_group": "B",
+          "quantity": 5
+        },
+        {
+          "source": "bank_b",
+          "destination": "hospital_2",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 3
+        },
+        {
+          "source": "bank_c",
+          "destination": "hospital_3",
+          "blood_group": "O",
+          "recipient_group": "A",
+          "quantity": 2
+        },
+        {
+          "source": "bank_c",
+          "destination": "hospital_3",
+          "blood_group": "A",
+          "recipient_group": "AB",
+          "quantity": 4
+        },
+        {
+          "source": "bank_c",
+          "destination": "hospital_3",
+          "blood_group": "O",
+          "recipient_group": "B",
+          "quantity": 3
+        }
+      ],
+      "unmet_demand": [
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "A",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "AB",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "B",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "O",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "A",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "AB",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "B",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "O",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "A",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "AB",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "B",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "O",
+          "units": 2
+        }
+      ],
+      "objective_breakdown": {
+        "critical_unmet_units": 0,
+        "priority_weighted_critical_unmet": 0.0,
+        "total_unmet_units": 2,
+        "unmet_by_hospital_and_group": [
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "A",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "AB",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "B",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "O",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "A",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "AB",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "B",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "O",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "A",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "AB",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "B",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "O",
+            "units": 2
+          }
+        ],
+        "transportation_cost": 157.7,
+        "transportation_time": 629.0,
+        "secondary_penalties": {},
+        "secondary_penalty_total": 0,
+        "critical_unmet_penalty": 0.0,
+        "total_unmet_penalty": 10,
+        "transportation_cost_penalty": 157.7,
+        "transportation_time_penalty": 62.900000000000006,
+        "secondary_penalty_cost": 0,
+        "total_objective": 230.6
+      },
+      "total_objective": 230.6,
+      "critical_satisfaction": {
+        "satisfied_units": 11,
+        "total_units": 11,
+        "rate": 1.0
+      },
+      "total_unmet_demand": 2,
+      "transport_cost": 157.7,
+      "average_transport_time": 17.47222222222222,
+      "objective_basis": null,
+      "qubo_variable_count": null,
+      "qaoa_depth": null,
+      "shots": null,
+      "best_measured_bitstring": null,
+      "counts": null,
+      "measured_mean_energy": null,
+      "qaoa_runtime_seconds": null,
+      "optimizer_information": null,
+      "raw_bitstring": null,
+      "classical_repair_applied": false,
+      "warm_start_used": false,
+      "mixer_type": "x",
+      "experiment_configuration": null
+    }
+  },
+  {
+    "method": "milp",
+    "http_status": 200,
+    "http_wall_seconds": 0.010953124990919605,
+    "result": {
+      "scenario_id": "synthetic_default",
+      "method": "milp",
+      "status": "completed",
+      "feasibility": true,
+      "violations": [],
+      "allocation": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "blood_group": "O",
+          "recipient_group": "O",
+          "quantity": 4
+        },
+        {
+          "source": "bank_b",
+          "destination": "hospital_2",
+          "blood_group": "A",
+          "recipient_group": "A",
+          "quantity": 4
+        },
+        {
+          "source": "bank_c",
+          "destination": "hospital_3",
+          "blood_group": "B",
+          "recipient_group": "B",
+          "quantity": 3
+        }
+      ],
+      "unmet_demand": [
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "A",
+          "units": 6
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "AB",
+          "units": 1
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "B",
+          "units": 2
+        },
+        {
+          "hospital_id": "hospital_1",
+          "blood_group": "O",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "A",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "AB",
+          "units": 2
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "B",
+          "units": 5
+        },
+        {
+          "hospital_id": "hospital_2",
+          "blood_group": "O",
+          "units": 3
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "A",
+          "units": 2
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "AB",
+          "units": 4
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "B",
+          "units": 0
+        },
+        {
+          "hospital_id": "hospital_3",
+          "blood_group": "O",
+          "units": 2
+        }
+      ],
+      "objective_breakdown": {
+        "critical_unmet_units": 0,
+        "priority_weighted_critical_unmet": 0.0,
+        "total_unmet_units": 27,
+        "unmet_by_hospital_and_group": [
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "A",
+            "units": 6
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "AB",
+            "units": 1
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "B",
+            "units": 2
+          },
+          {
+            "hospital_id": "hospital_1",
+            "blood_group": "O",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "A",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "AB",
+            "units": 2
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "B",
+            "units": 5
+          },
+          {
+            "hospital_id": "hospital_2",
+            "blood_group": "O",
+            "units": 3
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "A",
+            "units": 2
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "AB",
+            "units": 4
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "B",
+            "units": 0
+          },
+          {
+            "hospital_id": "hospital_3",
+            "blood_group": "O",
+            "units": 2
+          }
+        ],
+        "transportation_cost": 48.4,
+        "transportation_time": 193.0,
+        "secondary_penalties": {},
+        "secondary_penalty_total": 0,
+        "critical_unmet_penalty": 0.0,
+        "total_unmet_penalty": 135,
+        "transportation_cost_penalty": 48.4,
+        "transportation_time_penalty": 19.3,
+        "secondary_penalty_cost": 0,
+        "total_objective": 202.70000000000002
+      },
+      "total_objective": 202.70000000000002,
+      "critical_satisfaction": {
+        "satisfied_units": 11,
+        "total_units": 11,
+        "rate": 1.0
+      },
+      "total_unmet_demand": 27,
+      "transport_cost": 48.4,
+      "average_transport_time": 17.545454545454547,
+      "objective_basis": null,
+      "qubo_variable_count": null,
+      "qaoa_depth": null,
+      "shots": null,
+      "best_measured_bitstring": null,
+      "counts": null,
+      "measured_mean_energy": null,
+      "qaoa_runtime_seconds": null,
+      "optimizer_information": null,
+      "raw_bitstring": null,
+      "classical_repair_applied": false,
+      "warm_start_used": false,
+      "mixer_type": "x",
+      "experiment_configuration": null
+    }
+  }
+]

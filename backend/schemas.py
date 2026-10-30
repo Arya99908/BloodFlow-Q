@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
 
 
 class StrictModel(BaseModel):
     """Reject misspelled or unexpected request fields instead of ignoring them."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_max_length=256)
 
 
 class UrgencyInput(StrictModel):
@@ -18,19 +18,22 @@ class UrgencyInput(StrictModel):
     priority_weight: float = Field(gt=0, allow_inf_nan=False)
 
 
+Quantity = Annotated[StrictInt, Field(ge=0, le=10000)]
+
+
 class BloodBankInput(StrictModel):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
     location_id: str = Field(min_length=1)
-    inventory: dict[str, int]
+    inventory: dict[str, Quantity] = Field(max_length=8)
 
 
 class HospitalInput(StrictModel):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
     location_id: str = Field(min_length=1)
-    demand: dict[str, int]
-    urgency: dict[str, UrgencyInput]
+    demand: dict[str, Quantity] = Field(max_length=8)
+    urgency: dict[str, UrgencyInput] = Field(max_length=8)
 
 
 class RouteInput(StrictModel):
@@ -50,11 +53,11 @@ class CompatibilityRuleInput(StrictModel):
 
 class ScenarioInput(StrictModel):
     id: str = Field(min_length=1, default="api_scenario")
-    blood_groups: list[str] = Field(min_length=1)
-    blood_banks: list[BloodBankInput] = Field(min_length=1)
-    hospitals: list[HospitalInput] = Field(min_length=1)
-    routes: list[RouteInput]
-    compatibility: list[CompatibilityRuleInput]
+    blood_groups: list[str] = Field(min_length=1, max_length=8)
+    blood_banks: list[BloodBankInput] = Field(min_length=1, max_length=8)
+    hospitals: list[HospitalInput] = Field(min_length=1, max_length=8)
+    routes: list[RouteInput] = Field(max_length=64)
+    compatibility: list[CompatibilityRuleInput] = Field(max_length=64)
     synthetic: Literal[True] = True
 
 
@@ -88,9 +91,12 @@ class QAOAConfigInput(StrictModel):
     initial_parameters: list[Annotated[float, Field(allow_inf_nan=False)]] | None = None
     retain_initial_state: bool = False
     warm_start_source: Literal["lp", "greedy"] = "lp"
+    seed_only: bool = False
 
     @model_validator(mode="after")
     def validate_initial_parameters(self):
+        if self.seed_only and not (self.warm_start or self.mixer == "warm_start"):
+            raise ValueError("seed_only requires a warm-start preparation")
         if self.parameter_initialization == "provided":
             if self.initial_parameters is None or len(self.initial_parameters) != 2 * self.p:
                 raise ValueError("provided initialization requires exactly 2*p parameters")
@@ -114,7 +120,7 @@ class DemandSpikeInput(StrictModel):
     kind: Literal["demand_spike"]
     hospital_id: str
     blood_group: str
-    new_demand: int = Field(ge=0)
+    new_demand: Quantity
     urgency: UrgencyInput | None = None
 
 
@@ -122,7 +128,7 @@ class InventoryReductionInput(StrictModel):
     kind: Literal["inventory_reduction"]
     bank_id: str
     blood_group: str
-    units_to_remove: int = Field(ge=0)
+    units_to_remove: Quantity
 
 
 class RouteDisruptionInput(StrictModel):
@@ -155,7 +161,7 @@ class EmergencyRequest(StrictModel):
 
 
 class BenchmarkRequest(StrictModel):
-    scenarios: list[ScenarioInput] | None = None
+    scenarios: list[ScenarioInput] | None = Field(default=None, max_length=5)
     include_qaoa: bool = False
     include_milp: bool = False
     objective_weights: ObjectiveWeightsInput = Field(default_factory=ObjectiveWeightsInput)
@@ -198,7 +204,7 @@ class OptimizationResponse(StrictModel):
     qaoa_depth: int | None = None
     shots: int | None = None
     best_measured_bitstring: str | None = None
-    counts: dict[str, int] | None = None
+    counts: dict[str, Quantity] | None = None
     measured_mean_energy: float | None = None
     qaoa_runtime_seconds: float | None = None
     optimizer_information: dict[str, object] | None = None

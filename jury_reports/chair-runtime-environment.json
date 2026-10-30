@@ -1,0 +1,16 @@
+{
+  "python": "3.14.7 (v3.14.7:823f0323ee6, Aug  5 2026, 07:07:01) [Clang 21.0.0 (clang-2100.1.1.101)]",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "versions": {
+    "fastapi": "0.146.0",
+    "qiskit": "2.6.0",
+    "qiskit-aer": "0.17.2",
+    "scipy": "1.18.1",
+    "numpy": "2.5.4",
+    "pydantic": "2.14.1"
+  },
+  "backend": "127.0.0.1:8000",
+  "source": "/private/tmp/bloodflow-mobile-review",
+  "primary_commit": "46693f6519bdd385b67b3b69b2c4a450a058d67a",
+  "note": "Backend loaded compiled libraries from this venv verified via lsof; no hardware execution."
+}

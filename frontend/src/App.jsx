@@ -64,8 +64,23 @@ export default function App() {
     try { return localStorage.getItem('bloodflow-researcher-name') || ''; } catch { return ''; }
   });
   const [transition, setTransition] = useState(null);
+  const quickGeneration = useRef(0);
+  const welcomeDialog = useRef(null);
+  const dismissWelcome = () => { try { localStorage.setItem('bloodflow-welcome-v2001-complete', 'true'); } catch {} setWelcome(false); };
   const transitionTimer = useRef(0);
   const transitionRef = useRef(null);
+
+  useEffect(() => {
+    const dialog = welcomeDialog.current;
+    if (welcome && dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, [welcome]);
+  useEffect(() => {
+    if (!welcome) {
+      const frame = requestAnimationFrame(() => document.getElementById('main-content')?.focus({ preventScroll: true }));
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [page, welcome]);
 
   useEffect(() => {
     const onPopState = () => {
@@ -118,10 +133,11 @@ export default function App() {
   };
 
   const runQuickOptimization = async () => {
+    const generation = ++quickGeneration.current;
     navigate('optimization'); setOptimizationResult(null); setOptimizationLoading(true); setOptimizationError('');
-    try { setOptimizationResult(await api.optimize({ method: 'greedy' })); setToast({ kind: 'success', message: 'Optimization completed. Results are ready to review.' }); }
-    catch (issue) { setOptimizationError(issue.message || 'Optimization could not be completed.'); setToast({ kind: 'error', message: issue.message || 'Optimization could not be completed.' }); }
-    finally { setOptimizationLoading(false); }
+    try { const next = await api.optimize({ method: 'greedy' }); if (generation !== quickGeneration.current) return; setOptimizationResult(next); setToast({ kind: 'success', message: 'Optimization completed. Results are ready to review.' }); }
+    catch (issue) { if (generation !== quickGeneration.current) return; setOptimizationError(issue.message || 'Optimization could not be completed.'); setToast({ kind: 'error', message: issue.message || 'Optimization could not be completed.' }); }
+    finally { if (generation === quickGeneration.current) setOptimizationLoading(false); }
     window.setTimeout(() => setToast(null), 5000);
   };
 
@@ -190,7 +206,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="page-content" id="main-content"><div key={page} className={`page-container page-enter page-${page}`}><Suspense fallback={<LoadingState label={`Loading ${PAGE_TITLES[page]?.toLowerCase() || 'page'}…`} />}>{renderPage()}</Suspense></div></main>
+      <main className="page-content" id="main-content" tabIndex={-1} aria-label={PAGE_TITLES[page] || 'Page'}><div key={page} className={`page-container page-enter page-${page}`}><Suspense fallback={<LoadingState label={`Loading ${PAGE_TITLES[page]?.toLowerCase() || 'page'}…`} />}>{renderPage()}</Suspense></div></main>
       <footer className="app-footer"><span><Activity size={13} /> BloodFlow-Q <b>v2.001</b></span><span>Aggregate logistics model <i /> Synthetic data only <i /> Not for clinical decisions</span><span className="footer-build">Research workspace</span></footer>
     </div>
     <Dock className="bloodflow-dock" position="bottom" theme={theme} baseItemSize={32} magnification={39} panelHeight={48} gap={7} autoHide={false} accentColor="var(--primary)" showLabels={true} items={DOCK_ITEMS.map((item) => {
@@ -198,7 +214,7 @@ export default function App() {
       return { ...item, icon:<item.icon size={19}/>, active:page===item.id, onClick:()=>navigate(item.id,{viaDock:true}) };
     })} style={{position:'fixed',bottom:12,zIndex:60}} />
     <NavigationTransition destination={transition} reducedMotion={window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false} />
-    {welcome && <div className="welcome-backdrop"><section className="welcome-card welcome-stepper-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title"><button type="button" className="dialog-close" aria-label="Dismiss welcome modal" onClick={() => { try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); } catch {} setWelcome(false); }}>×</button><img src="/bloodflow-q-logo.webp" alt="BloodFlow-Q" /><div className="eyebrow">YOUR RESEARCH WORKSPACE</div><h1 id="welcome-title">Hello, welcome {researcherName.trim() || 'Researcher'}.</h1><p>Set up your workspace in a moment. Explore synthetic blood logistics, compare optimization methods, and test network resilience.</p><Stepper initialStep={1} theme={theme} accentColor="#ef233c" width={420} radius={16} completeButtonText="Enter workspace" onFinalStepCompleted={() => { const name = researcherName.trim() || 'Researcher'; setResearcherName(name); try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); localStorage.setItem('bloodflow-researcher-name',name); } catch {} setWelcome(false); }} completedContent={<span>Welcome to the synthetic research workspace.</span>}><Step title="Profile"><label htmlFor="researcher-name">What should we call you?</label><input id="researcher-name" maxLength="40" value={researcherName} placeholder="Your name" onChange={(event) => setResearcherName(event.target.value)} /></Step><Step title="Workspace"><strong>Research workspace</strong><p>Explore simulated inventory, hospital demand, routes, and solver results.</p></Step><Step title="Ready"><strong>Ready to explore</strong><p>All records shown in this prototype are synthetic and for logistics research only.</p></Step></Stepper><small>Your display name stays on this device.</small></section></div>}
+    {welcome && <dialog ref={welcomeDialog} className="welcome-backdrop" aria-labelledby="welcome-title" onCancel={(event) => { event.preventDefault(); dismissWelcome(); }}><section className="welcome-card welcome-stepper-card"><button type="button" className="dialog-close" aria-label="Dismiss welcome modal" onClick={() => { try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); } catch {} setWelcome(false); }}>×</button><img src="/bloodflow-q-logo.webp" alt="BloodFlow-Q" /><div className="eyebrow">YOUR RESEARCH WORKSPACE</div><h1 id="welcome-title">Hello, welcome {researcherName.trim() || 'Researcher'}.</h1><p>Set up your workspace in a moment. Explore synthetic blood logistics, compare optimization methods, and test network resilience.</p><Stepper initialStep={1} theme={theme} accentColor="#ef233c" width={420} radius={16} completeButtonText="Enter workspace" onFinalStepCompleted={() => { const name = researcherName.trim() || 'Researcher'; setResearcherName(name); try { localStorage.setItem('bloodflow-welcome-v2001-complete','true'); localStorage.setItem('bloodflow-researcher-name',name); } catch {} setWelcome(false); }} completedContent={<span>Welcome to the synthetic research workspace.</span>}><Step title="Profile"><label htmlFor="researcher-name">What should we call you?</label><input autoFocus id="researcher-name" maxLength="40" value={researcherName} placeholder="Your name" onChange={(event) => setResearcherName(event.target.value)} /></Step><Step title="Workspace"><strong>Research workspace</strong><p>Explore simulated inventory, hospital demand, routes, and solver results.</p></Step><Step title="Ready"><strong>Ready to explore</strong><p>All records shown in this prototype are synthetic and for logistics research only.</p></Step></Stepper><small>Your display name stays on this device.</small></section></dialog>}
     <SpeedInsights />
   </div></ClickSpark>;
 }

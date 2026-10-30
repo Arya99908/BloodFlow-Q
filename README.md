@@ -4,23 +4,29 @@
 
 All bundled scenarios and experiment data are synthetic. BloodFlow-Q is an operational logistics research prototype and not a clinical transfusion decision system.
 
+## Start with the competition demonstration
+
+Open **Demo mode** from the home page. The new two-bank/two-hospital story makes stock competition, route disruption, and policy trade-offs explicit. Compare service-first and weighted-cost policies, then run MILP/Exact/Greedy, standard/warm/XY QAOA and a genuine seed-only control. Export the complete synthetic plan, settings, shortage explanations and failures.
+
+See [the three-minute demo and evidence guide](docs/COMPETITION_DEMO.md). This new implementation does not retroactively change the historical results below. No quantum advantage or clinical validation is claimed.
+
 ## 1. One-line pitch
 
 BloodFlow-Q models how scarce blood-bank inventories can be dynamically allocated across distributed hospital networks during emergencies, comparing deterministic greedy heuristics, exact classical MILP, and simulated QAOA quantum circuits.
 
 ## 2. Problem
 
-In emergency medical logistics, blood products are perishable and critically scarce, while hospital demand fluctuates unpredictably across blood groups and urgency tiers. Traditional nearest-neighbor dispatching behaves myopically—fulfilling one hospital's immediate request while inducing fatal shortages across regional trauma centers. Finding the optimal allocation requires solving a multi-commodity flow problem subject to rigid biological compatibility (ABO/Rh), physical inventory caps, golden-hour transit limits, and clinical triage priority within an exponentially expanding combinatorial search space.
+BloodFlow-Q studies a synthetic, aggregate, single-period allocation problem: compatible bank inventory must be assigned across hospital demands and available routes. The current core models simplified ABO eligibility, inventory caps, explicit shortage and per-unit transport cost/time. It does not implement Rh compatibility, expiry, vehicle capacity or hard arrival deadlines. Its original constraint matrix has a flow-like integral LP structure; a large QUBO does not establish classical hardness.
 
 ## 3. Why it matters
 
-Supply-chain bottlenecks during mass-casualty events or regional transit disruptions directly impact patient survival. When demand surges or transit corridors fail, manual phone dispatching cannot re-optimize multi-facility trade-offs in real time. BloodFlow-Q demonstrates how complex operational constraints can be mathematically formalized, stress-tested against emergency shocks, and solved across both classical algorithms and emerging quantum computing frameworks.
+The project makes allocation trade-offs inspectable and tests how classical and simulated quantum methods behave when inputs change. Its measured outcomes are synthetic feasibility, shortage, objective value and runtime—not patient survival, clinical efficacy or demonstrated institutional adoption.
 
 ## 4. Solution
 
 BloodFlow-Q delivers an end-to-end optimization and decision-support system featuring:
 - **Unified FastAPI & Python Engine:** Orchestrates scenario modeling, constraint validation, and solver execution.
-- **Multi-Algorithm Baseline Suite:** Solves allocations using deterministic Greedy, provably optimal classical MILP (SciPy HiGHS in $< 15$ ms), and exhaustive Exact search for small instances.
+- **Multi-Algorithm Baseline Suite:** Solves allocations using deterministic Greedy, classical MILP (SciPy HiGHS, with explicit solve limits), and exhaustive Exact search for small instances.
 - **Hybrid Quantum Pipeline:** Formulates allocations as a Quadratic Unconstrained Binary Optimization (QUBO) model mapped to an Ising Hamiltonian, sampled via parameterized QAOA circuits on Qiskit Aer.
 - **Zero-Cheating Classical Validator:** Decodes raw quantum bitstrings and rigorously verifies candidate allocations against inventory and compatibility rules—without hidden repairs.
 - **Dynamic Emergency Simulation:** Simulates demand shocks and route disruptions, computing real-time before-and-after reallocation metrics.
@@ -78,7 +84,7 @@ The emergency workflow records a baseline, applies a synthetic demand, inventory
 ## 11. Classical baselines
 
 - **Greedy** is a deterministic heuristic that prioritizes synthetic urgency and then considers compatible inventory and modeled route burden. It returns quickly, but is not guaranteed to find the global minimum.
-- **MILP (HiGHS)** is an exact Mixed-Integer Linear Programming solver using SciPy (`scipy.optimize.milp`). It formulates integer shipment variables and continuous slack, solving the allocation problem to provable global optimality in $< 15$ ms without state-space enumeration caps.
+- **MILP (HiGHS)** is an exact Mixed-Integer Linear Programming solver using SciPy (`scipy.optimize.milp`). It formulates integer shipment variables and continuous slack, returning an optimum only when HiGHS certifies successful completion within a 10-second solve budget. Runtime depends on the instance and environment; there is no universal 15 ms guarantee.
 - **Exact** enumerates bounded allocations and finds the minimum objective among feasible candidates for instances within its 50,000 candidate-state cap. It is an exhaustive reference for tiny scenarios, not a scalable solver.
 
 These remain essential comparisons for interpreting a QAOA sample.
@@ -89,7 +95,7 @@ The data layer rejects malformed or inconsistent scenarios. Classical solvers re
 
 ## 13. Results
 
-The reproducible local experiment run used five one-bank, one-hospital, one-group scenarios. All 15 method runs (Greedy, Exact, and QAOA for each scenario) completed and passed the validator. Mean objective values across these five synthetic cases were **96.42 Greedy**, **95.64 Exact**, and **107.38 QAOA**. QAOA's mean per-scenario approximation gap versus Exact was **47.29%**; its median gap was 0%, reflecting that it matched Exact on four scenarios but returned a worse feasible candidate on the normal reference scenario.
+The reproducible local experiment run used five one-bank, one-hospital, one-group scenarios. All 15 method runs (Greedy, Exact, and QAOA for each scenario) completed and passed the validator. Mean objective values across these five synthetic cases were **96.42 Greedy**, **95.64 Exact**, and **107.38 QAOA**. QAOA's mean per-scenario approximation gap versus Exact was **47.29%**; its median gap was 0%, reflecting that it matched Exact on three scenarios, was slightly worse on one, and returned a substantially worse feasible candidate on the normal reference scenario.
 
 These are descriptive measurements from one small local simulator run, not general performance evidence. QAOA matched Exact on three of the five cases, was slightly worse on one, and had a much larger gap on the normal reference case. See the full [experiment analysis](docs/EXPERIMENT_RESULTS.md), [raw results](experiments/results/20261007-01.json), and [saved configuration](experiments/configurations/20261007-01.json).
 

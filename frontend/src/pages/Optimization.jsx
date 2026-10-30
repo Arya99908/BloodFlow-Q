@@ -1,6 +1,6 @@
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Activity, CheckCircle2, Play, RotateCcw, TriangleAlert } from 'lucide-react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
@@ -29,12 +29,15 @@ export default function Optimization({ initialRun, initialLoading, initialError,
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [includeQAOA, setIncludeQAOA] = useState(false);
+  const mutationGeneration = useRef(0);
+  useEffect(() => () => { mutationGeneration.current += 1; }, []);
   const result = localResult;
   const loading = localLoading || initialLoading;
   const error = localError;
 
   // A global Quick Optimization must replace any older page-local run.
   useEffect(() => {
+    mutationGeneration.current += 1; setLocalLoading(false); setCompareLoading(false);
     setLocalResult(initialRun ?? null); setLocalError(initialError || ''); setComparison(null);
   }, [initialRun, initialLoading, initialError]);
 
@@ -72,6 +75,8 @@ export default function Optimization({ initialRun, initialLoading, initialError,
 
   const submit = async (event) => {
     event.preventDefault();
+    const generation = ++mutationGeneration.current;
+    setCompareLoading(false);
     setLocalError(''); setLocalLoading(true); setLocalResult(null); setComparison(null);
     try {
       if (method === 'exact' && isExactDisabled) {
@@ -91,15 +96,18 @@ export default function Optimization({ initialRun, initialLoading, initialError,
           demand_penalty_weight: dem,
         };
       }
-      setLocalResult(await api.optimize(request));
+      const next = await api.optimize(request);
+      if (generation === mutationGeneration.current) setLocalResult(next);
     } catch (issue) {
-      setLocalError(issue.message || 'Optimization could not be completed.');
+      if (generation === mutationGeneration.current) setLocalError(issue.message || 'Optimization could not be completed.');
     } finally {
-      setLocalLoading(false);
+      if (generation === mutationGeneration.current) setLocalLoading(false);
     }
   };
 
   const runComparison = async () => {
+    const generation = ++mutationGeneration.current;
+    setLocalLoading(false);
     setCompareError(''); setCompareLoading(true); setComparison(null);
     try {
       const request = { include_qaoa: includeQAOA, include_milp: true };
@@ -117,11 +125,11 @@ export default function Optimization({ initialRun, initialLoading, initialError,
         };
       }
       const response = await api.benchmark(request);
-      setComparison((response.results || []).map(row => ({ ...row, method_label: row.method === 'qaoa' ? qaoaConfigLabel(response.experiment_configuration?.qaoa) : row.method?.toUpperCase() })));
+      if (generation === mutationGeneration.current) setComparison((response.results || []).map(row => ({ ...row, method_label: row.method === 'qaoa' ? qaoaConfigLabel(response.experiment_configuration?.qaoa) : row.method?.toUpperCase() })));
     } catch (issue) {
-      setCompareError(issue.message || 'The benchmark comparison could not be completed.');
+      if (generation === mutationGeneration.current) setCompareError(issue.message || 'The benchmark comparison could not be completed.');
     } finally {
-      setCompareLoading(false);
+      if (generation === mutationGeneration.current) setCompareLoading(false);
     }
   };
 
@@ -283,7 +291,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
       {compareLoading && <LoadingState label="Running benchmark solvers (Greedy, MILP, Exact, QAOA)…" />}
       {!compareLoading && compareError && <ErrorState message={compareError} />}
       {!compareLoading && !compareError && comparison && (
-        <BenchmarkTable records={comparison} includeQAOA={includeQAOA} onNavigate={onNavigate} />
+        <BenchmarkTable scenario={scenario} records={comparison} includeQAOA={includeQAOA} onNavigate={onNavigate} />
       )}
       {!comparison && !compareLoading && !compareError && (
         <div className="comparison-placeholder">
@@ -441,10 +449,12 @@ function OptimizationResult({ result, scenario }) {
         />
         <StatItem
           label="Transport cost"
+          unit="synthetic points"
           value={result.transport_cost != null ? Number(result.transport_cost).toFixed(2) : '—'}
         />
       </div>
 
+      <div className="notice notice-warning" role="note">This is a weighted-cost policy. A lower objective can leave more demand unmet, including critical demand. Feasible means modeled constraints hold—not clinical approval. Use Demo mode to compare it with an explicit service-first policy.</div>
       <div className="panel solver-metadata-panel">
         <div className="metadata-panel-heading">Solver diagnostic parameters</div>
         <div className="metadata-row-grid">
@@ -535,7 +545,7 @@ function OptimizationResult({ result, scenario }) {
   );
 }
 
-function BenchmarkTable({ records, includeQAOA, onNavigate }) {
+function BenchmarkTable({ scenario, records, includeQAOA, onNavigate }) {
   const qaoaRecord = records.find((record) => record.method === 'qaoa');
   const exactRecord = records.find((record) => record.method === 'exact');
   const isAnySkipped = qaoaRecord?.status === 'skipped_too_large' || exactRecord?.status === 'skipped_too_large';
@@ -584,17 +594,17 @@ function BenchmarkTable({ records, includeQAOA, onNavigate }) {
           <div>
             <strong>Why were Exact or QAOA skipped on this scenario?</strong>
             <p>
-              This full 7-node operational scenario models <strong>222 binary variables (qubits)</strong> and over <strong>10<sup>66</sup> candidate states</strong>.
+              This scenario contains <strong>{(scenario?.blood_banks?.length || 0) + (scenario?.hospitals?.length || 0)} facilities</strong> and its QUBO encoding needs <strong>{countScenarioQubits(scenario)} bits</strong>. Encoding size does not establish classical hardness; LP/MILP solve the original allocation model.
             </p>
             <ul>
               {exactRecord?.status === 'skipped_too_large' && (
                 <li>
-                  <strong>Exact solver (Classical):</strong> Exceeded the 50,000 candidate-state safety limit. Exhaustive brute-force evaluation of 222 binary variables is computationally intractable.
+                  <strong>Exact solver (Classical):</strong> Exceeded the 50,000 candidate-state safety limit. This solver enumerates bounded shipment combinations, not QUBO bitstrings. Use MILP for this scenario.
                 </li>
               )}
               {qaoaRecord?.status === 'skipped_too_large' && (
                 <li>
-                  <strong>QAOA (Quantum Aer Simulator):</strong> Exceeded the 16-qubit simulator memory limit (222 qubits &gt; 16 max). Statevector memory scales exponentially (2<sup>n</sup>), making 222 qubits physically impossible to simulate classically.
+                  <strong>QAOA (Quantum Aer Simulator):</strong> Exceeded the 16-qubit local statevector guard. This is a simulator limit, not evidence that classical allocation is hard.
                 </li>
               )}
             </ul>

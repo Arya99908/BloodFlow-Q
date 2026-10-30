@@ -2,7 +2,9 @@
 
 from fastapi import APIRouter, Depends
 
+from backend.flagship import FlagshipRequest
 from backend.dependencies import get_service
+from backend.jobs import execute
 from backend.schemas import DemoRunRequest
 
 router = APIRouter()
@@ -26,4 +28,10 @@ def precomputed_demo(service=Depends(get_service)):
 
 @router.post("/demo-run")
 def demo_run(request: DemoRunRequest, service=Depends(get_service)):
-    return service.run_demo(request)
+    return execute(service, "run_demo", request)
+
+
+
+@router.post("/demo/flagship")
+def flagship(request: FlagshipRequest, service=Depends(get_service)):
+    return execute(service, "flagship", request)
