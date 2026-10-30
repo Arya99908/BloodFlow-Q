@@ -1,3 +1,4 @@
+import { solverPresentation } from '../utils/solverPresentation';
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -125,7 +126,7 @@ export default function Optimization({ initialRun, initialLoading, initialError,
         };
       }
       const response = await api.benchmark(request);
-      if (generation === mutationGeneration.current) setComparison((response.results || []).map(row => ({ ...row, method_label: row.method === 'qaoa' ? qaoaConfigLabel(response.experiment_configuration?.qaoa) : row.method?.toUpperCase() })));
+      if (generation === mutationGeneration.current) setComparison((response.results || []).map(row => ({ ...row, method_label: row.method === 'qaoa' ? (row.status === 'not_requested' ? 'QAOA' : qaoaConfigLabel(response.experiment_configuration?.qaoa)) : row.method?.toUpperCase() })));
     } catch (issue) {
       if (generation === mutationGeneration.current) setCompareError(issue.message || 'The benchmark comparison could not be completed.');
     } finally {
@@ -288,15 +289,15 @@ export default function Optimization({ initialRun, initialLoading, initialError,
         )}
       </div>
 
-      {compareLoading && <LoadingState label="Running benchmark solvers (Greedy, MILP, Exact, QAOA)…" />}
+      {compareLoading && <LoadingState label={includeQAOA ? 'Running selected solvers (Greedy, MILP, Exact, QAOA)…' : 'Running selected solvers (Greedy, MILP, Exact)…'} />}
       {!compareLoading && compareError && <ErrorState message={compareError} />}
       {!compareLoading && !compareError && comparison && (
-        <BenchmarkTable scenario={scenario} records={comparison} includeQAOA={includeQAOA} onNavigate={onNavigate} />
+        <BenchmarkTable scenario={scenario} records={comparison} onNavigate={onNavigate} />
       )}
       {!comparison && !compareLoading && !compareError && (
         <div className="comparison-placeholder">
           <Activity size={20} />
-          <span>Click "RUN COMPARISON" above to benchmark all solvers against this scenario.</span>
+          <span>Click "RUN COMPARISON" above to benchmark the selected methods against this scenario.</span>
         </div>
       )}
     </section></BorderGlow>
@@ -545,7 +546,7 @@ function OptimizationResult({ result, scenario }) {
   );
 }
 
-function BenchmarkTable({ scenario, records, includeQAOA, onNavigate }) {
+function BenchmarkTable({ scenario, records, onNavigate }) {
   const qaoaRecord = records.find((record) => record.method === 'qaoa');
   const exactRecord = records.find((record) => record.method === 'exact');
   const isAnySkipped = qaoaRecord?.status === 'skipped_too_large' || exactRecord?.status === 'skipped_too_large';
@@ -569,17 +570,18 @@ function BenchmarkTable({ scenario, records, includeQAOA, onNavigate }) {
           </thead>
           <tbody>
             {records.map((record) => {
-              const status = record.method === 'qaoa' && !includeQAOA && record.status === 'not_requested' ? 'Not run' : record.status;
+              const presentation = solverPresentation(record);
+              const status = presentation.status;
               return (
                 <tr key={record.method}>
                   <td><strong>{record.method_label || record.method?.toUpperCase()}</strong></td>
-                  <td><StatusBadge status={status} label={status?.replaceAll('_', ' ')} /></td>
+                  <td><StatusBadge status={status} label={presentation.label} />{presentation.explanation && <p className="solver-status-detail">{presentation.explanation}</p>}</td>
                   <td className="text-right num-cell">{record.objective_value != null ? Number(record.objective_value).toFixed(2) : '—'}</td>
                   <td className="text-right num-cell">{record.critical_unmet_demand ?? '—'}</td>
                   <td className="text-right num-cell">{record.total_unmet_demand ?? '—'}</td>
                   <td className="text-right num-cell">{record.transport_cost != null ? Number(record.transport_cost).toFixed(2) : '—'}</td>
                   <td>{record.feasibility == null ? '—' : record.feasibility ? 'Yes' : 'No'}</td>
-                  <td className="text-right num-cell">{record.runtime_seconds == null ? '—' : `${Number(record.runtime_seconds).toFixed(4)} s`}</td>
+                  <td className="text-right num-cell">{presentation.runtime}</td>
                   <td className="text-right num-cell">{record.approximation_gap == null ? '—' : `${(record.approximation_gap * 100).toFixed(2)}%`}</td>
                 </tr>
               );
@@ -592,14 +594,14 @@ function BenchmarkTable({ scenario, records, includeQAOA, onNavigate }) {
         <div className="notice notice-info benchmark-skip-notice" role="note">
           <TriangleAlert size={18} />
           <div>
-            <strong>Why were Exact or QAOA skipped on this scenario?</strong>
+            <strong>What ran in this comparison?</strong>
             <p>
               This scenario contains <strong>{(scenario?.blood_banks?.length || 0) + (scenario?.hospitals?.length || 0)} facilities</strong> and its QUBO encoding needs <strong>{countScenarioQubits(scenario)} bits</strong>. Encoding size does not establish classical hardness; LP/MILP solve the original allocation model.
             </p>
             <ul>
               {exactRecord?.status === 'skipped_too_large' && (
                 <li>
-                  <strong>Exact solver (Classical):</strong> Exceeded the 50,000 candidate-state safety limit. This solver enumerates bounded shipment combinations, not QUBO bitstrings. Use MILP for this scenario.
+                  <strong>Exact solver (Classical):</strong> {exactRecord.detail || 'The candidate-state count exceeds the configured safety limit (default: 50,000).'} The number of candidates is the product of each shipment variable’s (upper bound + 1); it grows multiplicatively. Search was refused before enumeration. This is not a QUBO bitstring count. Use MILP for this scenario.
                 </li>
               )}
               {qaoaRecord?.status === 'skipped_too_large' && (
@@ -607,6 +609,7 @@ function BenchmarkTable({ scenario, records, includeQAOA, onNavigate }) {
                   <strong>QAOA (Quantum Aer Simulator):</strong> Exceeded the 16-qubit local statevector guard. This is a simulator limit, not evidence that classical allocation is hard.
                 </li>
               )}
+              {qaoaRecord && qaoaRecord.status !== 'skipped_too_large' && !solverPresentation(qaoaRecord).measured && <li><strong>QAOA:</strong> {solverPresentation(qaoaRecord).explanation}</li>}
             </ul>
             <div className="benchmark-notice-action">
               <span>Both solvers run live on compact scenarios:</span>

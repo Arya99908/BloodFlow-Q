@@ -58,7 +58,7 @@ export function StatusBadge({ status, tone: propTone, label, className = '' }) {
     tone = 'success';
     Icon = CheckCircle2;
     text = label ? toTitleCase(label) : (norm === 'available' ? 'Available' : norm === 'feasible' ? 'Feasible' : 'Completed');
-  } else if (norm === 'infeasible' || norm === 'blocked' || norm === 'error' || norm === 'failure' || norm === 'danger') {
+  } else if (norm === 'infeasible' || norm === 'blocked' || norm === 'error' || norm === 'failure' || norm === 'failed' || norm === 'danger') {
     tone = 'danger';
     Icon = XCircle;
     text = label ? toTitleCase(label) : (norm === 'blocked' ? 'Blocked' : norm === 'infeasible' ? 'Infeasible' : 'Failed');
@@ -70,8 +70,8 @@ export function StatusBadge({ status, tone: propTone, label, className = '' }) {
     tone = 'info';
     Icon = AlertTriangle;
     text = norm === 'skipped_too_large' || String(label).toLowerCase().includes('too large')
-      ? 'Skipped (Too Large)'
-      : (label ? toTitleCase(label) : 'Skipped');
+      ? 'Skipped · safety limit'
+      : (label ? toTitleCase(label) : norm === 'unsupported' ? 'Unsupported by backend' : 'Skipped');
   } else if (norm === 'running' || norm === 'pending') {
     tone = 'pending';
     Icon = Clock;

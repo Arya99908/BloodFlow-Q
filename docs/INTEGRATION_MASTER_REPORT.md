@@ -98,3 +98,8 @@ The integration workspace was subjected to end-to-end verification:
 * **Research Ablation & Necessity Tests:** 21 passed in 1.34s (`pytest research/quantum_experiments/tests/`).
 * **Frontend Component & Metric Tests:** 54 passed in 270ms (`npm test`).
 * **Production Build:** Succeeded with zero errors in 6.81s (`npm run build`).
+
+
+## Optimization UI follow-up — 2026-10-30
+
+See [Optimization UI engineering report](OPTIMIZATION_UI_ENGINEERING_REPORT.md) for alert/theme root causes, responsive grid and dock clearance fixes, honest benchmark runtime/status semantics, tests, and Playwright MCP screenshots. Changes are locally verified and not yet deployed.

@@ -64,7 +64,6 @@ export default function ScientificChart({
           backgroundColor: "transparent",
           textStyle: { color: text, fontFamily: "inherit" },
           aria: { enabled: true, description: `${title}. ${description}` },
-          tooltip: { trigger: "item", confine: true, renderMode: "richText" },
           grid: {
             left: 64,
             right: 24,
@@ -73,6 +72,13 @@ export default function ScientificChart({
             containLabel: true,
           },
           ...option,
+          tooltip: {
+            trigger: "item", confine: true, renderMode: "richText",
+            ...option.tooltip,
+            backgroundColor: css.getPropertyValue("--bg-surface").trim(),
+            borderColor: css.getPropertyValue("--border-strong").trim(),
+            textStyle: { color: css.getPropertyValue("--text-primary").trim() },
+          },
           xAxis: axis(option.xAxis),
           yAxis: axis(option.yAxis),
           legend: option.legend

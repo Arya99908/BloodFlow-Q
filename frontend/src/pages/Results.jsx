@@ -1,3 +1,4 @@
+import { solverPresentation } from '../utils/solverPresentation';
 import { isFiniteMeasurement } from '../utils/measurementValues';
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
@@ -173,7 +174,7 @@ function BenchmarkRow({ row, criticalTotal }) {
         <StatusBadge tone="danger" label="Infeasible" />
       )}
     </td>
-    <td className="num-cell">{row.runtime_seconds == null ? 'Not available' : `${Number(row.runtime_seconds).toFixed(4)} s`}</td>
+    <td className="num-cell">{solverPresentation(row).runtime}</td>
     <td className="num-cell">{gap}</td>
   </tr>;
 }
@@ -241,6 +242,5 @@ function ResultCard({ entry }) {
 function metric(value) { return value == null || !Number.isFinite(Number(value)) ? 'Not available' : Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 }); }
 function statusText(status) {
   if (!status) return 'Unknown';
-  if (status === 'skipped_too_large') return 'Skipped (Too Large)';
-  return String(status).replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return solverPresentation({ status }).label;
 }

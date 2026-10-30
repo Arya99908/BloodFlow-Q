@@ -1,0 +1,90 @@
+[
+  {
+    "route": "optimization",
+    "theme": "dark",
+    "width": 1440,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 815.3984375,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 196
+  },
+  {
+    "route": "reports",
+    "theme": "dark",
+    "width": 1440,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 815.0546875,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 141
+  },
+  {
+    "route": "optimization",
+    "theme": "dark",
+    "width": 390,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 759.03125,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 192
+  },
+  {
+    "route": "reports",
+    "theme": "dark",
+    "width": 390,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 759.1875,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 135
+  },
+  {
+    "route": "optimization",
+    "theme": "light",
+    "width": 1440,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 815.3984375,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 196
+  },
+  {
+    "route": "reports",
+    "theme": "light",
+    "width": 1440,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 815.0546875,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 141
+  },
+  {
+    "route": "optimization",
+    "theme": "light",
+    "width": 390,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 759.03125,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 192
+  },
+  {
+    "route": "reports",
+    "theme": "light",
+    "width": 390,
+    "horizontalOverflow": false,
+    "footerClear": true,
+    "footerBottom": 759.1875,
+    "dockTop": 840,
+    "violations": [],
+    "incomplete": 135
+  }
+]
