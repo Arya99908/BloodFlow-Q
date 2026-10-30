@@ -53,6 +53,7 @@ export const api = {
     donor_id: donorId,
   }),
   chat: (message, history = [], context = {}) => post('/chat', { message, history, context }),
+  getReportingTelemetry: (period = 'Last 7 days') => request('/reports/telemetry?period=' + encodeURIComponent(period)),
 };
 
 export function unwrapSavedResult(entry) {

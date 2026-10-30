@@ -733,3 +733,95 @@
     justify-content: center;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Provenance Banner & States
+   -------------------------------------------------------------------------- */
+.rvd-provenance-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-default, #e2e8f0);
+  border-left: 3px solid #16a34a;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--text-secondary, #475569);
+}
+
+.rvd-prov-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rvd-prov-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+
+.rvd-check-icon {
+  color: #16a34a;
+}
+
+.rvd-loading-card,
+.rvd-error-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e2e8f0);
+  border-radius: 8px;
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-secondary, #475569);
+}
+
+.rvd-error-card {
+  border-color: #fca5a5;
+  background: #fff5f5;
+  color: #991b1b;
+  text-align: left;
+}
+
+.rvd-error-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.rvd-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #ef233c;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.rvd-retry-btn:hover {
+  opacity: 0.9;
+}
+
+.rvd-table-sub {
+  margin: 3px 0 0 0;
+  font-size: 10.5px;
+  color: var(--text-muted, #64748b);
+}
+
+.rvd-total-demand {
+  font-weight: 700;
+  color: var(--text-secondary, #475569);
+  font-variant-numeric: tabular-nums;
+}
