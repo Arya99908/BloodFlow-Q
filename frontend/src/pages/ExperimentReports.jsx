@@ -17,8 +17,27 @@ const METHOD_LABEL = {
   hybrid_qaoa_local_search: 'Hybrid refinement',
 };
 
+function ReportBubble({ id, eyebrow, title, description, active, onClick }) {
+  return <button type="button" className={`report-disclosure${active ? ' is-active' : ''}`} id={id} aria-pressed={active} aria-controls="report-data-panel" onClick={onClick}>
+    <span className="report-disclosure-copy">
+      <span className="eyebrow">{eyebrow}</span>
+      <strong>{title}</strong>
+      <span>{description}</span>
+    </span>
+    <span className="report-disclosure-action">{active ? 'Hide data' : 'Click to view data'}</span>
+  </button>;
+}
+
+function ReportDataPanel({ title, onHide, children }) {
+  return <section className="report-data-panel" aria-labelledby="active-report-title">
+    <div className="report-data-heading"><h2 id="active-report-title">{title}</h2><button type="button" className="button button-secondary button-small" onClick={onHide}>Hide data</button></div>
+    {children}
+  </section>;
+}
+
 export default function ExperimentReports() {
   const { study, error } = useResearchStudy();
+  const [activeReports, setActiveReports] = useState([]);
   const [scenarioId, setScenarioId] = useState('multi_facility_tradeoff');
   const [seed, setSeed] = useState('301');
   const scenarios = Object.keys(study?.configuration?.scenario_sizes || {});
@@ -33,16 +52,60 @@ export default function ExperimentReports() {
   const maxRuntime = Math.max(...summary.map((item) => item.meanRuntimeSeconds || 0), 0);
   const config = study?.configuration || {};
   const qaoa = config.qaoa || {};
+  const toggleReport = (id) => {
+    const isOpen = activeReports.includes(id);
+    setActiveReports((current) => isOpen ? current.filter((report) => report !== id) : [...current, id]);
+    if (isOpen) return;
+    window.requestAnimationFrame(() => document.getElementById('report-data-panel')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    }));
+  };
+  const openReport = (id) => {
+    setActiveReports((current) => current.includes(id) ? current : [...current, id]);
+    window.requestAnimationFrame(() => document.getElementById('report-data-panel')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    }));
+  };
+  const hideReport = (id) => {
+    setActiveReports((current) => current.filter((report) => report !== id));
+    if (activeReports.length > 1) return;
+    window.requestAnimationFrame(() => document.getElementById('report-bubble-selector')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'center',
+    }));
+  };
 
   return <>
-    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
-    <ComparativeEvidenceExplorer />
-    <FullReviewStudy />
-    <ResearchFollowup />
-    <WarmQAOAComparison />
+    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Browse each saved simulator study on its own. Results from different protocols are kept separate." />
+    <section className="report-reading-guide panel" aria-labelledby="report-guide-title">
+      <span className="eyebrow">HOW TO READ THIS PAGE</span>
+      <h2 id="report-guide-title">One report collection, separate studies</h2>
+      <p>Study bubbles drift gently around the page. Select any number of them to pause each one and show its full data below. Click a selected bubble or its data panel’s Hide data button to close it.</p>
+      <div className="report-study-index" aria-label="Report sections">
+        <a href="#report-data-panel" onClick={() => openReport('overview')}>01 <span>Overview</span></a>
+        <a href="#report-data-panel" onClick={() => openReport('full-review')}>02 <span>Full review</span></a>
+        <a href="#report-data-panel" onClick={() => openReport('followup')}>03 <span>Methods follow-up</span></a>
+        <a href="#report-data-panel" onClick={() => openReport('warm-start')}>04 <span>Paired warm-start</span></a>
+        <a href="#report-data-panel" onClick={() => openReport('legacy')}>05 <span>Legacy benchmark</span></a>
+      </div>
+    </section>
+    <div className="report-study-grid" id="report-bubble-selector">
+      <ReportBubble id="report-overview" eyebrow="CROSS-STUDY SUMMARY" title="Evidence explorer and study workflow" description="Compare selected metrics while keeping each experiment dataset distinct." active={activeReports.includes('overview')} onClick={() => toggleReport('overview')} />
+      <ReportBubble id="report-full-review" eyebrow="CURRENT REPOSITORY REVIEW · OCT 24" title="Measured results and classical baselines" description="Primary measured review, scenario counts, run disposition, and method summary." active={activeReports.includes('full-review')} onClick={() => toggleReport('full-review')} />
+      <ReportBubble id="report-followup" eyebrow="METHODS FOLLOW-UP · OCT 24" title="QAOA variants and research methods" description="Mixer, encoding, and control comparisons from the saved follow-up study." active={activeReports.includes('followup')} onClick={() => toggleReport('followup')} />
+      <ReportBubble id="report-warm-start" eyebrow="PAIRED STUDY · OCT 22" title="Warm-start QAOA comparison" description="Matched standard and LP warm-start runs across six synthetic scenarios." active={activeReports.includes('warm-start')} onClick={() => toggleReport('warm-start')} />
+      {study && <ReportBubble id="report-legacy" eyebrow="HISTORICAL STUDY · OCT 15" title="Legacy confirmatory benchmark" description="The earlier three-method study, including its aggregate outcomes and paired-seed inspector." active={activeReports.includes('legacy')} onClick={() => toggleReport('legacy')} />}
+    </div>
     {error && <ErrorState message={error} />}
     {!study && !error && <LoadingState label="Loading saved experiment artifact…" />}
-    {study && <>
+    <div className="report-data-stage" id="report-data-panel" aria-live="polite">
+    {activeReports.includes('overview') && <ReportDataPanel title="Cross-study overview" onHide={() => hideReport('overview')}><ComparativeEvidenceExplorer /></ReportDataPanel>}
+    {activeReports.includes('full-review') && <ReportDataPanel title="Measured results and classical baselines" onHide={() => hideReport('full-review')}><FullReviewStudy /></ReportDataPanel>}
+    {activeReports.includes('followup') && <ReportDataPanel title="QAOA variants and research methods" onHide={() => hideReport('followup')}><ResearchFollowup /></ReportDataPanel>}
+    {activeReports.includes('warm-start') && <ReportDataPanel title="Warm-start QAOA comparison" onHide={() => hideReport('warm-start')}><WarmQAOAComparison /></ReportDataPanel>}
+    {study && activeReports.includes('legacy') && <ReportDataPanel title="Legacy confirmatory benchmark" onHide={() => hideReport('legacy')}>
       {(() => {
         const classical = summary.find((item) => item.method === 'classical_multistart');
         const rawQaoa = summary.find((item) => item.method === 'qaoa');
@@ -111,6 +174,7 @@ export default function ExperimentReports() {
       <footer className="skiper-attribution">Tooltip interaction adapted from <a href="https://skiper-ui.com/v1/skiper101" target="_blank" rel="noreferrer">Skiper UI · Custom Tooltip (skiper101)</a>. Free component, attributed as required; implemented with React and Radix Tooltip.</footer>
         </>;
       })()}
-    </>}
+    </ReportDataPanel>}
+    </div>
   </>;
 }
