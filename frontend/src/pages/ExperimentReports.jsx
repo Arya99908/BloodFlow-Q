@@ -1,6 +1,7 @@
-﻿import FullReviewStudy from '../components/FullReviewStudy';
+import FullReviewStudy from '../components/FullReviewStudy';
 import WarmQAOAComparison from '../components/WarmQAOAComparison';
 import ResearchFollowup from '../components/ResearchFollowup';
+import ResearchVisualDashboard from '../components/ResearchVisualDashboard';
 import { useMemo, useState } from 'react';
 import { Download, FileChartColumn, Info, Microscope } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -18,6 +19,7 @@ const METHOD_LABEL = {
 };
 
 const STUDIES = [
+  { id: 'visual_dashboard', label: 'Visual Allocation Dashboard', desc: 'Stock telemetry, availability & heatmap' },
   { id: 'pipeline', label: 'Comparative Pipeline', desc: '6-stage solver comparison' },
   { id: 'warm_qaoa', label: 'Warm-Start QAOA Study', desc: 'Paired seed sampling & fidelity' },
   { id: 'full_review', label: 'Full Review & Ablations', desc: '15 cases & unimodularity' },
@@ -26,7 +28,7 @@ const STUDIES = [
 
 export default function ExperimentReports() {
   const { study, error } = useResearchStudy();
-  const [activeStudy, setActiveStudy] = useState('pipeline');
+  const [activeStudy, setActiveStudy] = useState('visual_dashboard');
   const [scenarioId, setScenarioId] = useState('multi_facility_tradeoff');
   const [seed, setSeed] = useState('301');
   const scenarios = Object.keys(study?.configuration?.scenario_sizes || {});
@@ -60,6 +62,8 @@ export default function ExperimentReports() {
         </button>
       ))}
     </div>
+
+    {activeStudy === 'visual_dashboard' && <ResearchVisualDashboard />}
 
     {activeStudy === 'pipeline' && <ComparativeEvidenceExplorer />}
     
