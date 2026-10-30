@@ -4,12 +4,14 @@ Historical snapshot: 24 October 2026, target branch `somemore-QAOA-fix`, startin
 
 ## 31 October release recheck
 
-- GitHub main is commit `716b8c7` plus the follow-up serverless timeout fix tracked in the current release commit.
-- Backend: 241 tests and 21 subtests passed before the follow-up fix; the follow-up compute-budget suite passed 5 tests. A final full rerun is required after that fix.
-- Frontend: 83 tests passed. Production build completed successfully; the comparative chart bundle remains above Vite's 500 kB advisory threshold.
-- Live GET checks passed for `/health`, `/scenario`, `/demo-scenarios`, `/experiment-defaults`, `/precomputed-demo`, `/coordination/capabilities`, `/coordination/dashboard`, `/results`, and `/reports/telemetry`.
-- A live POST to `/optimize` timed out before the follow-up fix. The serverless-specific fix is being deployed and this entry must not be read as a verified post-fix live result until that check is repeated.
-- Private donor records remain disabled in the public deployment; the donor and collection walkthrough is deterministic synthetic demo data. No database migration was applied in this release.
+- GitHub main contains the Vercel serverless compute fix and the donor-dashboard sign-in label correction.
+- Backend: **242 tests and 21 subtests passed**. Two small-budget SciPy COBYLA warnings are recorded in the test output.
+- Frontend: **83 tests passed**. The production build succeeds. Vite reports a 634.74 kB minified comparative-chart chunk, above its 500 kB advisory threshold.
+- All 16 frontend paths returned HTTP 200. This checks Vercel routing and the app shell; no fresh interactive browser-console or visual-regression run was available in this recheck.
+- Live GET checks passed for `/health`, `/scenario`, `/demo-scenarios`, `/experiment-defaults`, `/precomputed-demo`, `/coordination/capabilities`, `/coordination/dashboard`, `/results`, and `/reports/telemetry`. CORS preflight returned 200 for the website origin; malformed solver input returned a readable 422.
+- A live greedy `POST /optimize` returned 200 with a feasible result after the Vercel serverless fix. A live QAOA demo returned 256 measured shots and a feasible decoded result for one synthetic normal scenario. A demand-spike reoptimization returned 200.
+- The full synthetic donor workflow reached `Completed`; every state was explicitly marked simulated. Benchmark returned Greedy and MILP results; Exact was skipped at its size guard, and QAOA was not requested in that benchmark call.
+- Private donor records remain disabled in the public deployment; the public donor and collection walkthrough is deterministic synthetic demo data. No database migration was applied or live RLS policy exercised in this release.
 
 | Requirement | Disposition and evidence |
 |---|---|

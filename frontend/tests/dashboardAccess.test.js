@@ -36,7 +36,7 @@ test('preserves real zero counts and never converts missing data to zero', () =>
 test('reports missing Supabase configuration separately', () => {
   const state = getDashboardAccessState({ configured: false });
   assert.equal(state.key, 'not_configured');
-  assert.equal(state.valueLabel, 'Not set up');
+  assert.equal(state.valueLabel, 'Sign in');
 });
 
 test('preserves Supabase authorization codes for the dashboard access state', async () => {

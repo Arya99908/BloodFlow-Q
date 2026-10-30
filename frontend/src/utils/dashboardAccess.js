@@ -7,8 +7,8 @@ export function getDashboardAccessState({ configured, session, error } = {}) {
   if (!configured) {
     return {
       key: 'not_configured',
-      valueLabel: 'Not set up',
-      message: 'The Supabase connection is not configured, so live database counts cannot be loaded.',
+      valueLabel: 'Sign in',
+      message: 'Live database counts are disabled in this build. Configure the private Supabase connection, then sign in with an authorized administrator account.',
     };
   }
 
