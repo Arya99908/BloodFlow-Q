@@ -14,7 +14,7 @@ const EMPTY_PROFILE = {
   availability: 'temporarily_unavailable', preferred_contact: 'phone',
   consent_receive_requests: false, consent_share_contact: false,
 };
-const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+import { BLOOD_GROUPS as BLOOD_GROUPS } from '../services/donorNetwork';
 
 function normalizeRequest(notification) {
   const related = notification.emergency_blood_requests;

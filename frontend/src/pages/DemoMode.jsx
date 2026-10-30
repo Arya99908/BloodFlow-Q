@@ -1,3 +1,4 @@
+import FlagshipDemo from '../components/FlagshipDemo';
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { QAOA_VARIANTS, getQAOAVariant, qaoaVariantConfig } from '../utils/qaoaVariants';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,7 +22,7 @@ const FALLBACK_CASES = [
   { id: 'transport_disruption', name: 'TRANSPORT DISRUPTION', description: 'Blocks the only route in the compact synthetic scenario.' },
 ];
 
-export default function DemoMode() {
+function LegacyDemoMode() {
   const { data: catalog, loading, error, reload } = useApi(api.getDemoScenarios, []);
   const { data: defaults } = useApi(api.getExperimentDefaults, []);
   const { data: precomputed, loading: precomputedLoading, error: precomputedError, reload: reloadPrecomputed } = useApi(api.getPrecomputedDemo, []);
@@ -424,3 +425,5 @@ function NumberField({ label, value, onChange, min, max }) {
 function showMetric(value) { return formatDemoMetric(value); }
 function percent(value) { return value?.rate == null ? null : `${(value.rate * 100).toFixed(1)}%`; }
 function formatDate(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? 'Not available' : date.toLocaleString(); }
+
+export default function DemoMode() { return <><FlagshipDemo /><details className="panel"><summary>Additional experiments and historical records</summary><LegacyDemoMode /></details></>; }

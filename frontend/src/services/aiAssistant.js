@@ -99,7 +99,7 @@ export function generateClientDomainResponse(message, context = {}) {
   }
 
   // 2. Inventory / Blood Banks
-  if (/inventory|stock|supply|blood bank|bank|units|o-|o\+|a\+|b\+/i.test(msg)) {
+  if (/inventory|stock|supply|blood bank|bank|units|o\+|a\+|b\+/i.test(msg)) {
     citations.push(`Inventory telemetry: ${banks.length} banks, ${totalStock} total units`);
     let reply = `### 🩸 Regional Blood Bank Inventory\n\n`;
     reply += `Currently **${banks.length} supply facilities** store an aggregate of **${totalStock.toLocaleString()} blood units**.\n\n`;
@@ -210,7 +210,7 @@ I monitor your live supply network:
 - **Logistics:** ${availableRoutes.length} available delivery routes (${blockedRoutes.length} blocked)
 
 **What would you like to explore?**
-- Check **critical shortages** or specific blood type inventories (e.g. O-, A+)
+- Check **critical shortages** or specific blood type inventories (e.g. O+, A+)
 - Learn how **QAOA penalty weights** and Hamiltonians are formulated
 - Compare **MILP (HiGHS)** vs **Greedy** solver efficiency
 - Simulate **emergency demand spikes** or inter-facility route closures`;

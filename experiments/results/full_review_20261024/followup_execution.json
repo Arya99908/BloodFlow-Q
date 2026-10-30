@@ -1,13 +1,13 @@
 [
   {
     "job": "boundary_corrected",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_full_review",
       "--output",
-      "experiments/results/full_review_20261024/boundary_corrected",
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/boundary_corrected",
       "--scenarios",
       "zero_inventory",
       "zero_demand",
@@ -19,13 +19,13 @@
   },
   {
     "job": "warm_audit",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.audit_warm_qaoa",
       "--output",
-      "experiments/results/full_review_20261024/warm_audit.json"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/warm_audit.json"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -33,9 +33,9 @@
   },
   {
     "job": "historical_recovered",
-    "cwd": "<temporary-directory>",
+    "cwd": "/tmp/bloodflow-round2-recovery-20261024",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--suite",

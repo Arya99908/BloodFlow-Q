@@ -35,9 +35,9 @@ begin
       (user_id, full_name, blood_group, phone, city, approximate_area,
        availability, preferred_contact, consent_receive_requests, consent_share_contact)
     values
-      ('10000000-0000-4000-8000-000000000001', 'Synthetic Donor One', 'O-', '5550101',
+      ('10000000-0000-4000-8000-000000000001', 'Synthetic Donor One', 'O+', '5550101',
        'Test City', 'Area One', 'available', 'phone', true, false),
-      ('10000000-0000-4000-8000-000000000002', 'Synthetic Donor Two', 'O-', '5550102',
+      ('10000000-0000-4000-8000-000000000002', 'Synthetic Donor Two', 'O+', '5550102',
        'Test City', 'Area Two', 'available', 'phone', true, false);
 
     insert into public.emergency_blood_requests
@@ -45,7 +45,7 @@ begin
        required_by, location_city, approximate_area, representative_name,
        representative_phone, created_by)
     values
-      ('30000000-0000-4000-8000-000000000001', 'TEST-HOSPITAL-1', 'O-',
+      ('30000000-0000-4000-8000-000000000001', 'TEST-HOSPITAL-1', 'O+',
        'red_blood_cells', 2, 'urgent', now() + interval '1 day', 'Test City',
        'Area One', 'Synthetic Contact', '5550199',
        '20000000-0000-4000-8000-000000000001');

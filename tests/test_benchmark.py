@@ -75,7 +75,16 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(exact.status, "skipped_too_large")
         self.assertIsNone(exact.objective_value)
         self.assertIsNone(exact.feasibility)
+        self.assertIsNone(exact.runtime_seconds)
         self.assertIn("exceeds configured limit", exact.detail)
+
+    def test_generic_adapter_limit_refusal_has_no_solver_runtime(self) -> None:
+        records = benchmark_solvers(
+            scenario(), ObjectiveConfig(10, 5, 1, 0.1, 0),
+            [ExactSolver(ExactSolverConfig(max_candidate_states=1))],
+        )
+        self.assertEqual(records[0].status, "skipped_too_large")
+        self.assertIsNone(records[0].runtime_seconds)
 
     def test_json_and_csv_exports_include_comparison_fields(self) -> None:
         records = run_baseline_benchmark(
@@ -226,6 +235,7 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(exact.status, "completed")
         self.assertEqual(qaoa.status, "skipped_too_large")
         self.assertIsNone(qaoa.objective_value)
+        self.assertIsNone(qaoa.runtime_seconds)
         self.assertIn("exceeding the simulator safety limit", qaoa.detail)
 
 
@@ -296,4 +306,3 @@ class BenchmarkTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

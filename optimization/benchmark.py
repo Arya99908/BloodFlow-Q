@@ -193,7 +193,7 @@ def benchmark_solvers(
                     transport_cost=None,
                     average_transport_time=None,
                     feasibility=None,
-                    runtime_seconds=perf_counter() - start,
+                    runtime_seconds=None,
                     detail=str(error),
                 )
             )
@@ -304,7 +304,7 @@ def run_baseline_benchmark(
                 transport_cost=None,
                 average_transport_time=None,
                 feasibility=None,
-                runtime_seconds=perf_counter() - start,
+                runtime_seconds=None,
                 detail=str(error),
             )
         )
@@ -381,7 +381,7 @@ def run_baseline_benchmark(
                         transport_cost=None,
                         average_transport_time=None,
                         feasibility=None,
-                        runtime_seconds=perf_counter() - start,
+                        runtime_seconds=None,
                         approximation_gap=None,
                         approximation_gap_status="unavailable: QAOA instance exceeds limit",
                         detail=str(error),

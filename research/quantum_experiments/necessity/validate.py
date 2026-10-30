@@ -21,7 +21,7 @@ def validate_sources(protocol, repository_root=REPOSITORY_ROOT):
     legacy = protocol.get('source_path_format') != 'repository-relative-v1'
     for recorded, digest in snapshot.items():
         path = Path(recorded)
-        if path.is_absolute():
+        if path.is_absolute() or recorded.startswith(("/", "\\")):
             if not legacy:
                 raise ValueError(f'Absolute path in portable source snapshot: {recorded}')
             marker = ('research', 'quantum_experiments', 'necessity')
@@ -34,7 +34,7 @@ def validate_sources(protocol, repository_root=REPOSITORY_ROOT):
             raise ValueError(f'Source path escapes repository: {recorded}')
         actual = hashlib.sha256(resolved.read_bytes()).hexdigest()
         if actual != digest:
-            raise ValueError(f'Source hash mismatch: {path}')
+            raise ValueError(f'Source hash mismatch: {path.as_posix()}')
         checked.append(path.as_posix())
     plan = repository_root / 'research/quantum_experiments/necessity/PROTOCOL.md'
     if hashlib.sha256(plan.read_bytes()).hexdigest() != protocol.get('plan_sha256'):

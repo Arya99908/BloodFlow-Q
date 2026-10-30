@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from backend.dependencies import get_service
+from backend.jobs import execute
 from backend.schemas import (
     BenchmarkRequest,
     BenchmarkResponse,
@@ -18,14 +19,14 @@ router = APIRouter()
 
 @router.post("/optimize", response_model=OptimizationResponse)
 def optimize(request: OptimizeRequest, service=Depends(get_service)):
-    return service.optimize(request)
+    return execute(service, "optimize", request)
 
 
 @router.post("/simulate-emergency", response_model=EmergencyResponse)
 def simulate_emergency(request: EmergencyRequest, service=Depends(get_service)):
-    return service.simulate_emergency(request)
+    return execute(service, "simulate_emergency", request)
 
 
 @router.post("/benchmark", response_model=BenchmarkResponse)
 def benchmark(request: BenchmarkRequest, service=Depends(get_service)):
-    return service.benchmark(request)
+    return execute(service, "benchmark", request)

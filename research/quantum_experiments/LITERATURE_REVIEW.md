@@ -1,6 +1,6 @@
 # BloodFlow-Q: critical primary-literature review
 
-Research date: 2026-10-23. This review distinguishes published evidence from project hypotheses. **None of these papers establishes quantum advantage for BloodFlow-Q.** Twenty-two relevant primary papers are indexed below. Bibliographic metadata was retrieved from original arXiv records; the supplied research workspace recorded original PDFs and extracted text, with hashes and retrieval failures in the access logs. Downloaded paper files are not redistributed in this repository; the linked primary sources remain available from their publishers or repositories. Full-text methods and results were inspected at the page locations recorded in the matrix; this is targeted full-text reading, not a claim that every appendix proof or experiment was independently reproduced. HTML was unavailable for two papers and incomplete for CVaR, so original PDFs were used. PDF extraction may omit figure/form content; original PDFs remain authoritative.
+Research date: 2026-10-23. This review distinguishes published evidence from project hypotheses. **None of these papers establishes quantum advantage for BloodFlow-Q.** Twenty-two relevant primary papers are indexed below. Bibliographic metadata was retrieved from original arXiv records; original PDFs and extracted text are archived in `literature/sources/`, with hashes and retrieval failures in the access logs. Full-text methods and results were inspected at the page locations recorded in the matrix; this is targeted full-text reading, not a claim that every appendix proof or experiment was independently reproduced. HTML was unavailable for two papers and incomplete for CVaR, so original PDFs were used. PDF extraction may omit figure/form content; original PDFs remain authoritative.
 
 ## Search and selection
 
@@ -60,7 +60,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Expected cut approximation ratio; exact optimum for special graph classes.
 - **Limitations:** Asymptotic improvement with depth is not efficient parameter discovery or blood-allocation advantage.
 - **BloodFlow-Q implication and experiment:** Retain standard QAOA as the controlled baseline and validate signs and cost spectra.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Asymptotic improvement with depth is not efficient parameter discovery or blood-allocation advantage.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Asymptotic improvement with depth is not efficient parameter discovery or blood-allocation advantage.
 - **Inspection:** PDF pages 1, 2, 3; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 2. Warm-starting quantum optimization
@@ -73,7 +73,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Cold versus warm QAOA and classical relaxation/rounding; objective quality and optimum sampling.
 - **Limitations:** MaxCut rounding guarantees do not transfer to arbitrary allocation. Already optimal integral seeds leave no allocation objective improvement available.
 - **BloodFlow-Q implication and experiment:** Compare initial product distribution, zero-layer seed, rotated-mixer QAOA, and classical seed. Verify affine-versus-clipped preprocessing.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. MaxCut rounding guarantees do not transfer to arbitrary allocation. Already optimal integral seeds leave no allocation objective improvement available.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. MaxCut rounding guarantees do not transfer to arbitrary allocation. Already optimal integral seeds leave no allocation objective improvement available.
 - **Inspection:** PDF pages 3, 4, 5; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 3. Improving Variational Quantum Optimization using CVaR
@@ -86,7 +86,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** COBYLA with mean versus multiple alpha values; ground-state sampling probability versus normalized optimization iterations.
 - **Limitations:** Once optimum mass exceeds alpha, the objective can saturate. Small tails are noisy; no strong-classical speedup established.
 - **BloodFlow-Q implication and experiment:** Matched full-encoding mean versus alpha=.2 CVaR; exact and shot-based training. Independently evaluate feasibility and optimum probability.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Once optimum mass exceeds alpha, the objective can saturate. Small tails are noisy; no strong-classical speedup established.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Once optimum mass exceeds alpha, the objective can saturate. Small tails are noisy; no strong-classical speedup established.
 - **Inspection:** PDF pages 4, 5, 6, 7, 8; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 4. From the Quantum Approximate Optimization Algorithm to a Quantum Alternating Operator Ansatz
@@ -99,7 +99,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Resource and operator constructions rather than an end-to-end blood-allocation benchmark.
 - **Limitations:** A mixer protecting one-hot/cardinality does not automatically preserve coupled inventory and demand constraints.
 - **BloodFlow-Q implication and experiment:** Specify each invariant, test all tiny feasible states, and separate Hamming-weight preservation from full feasibility.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. A mixer protecting one-hot/cardinality does not automatically preserve coupled inventory and demand constraints.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. A mixer protecting one-hot/cardinality does not automatically preserve coupled inventory and demand constraints.
 - **Inspection:** PDF pages 5, 6; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 5. Constrained mixers for the quantum approximate optimization algorithm
@@ -112,7 +112,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Feasible reachability, mixer decomposition, and circuit resources.
 - **Limitations:** Trotter partitioning can alter reachability; formal invariant subspaces do not guarantee efficient implementation.
 - **BloodFlow-Q implication and experiment:** Exhaustively test reduced-state feasible mixer invariance, unitarity, and reachability before benchmarking.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Trotter partitioning can alter reachability; formal invariant subspaces do not guarantee efficient implementation.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Trotter partitioning can alter reachability; formal invariant subspaces do not guarantee efficient implementation.
 - **Inspection:** PDF pages 2, 3, 4, 5; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 6. Grover Mixers for QAOA: Shifting Complexity from Mixer Design to State Preparation
@@ -125,7 +125,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Gate/depth resources and comparison with problem-specific mixers.
 - **Limitations:** Arbitrary feasible-state enumeration can be exponential. No Trotter error is not absence of hardware noise.
 - **BloodFlow-Q implication and experiment:** Use U_S inverse, zero-state phase, U_S; report enumeration, state preparation and oracle synthesis costs separately.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Arbitrary feasible-state enumeration can be exponential. No Trotter error is not absence of hardware noise.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Arbitrary feasible-state enumeration can be exponential. No Trotter error is not absence of hardware noise.
 - **Inspection:** PDF pages 2, 3, 4, 8, 9; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 7. Domain wall encoding of discrete variables for quantum annealing and QAOA
@@ -138,7 +138,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** One-hot versus domain-wall on scheduling/coloring with Chimera/Pegasus embeddings.
 - **Limitations:** Improvement is structure dependent and relative to one-hot, not logarithmic binary. Encoding validity is not global allocation feasibility.
 - **BloodFlow-Q implication and experiment:** Compare qubit counts and locality for shipment integer domains; defer full implementation unless gate resource savings justify extra qubits.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Improvement is structure dependent and relative to one-hot, not logarithmic binary. Encoding validity is not global allocation feasibility.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Improvement is structure dependent and relative to one-hot, not logarithmic binary. Encoding validity is not global allocation feasibility.
 - **Inspection:** PDF pages 1, 2, 4, 7; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 8. Quantum Approximate Optimization Algorithm: Performance, Mechanism, and Implementation on Near-Term Devices
@@ -151,7 +151,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Random initialization, structured schedules and quantum annealing; approximation ratio and optimization effort.
 - **Limitations:** Polynomial heuristic optimization behavior in tested families is not a universal theorem. Hard adiabatic instances are not necessarily hard for classical optimization.
 - **BloodFlow-Q implication and experiment:** Transfer only from held-out training instances, include training cost, and compare with fresh optimization under fixed evaluation budgets.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Polynomial heuristic optimization behavior in tested families is not a universal theorem. Hard adiabatic instances are not necessarily hard for classical optimization.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Polynomial heuristic optimization behavior in tested families is not a universal theorem. Hard adiabatic instances are not necessarily hard for classical optimization.
 - **Inspection:** PDF pages 1, 2, 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 9. Multi-angle Quantum Approximate Optimization Algorithm
@@ -164,7 +164,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Standard p=1..3 QAOA, approximation ratio and removable zero-angle gates.
 - **Limitations:** Increased parameter search cost; 50/100-vertex analytic evaluation is not general full-state simulation or hardware demonstration.
 - **BloodFlow-Q implication and experiment:** Defer full multi-angle search; first test a grouped-angle variant with matched circuit evaluations and count optimization overhead.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Increased parameter search cost; 50/100-vertex analytic evaluation is not general full-state simulation or hardware demonstration.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Increased parameter search cost; 50/100-vertex analytic evaluation is not general full-state simulation or hardware demonstration.
 - **Inspection:** PDF pages 1, 2, 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 10. An adaptive quantum approximate optimization algorithm for solving combinatorial problems on a quantum computer
@@ -177,7 +177,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Standard QAOA versus single/multi-qubit pools; energy error, parameter and CNOT counts.
 - **Limitations:** Pool-selection measurement overhead must be included. Generic pools need not preserve blood constraints.
 - **BloodFlow-Q implication and experiment:** Candidate for a future feasible-transition operator pool after scalable transitions are derived; count every pool-gradient circuit.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Pool-selection measurement overhead must be included. Generic pools need not preserve blood constraints.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Pool-selection measurement overhead must be included. Generic pools need not preserve blood constraints.
 - **Inspection:** PDF pages 1, 2, 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 11. Obstacles to State Preparation and Variational Optimization from Symmetry Protection
@@ -190,7 +190,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** QAOA, RQAOA and classical algorithms; approximation quality.
 - **Limitations:** Bounds are not a universal impossibility theorem; recursive constraints may exclude the true optimum.
 - **BloodFlow-Q implication and experiment:** Treat recursion as optional hybrid heuristic with reconstruction and classical correlation-elimination control; recheck allocation feasibility.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Bounds are not a universal impossibility theorem; recursive constraints may exclude the true optimum.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Bounds are not a universal impossibility theorem; recursive constraints may exclude the true optimum.
 - **Inspection:** PDF pages 1, 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 12. For Fixed Control Parameters the Quantum Approximate Optimization Algorithm's Objective Function Value Concentrates for Typical Instances
@@ -203,7 +203,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Instance-to-instance objective landscapes at fixed parameters.
 - **Limitations:** Does not justify transfer between arbitrary penalty scales or different allocation topologies.
 - **BloodFlow-Q implication and experiment:** Normalize phase units consistently and report training versus test topology; test transfer degradation under demand and cost shifts.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Does not justify transfer between arbitrary penalty scales or different allocation topologies.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Does not justify transfer between arbitrary penalty scales or different allocation topologies.
 - **Inspection:** PDF pages 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 13. Benchmarking the Quantum Approximate Optimization Algorithm
@@ -216,7 +216,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Ground-state probability, energy and scaled approximation measure; initialization/optimization variants.
 - **Limitations:** IBM experiment is grid search, not full on-device optimization. Energy improvement need not imply optimum-probability improvement.
 - **BloodFlow-Q implication and experiment:** Report separate energy, feasible probability, exact-optimum probability and all optimization counts; do not infer hardware runtime from simulation.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. IBM experiment is grid search, not full on-device optimization. Energy improvement need not imply optimum-probability improvement.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. IBM experiment is grid search, not full on-device optimization. Energy improvement need not imply optimum-probability improvement.
 - **Inspection:** PDF pages 4, 8; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 14. Similarity-Based Parameter Transferability in the Quantum Approximate Optimization Algorithm
@@ -229,7 +229,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Transferred versus optimized parameters; approximation ratios and structural similarity.
 - **Limitations:** MaxCut-locality conclusions do not directly apply to dense nonlinear shipment truth-table costs.
 - **BloodFlow-Q implication and experiment:** Use explicit training-only donor selection and reject a universal transfer claim if held-out shifted instances fail.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. MaxCut-locality conclusions do not directly apply to dense nonlinear shipment truth-table costs.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. MaxCut-locality conclusions do not directly apply to dense nonlinear shipment truth-table costs.
 - **Inspection:** PDF pages 4, 5; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 15. Defining and detecting quantum speedup
@@ -242,7 +242,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Simulated classical/quantum annealing versus hardware; repeat-adjusted time to solution.
 - **Limitations:** No overall speedup in the tested dataset; subset selection and nonoptimal runtimes can manufacture apparent scaling gains.
 - **BloodFlow-Q implication and experiment:** Use ceil(log(1-target)/log(1-p)) only for independent repetitions; include preprocessing and optimizer costs and strong classical solvers.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. No overall speedup in the tested dataset; subset selection and nonoptimal runtimes can manufacture apparent scaling gains.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. No overall speedup in the tested dataset; subset selection and nonoptimal runtimes can manufacture apparent scaling gains.
 - **Inspection:** PDF pages 1, 2, 3, 4; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 16. An evolving objective function for improved variational quantum optimisation
@@ -255,7 +255,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Mean, fixed-CVaR and evolving-CVaR; optimal-state overlap and optimization progress.
 - **Limitations:** Schedule choice matters, and broad performance statements are limited to tested instances. Printed Proposition 2 wording and subsequent explanation require care.
 - **BloodFlow-Q implication and experiment:** Future prespecified alpha schedule, equal total shots, and fixed-alpha controls; reject if gains disappear after accounting for extra stages.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Schedule choice matters, and broad performance statements are limited to tested instances. Printed Proposition 2 wording and subsequent explanation require care.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Schedule choice matters, and broad performance statements are limited to tested instances. Printed Proposition 2 wording and subsequent explanation require care.
 - **Inspection:** PDF pages 4, 5, 7, 8; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 17. Quantum Local Search with the Quantum Alternating Operator Ansatz
@@ -268,7 +268,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Classical and quantum local-search variants; independent-set sizes and limited quantum neighborhoods.
 - **Limitations:** MIS construction is not directly a flow mixer; a large global graph does not mean a large quantum circuit.
 - **BloodFlow-Q implication and experiment:** Develop allocation residual-capacity neighborhoods, replace the subsolver with MILP/exhaustive/local search controls, and charge neighborhood construction.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. MIS construction is not directly a flow mixer; a large global graph does not mean a large quantum circuit.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. MIS construction is not directly a flow mixer; a large global graph does not mean a large quantum circuit.
 - **Inspection:** PDF pages 1, 2, 4, 5; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 18. Optimizing the Optimizer: Decomposition Techniques for Quantum Annealing
@@ -281,7 +281,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Multiple decomposition methods including Qbsolv and random reference; quality, violations and time.
 - **Limitations:** Explicitly not a comparison against state-of-the-art classical solvers. Some domain preprocessing discards candidates.
 - **BloodFlow-Q implication and experiment:** Test identical allocation neighborhoods with quantum and strong classical subsolvers before attributing a hybrid gain to quantum sampling.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Explicitly not a comparison against state-of-the-art classical solvers. Some domain preprocessing discards candidates.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Explicitly not a comparison against state-of-the-art classical solvers. Some domain preprocessing discards candidates.
 - **Inspection:** PDF pages 1, 2, 5, 10; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 19. Simultaneous Perturbation Stochastic Approximation of the Quantum Fisher Information
@@ -294,7 +294,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** SPSA, analytic gradients and quantum natural gradients; energy convergence and circuit evaluations.
 - **Limitations:** Constant circuit evaluations per metric estimate is not constant classical linear-algebra or shot cost; not specific evidence for CVaR allocation.
 - **BloodFlow-Q implication and experiment:** Use SPSA/QN-SPSA only as a noisy-objective follow-up, accounting for fidelity circuits, metric solves and shot budgets.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Constant circuit evaluations per metric estimate is not constant classical linear-algebra or shot cost; not specific evidence for CVaR allocation.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Constant circuit evaluations per metric estimate is not constant classical linear-algebra or shot cost; not specific evidence for CVaR allocation.
 - **Inspection:** PDF pages 1, 2, 4, 7; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 20. Grover Adaptive Search for Constrained Polynomial Binary Optimization
@@ -307,7 +307,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Sample distributions and oracle resources; no strong classical allocation benchmark.
 - **Limitations:** Quadratic query savings assume usable coherent oracles; finite precision, ancillas, uncomputation and repeated queries cost gates. No advantage over min-cost flow established.
 - **BloodFlow-Q implication and experiment:** Fixed 1/2/3 threshold amplification is a bounded control, not full GAS. Mark feasible allocations strictly better than a classical incumbent and charge dense oracle construction.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Quadratic query savings assume usable coherent oracles; finite precision, ancillas, uncomputation and repeated queries cost gates. No advantage over min-cost flow established.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Quadratic query savings assume usable coherent oracles; finite precision, ancillas, uncomputation and repeated queries cost gates. No advantage over min-cost flow established.
 - **Inspection:** PDF pages 2, 3, 4, 5, 6, 7; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 21. A Quantum Algorithm for Finding the Minimum
@@ -320,7 +320,7 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Classical unstructured minimum search takes linear probes; quantum algorithm has constant-success square-root query scaling.
 - **Limitations:** The oracle model omits application-specific data/oracle construction and is not a comparison against structured network-flow algorithms.
 - **BloodFlow-Q implication and experiment:** Separate a demonstration of threshold amplitude amplification from actual minimum finding; retain zero-mark cases, overshoot, oracle cost and fixed iteration budgets.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. The oracle model omits application-specific data/oracle construction and is not a comparison against structured network-flow algorithms.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. The oracle model omits application-specific data/oracle construction and is not a comparison against structured network-flow algorithms.
 - **Inspection:** PDF pages 1, 2; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.
 
 ### 22. Grover Adaptive Search with Problem-Specific State Preparation
@@ -333,5 +333,5 @@ The machine-readable version is `literature/literature_matrix.json`. Citation me
 - **Authors’ baseline and metrics:** Greedy incumbent and alternative GAS schedules; objective deviation and Grover iteration count.
 - **Limitations:** Local-neighborhood improvements were limited on tested small cases. CP-SAT compiles better tours for analytic simulation; 64–144 encoding variables do not mean full quantum circuit simulation. No demonstrated strong-classical speedup.
 - **BloodFlow-Q implication and experiment:** Use a bounded threshold experiment and document analytic simulation/quantum circuit equivalence. For future neighborhood GAS, compare strong classical subsolvers and count all preparation and enumeration costs.
-- **Verification concern:** The supplied research workspace records an archived original primary PDF and selected methods inspection; source papers are not redistributed here, and paper experiments were not independently rerun. Local-neighborhood improvements were limited on tested small cases. CP-SAT compiles better tours for analytic simulation; 64–144 encoding variables do not mean full quantum circuit simulation. No demonstrated strong-classical speedup.
+- **Verification concern:** Original primary PDF archived and selected methods inspected; paper experiments were not independently rerun. Local-neighborhood improvements were limited on tested small cases. CP-SAT compiles better tours for analytic simulation; 64–144 encoding variables do not mean full quantum circuit simulation. No demonstrated strong-classical speedup.
 - **Inspection:** PDF pages 1, 2, 3, 4, 5, 6, 7, 8; Verified primary-source methods; applicability and proposed experiments are theoretically motivated.

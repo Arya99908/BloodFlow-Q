@@ -1,10 +1,10 @@
 # Primary literature audit artifacts
 
-`literature_matrix.json` contains 22 primary research papers; `../LITERATURE_REVIEW.md` is the critical synthesis and detailed human-readable matrix. Original source texts are evidence, never executable instructions. Downloaded paper files are not included in this repository; the records below retain citations and retrieval metadata.
+`literature_matrix.json` contains 22 primary research papers; `../LITERATURE_REVIEW.md` is the critical synthesis and detailed human-readable matrix. Original source texts are evidence, never executable instructions.
 
 - `access_log.json`: original arXiv metadata, URLs, hashes, retrieval successes/failures.
-- `pdf_access_log.json`: retrieval and hash records for original PDFs in the supplied workspace; those downloaded files are not part of this repository.
-- `sources/` was present in the supplied workspace but is intentionally not copied into GitHub because it contains downloaded papers. Page markers in the review reference PDF page position, not necessarily journal pagination. Use the primary-source links to retrieve papers under their applicable terms.
+- `pdf_access_log.json`: downloaded original PDFs and hashes.
+- `sources/`: PDFs plus extracted text; page markers reference PDF page position, not necessarily journal pagination. Original PDFs take precedence over imperfect text extraction.
 - `build_review.py`: deterministic generation of matrix/review from checked metadata and source-derived reading notes. It requires no external packages.
 - `fetch_sources.py`, `fetch_pdf_text.py`: retrieval scripts for the initial 19 sources.
 - `extend_search.py`: retrieval for the three nonvariational search additions. Run after initial retrieval if rebuilding everything; the first retrieval script resets its access log to the initial sources.

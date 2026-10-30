@@ -4,7 +4,7 @@ from pathlib import Path
 from collections import defaultdict
 import numpy as np
 
-BASE=Path('research/quantum_experiments/results/study')
+BASE=Path('experiments/results/full_review_20261024/research_study')
 
 def bootstrap(values,seed=17,reps=10000):
     a=np.asarray(values,float);rng=np.random.default_rng(seed)

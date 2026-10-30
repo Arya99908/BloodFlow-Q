@@ -105,7 +105,7 @@ export function validateNetworkAllocation(scenario, result) {
   }
   for (const bank of banks.values()) for (const [group, quantity] of Object.entries(bank.quantities)) if ((used.get(routeKey(bank.id, group)) || 0) > quantity) return null;
   for (const hospital of hospitals.values()) for (const [group, quantity] of Object.entries(hospital.quantities)) if ((served.get(routeKey(hospital.id, group)) || 0) + (unmet.get(routeKey(hospital.id, group)) || 0) !== quantity) return null;
-  return { totals, allocation: result.allocation, method: result.method, scenarioId: result.scenario_id };
+  return { totals, allocation: result.allocation, method: result.method, scenarioId: result.scenario_id, result, used: Object.fromEntries(used), served: Object.fromEntries(served), unmet: Object.fromEntries(unmet) };
 }
 
 export function latestNetworkAllocation(scenario, entries = []) {

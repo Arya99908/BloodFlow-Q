@@ -94,7 +94,7 @@ export default function Hospitals() {
                     <div className="hospital-demand-list">
                       <div className="demand-list-head">
                         <span>BLOOD GROUP</span>
-                        <span className="text-center">ALLOCATION METER</span>
+                        <span className="text-center">DEMAND METER</span>
                         <span className="text-right">UNITS</span>
                         <span className="text-right">URGENCY</span>
                       </div>

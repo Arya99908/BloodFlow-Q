@@ -16,7 +16,7 @@ import { api } from '../services/api';
 
 const STARTER_PROMPTS = [
   { icon: '🚨', label: 'Check critical unmet demands', query: 'What are our critical unmet demands?' },
-  { icon: '🩸', label: 'Inspect O- blood inventory', query: 'Check O- and urgent inventory across blood banks' },
+  { icon: '🩸', label: 'Inspect O+ blood inventory', query: 'Check O+ and urgent inventory across blood banks' },
   { icon: '⚛️', label: 'Explain QAOA penalty bounds', query: 'How do QAOA penalty weights and bounds work?' },
   { icon: '📊', label: 'Compare MILP vs Greedy', query: 'Compare MILP, Greedy, and QAOA solvers' },
   { icon: '🛣️', label: 'Inspect blocked routes', query: 'Show blocked distribution routes' },
@@ -193,7 +193,7 @@ export default function Chatbot({
       content: `Hello! I am **Q-Bot**, your **BloodFlow-Q Logistics Intelligence Copilot** 🤖.
 
 I monitor your live supply network, solver benchmarks, and transport constraints:
-- 🩸 **Inventory & Demand Auditing:** Spot critical blood type deficits (e.g. O-, A+)
+- 🩸 **Inventory & Demand Auditing:** Spot critical blood type deficits (e.g. O+, A+)
 - ⚛️ **Quantum Optimization (QAOA):** Explain QUBO formulation, penalty weights, and qubit mappings
 - 📊 **Solver Benchmarking:** Compare **MILP (HiGHS)**, **Exact**, and **Greedy** algorithms
 - 🚨 **Emergency Simulator:** Advise on route disruptions and demand spikes

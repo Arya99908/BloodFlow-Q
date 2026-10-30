@@ -18,6 +18,7 @@ import Orb from '../components/Orb';
 import ClickSpark from '../components/ClickSpark';
 import HospitalDataShelf from '../components/HospitalDataShelf';
 import { formatDashboardCount, getDashboardAccessState } from '../utils/dashboardAccess';
+import { summarizeDashboard } from '../utils/dashboardSummary';
 
 const COORDINATION_METRIC_KEYS = [
   'registered_donors',
@@ -29,36 +30,6 @@ const COORDINATION_METRIC_KEYS = [
   'awaiting_blood_bank_confirmation',
 ];
 
-function summarize(scenario, savedResults) {
-  const banks = scenario.blood_banks || [];
-  const hospitals = scenario.hospitals || [];
-  const demand = hospitals.flatMap((hospital) => Object.entries(hospital.demand || {}).map(([group, units]) => ({
-    group, units, urgency: hospital.urgency?.[group]?.category || 'unknown',
-  })));
-  const totalDemand = demand.reduce((sum, item) => sum + item.units, 0);
-  const latestRun = [...savedResults].reverse().find((entry) => ['/optimize', '/simulate-emergency'].includes(entry.endpoint));
-  const latestPayload = latestRun?.result || null;
-  const latestMetrics = latestRun?.endpoint === '/simulate-emergency' ? latestPayload?.after_metrics : null;
-  const currentUnmet = latestMetrics?.total_unmet_demand ?? latestPayload?.total_unmet_demand ?? null;
-  const runStatus = latestPayload?.status || (latestPayload ? (latestMetrics?.feasibility === false ? 'infeasible' : 'completed') : 'not_run');
-  const satisfactionRate = currentUnmet != null && totalDemand > 0
-    ? Math.max(0, Math.round(((totalDemand - currentUnmet) / totalDemand) * 100))
-    : null;
-  return {
-    banks: banks.length,
-    hospitals: hospitals.length,
-    totalInventory: banks.reduce((sum, bank) => sum + Object.values(bank.inventory || {}).reduce((subtotal, units) => subtotal + units, 0), 0),
-    totalDemand,
-    criticalDemand: demand.filter((item) => ['critical', 'high'].includes(item.urgency)).reduce((sum, item) => sum + item.units, 0),
-    currentUnmet,
-    satisfactionRate,
-    runStatus,
-    latestRun,
-    latestAllocation: latestRun?.endpoint === '/simulate-emergency'
-      ? latestPayload?.after_allocation
-      : latestPayload?.allocation,
-  };
-}
 
 function formatStatusLabel(status) {
   if (!status || status === 'not_run') return 'Not run';
@@ -84,7 +55,8 @@ export default function Dashboard({ onNavigate, onOptimization, theme = 'light' 
     let coordinationMetrics = coordination;
     const hasPrivateConfig = Boolean(
       import.meta.env.VITE_SUPABASE_URL?.trim()
-      && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim(),
+      && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
+      && import.meta.env.VITE_ENABLE_PRIVATE_PILOT === 'true',
     );
     let coordinationAccess = getDashboardAccessState({ configured: hasPrivateConfig });
     if (hasPrivateConfig) {
@@ -126,7 +98,7 @@ export default function Dashboard({ onNavigate, onOptimization, theme = 'light' 
     };
   }, []);
 
-  const summary = useMemo(() => data ? summarize(data.scenario, data.results) : null, [data]);
+  const summary = useMemo(() => data ? summarizeDashboard(data.scenario, data.results) : null, [data]);
   const handleRun = async () => {
     onNavigate('optimization');
     await onOptimization();
@@ -243,13 +215,13 @@ export default function Dashboard({ onNavigate, onOptimization, theme = 'light' 
             colors={['#ef233c', '#8d99ae', '#2b2d42']}
           >
             <section className="panel latest-panel">
-              <div className="panel-heading"><div><h2>Latest optimization</h2><p>Most recent run recorded by this API process</p></div><Clock3 size={17} className="muted-icon" /></div>
+              <div className="panel-heading"><div><h2>Latest validated allocation</h2><p>Most recent feasible optimization matching the active scenario. Emergency and custom scenarios are inspected in their own workspaces.</p></div><Clock3 size={17} className="muted-icon" /></div>
               {summary.latestRun ? <>
                 <div className={`run-status status-${summary.runStatus}`}>
                   <span className="status-indicator" />
                   {formatStatusLabel(summary.runStatus)}
                 </div>
-                <div className="latest-method">{summary.latestRun.endpoint === '/simulate-emergency' ? 'Emergency re-optimization' : 'Allocation optimization'}</div>
+                <div className="latest-method">Allocation optimization</div>
                 <div className="latest-meta-list">
                   <MetaRow label="Method" value={summary.latestRun.result?.method?.toUpperCase() || 'Not reported'} />
                   <MetaRow label="Unmet demand" value={summary.currentUnmet == null ? 'Not reported' : `${summary.currentUnmet} units`} />

@@ -1,0 +1,72 @@
+/* Inherit the original deployed theme from styles.css. Research views use
+   the same accents rather than replacing the application's global palette. */
+:root {
+  --on-primary: #ffffff;
+  --viz-quantum: var(--accent-blue);
+  --viz-classical: var(--accent-indigo);
+  --viz-emergency: var(--link-color);
+  --viz-valid: var(--success-text);
+  --viz-warning: var(--warning-text);
+}
+.page-container {
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.observatory .data-table {
+  font-size: 12px;
+}
+.observatory .data-table th,
+.observatory .data-table td {
+  white-space: nowrap;
+}
+.observatory .table-scroll {
+  max-width: 100%;
+  overflow: auto;
+}
+.observatory * {
+  min-width: 0;
+}
+.research-archive {
+  margin: 24px 0;
+  padding: 18px 22px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-surface);
+}
+.research-archive > summary {
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.field-control,
+select,
+input {
+  color-scheme: light dark;
+}
+.field-control option,
+select option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--viz-quantum);
+  outline-offset: 3px;
+}
+pre {
+  max-width: 100%;
+  overflow: auto;
+}
+svg {
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .observatory * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

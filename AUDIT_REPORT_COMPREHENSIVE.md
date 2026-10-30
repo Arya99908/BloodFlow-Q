@@ -1,9 +1,9 @@
 # BloodFlow-Q Comprehensive Deep Audit, Verification & Repair Report
 
-**Date:** 2026-10-18  
-**Repository:** `https://github.com/Beezsy-del/BloodFlow-Q`  
-**Branch:** `quantum-optimizer-fix`  
-**Author / Auditor:** Principal Full-Stack Architect & Quantum Optimization Specialist  
+**Date:** 2026-10-18
+**Repository:** `https://github.com/Beezsy-del/BloodFlow-Q`
+**Branch:** `quantum-optimizer-fix`
+**Author / Auditor:** Principal Full-Stack Architect & Quantum Optimization Specialist
 
 ---
 
@@ -123,7 +123,7 @@ A request to `/benchmark` with `include_qaoa: true` returned:
 ```
 ============================= test session starts ==============================
 platform darwin -- Python 3.14.7, pytest-9.1.1, pluggy-1.7.0
-rootdir: /Users/shreeshaks/Documents/BloodFlow-Q-Beezsy
+rootdir: <PROJECT_ROOT>
 configfile: pytest.ini
 collected 160 items
 

@@ -8,8 +8,8 @@
       "sha256": "4e41a45b475cea70dbe895a21c3e28909b1c990d6354cb74d632cb0c07336ee8"
     },
     "replacement_study": {
-      "path": "experiments/results/full_review_20261024/necessity_final/analysis.json",
-      "sha256": "01520d97137bf7ed4cc0e59a1ba9bb8e92a913c3d6ee35a7ceeb4dc1ecc87330"
+      "path": "experiments/results/full_review_20261024/necessity/analysis.json",
+      "sha256": "b1cca1d43e5432564e052be4ead4be4a2452d67030477f225e414e910c5de3f5"
     }
   },
   "quantum": {
@@ -239,7 +239,7 @@
         ],
         "optimal_runs": 25,
         "improved_runs": 2,
-        "mean_seconds_including_setup": 0.012131345634406899,
+        "mean_seconds_including_setup": 0.012931441502587404,
         "mean_table_evaluations": 0,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -257,7 +257,7 @@
         ],
         "optimal_runs": 25,
         "improved_runs": 2,
-        "mean_seconds_including_setup": 0.03142416519986,
+        "mean_seconds_including_setup": 0.03331432360137114,
         "mean_table_evaluations": 3754.6666666666665,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -275,7 +275,7 @@
         ],
         "optimal_runs": 25,
         "improved_runs": 2,
-        "mean_seconds_including_setup": 0.035120330432255285,
+        "mean_seconds_including_setup": 0.03688088333825969,
         "mean_table_evaluations": 3754.6666666666665,
         "mean_oracle_calls": 175.1,
         "mean_measurement_shots": 80.9,
@@ -293,7 +293,7 @@
         ],
         "optimal_runs": 25,
         "improved_runs": 0,
-        "mean_seconds_including_setup": 0.004963697131703763,
+        "mean_seconds_including_setup": 0.005332113836387483,
         "mean_table_evaluations": 0,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -311,7 +311,7 @@
         ],
         "optimal_runs": 15,
         "improved_runs": 0,
-        "mean_seconds_including_setup": 0.011161484800686594,
+        "mean_seconds_including_setup": 0.01191954583240052,
         "mean_table_evaluations": 0,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -329,7 +329,7 @@
         ],
         "optimal_runs": 15,
         "improved_runs": 0,
-        "mean_seconds_including_setup": 0.03153864026632315,
+        "mean_seconds_including_setup": 0.03362291516386904,
         "mean_table_evaluations": 3754.6666666666665,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -347,7 +347,7 @@
         ],
         "optimal_runs": 15,
         "improved_runs": 0,
-        "mean_seconds_including_setup": 0.03511631533474428,
+        "mean_seconds_including_setup": 0.03732827363322334,
         "mean_table_evaluations": 3754.6666666666665,
         "mean_oracle_calls": 175.4,
         "mean_measurement_shots": 80.6,
@@ -365,7 +365,7 @@
         ],
         "optimal_runs": 15,
         "improved_runs": 0,
-        "mean_seconds_including_setup": 0.0051116818998707455,
+        "mean_seconds_including_setup": 0.0052779278664578065,
         "mean_table_evaluations": 0,
         "mean_oracle_calls": 0,
         "mean_measurement_shots": 0,
@@ -452,8 +452,8 @@
         "cases": 8,
         "milp_proven_optimal": 7,
         "max_variables": 1728,
-        "max_milp_seconds": 2.0202684160030913,
-        "max_lp_seconds": 0.01820354200026486,
+        "max_milp_seconds": 2.0186519590060925,
+        "max_lp_seconds": 0.019009584008017555,
         "lp_strict_lower_than_milp_incumbent": 8,
         "unproven": [
           {
@@ -464,9 +464,9 @@
               "proven_optimal": false,
               "relaxation": false,
               "objective": 449.7999999999979,
-              "lower_bound": 449.20000000000005,
+              "lower_bound": 448.79999999999995,
               "integral_shipments": true,
-              "seconds": 2.0202684160030913,
+              "seconds": 2.0186519590060925,
               "nodes": 8
             }
           }
@@ -477,8 +477,8 @@
         "cases": 8,
         "milp_proven_optimal": 8,
         "max_variables": 1728,
-        "max_milp_seconds": 0.015909624999039806,
-        "max_lp_seconds": 0.007305542007088661,
+        "max_milp_seconds": 0.01589970799977891,
+        "max_lp_seconds": 0.007387750010821037,
         "lp_strict_lower_than_milp_incumbent": 0,
         "unproven": []
       }

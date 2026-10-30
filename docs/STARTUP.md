@@ -116,4 +116,4 @@ This project uses synthetic logistics scenarios only. It is not a clinical syste
 
 ## 24 October 2026 audit environment
 
-For a fresh checkout, use the setup script and environment instructions in this guide. Local benchmark timings and dependency versions depend on the machine and are recorded with each experiment.
+The current checkout is `<PROJECT_ROOT>`. This session reused the existing neighboring `../BloodFlow-Q1/.venv/bin/python` rather than installing another environment. Its measured benchmark versions are recorded in `experiments/results/full_review_20261024/production_v2/protocol.json`; they supersede the historical versions above. For a portable fresh setup, use this project's `./setup.sh` and `.venv` commands. The current local frontend is http://127.0.0.1:5173 and API is http://127.0.0.1:8000.

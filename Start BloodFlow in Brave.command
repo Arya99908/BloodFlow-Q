@@ -4,6 +4,9 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 PYTHON="$ROOT/.venv/bin/python"
 if [[ ! -x "$PYTHON" ]]; then
+  PYTHON="$ROOT/../BloodFlow-Q1/.venv/bin/python"
+fi
+if [[ ! -x "$PYTHON" ]]; then
   echo 'Python environment missing. Run ./setup.sh first.'
   read -r -p 'Press Enter to close.'
   exit 1

@@ -297,11 +297,19 @@ def compute_conservative_objective_bound(
     return float(bound)
 
 
+def estimate_qubo_variables(scenario: Scenario) -> int:
+    """Register count without materializing coefficients or the dense matrix."""
+    return (sum(v.upper_bound.bit_length() for v in scenario.allocation_variables())
+            + sum(n.bit_length() for h in scenario.hospitals for n in h.demand.values())
+            + sum(n.bit_length() for b in scenario.blood_banks for n in b.inventory.values()))
+
+
 def build_qubo(
     scenario: Scenario,
     objective_config: ObjectiveConfig,
     penalty_config: QUBOPenaltyConfig,
     secondary_penalties: Mapping[str, float] | None = None,
+    *, max_variables: int = 512,
 ) -> QUBOResult:
     """Encode BloodFlow-Q's objective and hard equalities as a QUBO.
 
@@ -382,6 +390,8 @@ def build_qubo(
         bit_indices[(kind, key)] = tuple(indices)
 
     size = len(mapping)
+    if size > max_variables:
+        raise QUBOInputError(f"QUBO has {size} binary variables; construction limit is {max_variables}. Use a smaller scenario or a classical solver.")
     linear = [0.0] * size
     quadratic: dict[tuple[int, int], float] = {}
     constant = [0.0]

@@ -1,0 +1,466 @@
+{
+  "created_at_utc": "2026-10-24T11:43:22.584095+00:00",
+  "invocation": {
+    "module": "experiments.run_warm_qaoa_comparison",
+    "arguments": [
+      "--scenarios",
+      "6",
+      "--seeds",
+      "10",
+      "--seed-start",
+      "301",
+      "--p",
+      "1",
+      "--shots",
+      "64",
+      "--max-iterations",
+      "8",
+      "--run-id",
+      "warm-review-20261024"
+    ]
+  },
+  "source_files_sha256": {
+    "experiments/run_warm_qaoa_comparison.py": "49a57c320dd5693833e93a75796a73445de7d010fe77889ef10d009a4bfd0082",
+    "quantum/qaoa_solver.py": "0dbd09fa30a15d219b4d6099051648caab691ee6800e01cd5f8919aaacab10fe",
+    "quantum/qubo.py": "2e26596a8dbb965e210908eef4cebf7305283a6b3ec9930a7a1a9b1aaf7f4bbe",
+    "optimization/decoder.py": "e8b303e9d30c5a1562a8101e21c2967cba9839d669594acd296aa8a369f08199",
+    "optimization/constraints.py": "3c5c7e04c11fb90a019de52c159555a29e14f9f2586ec0242cf46f8a878f3818",
+    "optimization/milp.py": "d6fa82c3a17d2cf607eca8ef4c48ef3091fa522b3265e5d044b17cb31ee00187",
+    "backend/demo_scenarios.py": "6aa7aee0e96c276639b55b411380f4891d933a7a04c5112d1a6f5b929b82e1f7",
+    "emergency/simulator.py": "3cf8fc4308881cc3326e83f5e04687818d1bcc6fdfe2afe7db6f895f232be32a",
+    "data/blood_banks.json": "20ba11d9db5fbc1d796905d07a879d75c74c8ce9fd4f98ae0defcde03e1d65b9",
+    "data/hospitals.json": "9fa57dfc4391f3e805b7ed2715fa625bf1a1f2af2187379c332b680084ea133c",
+    "data/routes.json": "622ff64c6fde8888f561d0a60ba411b08a1dd6b4f839596e40e1a5ffa972edf2",
+    "data/compatibility.json": "eba90c7c81c4a621d679691c5f7f5e7e9baa552d1fb2cca46b3d8911578572d2"
+  },
+  "scenario_source": "five fixed compact cases from the experiment harness plus the actual backend emergency demand-spike event",
+  "scenario_sizes": {
+    "normal_reference": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 1,
+      "qubo_variables_qubits": 10,
+      "inventory_units": 12,
+      "demand_units": 4,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 25.2,
+      "exact_examined_candidates": 5
+    },
+    "inventory_shortage": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 1,
+      "qubo_variables_qubits": 7,
+      "inventory_units": 2,
+      "demand_units": 6,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 152.6,
+      "exact_examined_candidates": 3
+    },
+    "demand_below_inventory": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 1,
+      "qubo_variables_qubits": 8,
+      "inventory_units": 8,
+      "demand_units": 3,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 15.0,
+      "exact_examined_candidates": 4
+    },
+    "transport_disruption": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 0,
+      "qubo_variables_qubits": 6,
+      "inventory_units": 5,
+      "demand_units": 4,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 140.0,
+      "exact_examined_candidates": 1
+    },
+    "critical_shortage": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 1,
+      "qubo_variables_qubits": 9,
+      "inventory_units": 4,
+      "demand_units": 7,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 145.4,
+      "exact_examined_candidates": 5
+    },
+    "demo_emergency_demand_spike_emergency": {
+      "blood_banks": 1,
+      "hospitals": 1,
+      "blood_groups": 1,
+      "allocation_variables": 1,
+      "qubo_variables_qubits": 13,
+      "inventory_units": 12,
+      "demand_units": 16,
+      "exact_reference_status": "completed_independently_validated",
+      "exact_reference_objective": 215.6,
+      "exact_examined_candidates": 13
+    }
+  },
+  "scenarios": [
+    "normal_reference",
+    "inventory_shortage",
+    "demand_below_inventory",
+    "transport_disruption",
+    "critical_shortage",
+    "demo_emergency_demand_spike_emergency"
+  ],
+  "instances": {
+    "normal_reference": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 12
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 4
+          },
+          "urgency": {
+            "O": {
+              "category": "high",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 18.0,
+          "distance_km": 7.2,
+          "transport_cost": 4.5,
+          "status": "available"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    },
+    "inventory_shortage": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 2
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 6
+          },
+          "urgency": {
+            "O": {
+              "category": "critical",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 18.0,
+          "distance_km": 7.2,
+          "transport_cost": 4.5,
+          "status": "available"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    },
+    "demand_below_inventory": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 8
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 3
+          },
+          "urgency": {
+            "O": {
+              "category": "medium",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 18.0,
+          "distance_km": 7.2,
+          "transport_cost": 4.5,
+          "status": "available"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    },
+    "transport_disruption": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 5
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 4
+          },
+          "urgency": {
+            "O": {
+              "category": "high",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 18.0,
+          "distance_km": 7.2,
+          "transport_cost": 4.5,
+          "status": "blocked"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    },
+    "critical_shortage": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 4
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 7
+          },
+          "urgency": {
+            "O": {
+              "category": "critical",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 31.0,
+          "distance_km": 7.2,
+          "transport_cost": 7.0,
+          "status": "available"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    },
+    "demo_emergency_demand_spike_emergency": {
+      "synthetic": true,
+      "blood_groups": [
+        "O"
+      ],
+      "blood_banks": [
+        {
+          "id": "bank_a",
+          "name": "Bank A",
+          "location_id": "LOC_BANK_A",
+          "inventory": {
+            "O": 12
+          }
+        }
+      ],
+      "hospitals": [
+        {
+          "id": "hospital_1",
+          "name": "Hospital 1",
+          "location_id": "LOC_HOSPITAL_1",
+          "demand": {
+            "O": 16
+          },
+          "urgency": {
+            "O": {
+              "category": "critical",
+              "priority_weight": 3.0
+            }
+          }
+        }
+      ],
+      "routes": [
+        {
+          "source": "bank_a",
+          "destination": "hospital_1",
+          "travel_time_minutes": 18,
+          "distance_km": 7.2,
+          "transport_cost": 4.5,
+          "status": "available"
+        }
+      ],
+      "compatibility": [
+        {
+          "donor_group": "O",
+          "recipient_group": "O",
+          "allowed": true
+        }
+      ]
+    }
+  },
+  "paired_seeds": [
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310
+  ],
+  "pairing": "each standard/warm pair shares simulator seed and all run budgets",
+  "qaoa": {
+    "p": 1,
+    "shots": 64,
+    "optimizer": "COBYLA",
+    "max_iterations": 8,
+    "restarts": 1,
+    "normalize_cost": true,
+    "warm_start_epsilon": 0.25,
+    "max_qubits": 16
+  },
+  "warm_start": {
+    "source": "SciPy HiGHS continuous LP relaxation",
+    "fallback": "independently validated deterministic greedy allocation; uniform state if unavailable",
+    "mixer": "product of single-qubit rotations around prepared-state axes",
+    "feasibility_guarantee": false,
+    "measured_candidate_policy": "raw measured bitstrings; no repair; decoder plus independent operational validator"
+  },
+  "objective_weights": {
+    "critical_unmet_weight": 10.0,
+    "total_unmet_weight": 5.0,
+    "transportation_cost_weight": 1.0,
+    "transportation_time_weight": 0.1,
+    "secondary_penalty_weight": 0.0
+  },
+  "qubo_penalty_weights": {
+    "inventory_penalty_weight": 10000.0,
+    "demand_penalty_weight": 10000.0
+  },
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "qiskit": "2.6.0",
+      "qiskit-aer": "0.17.2",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+    }
+  }
+}

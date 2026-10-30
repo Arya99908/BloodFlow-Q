@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolveRoute, routePath, NAV_ITEMS } from '../src/navigation.js';
 import { api } from '../src/services/api.js';
 import { generateClientDomainResponse } from '../src/services/aiAssistant.js';
@@ -36,9 +37,18 @@ test('offline assistant does not invent zero inventory or claim an action ran', 
 
 test('follow-up snapshot is sourced from current saved experiment analyses', () => {
   const snapshot = JSON.parse(readFileSync(new URL('../public/quantum-followup-study.json', import.meta.url)));
-  const q = JSON.parse(readFileSync(new URL('../../experiments/results/full_review_20261024/research_study/analysis.json', import.meta.url)));
-  const n = JSON.parse(readFileSync(new URL('../../experiments/results/full_review_20261024/necessity_final/analysis.json', import.meta.url)));
+  const qPath = new URL('../../experiments/results/full_review_20261024/research_study/analysis.json', import.meta.url);
+  const nPath = new URL('../../experiments/results/full_review_20261024/necessity/analysis.json', import.meta.url);
+  const qBytes = readFileSync(qPath);
+  const nBytes = readFileSync(nPath);
+  const q = JSON.parse(qBytes);
+  const n = JSON.parse(nBytes);
+  assert.equal(snapshot.sources.quantum_study.path, 'experiments/results/full_review_20261024/research_study/analysis.json');
+  assert.equal(snapshot.sources.quantum_study.sha256, createHash('sha256').update(qBytes).digest('hex'));
+  assert.equal(snapshot.sources.replacement_study.path, 'experiments/results/full_review_20261024/necessity/analysis.json');
+  assert.equal(snapshot.sources.replacement_study.sha256, createHash('sha256').update(nBytes).digest('hex'));
   assert.deepEqual(snapshot.quantum.methods, q.aggregate);
+  assert.deepEqual(snapshot.replacement.summary, n.summary);
   assert.equal(snapshot.replacement.runs, n.records);
   assert.equal(snapshot.kind, 'saved_research_snapshot');
   assert.equal(snapshot.replacement.comparisons.filter(row => row.classical_replacement === 'milp').reduce((sum, row) => sum + row.ties, 0), 60);

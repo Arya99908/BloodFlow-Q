@@ -2,7 +2,7 @@
   {
     "job": "research_pilot",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--pilot",
@@ -16,7 +16,7 @@
   {
     "job": "research_study",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--output",
@@ -29,7 +29,7 @@
   {
     "job": "research_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.analyze",
       "--input",
@@ -42,7 +42,7 @@
   {
     "job": "supplementary",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.supplementary",
       "--output",
@@ -55,7 +55,7 @@
   {
     "job": "necessity",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
@@ -68,7 +68,7 @@
   {
     "job": "necessity_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
@@ -81,7 +81,7 @@
   {
     "job": "necessity_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",

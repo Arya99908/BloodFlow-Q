@@ -5,16 +5,16 @@ import { generateClientDomainResponse } from '../src/services/aiAssistant.js';
 const mockScenario = {
   id: 'scen-test',
   blood_banks: [
-    { id: 'b1', name: 'Central Blood Bank', location_id: 'LOC-A', inventory: { 'O-': 10, 'A+': 20 } },
-    { id: 'b2', name: 'North Depot', location_id: 'LOC-B', inventory: { 'O-': 5, 'B+': 15 } },
+    { id: 'b1', name: 'Central Blood Bank', location_id: 'LOC-A', inventory: { 'O+': 10, 'A+': 20 } },
+    { id: 'b2', name: 'North Depot', location_id: 'LOC-B', inventory: { 'O+': 5, 'B+': 15 } },
   ],
   hospitals: [
     {
       id: 'h1',
       name: 'Memorial Hospital',
       location_id: 'LOC-C',
-      demand: { 'O-': 12, 'A+': 5 },
-      urgency: { 'O-': { category: 'critical' }, 'A+': { category: 'medium' } },
+      demand: { 'O+': 12, 'A+': 5 },
+      urgency: { 'O+': { category: 'critical' }, 'A+': { category: 'medium' } },
     },
     {
       id: 'h2',
@@ -40,10 +40,10 @@ test('AI Assistant detects critical shortages and suggests optimization', () => 
 });
 
 test('AI Assistant provides blood bank inventory breakdown by blood group', () => {
-  const res = generateClientDomainResponse('How much O- blood inventory do we have?', { scenario: mockScenario });
+  const res = generateClientDomainResponse('How much O+ blood inventory do we have?', { scenario: mockScenario });
 
   assert.ok(res.reply.includes('Regional Blood Bank Inventory'));
-  assert.ok(res.reply.includes('O-'));
+  assert.ok(res.reply.includes('O+'));
   assert.ok(res.reply.includes('15 units')); // 10 + 5
   assert.ok(res.suggested_actions.some((a) => a.payload === 'blood-banks'));
 });

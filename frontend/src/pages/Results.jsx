@@ -1,3 +1,4 @@
+import { solverPresentation } from '../utils/solverPresentation';
 import { isFiniteMeasurement } from '../utils/measurementValues';
 import QAOAVariantSelect from '../components/QAOAVariantSelect';
 import { qaoaVariantConfig, qaoaConfigLabel } from '../utils/qaoaVariants';
@@ -9,7 +10,6 @@ import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { calculateObjectiveUpperBound } from '../utils/scenarioBounds';
-import QuantumValueStudy from '../components/QuantumValueStudy';
 
 const METHODS = ['greedy', 'milp', 'exact', 'qaoa'];
 const methodNames = { greedy: 'Greedy baseline', milp: 'MILP (HiGHS)', exact: 'Exact', qaoa: 'QAOA' };
@@ -141,7 +141,15 @@ export default function Results() {
       {!loading && !error && !(data?.results || []).length && <section className="panel"><EmptyState title="No saved results in this backend session" detail="Run an optimization, emergency simulation, or benchmark first. Results reset when the backend restarts." /></section>}
       {!loading && !error && (data?.results || []).length > 0 && <div className="results-list">{[...(data.results || [])].reverse().map((entry, index) => <ResultCard key={`${entry.created_at}-${index}`} entry={entry} />)}</div>}
     </section>
-    <QuantumValueStudy />
+
+    <section className="panel qlab-reference-banner">
+      <div className="qlab-reference-copy">
+        <span className="eyebrow">RESEARCH ARCHIVE & BENCHMARKS</span>
+        <h3>Explore precomputed empirical studies</h3>
+        <p>Looking for paired multi-seed benchmark datasets, warm-start ablation trials, or the 6-stage evidence pipeline? All reproducible experiment records are consolidated in the reports hub.</p>
+      </div>
+      <a className="button button-secondary" href="/reports">View experiment reports</a>
+    </section>
   </>;
 }
 
@@ -173,7 +181,7 @@ function BenchmarkRow({ row, criticalTotal }) {
         <StatusBadge tone="danger" label="Infeasible" />
       )}
     </td>
-    <td className="num-cell">{row.runtime_seconds == null ? 'Not available' : `${Number(row.runtime_seconds).toFixed(4)} s`}</td>
+    <td className="num-cell">{solverPresentation(row).runtime}</td>
     <td className="num-cell">{gap}</td>
   </tr>;
 }
@@ -189,7 +197,7 @@ function BenchmarkCharts({ rows }) {
     const entries = rows.filter((row) => (row.status === 'completed' || row.status === 'infeasible') && isFiniteMeasurement(row[metricSpec.key])).map((row) => ({ methodKey: row.method, method: row.method_label || methodNames[row.method] || row.method, value: Number(row[metricSpec.key]) }));
     const max = Math.max(...entries.map((item) => item.value), 0);
     return <article className="results-chart-card" key={metricSpec.key}><div className="results-chart-card-heading"><strong>{metricSpec.label}</strong><span>MEASURED</span></div>
-      {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.methodKey}`} key={entry.methodKey}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(3, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}
+      {entries.length ? <div className="results-bars">{entries.map((entry) => <div className={`results-bar-row results-bar-${entry.methodKey}`} key={entry.methodKey}><span>{entry.method}</span><div className="results-bar-track" role="img" aria-label={`${entry.method} measured ${metricSpec.label}: ${metric(entry.value)}${metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}`}><i style={{ width: `${max === 0 ? 0 : Math.max(0, (entry.value / max) * 100)}%` }} /></div><strong>{metric(entry.value)}{metricSpec.suffix ? ` ${metricSpec.suffix}` : ''}</strong></div>)}</div> : <p className="chart-unavailable">No completed backend measurement for this metric.</p>}
       <small>Lower values are smaller for this metric; this chart does not rank overall solver quality.</small>
     </article>;
   })}</div></div>;
@@ -241,6 +249,5 @@ function ResultCard({ entry }) {
 function metric(value) { return value == null || !Number.isFinite(Number(value)) ? 'Not available' : Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 }); }
 function statusText(status) {
   if (!status) return 'Unknown';
-  if (status === 'skipped_too_large') return 'Skipped (Too Large)';
-  return String(status).replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return solverPresentation({ status }).label;
 }

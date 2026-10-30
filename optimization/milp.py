@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Mapping, Sequence
 
 import numpy as np
+from scipy.sparse import lil_matrix, csc_matrix
 from scipy.optimize import Bounds, LinearConstraint, milp
 
 from optimization.constraints import validate_allocation
@@ -138,7 +139,7 @@ class MILPSolver:
         num_inv_constraints = len(bank_inv_rows)
 
         total_constraints = num_demand_constraints + num_inv_constraints
-        A = np.zeros((total_constraints, num_vars), dtype=float)
+        A = lil_matrix((total_constraints, num_vars), dtype=float)
         lhs = np.zeros(total_constraints, dtype=float)
         rhs = np.zeros(total_constraints, dtype=float)
 
@@ -163,10 +164,10 @@ class MILPSolver:
             lhs[row_idx] = 0.0
             rhs[row_idx] = float(avail)
 
-        constraints = LinearConstraint(A, lhs, rhs)
+        constraints = LinearConstraint(csc_matrix(A), lhs, rhs)
         bounds = Bounds(lb, ub)
 
-        res = milp(c=c, integrality=integrality, bounds=bounds, constraints=constraints)
+        res = milp(c=c, integrality=integrality, bounds=bounds, constraints=constraints, options={"time_limit": 10.0})
 
         if not res.success:
             raise MILPSolverError(f"MILP solver failed: {res.status} ({res.message})")
@@ -294,7 +295,7 @@ class MILPSolver:
         num_inv_constraints = len(bank_inv_rows)
 
         total_constraints = num_demand_constraints + num_inv_constraints
-        A = np.zeros((total_constraints, num_vars), dtype=float)
+        A = lil_matrix((total_constraints, num_vars), dtype=float)
         lhs = np.zeros(total_constraints, dtype=float)
         rhs = np.zeros(total_constraints, dtype=float)
 
@@ -315,7 +316,7 @@ class MILPSolver:
             lhs[row_idx] = 0.0
             rhs[row_idx] = float(avail)
 
-        res = milp(c=c, integrality=integrality, bounds=Bounds(lb, ub), constraints=LinearConstraint(A, lhs, rhs))
+        res = milp(c=c, integrality=integrality, bounds=Bounds(lb, ub), constraints=LinearConstraint(csc_matrix(A), lhs, rhs), options={"time_limit": 10.0})
         if not res.success:
             raise MILPSolverError(f"LP relaxation solver failed: {res.status} ({res.message})")
 

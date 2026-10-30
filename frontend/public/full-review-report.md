@@ -6,11 +6,11 @@
 
 This section is generated from recorded local runs. Historical results below remain separate. All quantum execution is simulated; no hardware speedup or quantum advantage is established. The current linear allocation problem has a strong integral LP/min-cost-flow baseline. Warm preparation and optimizer parameter initialization are distinct algorithm choices.
 
-Primary raw evidence: [experiments/results/full_review_20261024/production_v2/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_v2/runs.jsonl). Configuration/environment: [experiments/results/full_review_20261024/production_v2/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_v2/protocol.json). Machine-readable summaries: [experiments/results/full_review_20261024/production_v2/summary.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_v2/summary.json). Raw SHA-256: `2837dcf1b305d2d2a385f49ec1b39d6c56f3386b2e0df3579aba54a65ae31abf`.
+Primary raw evidence: [experiments/results/full_review_20261024/production_v2/runs.jsonl](../experiments/results/full_review_20261024/production_v2/runs.jsonl). Configuration/environment: [experiments/results/full_review_20261024/production_v2/protocol.json](../experiments/results/full_review_20261024/production_v2/protocol.json). Machine-readable summaries: [experiments/results/full_review_20261024/production_v2/summary.json](../experiments/results/full_review_20261024/production_v2/summary.json). Raw SHA-256: `2837dcf1b305d2d2a385f49ec1b39d6c56f3386b2e0df3579aba54a65ae31abf`.
 
 ### Methodology and source provenance
 
-The objective minimizes priority-weighted shortage, total shortage and per-unit transportation burdens. Supply and demand constraints use shortened binary shipment/shortage/slack registers in production QAOA. Exact enumeration verifies small formulations, MILP/LP and greedy provide classical references. Synthetic cases, weights, penalty strengths and qubit counts are saved in each `*_case.json`; every `*_proof.json` preserves its exhaustive energy-equivalence check. See [mathematical audit](https://github.com/Arya99908/BloodFlow-Q/blob/main/docs/mathematical_model_audit.md) and [primary-literature review](https://github.com/Arya99908/BloodFlow-Q/blob/main/docs/quantum_research_review.md) for equations and citations, including Egger warm-start QAOA, Hadfield constrained mixers, and Zhou parameter interpolation.
+The objective minimizes priority-weighted shortage, total shortage and per-unit transportation burdens. Supply and demand constraints use shortened binary shipment/shortage/slack registers in production QAOA. Exact enumeration verifies small formulations, MILP/LP and greedy provide classical references. Synthetic cases, weights, penalty strengths and qubit counts are saved in each `*_case.json`; every `*_proof.json` preserves its exhaustive energy-equivalence check. See [mathematical audit](mathematical_model_audit.md) and [primary-literature review](quantum_research_review.md) for equations and citations, including Egger warm-start QAOA, Hadfield constrained mixers, and Zhou parameter interpolation.
 
 ```json
 {
@@ -749,7 +749,7 @@ Pairs match scenario and seed among completed primary-family runs. Differences b
 
 ### Recorded distributions
 
-![Measured primary runtime and strict optimal-shot distributions](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_v2/primary_comparison.svg)
+![Measured primary runtime and strict optimal-shot distributions](../experiments/results/full_review_20261024/production_v2/primary_comparison.svg)
 
 Recreate with `python -m experiments.plot_full_review --input experiments/results/full_review_20261024/production_v2` (optional plotting dependency: matplotlib==3.11.2). Boxplots pool cases and seeds descriptively; they are not confidence intervals.
 
@@ -757,14 +757,14 @@ Recreate with `python -m experiments.plot_full_review --input experiments/result
 
 #### research_study
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/research_study/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_study/analysis.json), [experiments/results/full_review_20261024/research_study/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_study/complete.json), [experiments/results/full_review_20261024/research_study/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_study/protocol.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/research_study/analysis.json](../experiments/results/full_review_20261024/research_study/analysis.json), [experiments/results/full_review_20261024/research_study/complete.json](../experiments/results/full_review_20261024/research_study/complete.json), [experiments/results/full_review_20261024/research_study/protocol.json](../experiments/results/full_review_20261024/research_study/protocol.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| runs.jsonl | 992 | {"completed": 992} | [experiments/results/full_review_20261024/research_study/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_study/runs.jsonl) |
+| runs.jsonl | 992 | {"completed": 992} | [experiments/results/full_review_20261024/research_study/runs.jsonl](../experiments/results/full_review_20261024/research_study/runs.jsonl) |
 
 
-analysis.json: [experiments/results/full_review_20261024/research_study/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_study/analysis.json) (full per-case statistics and provenance).
+analysis.json: [experiments/results/full_review_20261024/research_study/analysis.json](../experiments/results/full_review_20261024/research_study/analysis.json) (full per-case statistics and provenance).
 
 8 prespecified synthetic held-out cases, 10 paired optimizer seeds; bootstrap CIs descriptive for this small case collection, not representative population inference
 
@@ -785,27 +785,27 @@ analysis.json: [experiments/results/full_review_20261024/research_study/analysis
 
 #### supplementary
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/supplementary/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/supplementary/complete.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/supplementary/complete.json](../experiments/results/full_review_20261024/supplementary/complete.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| aer_noise.jsonl | 27 | {"status not recorded": 27} | [experiments/results/full_review_20261024/supplementary/aer_noise.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/supplementary/aer_noise.jsonl) |
-| grover.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/supplementary/grover.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/supplementary/grover.jsonl) |
-| scaling.jsonl | 38 | {"completed": 36, "skipped_quantum": 2} | [experiments/results/full_review_20261024/supplementary/scaling.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/supplementary/scaling.jsonl) |
+| aer_noise.jsonl | 27 | {"status not recorded": 27} | [experiments/results/full_review_20261024/supplementary/aer_noise.jsonl](../experiments/results/full_review_20261024/supplementary/aer_noise.jsonl) |
+| grover.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/supplementary/grover.jsonl](../experiments/results/full_review_20261024/supplementary/grover.jsonl) |
+| scaling.jsonl | 38 | {"completed": 36, "skipped_quantum": 2} | [experiments/results/full_review_20261024/supplementary/scaling.jsonl](../experiments/results/full_review_20261024/supplementary/scaling.jsonl) |
 
 
 #### necessity
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/analysis.json), [experiments/results/full_review_20261024/necessity/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/complete.json), [experiments/results/full_review_20261024/necessity/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/protocol.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity/analysis.json](../experiments/results/full_review_20261024/necessity/analysis.json), [experiments/results/full_review_20261024/necessity/complete.json](../experiments/results/full_review_20261024/necessity/complete.json), [experiments/results/full_review_20261024/necessity/protocol.json](../experiments/results/full_review_20261024/necessity/protocol.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity/cases.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/cases.jsonl) |
-| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/runs.jsonl) |
-| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity/scaling.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/scaling.jsonl) |
+| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity/cases.jsonl](../experiments/results/full_review_20261024/necessity/cases.jsonl) |
+| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity/runs.jsonl](../experiments/results/full_review_20261024/necessity/runs.jsonl) |
+| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity/scaling.jsonl](../experiments/results/full_review_20261024/necessity/scaling.jsonl) |
 
 
-analysis.json: [experiments/results/full_review_20261024/necessity/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity/analysis.json) (full per-case statistics and provenance).
+analysis.json: [experiments/results/full_review_20261024/necessity/analysis.json](../experiments/results/full_review_20261024/necessity/analysis.json) (full per-case statistics and provenance).
 
 Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No general speedup or inferential significance claim. Intervals descriptive; ties do not prove equivalence.
 
@@ -823,16 +823,16 @@ Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No gen
 
 #### necessity_v2
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity_v2/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/analysis.json), [experiments/results/full_review_20261024/necessity_v2/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/complete.json), [experiments/results/full_review_20261024/necessity_v2/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/protocol.json), [experiments/results/full_review_20261024/necessity_v2/validation.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/validation.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity_v2/analysis.json](../experiments/results/full_review_20261024/necessity_v2/analysis.json), [experiments/results/full_review_20261024/necessity_v2/complete.json](../experiments/results/full_review_20261024/necessity_v2/complete.json), [experiments/results/full_review_20261024/necessity_v2/protocol.json](../experiments/results/full_review_20261024/necessity_v2/protocol.json), [experiments/results/full_review_20261024/necessity_v2/validation.json](../experiments/results/full_review_20261024/necessity_v2/validation.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity_v2/cases.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/cases.jsonl) |
-| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity_v2/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/runs.jsonl) |
-| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity_v2/scaling.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/scaling.jsonl) |
+| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity_v2/cases.jsonl](../experiments/results/full_review_20261024/necessity_v2/cases.jsonl) |
+| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity_v2/runs.jsonl](../experiments/results/full_review_20261024/necessity_v2/runs.jsonl) |
+| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity_v2/scaling.jsonl](../experiments/results/full_review_20261024/necessity_v2/scaling.jsonl) |
 
 
-analysis.json: [experiments/results/full_review_20261024/necessity_v2/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/analysis.json) (full per-case statistics and provenance).
+analysis.json: [experiments/results/full_review_20261024/necessity_v2/analysis.json](../experiments/results/full_review_20261024/necessity_v2/analysis.json) (full per-case statistics and provenance).
 
 Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No general speedup or inferential significance claim. Intervals descriptive; ties do not prove equivalence.
 
@@ -848,17 +848,17 @@ Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No gen
 | original | uniform | 30 | 6 | 1.7333333333333434 | 15 | 0 | 0.005095816729590297 | 0 | 0 | 0 | 0 |
 
 
-validation.json: [experiments/results/full_review_20261024/necessity_v2/validation.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_v2/validation.json) (full per-case statistics and provenance).
+validation.json: [experiments/results/full_review_20261024/necessity_v2/validation.json](../experiments/results/full_review_20261024/necessity_v2/validation.json) (full per-case statistics and provenance).
 
 Validation counts: {"validated_runs": 240, "validated_rounds": 960, "deterministically_replayed_quantum_rounds": 48, "scaling_cases": 16}.
 
 #### boundary_corrected
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/boundary_corrected/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/boundary_corrected/complete.json), [experiments/results/full_review_20261024/boundary_corrected/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/boundary_corrected/protocol.json), [experiments/results/full_review_20261024/boundary_corrected/summary.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/boundary_corrected/summary.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/boundary_corrected/complete.json](../experiments/results/full_review_20261024/boundary_corrected/complete.json), [experiments/results/full_review_20261024/boundary_corrected/protocol.json](../experiments/results/full_review_20261024/boundary_corrected/protocol.json), [experiments/results/full_review_20261024/boundary_corrected/summary.json](../experiments/results/full_review_20261024/boundary_corrected/summary.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| runs.jsonl | 81 | {"completed": 66, "skipped": 15} | [experiments/results/full_review_20261024/boundary_corrected/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/boundary_corrected/runs.jsonl) |
+| runs.jsonl | 81 | {"completed": 66, "skipped": 15} | [experiments/results/full_review_20261024/boundary_corrected/runs.jsonl](../experiments/results/full_review_20261024/boundary_corrected/runs.jsonl) |
 
 
 | Scenario | Method | Status | Feasible | Objective | Runtime s |
@@ -948,7 +948,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/b
 
 #### historical_recovered
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/historical_recovered/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/historical_recovered/complete.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/historical_recovered/complete.json](../experiments/results/full_review_20261024/historical_recovered/complete.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
@@ -956,16 +956,16 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/h
 
 #### necessity_final
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity_final/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/analysis.json), [experiments/results/full_review_20261024/necessity_final/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/complete.json), [experiments/results/full_review_20261024/necessity_final/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/protocol.json), [experiments/results/full_review_20261024/necessity_final/validation.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/validation.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/necessity_final/analysis.json](../experiments/results/full_review_20261024/necessity_final/analysis.json), [experiments/results/full_review_20261024/necessity_final/complete.json](../experiments/results/full_review_20261024/necessity_final/complete.json), [experiments/results/full_review_20261024/necessity_final/protocol.json](../experiments/results/full_review_20261024/necessity_final/protocol.json), [experiments/results/full_review_20261024/necessity_final/validation.json](../experiments/results/full_review_20261024/necessity_final/validation.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity_final/cases.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/cases.jsonl) |
-| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity_final/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/runs.jsonl) |
-| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity_final/scaling.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/scaling.jsonl) |
+| cases.jsonl | 12 | {"status not recorded": 12} | [experiments/results/full_review_20261024/necessity_final/cases.jsonl](../experiments/results/full_review_20261024/necessity_final/cases.jsonl) |
+| runs.jsonl | 240 | {"status not recorded": 240} | [experiments/results/full_review_20261024/necessity_final/runs.jsonl](../experiments/results/full_review_20261024/necessity_final/runs.jsonl) |
+| scaling.jsonl | 16 | {"status not recorded": 16} | [experiments/results/full_review_20261024/necessity_final/scaling.jsonl](../experiments/results/full_review_20261024/necessity_final/scaling.jsonl) |
 
 
-analysis.json: [experiments/results/full_review_20261024/necessity_final/analysis.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/analysis.json) (full per-case statistics and provenance).
+analysis.json: [experiments/results/full_review_20261024/necessity_final/analysis.json](../experiments/results/full_review_20261024/necessity_final/analysis.json) (full per-case statistics and provenance).
 
 Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No general speedup or inferential significance claim. Intervals descriptive; ties do not prove equivalence.
 
@@ -981,47 +981,47 @@ Exploratory; 6 generated instances paired across 2 formulations, 5 seeds. No gen
 | original | uniform | 30 | 6 | 1.7333333333333434 | 15 | 0 | 0.0051116818998707455 | 0 | 0 | 0 | 0 |
 
 
-validation.json: [experiments/results/full_review_20261024/necessity_final/validation.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/necessity_final/validation.json) (full per-case statistics and provenance).
+validation.json: [experiments/results/full_review_20261024/necessity_final/validation.json](../experiments/results/full_review_20261024/necessity_final/validation.json) (full per-case statistics and provenance).
 
 Validation counts: {"validated_runs": 240, "validated_rounds": 960, "deterministically_replayed_quantum_rounds": 48, "scaling_cases": 16}.
 
 #### production
 
-Completion marker: absent; incomplete/unverified. Sources: [experiments/results/full_review_20261024/production/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production/protocol.json)
+Completion marker: absent; incomplete/unverified. Sources: [experiments/results/full_review_20261024/production/protocol.json](../experiments/results/full_review_20261024/production/protocol.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| runs.jsonl | 276 | {"completed": 276} | [experiments/results/full_review_20261024/production/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production/runs.jsonl) |
+| runs.jsonl | 276 | {"completed": 276} | [experiments/results/full_review_20261024/production/runs.jsonl](../experiments/results/full_review_20261024/production/runs.jsonl) |
 
 
 #### production_pilot
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/production_pilot/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_pilot/complete.json), [experiments/results/full_review_20261024/production_pilot/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_pilot/protocol.json), [experiments/results/full_review_20261024/production_pilot/summary.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_pilot/summary.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/production_pilot/complete.json](../experiments/results/full_review_20261024/production_pilot/complete.json), [experiments/results/full_review_20261024/production_pilot/protocol.json](../experiments/results/full_review_20261024/production_pilot/protocol.json), [experiments/results/full_review_20261024/production_pilot/summary.json](../experiments/results/full_review_20261024/production_pilot/summary.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| runs.jsonl | 12 | {"completed": 12} | [experiments/results/full_review_20261024/production_pilot/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/production_pilot/runs.jsonl) |
+| runs.jsonl | 12 | {"completed": 12} | [experiments/results/full_review_20261024/production_pilot/runs.jsonl](../experiments/results/full_review_20261024/production_pilot/runs.jsonl) |
 
 
 #### research_pilot
 
-Completion marker: present. Sources: [experiments/results/full_review_20261024/research_pilot/complete.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_pilot/complete.json), [experiments/results/full_review_20261024/research_pilot/protocol.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_pilot/protocol.json)
+Completion marker: present. Sources: [experiments/results/full_review_20261024/research_pilot/complete.json](../experiments/results/full_review_20261024/research_pilot/complete.json), [experiments/results/full_review_20261024/research_pilot/protocol.json](../experiments/results/full_review_20261024/research_pilot/protocol.json)
 
 | Artifact | Rows | Recorded statuses | Evidence |
 | --- | --- | --- | --- |
-| runs.jsonl | 8 | {"completed": 8} | [experiments/results/full_review_20261024/research_pilot/runs.jsonl](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/research_pilot/runs.jsonl) |
+| runs.jsonl | 8 | {"completed": 8} | [experiments/results/full_review_20261024/research_pilot/runs.jsonl](../experiments/results/full_review_20261024/research_pilot/runs.jsonl) |
 
 
 ### Orchestration manifests and exact commands
 
-[experiments/results/full_review_20261024/final_protocol_execution.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/final_protocol_execution.json)
+[experiments/results/full_review_20261024/final_protocol_execution.json](../experiments/results/full_review_20261024/final_protocol_execution.json)
 
 ```json
 [
   {
     "job": "baseline_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--scenarios",
@@ -1050,7 +1050,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "paired_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_warm_qaoa_comparison",
       "--scenarios",
@@ -1075,11 +1075,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1088,11 +1088,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1101,11 +1101,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1114,19 +1114,19 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
 ]
 ```
 
-[experiments/results/full_review_20261024/followup_execution.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/followup_execution.json)
+[experiments/results/full_review_20261024/followup_execution.json](../experiments/results/full_review_20261024/followup_execution.json)
 
 ```json
 [
   {
     "job": "boundary_corrected",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_full_review",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/boundary_corrected",
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/boundary_corrected",
       "--scenarios",
       "zero_inventory",
       "zero_demand",
@@ -1138,13 +1138,13 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   },
   {
     "job": "warm_audit",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.audit_warm_qaoa",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/warm_audit.json"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/warm_audit.json"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1154,7 +1154,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
     "job": "historical_recovered",
     "cwd": "/tmp/bloodflow-round2-recovery-20261024",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--suite",
@@ -1188,14 +1188,14 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
 ]
 ```
 
-[experiments/results/full_review_20261024/suite_execution.json](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/full_review_20261024/suite_execution.json)
+[experiments/results/full_review_20261024/suite_execution.json](../experiments/results/full_review_20261024/suite_execution.json)
 
 ```json
 [
   {
     "job": "research_pilot",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--pilot",
@@ -1209,7 +1209,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "research_study",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--output",
@@ -1222,7 +1222,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "research_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.analyze",
       "--input",
@@ -1235,7 +1235,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "supplementary",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.supplementary",
       "--output",
@@ -1248,7 +1248,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
@@ -1261,7 +1261,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
@@ -1274,7 +1274,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",
@@ -1311,8 +1311,8 @@ For the committed measurements, render with `python -m experiments.render_full_r
 
 ## Historical measurements (preserved)
 
-**Raw data:** [`20261007-01.json`](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/results/20261007-01.json)  
-**Configuration:** [`20261007-01.json`](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/configurations/20261007-01.json)
+**Raw data:** [`20261007-01.json`](../experiments/results/20261007-01.json)
+**Configuration:** [`20261007-01.json`](../experiments/configurations/20261007-01.json)
 
 ## Methodology
 
@@ -1320,7 +1320,7 @@ This report is generated from the raw JSON experiment output. It does not alter 
 
 ## Number and size of scenarios
 
-The run contains **5 scenarios**. Full scenario inputs and per-case unit counts are in [`20261007-01.json`](https://github.com/Arya99908/BloodFlow-Q/blob/main/experiments/configurations/20261007-01.json). Each case has one synthetic bank, one synthetic hospital, one modeled blood group, and at most one potential allocation variable. Inventory and demand are bounded by 12 and 7 units respectively. The QUBO bit count is reported per case below. This deliberately small design keeps exact enumeration and the local simulator bounded.
+The run contains **5 scenarios**. Full scenario inputs and per-case unit counts are in [`20261007-01.json`](../experiments/configurations/20261007-01.json). Each case has one synthetic bank, one synthetic hospital, one modeled blood group, and at most one potential allocation variable. Inventory and demand are bounded by 12 and 7 units respectively. The QUBO bit count is reported per case below. This deliberately small design keeps exact enumeration and the local simulator bounded.
 
 | Scenario | Banks | Hospitals | Groups | Inventory units | Demand units | QUBO bits |
 |---|---:|---:|---:|---:|---:|---:|

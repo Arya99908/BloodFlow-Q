@@ -36,7 +36,7 @@ export default function Home({ onNavigate, researcherName = '', theme = 'light' 
         <TextType as="h1" text={`Welcome back, ${welcomeName}.`} typingSpeed={24} loop={false} showCursor={false} typeEffect="fade" />
         <p className="home-lede">Model blood logistics as a network decision problem. Explore hospital demand, test route disruptions, and compare classical and quantum-assisted allocation methods.</p>
         <div className="home-actions">
-          <SpecularButton className="home-primary-action" size="md" radius={12} tint="#ef233c" textColor="#fff" lineColor="#ff9aa8" baseColor="#920942" onClick={() => onNavigate('dashboard')}><Activity size={16} /> Open research dashboard <ArrowRight size={16} /></SpecularButton>
+          <SpecularButton className="home-primary-action" size="md" radius={12} tint="#ef233c" textColor="#fff" lineColor="#ff9aa8" baseColor="#920942" onClick={() => onNavigate('demo')}><Activity size={16} /> Explore the disruption story <ArrowRight size={16} /></SpecularButton>
           <button type="button" className="home-secondary-action" onClick={() => onNavigate('optimization')}><Play size={15} /> Start an optimization</button>
         </div>
         <div className="home-trust-row"><span><ShieldCheck size={15} /> Synthetic data only</span><span><Atom size={15} /> Classical + quantum methods</span></div>

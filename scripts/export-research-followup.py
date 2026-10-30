@@ -3,7 +3,7 @@ import hashlib,json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 base=ROOT/'experiments/results/full_review_20261024'
-paths={'quantum_study':base/'research_study/analysis.json','replacement_study':base/'necessity_final/analysis.json'}
+paths={'quantum_study':base/'research_study/analysis.json','replacement_study':base/'necessity/analysis.json'}
 data={k:json.loads(p.read_text()) for k,p in paths.items()}
 q=data['quantum_study'];n=data['replacement_study']
 assert q['completed']==992 and n['records']==240

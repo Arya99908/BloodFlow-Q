@@ -1021,7 +1021,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "baseline_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--scenarios",
@@ -1050,7 +1050,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "paired_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_warm_qaoa_comparison",
       "--scenarios",
@@ -1075,11 +1075,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1088,11 +1088,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1101,11 +1101,11 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_v2_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",
-      "<repository-root>/experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1120,13 +1120,13 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
 [
   {
     "job": "boundary_corrected",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_full_review",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/boundary_corrected",
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/boundary_corrected",
       "--scenarios",
       "zero_inventory",
       "zero_demand",
@@ -1138,13 +1138,13 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   },
   {
     "job": "warm_audit",
-    "cwd": "<repository-root>",
+    "cwd": "<PROJECT_ROOT>",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.audit_warm_qaoa",
       "--output",
-      "<repository-root>/experiments/results/full_review_20261024/warm_audit.json"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/warm_audit.json"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -1154,7 +1154,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
     "job": "historical_recovered",
     "cwd": "/tmp/bloodflow-round2-recovery-20261024",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--suite",
@@ -1195,7 +1195,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "research_pilot",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--pilot",
@@ -1209,7 +1209,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "research_study",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.run_study",
       "--output",
@@ -1222,7 +1222,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "research_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.analyze",
       "--input",
@@ -1235,7 +1235,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "supplementary",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.supplementary",
       "--output",
@@ -1248,7 +1248,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
@@ -1261,7 +1261,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
@@ -1274,7 +1274,7 @@ Completion marker: present. Sources: [experiments/results/full_review_20261024/r
   {
     "job": "necessity_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",
@@ -1311,7 +1311,7 @@ For the committed measurements, render with `python -m experiments.render_full_r
 
 ## Historical measurements (preserved)
 
-**Raw data:** [`20261007-01.json`](../experiments/results/20261007-01.json)  
+**Raw data:** [`20261007-01.json`](../experiments/results/20261007-01.json)
 **Configuration:** [`20261007-01.json`](../experiments/configurations/20261007-01.json)
 
 ## Methodology

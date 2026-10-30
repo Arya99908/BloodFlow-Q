@@ -17,7 +17,7 @@ import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.quantum_info import Statevector
 from qiskit_aer import AerSimulator
-from scipy.optimize import minimize
+from scipy.optimize import minimize, OptimizeResult
 
 from quantum.ising import IsingRepresentation, convert_qubo_to_ising
 from quantum.qubo import QUBOInputError, QUBOResult
@@ -85,8 +85,11 @@ class QAOAConfig:
     initial_parameters: tuple[float, ...] | None = None
     retain_initial_state: bool = False
     warm_start_source: str = "lp"
+    seed_only: bool = False
 
     def __post_init__(self) -> None:
+        if not isinstance(self.seed_only, bool) or (self.seed_only and not (self.warm_start or self.mixer == "warm_start")):
+            raise ValueError("seed_only requires warm-start preparation")
         if isinstance(self.p, bool) or not isinstance(self.p, int) or self.p < 1:
             raise ValueError("p must be a positive integer")
         if isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots < 1:
@@ -146,7 +149,7 @@ class QAOAResult:
     runtime_seconds: float
     variable_mapping: tuple
     cost_hamiltonian: object
-    measured_mean_energy: float
+    measured_mean_energy: float | None
     warm_start_used: bool = False
     mixer_type: str = "x"
     result_kind: str = "best measured candidate; not a global optimality certificate"
@@ -366,6 +369,16 @@ class QAOASolver:
                 f"this QUBO has {qubo.variable_count} binary variables"
             )
         started = time.perf_counter()
+        if qubo.variable_count == 0:
+            return QAOAResult(
+                best_bitstring="", objective_value=qubo.constant_offset,
+                counts={}, ranked_candidates=(), qaoa_depth=0, number_of_shots=0,
+                optimizer_information={"name": "constant_instance", "success": True,
+                    "quantum_executed": False, "function_evaluations": 0,
+                    "message": "Constant objective: no circuit, optimization or measurements required."},
+                runtime_seconds=time.perf_counter() - started, variable_mapping=(),
+                cost_hamiltonian=None, measured_mean_energy=None,
+                result_kind="exact constant instance; no quantum execution")
         original_ising = convert_qubo_to_ising(qubo)
         ising, cost_scale = normalize_ising(original_ising) if self.config.normalize_cost else (original_ising, 1.0)
 
@@ -390,6 +403,8 @@ class QAOASolver:
         objective_calls = 0
 
         def expected_energy(angles: np.ndarray) -> float:
+            if time.perf_counter() - started > 20:
+                raise QAOASolverError("Local QAOA optimization exceeded its 20-second budget")
             nonlocal objective_calls
             t = time.perf_counter()
             circuit = self.build_circuit(ising, angles, thetas=thetas, xy_pairs=xy_pairs)
@@ -406,7 +421,7 @@ class QAOASolver:
             t_opt = time.perf_counter()
             runs = []
             starts = []
-            for restart in range(self.config.restarts):
+            for restart in range(1 if self.config.seed_only else self.config.restarts):
                 if restart:
                     initial = np.concatenate((rng.uniform(0, 2 * math.pi, self.config.p),
                                               rng.uniform(0, math.pi, self.config.p)))
@@ -414,6 +429,12 @@ class QAOASolver:
                     initial = np.zeros(2 * self.config.p)
                 elif self.config.parameter_initialization == "provided":
                     initial = np.asarray(self.config.initial_parameters, dtype=float)
+                if self.config.seed_only:
+                    initial = np.zeros(2 * self.config.p)
+                    starts.append(initial.copy())
+                    runs.append(OptimizeResult(x=initial, fun=expected_energy(initial), success=True,
+                                              nfev=1, message="Seed-only control: no variational optimization"))
+                    break
                 starts.append(initial.copy())
                 runs.append(minimize(expected_energy, initial, method=self.config.optimizer,
                                      options={"maxiter": self.config.max_iterations}))
@@ -427,7 +448,7 @@ class QAOASolver:
             retain = reference_energy is not None and reference_energy < float(optimized.fun)
             final_parameters = np.zeros(2 * self.config.p) if retain else np.asarray(optimized.x, dtype=float)
             final_energy = reference_energy if retain else float(optimized.fun)
-            selected_source = "initial_state" if retain else "optimized_restart"
+            selected_source = "seed_only" if self.config.seed_only else ("initial_state" if retain else "optimized_restart")
             t = time.perf_counter()
             measured = self.build_circuit(
                 ising, final_parameters, measure=True, thetas=thetas, xy_pairs=xy_pairs
@@ -444,7 +465,7 @@ class QAOASolver:
             job = simulator.run(
                 compiled, shots=self.config.shots, seed_simulator=self.config.seed
             )
-            counts = {str(key): int(value) for key, value in job.result().get_counts().items()}
+            counts = {str(key): int(value) for key, value in job.result(timeout=max(0.1, 25 - (time.perf_counter() - started))).get_counts().items()}
             sampling_seconds = time.perf_counter() - t
         except Exception as error:
             raise QAOASolverError(f"local QAOA run failed: {error}") from error
@@ -485,15 +506,17 @@ class QAOASolver:
             qaoa_depth=self.config.p,
             number_of_shots=self.config.shots,
             optimizer_information={
-                "name": self.config.optimizer,
+                "name": "seed_only" if self.config.seed_only else self.config.optimizer,
+                "seed_only": self.config.seed_only,
+                "quantum_executed": True,
                 "success": bool(optimized.success),
                 "message": str(optimized.message),
                 "iterations": int(optimized.nit) if getattr(optimized, "nit", None) is not None else None,
                 "function_evaluations": sum(int(getattr(run, "nfev", 0)) for run in runs),
                 "objective_evaluations_total": objective_calls,
                 "reference_evaluations": int(reference_energy is not None),
-                "initial_state_expected_energy": reference_energy * cost_scale if reference_energy is not None else None,
-                "optimized_expected_energy": float(optimized.fun) * cost_scale,
+                "initial_state_expected_energy": float(optimized.fun) * cost_scale if self.config.seed_only else (reference_energy * cost_scale if reference_energy is not None else None),
+                "optimized_expected_energy": None if self.config.seed_only else float(optimized.fun) * cost_scale,
                 "selected_source": selected_source,
                 "parameter_initialization": self.config.parameter_initialization,
                 "warm_start_source_requested": self.config.warm_start_source,

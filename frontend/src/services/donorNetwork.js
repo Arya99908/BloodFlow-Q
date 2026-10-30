@@ -1,5 +1,11 @@
+export const BLOOD_GROUPS = Object.freeze(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+function validateBloodGroup(group) {
+  if (!BLOOD_GROUPS.includes(group)) throw new Error('Choose one of the supported blood groups.');
+}
+
 /** Supabase table/RPC calls live in one service module rather than UI pages. */
 export async function saveDonorProfile(client, userId, profile) {
+  validateBloodGroup(profile.blood_group);
   const { data, error } = await client.from('donor_profiles')
     .upsert({ ...profile, user_id: userId }, { onConflict: 'user_id' })
     .select('*').single();
@@ -14,6 +20,7 @@ export async function getDonorProfile(client, userId) {
 }
 
 export async function updateDonorProfile(client, userId, updates) {
+  if (updates.blood_group !== undefined) validateBloodGroup(updates.blood_group);
   const { data, error } = await client.from('donor_profiles').update(updates).eq('user_id', userId).select('*').single();
   if (error) throw new Error(error.message);
   return data;
@@ -24,7 +31,7 @@ export async function getDonorInbox(client) {
     .select('id,status,contacted_at,responded_at,suggestion_reason,emergency_blood_requests(id,request_code,blood_group,component,units_requested,urgency,required_by,location_city,approximate_area,status)')
     .order('contacted_at', { ascending: false }).limit(100);
   if (error) throw new Error(error.message);
-  return data || [];
+  return (data || []).filter((row) => BLOOD_GROUPS.includes(row.emergency_blood_requests?.blood_group));
 }
 
 export async function respondToDonorRequest(client, notificationId, response) {
@@ -49,7 +56,7 @@ export async function getDonorAppointments(client) {
     .select('id,request_id,collection_centre_id,scheduled_at,status,authorized_institutions(id,name,city,approximate_area),emergency_blood_requests(request_code,blood_group,component)')
     .order('scheduled_at', { ascending: true }).limit(100);
   if (error) throw new Error(error.message);
-  return data || [];
+  return (data || []).filter((row) => BLOOD_GROUPS.includes(row.emergency_blood_requests?.blood_group));
 }
 
 export async function respondToCollectionAppointment(client, appointmentId, confirm) {
@@ -70,6 +77,7 @@ export async function getHospitalMemberships(client, userId) {
 }
 
 export async function createEmergencyRequest(client, input) {
+  validateBloodGroup(input.blood_group);
   const { data, error } = await client.rpc('create_emergency_blood_request', {
     p_hospital_id: input.hospital_id,
     p_blood_group: input.blood_group,
@@ -120,7 +128,7 @@ export async function listAuthorizedRequests(client) {
   const { data, error } = await client.from('emergency_blood_requests')
     // Postgres row-level security filters this to requests the signed-in user
     // is allowed to see (hospital, participating bank/centre, or notified donor).
-    .select(fields).order('created_at', { ascending: false }).limit(100);
+    .select(fields).in('blood_group', BLOOD_GROUPS).order('created_at', { ascending: false }).limit(100);
   if (error) throw new Error(error.message);
   const urgencyPriority = { critical: 0, urgent: 1, routine: 2 };
   return (data || []).sort((left, right) =>

@@ -54,6 +54,11 @@ class DonorSuggestion:
     medical_eligibility_confirmed: Literal[False] = False
 
 
+SUPPORTED_BLOOD_GROUPS = frozenset(
+    {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}
+)
+
+
 _URGENCY_ORDER = {"critical": 0, "urgent": 1, "routine": 2}
 
 
@@ -82,6 +87,9 @@ def match_donors(
         raise ValueError("maximum_suggestions must be at least 1")
     if maximum_distance_km is not None and maximum_distance_km < 0:
         raise ValueError("maximum_distance_km must be non-negative")
+
+    if need.blood_group not in SUPPORTED_BLOOD_GROUPS:
+        return []
 
     candidates: list[DonorCandidate] = []
     seen: set[str] = set()

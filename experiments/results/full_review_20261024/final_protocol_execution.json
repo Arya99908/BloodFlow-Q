@@ -2,7 +2,7 @@
   {
     "job": "baseline_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_experiments",
       "--scenarios",
@@ -31,7 +31,7 @@
   {
     "job": "paired_replay",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "experiments.run_warm_qaoa_comparison",
       "--scenarios",
@@ -56,11 +56,11 @@
   {
     "job": "necessity_v2",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.run",
       "--output",
-      "experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -69,11 +69,11 @@
   {
     "job": "necessity_v2_analysis",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.analyze",
       "--input",
-      "experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
@@ -82,11 +82,11 @@
   {
     "job": "necessity_v2_validation",
     "command": [
-      "python",
+      "<EXTERNAL_PROJECT_ROOT>/.venv/bin/python",
       "-m",
       "research.quantum_experiments.necessity.validate",
       "--input",
-      "experiments/results/full_review_20261024/necessity_v2"
+      "<PROJECT_ROOT>/experiments/results/full_review_20261024/necessity_v2"
     ],
     "status": "completed",
     "exit_code": 0,
