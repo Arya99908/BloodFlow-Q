@@ -529,6 +529,10 @@ class BackendService:
     def results(self) -> dict[str, object]:
         return {"results": list(self._results)}
 
+    def get_telemetry(self, period: str = "Last 7 days") -> dict[str, Any]:
+        from backend.reporting_service import build_reporting_telemetry
+        return build_reporting_telemetry(self._scenario(None), period=period)
+
     def _quantum_result(self, scenario, weights, penalties, secondary_penalties=None, solver=None):
         solver = self.qaoa_solver if solver is None else solver
         if solver is None:
