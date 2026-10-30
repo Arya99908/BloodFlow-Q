@@ -6,13 +6,30 @@
  * Handling both shapes keeps real values visible without inventing defaults.
  */
 export function getComparableResult(record) {
-  const firstResult = record?.result;
-  if (!firstResult || typeof firstResult !== 'object') return record ?? null;
+  let result = record ?? null;
+  // API responses can be wrapped by either Demo Mode or a saved experiment.
+  // Unwrap every result envelope before interpreting the metric fields.
+  for (let depth = 0; depth < 3; depth += 1) {
+    const nested = result?.result;
+    if (!nested || typeof nested !== 'object') break;
+    result = nested;
+  }
 
-  const nestedResult = firstResult.result;
-  if (nestedResult && typeof nestedResult === 'object') return nestedResult;
+  if (!result || typeof result !== 'object') return null;
 
-  return firstResult;
+  // Emergency runs put the metrics for the newly optimized state under
+  // `after_metrics`. Flatten those same returned values for the comparison
+  // table; otherwise it incorrectly labels a feasible QAOA sample infeasible
+  // and prints its metrics as unavailable.
+  if (result.after_metrics && typeof result.after_metrics === 'object') {
+    return {
+      ...result,
+      ...result.after_metrics,
+      runtime_seconds: result.after_qaoa?.runtime_seconds ?? result.runtime_seconds,
+    };
+  }
+
+  return result;
 }
 
 /** Keep preformatted percentages intact while formatting numeric metrics. */

@@ -16,6 +16,37 @@ test('supports a saved experiment wrapped around the API response', () => {
   assert.equal(getComparableResult(record), metrics);
 });
 
+test('uses the actual after-state metrics for emergency solver comparisons', () => {
+  const response = {
+    method: 'qaoa',
+    result: {
+      result: {
+        method: 'qaoa',
+        after_metrics: {
+          feasibility: true,
+          total_objective: 215.6,
+          critical_satisfaction: { rate: 0.75 },
+          total_unmet_demand: 4,
+          transport_cost: 54,
+        },
+        after_qaoa: { runtime_seconds: 0.81 },
+      },
+    },
+  };
+
+  assert.deepEqual(getComparableResult(response), {
+    method: 'qaoa',
+    feasibility: true,
+    total_objective: 215.6,
+    critical_satisfaction: { rate: 0.75 },
+    total_unmet_demand: 4,
+    transport_cost: 54,
+    after_metrics: response.result.result.after_metrics,
+    after_qaoa: response.result.result.after_qaoa,
+    runtime_seconds: 0.81,
+  });
+});
+
 test('does not turn a missing result into fabricated metrics', () => {
   assert.equal(getComparableResult({ method: 'qaoa' }).method, 'qaoa');
   assert.equal(getComparableResult(null), null);
