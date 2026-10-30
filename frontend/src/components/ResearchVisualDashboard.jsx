@@ -29,7 +29,6 @@ export default function ResearchVisualDashboard() {
 
   // Filter States
   const [viewMode, setViewMode] = useState('inventory'); // 'inventory' | 'quantum'
-  const [bloodGroupMode, setBloodGroupMode] = useState('rh'); // 'rh' (8 groups) | 'canonical' (ABO 4 groups)
   const [selectedGroup, setSelectedGroup] = useState('All');
   const [selectedSource, setSelectedSource] = useState('All');
   const [selectedRegion, setSelectedRegion] = useState('All');
@@ -43,16 +42,8 @@ export default function ResearchVisualDashboard() {
   // Derive available blood groups from backend telemetry payload
   const availableGroups = useMemo(() => {
     if (!telemetry) return [];
-    return bloodGroupMode === 'canonical'
-      ? telemetry.canonical_groups || ['O', 'A', 'B', 'AB']
-      : telemetry.all_rh_groups || ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  }, [telemetry, bloodGroupMode]);
-
-  // Reset selected blood group if switching modes
-  const handleBloodGroupModeChange = (mode) => {
-    setBloodGroupMode(mode);
-    setSelectedGroup('All');
-  };
+    return telemetry.canonical_groups || [];
+  }, [telemetry]);
 
   // Filtered Regional Breakdown
   const filteredRegions = useMemo(() => {
@@ -75,35 +66,29 @@ export default function ResearchVisualDashboard() {
   // Filtered Availability Dataset (Chart 1)
   const filteredAvailability = useMemo(() => {
     if (!telemetry?.availability) return [];
-    const sourceList = bloodGroupMode === 'canonical'
-      ? telemetry.availability.canonical || []
-      : telemetry.availability.rh_subtypes || [];
+    const sourceList = telemetry.availability.canonical || [];
 
     if (selectedGroup === 'All') return sourceList;
     return sourceList.filter((item) => item.group === selectedGroup);
-  }, [telemetry, bloodGroupMode, selectedGroup]);
+  }, [telemetry, selectedGroup]);
 
   // Filtered Collected vs Used Dataset (Chart 2)
   const filteredCollected = useMemo(() => {
     if (!telemetry?.collected_vs_used) return [];
-    const sourceList = bloodGroupMode === 'canonical'
-      ? telemetry.collected_vs_used.canonical || []
-      : telemetry.collected_vs_used.rh_subtypes || [];
+    const sourceList = telemetry.collected_vs_used.canonical || [];
 
     if (selectedGroup === 'All') return sourceList;
     return sourceList.filter((item) => item.group === selectedGroup);
-  }, [telemetry, bloodGroupMode, selectedGroup]);
+  }, [telemetry, selectedGroup]);
 
   // Filtered Expiry Matrix (Chart 4)
   const filteredExpiryMatrix = useMemo(() => {
     if (!telemetry?.expiry_matrix) return [];
-    const sourceList = bloodGroupMode === 'canonical'
-      ? telemetry.expiry_matrix.canonical || []
-      : telemetry.expiry_matrix.rh_subtypes || [];
+    const sourceList = telemetry.expiry_matrix.canonical || [];
 
     if (selectedGroup === 'All') return sourceList;
     return sourceList.filter((item) => item.group === selectedGroup);
-  }, [telemetry, bloodGroupMode, selectedGroup]);
+  }, [telemetry, selectedGroup]);
 
   // Inflow vs Outflow Trends (Chart 3)
   const trendList = useMemo(() => {
@@ -326,24 +311,7 @@ export default function ResearchVisualDashboard() {
 
         {/* View Mode & Blood Group Mode Toggles */}
         <div className="rvd-header-right-tools">
-          <div className="rvd-view-toggle-wrap">
-            <button
-              type="button"
-              className={`rvd-toggle-btn ${bloodGroupMode === 'rh' ? 'active' : ''}`}
-              onClick={() => handleBloodGroupModeChange('rh')}
-              title="View 8 Rh subtypes (A+, A-, etc.)"
-            >
-              8 Rh Subtypes
-            </button>
-            <button
-              type="button"
-              className={`rvd-toggle-btn ${bloodGroupMode === 'canonical' ? 'active' : ''}`}
-              onClick={() => handleBloodGroupModeChange('canonical')}
-              title="View 4 Canonical ABO Groups (O, A, B, AB)"
-            >
-              4 ABO Groups
-            </button>
-          </div>
+          <span className="rvd-toggle-btn active">ABO source groups</span>
 
           <div className="rvd-view-toggle-wrap">
             <button
@@ -487,7 +455,7 @@ export default function ResearchVisualDashboard() {
           <div className="rvd-card-header">
             <h2 className="rvd-card-title">
               {viewMode === 'inventory'
-                ? `Blood Group Availability vs Required Demand (${bloodGroupMode === 'canonical' ? 'ABO' : 'Rh'})`
+                ? `Blood Group Availability vs Required Demand (ABO)`
                 : 'Allocated Blood Group Units vs Target Demand'}
             </h2>
             <div className="rvd-legend">

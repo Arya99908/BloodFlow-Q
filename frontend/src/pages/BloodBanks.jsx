@@ -60,9 +60,9 @@ export default function BloodBanks() {
         </span>
       </div>
 
-      {['O-', 'O+', 'A+', 'B+'].some((group) => !groups.includes(group)) && (
+      {['O+', 'A+', 'B+', 'AB+'].some((group) => !groups.includes(group)) && (
         <div className="notice notice-info">
-          <Droplet size={17} /> This API scenario currently supplies {groups.join(', ')} labels. Rh-negative or Rh-positive inventory such as O−, O+, A+, or B+ is not provided, so this page does not infer or rename those values.
+          <Droplet size={17} /> This API scenario currently supplies {groups.join(', ')} labels. Rh-specific inventory is not provided, so this page does not infer or rename those values.
         </div>
       )}
 

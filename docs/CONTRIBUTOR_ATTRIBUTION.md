@@ -30,11 +30,10 @@ BloodFlow-Q is the product of collaborative engineering across three core contri
 
 ## 3. Contributor: Syed Afnan (`syedafnan7-lab`)
 * **Core Inventions & Codebases:**
-  - **Flagship Policy Demonstration:** Designed and implemented `backend/flagship.py` and `frontend/src/components/FlagshipDemo.jsx`, directly answering hackathon jury feedback by demonstrating why weighted costs withhold blood from critical hospitals and how lexicographic triage restores patient priority.
+  - **Flagship Policy Demonstration:** Designed and implemented `backend/flagship.py` and `frontend/src/components/FlagshipDemo.jsx`, demonstrating why weighted costs withhold blood from critical hospitals and how lexicographic triage restores patient priority.
   - **Backend Compute Isolation:** Created `backend/jobs.py`, implementing process sandboxing via `multiprocessing.Process`, `BoundedSemaphore(2)`, and 60-second execution deadlines to prevent simulator thread lockups.
   - **Donor Privacy Security:** Authored `supabase/migrations/202610250001_donor_contact_lifecycle.sql`, tightening row-level security so that donor contact information is accessible only during active 24-hour emergency windows with verified consent.
   - **Animated UI Refresh:** Restored and polished the modern component suite (`Dock.jsx`, `SquishSwitch.jsx`, `Stepper.jsx`, `ClickSpark.jsx`, `AlertCenter.jsx`, `Chatbot.jsx`) and semantic dark theme tokens.
-  - **Hackathon Jury Integration:** Managed the comprehensive 16-judge hackathon evaluation docket (`jury_reports/`) and resolved each identified architectural deficiency.
 
 ---
 

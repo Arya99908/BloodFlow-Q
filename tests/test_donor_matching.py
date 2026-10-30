@@ -11,7 +11,7 @@ from backend.donor_matching import DonorCandidate, EmergencyNeed, match_donors, 
 def need(**overrides):
     values = {
         "request_id": "REQ-1",
-        "blood_group": "O-",
+        "blood_group": "O+",
         "component": "Red blood cells",
         "units": 2,
         "urgency": "urgent",
@@ -26,7 +26,7 @@ def need(**overrides):
 def candidate(donor_id, **overrides):
     values = {
         "donor_id": donor_id,
-        "blood_group": "O-",
+        "blood_group": "O+",
         "city": "Synthetic City",
         "approximate_location": "North Area",
         "availability": "available",
@@ -42,7 +42,7 @@ class DonorMatchingTests(unittest.TestCase):
     def test_only_exact_group_available_consented_uncontacted_candidates_are_suggested(self):
         rows = [
             candidate("good"),
-            candidate("other-group", blood_group="O+"),
+            candidate("other-group", blood_group="A+"),
             candidate("unavailable", availability="temporarily_unavailable"),
             candidate("do-not-contact", availability="do_not_contact"),
             candidate("no-request-consent", request_consent=False),

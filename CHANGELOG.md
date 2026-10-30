@@ -35,3 +35,7 @@
 * Fixed QAOA HTTP 422 error on unprovided penalties by implementing automated conservative objective bound derivation.
 * Fixed division-by-zero edge cases in telemetry aggregations.
 * Fixed mobile Dock label collision and viewport overlap.
+
+## Local integration — 2026-10-31
+
+Merged the latest unified integration branch into the preserved local observatory checkout. Restricted donor coordination to positive blood groups, removed inferred Rh reporting subdivisions and the historical evaluation archive, and retained technical regression coverage. See [local merge and validation record](docs/LOCAL_INTEGRATION_20261031.md).

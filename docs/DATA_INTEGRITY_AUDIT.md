@@ -23,7 +23,7 @@ We performed a full data architecture audit and remediation:
    - **Batch Level Expiry Reconciled:** The discrete inventory batches sum up exactly to the bank inventory for each blood group ($O: 24, A: 18, B: 16, AB: 13$).
    - **Optimal Allocation Reconciled:** The utilized/used units are driven by `GreedyAllocator` / `MILPSolver` optimal allocations ($36$ allocated, $2$ unmet).
 4. **End-to-End Filter Propagation:** Filter selections (`Select Blood Group`, `Collection Source`, `Select Hospital/Region`, `Status`, `Period`) now dynamically re-filter all metrics, charts, heatmaps, and tables.
-5. **Dual Blood Group Mode:** Users can toggle between **4 Canonical ABO Groups** (`O`, `A`, `B`, `AB` — 1:1 mapping of scenario data) and **8 Rh Subtypes** (`A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`, `O+`, `O-` — partitioned by biological prevalence), both summing to the exact same $71$ units.
+5. **ABO source groups:** Reports display the four source labels without inferring Rh types.
 
 ---
 
@@ -97,9 +97,9 @@ Every KPI and chart mark is mathematically calculated as follows:
 
 ### A. Blood Group Availability vs. Required Levels (Combo Chart)
 - **Bar Series (Verified Stock):** Direct aggregation of stock for each blood group across all banks.
-  - $O: 24$, $A: 18$, $B: 16$, $AB: 13$ (Canonical mode) or Rh subtypes ($O+: 20, O-: 4$, etc.).
+  - $O: 24$, $A: 18$, $B: 16$, $AB: 13$ (Canonical mode).).
 - **Line Series (Target Demand):** Direct aggregation of demand for each blood group across all hospitals.
-  - $O: 9$, $A: 12$, $B: 10$, $AB: 7$ (Canonical mode) or Rh subtypes ($O+: 8, O-: 1$, etc.).
+  - $O: 9$, $A: 12$, $B: 10$, $AB: 7$ (Canonical mode).).
 - **Interactivity:** Selecting a blood group isolates and highlights that exact group in the chart.
 
 ### B. Blood Group Units Collected vs. Used (Grouped Bar Chart)
@@ -113,7 +113,7 @@ Every KPI and chart mark is mathematically calculated as follows:
 - **Verification:** Scaled to scenario total volume, displaying genuine quarterly cycle trends without artificial jitter.
 
 ### D. Blood Units Approaching Expiry (Heatmap Matrix)
-- **Rows:** Blood groups ($A+, A-, B+, B-, AB+, AB-, O+, O-$ or canonical $O, A, B, AB$).
+- **Rows:** Source ABO groups (O, A, B, AB).
 - **Columns:** $<15$ Days, $15$–$30$ Days, $30$–$45$ Days, $45$–$60$ Days.
 - **Reconciliation:** The sum of all $4$ bucket cells for any row strictly equals the total stock for that blood group.
 - **Color Scale:** Dynamic intensity mapping ($0$ units = neutral grey; $1$–$2$ = soft peach; $3$–$4$ = warm rose; $5+$ = deep crimson).

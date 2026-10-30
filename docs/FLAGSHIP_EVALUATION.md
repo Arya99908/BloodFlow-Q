@@ -47,5 +47,4 @@ must not be summed as disjoint components.
 - Native browser automation timed out during updated UI inspection. Complete
   keyboard, mobile-layout and interactive visual verification remains pending.
 - Contact migration is prepared, not database-executed or deployed. Actual role
-  tests and operator evaluation are outstanding. Historical jury scores remain
-  assessments of the original checkout, not a new score for these changes.
+  tests and operator evaluation are outstanding.

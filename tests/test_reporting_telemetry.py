@@ -136,3 +136,14 @@ def test_kpi_calculations_are_mathematically_exact(scenario):
     total_stock = telemetry["provenance"]["total_stock_units"]
     expected_turnover = round((used_units / total_stock) * 100.0, 1)
     assert kpis["stock_turnover_rate"]["value"] == expected_turnover
+
+
+def test_telemetry_uses_source_abo_labels_without_inferred_subtypes(scenario):
+    telemetry = build_reporting_telemetry(scenario)
+    assert telemetry['canonical_groups'] == list(scenario.blood_groups)
+    for chart in ('availability', 'collected_vs_used', 'expiry_matrix'):
+        assert 'rh_subtypes' not in telemetry[chart]
+        assert {row['group'] for row in telemetry[chart]['canonical']} == set(scenario.blood_groups)
+    for batch in generate_inventory_batches(scenario):
+        assert batch.blood_group in scenario.blood_groups
+        assert not hasattr(batch, 'rh_subtype')

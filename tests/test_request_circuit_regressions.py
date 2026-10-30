@@ -1,11 +1,11 @@
-"""Request/circuit regressions from the independent October jury."""
+"""Request validation and quantum circuit regressions."""
 import unittest
 from dataclasses import replace
 from fastapi.testclient import TestClient
 from backend.main import create_app
 from tests.test_api import tiny_scenario_payload
 
-class JuryBoundaryTests(unittest.TestCase):
+class RequestCircuitBoundaryTests(unittest.TestCase):
     def test_boolean_quantities_rejected_at_http_boundary(self):
         for field, collection in [('inventory', 'blood_banks'), ('demand', 'hospitals')]:
             scenario = tiny_scenario_payload()

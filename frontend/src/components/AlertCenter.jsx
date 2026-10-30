@@ -65,7 +65,7 @@ function sendNativeNotification(title, body) {
 const SAMPLE_EMERGENCY_SCENARIOS = [
   {
     facility: 'Metro Trauma Center',
-    bloodGroup: 'O-',
+    bloodGroup: 'O+',
     units: 8,
     reason: 'Multi-vehicle highway collision mass-casualty incident',
   },
@@ -83,7 +83,7 @@ const SAMPLE_EMERGENCY_SCENARIOS = [
   },
   {
     facility: 'City Memorial Pavilion',
-    bloodGroup: 'B-',
+    bloodGroup: 'B+',
     units: 4,
     reason: 'Acute hematology patient crisis',
   },

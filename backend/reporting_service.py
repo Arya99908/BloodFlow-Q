@@ -23,7 +23,6 @@ class BatchRecord:
     facility_id: str
     facility_name: str
     blood_group: str
-    rh_subtype: str
     units: int
     collected_days_ago: int
     shelf_life_days: int
@@ -40,27 +39,6 @@ REGIONAL_TOPOLOGY = {
     "hospital_2": {"region": "Central District", "role": "University Hospital"},
     "hospital_3": {"region": "South Coastal Region", "role": "Community Hospital"},
 }
-
-RH_DISTRIBUTION = {
-    # Standard biological prevalence weights for Rh+ vs Rh-
-    "O": {"pos": 0.84, "neg": 0.16},
-    "A": {"pos": 0.83, "neg": 0.17},
-    "B": {"pos": 0.85, "neg": 0.15},
-    "AB": {"pos": 0.80, "neg": 0.20},
-}
-
-
-def _partition_units(total_units: int, pos_ratio: float) -> tuple[int, int]:
-    """Deterministically partition units into positive and negative subtypes."""
-    if total_units <= 0:
-        return 0, 0
-    pos = max(1, round(total_units * pos_ratio)) if total_units > 1 else total_units
-    neg = total_units - pos
-    if neg < 0:
-        pos = total_units
-        neg = 0
-    return pos, neg
-
 
 def generate_inventory_batches(scenario: Scenario, seed: int = 20261030) -> list[BatchRecord]:
     """Generate discrete batch records that reconcile exactly to bank inventory."""
@@ -82,52 +60,40 @@ def generate_inventory_batches(scenario: Scenario, seed: int = 20261030) -> list
             if total_units <= 0:
                 continue
 
-            pos_ratio = RH_DISTRIBUTION.get(group, {}).get("pos", 0.85)
-            pos_units, neg_units = _partition_units(total_units, pos_ratio)
+            # Partition the source inventory into reproducible illustrative batches.
+            remaining = total_units
+            while remaining > 0:
+                batch_size = max(1, min(remaining, lcg_rand(4) + 1))
+                remaining -= batch_size
 
-            # Subtype allocations
-            subtypes = []
-            if pos_units > 0:
-                subtypes.append((f"{group}+", pos_units))
-            if neg_units > 0:
-                subtypes.append((f"{group}-", neg_units))
+                shelf_life = 35  # standard 35-day whole blood / RBC shelf life
+                # Days ago collected: between 1 and 34 days
+                days_ago = lcg_rand(32) + 2
+                days_left = max(1, shelf_life - days_ago)
 
-            for rh_group, sub_total in subtypes:
-                # Divide into 1 to 3 batches
-                remaining = sub_total
-                while remaining > 0:
-                    batch_size = max(1, min(remaining, lcg_rand(4) + 1))
-                    remaining -= batch_size
+                if days_left < 15:
+                    bucket = "<15 Days"
+                elif days_left <= 30:
+                    bucket = "15-30 Days"
+                elif days_left <= 45:
+                    bucket = "30-45 Days"
+                else:
+                    bucket = "45-60 Days"
 
-                    shelf_life = 35  # standard 35-day whole blood / RBC shelf life
-                    # Days ago collected: between 1 and 34 days
-                    days_ago = lcg_rand(32) + 2
-                    days_left = max(1, shelf_life - days_ago)
-
-                    if days_left < 15:
-                        bucket = "<15 Days"
-                    elif days_left <= 30:
-                        bucket = "15-30 Days"
-                    elif days_left <= 45:
-                        bucket = "30-45 Days"
-                    else:
-                        bucket = "45-60 Days"
-
-                    batches.append(
-                        BatchRecord(
-                            batch_id=f"BATCH-{bank.id.upper()}-{rh_group}-{batch_counter:03d}",
-                            facility_id=bank.id,
-                            facility_name=bank.name,
-                            blood_group=group,
-                            rh_subtype=rh_group,
-                            units=batch_size,
-                            collected_days_ago=days_ago,
-                            shelf_life_days=shelf_life,
-                            days_to_expiry=days_left,
-                            expiry_bucket=bucket,
-                        )
+                batches.append(
+                    BatchRecord(
+                        batch_id=f"BATCH-{bank.id.upper()}-{group}-{batch_counter:03d}",
+                        facility_id=bank.id,
+                        facility_name=bank.name,
+                        blood_group=group,
+                        units=batch_size,
+                        collected_days_ago=days_ago,
+                        shelf_life_days=shelf_life,
+                        days_to_expiry=days_left,
+                        expiry_bucket=bucket,
                     )
-                    batch_counter += 1
+                )
+                batch_counter += 1
 
     return batches
 
@@ -161,19 +127,6 @@ def build_reporting_telemetry(scenario: Scenario, period: str = "Last 7 days", s
         for g, u in h.demand.items():
             group_demand_map[g] = group_demand_map.get(g, 0) + u
 
-    # Rh-level stock vs demand
-    rh_stock_map: dict[str, int] = {}
-    for b in batches:
-        rh_stock_map[b.rh_subtype] = rh_stock_map.get(b.rh_subtype, 0) + b.units
-
-    # Partition demand to Rh subtypes using same deterministic ratio
-    rh_demand_map: dict[str, int] = {}
-    for g, dem in group_demand_map.items():
-        pos_ratio = RH_DISTRIBUTION.get(g, {}).get("pos", 0.85)
-        pos_d, neg_d = _partition_units(dem, pos_ratio)
-        rh_demand_map[f"{g}+"] = pos_d
-        rh_demand_map[f"{g}-"] = neg_d
-
     # Availability vs Required Levels (Chart 1 data)
     canonical_groups = list(scenario.blood_groups)
     availability_canonical = [
@@ -187,18 +140,6 @@ def build_reporting_telemetry(scenario: Scenario, period: str = "Last 7 days", s
         for g in canonical_groups
     ]
 
-    all_rh_groups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-    availability_rh = [
-        {
-            "group": rh,
-            "current_stock": rh_stock_map.get(rh, 0),
-            "required_demand": rh_demand_map.get(rh, 0),
-            "allocated_units": round(rh_stock_map.get(rh, 0) * (total_allocated / max(1, total_stock))),
-            "deficit": max(0, rh_demand_map.get(rh, 0) - rh_stock_map.get(rh, 0)),
-        }
-        for rh in all_rh_groups
-    ]
-
     # Units Collected vs Used (Chart 2 data)
     # Collected is based on current inventory + dispatched units
     # Previous period baseline is deterministically computed from scenario
@@ -209,18 +150,6 @@ def build_reporting_telemetry(scenario: Scenario, period: str = "Last 7 days", s
         collected = stock + max(0, round(used * 0.4))
         collected_vs_used_canonical.append({
             "group": g,
-            "collected": collected,
-            "used": used,
-        })
-
-    collected_vs_used_rh = []
-    for rh in all_rh_groups:
-        stock = rh_stock_map.get(rh, 0)
-        dem = rh_demand_map.get(rh, 0)
-        used = min(stock, dem)
-        collected = stock + max(0, round(used * 0.35))
-        collected_vs_used_rh.append({
-            "group": rh,
             "collected": collected,
             "used": used,
         })
@@ -245,14 +174,6 @@ def build_reporting_telemetry(scenario: Scenario, period: str = "Last 7 days", s
         for bkt in buckets:
             row[bkt] = sum(b.units for b in g_batches if b.expiry_bucket == bkt)
         expiry_matrix_canonical.append(row)
-
-    expiry_matrix_rh = []
-    for rh in all_rh_groups:
-        rh_batches = [b for b in batches if b.rh_subtype == rh]
-        row = {"group": rh}
-        for bkt in buckets:
-            row[bkt] = sum(b.units for b in rh_batches if b.expiry_bucket == bkt)
-        expiry_matrix_rh.append(row)
 
     # Detailed Regional & Facility Breakdown Table
     regions = ["North Metro Region", "Central District", "South Coastal Region"]
@@ -404,19 +325,15 @@ def build_reporting_telemetry(scenario: Scenario, period: str = "Last 7 days", s
         "period": period,
         "kpis": kpis,
         "canonical_groups": canonical_groups,
-        "all_rh_groups": all_rh_groups,
         "availability": {
             "canonical": availability_canonical,
-            "rh_subtypes": availability_rh,
         },
         "collected_vs_used": {
             "canonical": collected_vs_used_canonical,
-            "rh_subtypes": collected_vs_used_rh,
         },
         "quarterly_trends": quarterly_trends,
         "expiry_matrix": {
             "canonical": expiry_matrix_canonical,
-            "rh_subtypes": expiry_matrix_rh,
             "buckets": buckets,
         },
         "regional_breakdown": regional_breakdown,

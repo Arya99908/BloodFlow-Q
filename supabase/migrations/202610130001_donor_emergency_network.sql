@@ -46,7 +46,7 @@ create index if not exists institution_memberships_institution_role_idx
 create table if not exists public.donor_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null check (length(trim(full_name)) between 1 and 120),
-  blood_group text not null check (blood_group in ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')),
+  blood_group text not null check (blood_group in ('A+', 'B+', 'AB+', 'O+')),
   phone text not null check (length(trim(phone)) between 7 and 40),
   email text check (email is null or length(email) <= 254),
   city text not null check (length(trim(city)) between 1 and 120),
@@ -84,7 +84,7 @@ create table if not exists public.blood_bank_access (
 create table if not exists public.verified_component_inventory (
   id uuid primary key default gen_random_uuid(),
   blood_bank_institution_id text not null references public.authorized_institutions(id),
-  blood_group text not null check (blood_group in ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')),
+  blood_group text not null check (blood_group in ('A+', 'B+', 'AB+', 'O+')),
   component text not null check (component in ('red_blood_cells', 'platelets', 'plasma', 'whole_blood')),
   units_available integer not null check (units_available >= 0),
   verified_by uuid not null references auth.users(id),
@@ -101,7 +101,7 @@ create table if not exists public.emergency_blood_requests (
   id uuid primary key default gen_random_uuid(),
   request_code text not null unique default ('BFQ-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12))),
   hospital_institution_id text not null references public.authorized_institutions(id),
-  blood_group text not null check (blood_group in ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')),
+  blood_group text not null check (blood_group in ('A+', 'B+', 'AB+', 'O+')),
   component text not null check (component in ('red_blood_cells', 'platelets', 'plasma', 'whole_blood')),
   units_requested integer not null check (units_requested between 1 and 1000),
   urgency public.bloodflow_urgency not null,

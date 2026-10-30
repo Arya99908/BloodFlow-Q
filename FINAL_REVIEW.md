@@ -1,4 +1,4 @@
-# BloodFlow-Q — Final Executive Review & Hackathon Jury Assessment
+# BloodFlow-Q — Final Executive Review
 
 ## 1. Project Transformation Assessment
 

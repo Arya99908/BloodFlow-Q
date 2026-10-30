@@ -42,10 +42,10 @@ The unified branch integrates verified source assets from the following Git refe
 
 ## 3. Conflict Resolution & Engineering Decisions
 
-1. **Shortage Policy Dilemma (Juror 1 & Juror 3 Finding):**
+1. **Shortage Policy Dilemma:**
    - *Problem:* In standard linear objectives, when travel cost + time penalty exceeds the unit unmet penalty, the optimal mathematical solution leaves hospital demand unmet (including critical demand) to minimize cost.
    - *Resolution:* Implemented `backend/flagship.py` and `FlagshipDemo.jsx`. The demo explicitly contrasts `service_first` (lexicographic prioritization ensuring zero critical unmet units whenever supply and route exist) against `weighted` sums, providing clinical explanations for each shortage.
-2. **Compute Thread Blocking & Server Freezes (Juror 16 Finding):**
+2. **Compute Thread Blocking & Server Freezes:**
    - *Problem:* Running variational QAOA or high-depth parameter optimization synchronously in FastAPI blocked the single-threaded Python event loop.
    - *Resolution:* Integrated `backend/jobs.py` using `multiprocessing.Process` spawned with a strict `BoundedSemaphore(2)` and 60-second execution deadlines.
 3. **Donor Contact Privacy Vulnerability:**

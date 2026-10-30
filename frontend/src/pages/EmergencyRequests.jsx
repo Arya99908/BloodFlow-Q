@@ -12,7 +12,7 @@ import {
   proposeCollectionAppointment,
 } from '../services/donorNetwork';
 
-const GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+import { BLOOD_GROUPS as GROUPS } from '../services/donorNetwork';
 const COMPONENTS = [
   ['red_blood_cells', 'Red blood cells'], ['platelets', 'Platelets'],
   ['plasma', 'Plasma'], ['whole_blood', 'Whole blood'],

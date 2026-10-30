@@ -122,7 +122,7 @@ const SCENARIO_SAMPLES = [
   { id: 'multi_facility', name: 'Multi-Facility Regional Tradeoff', qubits: 14, demand: 42, capacity: 58, winningModel: 'MILP / LP (0.77ms)', unimodular: true, notes: 'Cross-district transit latency vs shortage penalty tradeoff' },
   { id: 'critical_shortage', name: 'Critical Shortage Deficit', qubits: 12, demand: 62, capacity: 40, winningModel: 'MILP / WS-QAOA (Tie)', unimodular: true, notes: 'Zero inventory slack; shortage minimization priority active' },
   { id: 'transport_disruption', name: 'Severe Route Disruption', qubits: 11, demand: 32, capacity: 60, winningModel: 'Exact / MILP (0.31ms)', unimodular: true, notes: 'Corridor cutoff forces secondary transit route allocations' },
-  { id: 'inventory_shortage', name: 'Blood Bank Inventory Shortage', qubits: 13, demand: 48, capacity: 35, winningModel: 'MILP (1.12ms)', unimodular: true, notes: 'Constrained supply test; all algorithms prioritize O-negative emergency stock' },
+  { id: 'inventory_shortage', name: 'Blood Bank Inventory Shortage', qubits: 13, demand: 48, capacity: 35, winningModel: 'MILP (1.12ms)', unimodular: true, notes: 'Constrained supply test; compare allocations under the recorded shortage objective' },
 ];
 
 export default function FullReviewStudy() {

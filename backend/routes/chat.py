@@ -105,7 +105,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
         actions.append(ActionSuggestion(id="act-emerg", label="🚨 Go to Emergency Simulation", type="navigate", payload="emergency"))
 
     # 2. Inventory / Blood Banks
-    elif any(k in msg for k in ["inventory", "stock", "bank", "supply", "o-", "o+", "a+", "b+"]):
+    elif any(k in msg for k in ["inventory", "stock", "bank", "supply", "o+", "a+", "b+"]):
         citations.append(f"Blood banks: {len(banks)} active supply sources, {total_stock} total units")
         reply = (
             f"### 🩸 Blood Bank Inventory Snapshot\n\n"
@@ -197,7 +197,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
             f"- **Demand:** {total_demand:,} units requested by {len(hospitals)} hospitals ({critical_demand:,} high/critical priority)\n"
             f"- **Network:** {len(available_routes)} open transit corridors ({len(blocked_routes)} blocked)\n\n"
             f"**How can I assist your research today?**\n"
-            f"- Ask about **critical shortages** or specific blood groups (e.g. O-, A+)\n"
+            f"- Ask about **critical shortages** or specific blood groups (e.g. O+, A+)\n"
             f"- Explore **QAOA quantum formulation**, penalty weights, and qubit bounds\n"
             f"- Compare **MILP vs Greedy** benchmarks\n"
             f"- Trigger or simulate **emergency disruptions**"

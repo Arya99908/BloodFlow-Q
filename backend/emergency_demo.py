@@ -17,19 +17,19 @@ from backend.donor_matching import DonorCandidate, EmergencyNeed, match_donors
 DEMO_REQUEST_ID = "DEMO-BFQ-4UNIT-001"
 _DONORS = [
     DonorCandidate(
-        donor_id="DEMO-DONOR-01", blood_group="O-", city="Demo City",
+        donor_id="DEMO-DONOR-01", blood_group="O+", city="Demo City",
         approximate_location="North District", availability="available",
         request_consent=True, share_contact_consent=True,
         approximate_distance_km=2.4,
     ),
     DonorCandidate(
-        donor_id="DEMO-DONOR-02", blood_group="O-", city="Demo City",
+        donor_id="DEMO-DONOR-02", blood_group="O+", city="Demo City",
         approximate_location="North District", availability="available",
         request_consent=True, share_contact_consent=False,
         approximate_distance_km=4.1,
     ),
     DonorCandidate(
-        donor_id="DEMO-DONOR-03", blood_group="O-", city="Demo City",
+        donor_id="DEMO-DONOR-03", blood_group="O+", city="Demo City",
         approximate_location="West District", availability="available",
         request_consent=True, share_contact_consent=True,
         approximate_distance_km=7.8,
@@ -41,7 +41,7 @@ def start_demo() -> dict[str, Any]:
     """Create the fixed 4-unit / 1-stock / 3-shortfall demonstration."""
 
     need = EmergencyNeed(
-        request_id=DEMO_REQUEST_ID, blood_group="O-", component="Red blood cells",
+        request_id=DEMO_REQUEST_ID, blood_group="O+", component="Red blood cells",
         units=4, urgency="critical", required_by=datetime(2030, 1, 1, tzinfo=timezone.utc),
         city="Demo City", approximate_location="North District",
     )
@@ -75,7 +75,7 @@ def start_demo() -> dict[str, Any]:
             "id": DEMO_REQUEST_ID,
             "hospital": "Synthetic Hospital 1",
             "hospital_id": "DEMO-HOSPITAL-1",
-            "blood_group": "O-",
+            "blood_group": "O+",
             "component": "Red blood cells",
             "units_requested": 4,
             "urgency": "critical",

@@ -52,8 +52,8 @@ test('detectUrgentRequirements extracts critical hospital demands', () => {
       {
         id: 'h1',
         name: 'Metro General',
-        demand: { 'O-': 8, 'A+': 4 },
-        urgency: { 'O-': { category: 'critical' }, 'A+': { category: 'low' } },
+        demand: { 'O+': 8, 'A+': 4 },
+        urgency: { 'O+': { category: 'critical' }, 'A+': { category: 'low' } },
       },
       {
         id: 'h2',
@@ -69,7 +69,7 @@ test('detectUrgentRequirements extracts critical hospital demands', () => {
   assert.equal(alerts.length, 2);
   assert.equal(alerts[0].severity, 'critical');
   assert.equal(alerts[0].facility, 'Metro General');
-  assert.equal(alerts[0].bloodGroup, 'O-');
+  assert.equal(alerts[0].bloodGroup, 'O+');
   assert.equal(alerts[0].units, 8);
   assert.equal(alerts[1].severity, 'high');
   assert.equal(alerts[1].facility, 'Valley Care');
