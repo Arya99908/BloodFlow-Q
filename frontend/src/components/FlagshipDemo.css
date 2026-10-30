@@ -15,3 +15,4 @@
 .flagship-demo th, .flagship-demo td { padding: .7rem; text-align: left; border-bottom: 1px solid var(--text-muted); }
 .flagship-demo li { margin-bottom: .6rem; }
 @media(max-width: 700px) { .flagship-plans { grid-template-columns: 1fr; } }
+.flagship-policy-observatory>h2{font-size:24px}.flagship-policy-observatory>p{max-width:85ch;color:var(--text-secondary);line-height:1.65}.flagship-plans>article{min-width:0;border-top:3px solid var(--viz-classical,#377ede)}.flagship-plans>article:nth-child(2){border-top-color:var(--viz-valid,#14856d)}.flagship-stats small{font-size:11px;color:var(--text-secondary)}.flagship-policy-observatory .flagship-plans{margin-top:22px}@media(min-width:701px) and (max-width:1100px){.flagship-policy-observatory .flagship-plans{grid-template-columns:1fr}}

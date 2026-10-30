@@ -1,0 +1,150 @@
+/* Authoritative semantic palette for the scientific workbench; loaded after legacy styles. */
+:root,
+:root[data-theme="light"] {
+  --bg-canvas: #eef2f6;
+  --bg-surface: #fff;
+  --bg-subtle: #f3f6f9;
+  --bg-hover: #e8eff5;
+  --border-subtle: #e0e6ed;
+  --border-default: #cbd5e0;
+  --border-strong: #91a3b8;
+  --text-primary: #182b42;
+  --text-secondary: #40546c;
+  --text-muted: #566b82;
+  --text-subtle: #687c90;
+  --primary: #ba3e50;
+  --primary-hover: #982e3d;
+  --primary-subtle: #fce9ec;
+  --primary-border: #e5adb7;
+  --accent-blue: #2869c4;
+  --accent-blue-hover: #1f54a0;
+  --accent-blue-subtle: #e5eefb;
+  --accent-emerald: #187354;
+  --accent-emerald-subtle: #e4f4ec;
+  --accent-amber: #926713;
+  --accent-amber-subtle: #fff3d9;
+  --accent-indigo: #6251a6;
+  --accent-violet: #7357ad;
+  --viz-quantum: #087e94;
+  --viz-classical: #2869c4;
+  --viz-emergency: #c14b45;
+  --viz-valid: #187354;
+  --viz-warning: #926713;
+  --font-sans: "Avenir Next", "Segoe UI", sans-serif;
+}
+:root[data-theme="dark"] {
+  --bg-canvas: #101722;
+  --bg-surface: #172231;
+  --bg-subtle: #1d2c3e;
+  --bg-hover: #24374b;
+  --border-subtle: #29394c;
+  --border-default: #35495f;
+  --border-strong: #56718c;
+  --text-primary: #e7eef7;
+  --text-secondary: #bacbdc;
+  --text-muted: #9bafc5;
+  --text-subtle: #8fa4bd;
+  --primary: #f18694;
+  --primary-hover: #ffacb7;
+  --primary-subtle: #3d2634;
+  --primary-border: #874859;
+  --accent-blue: #82b2fb;
+  --accent-blue-hover: #a7c9ff;
+  --accent-blue-subtle: #233955;
+  --accent-emerald: #7ed6ac;
+  --accent-emerald-subtle: #1d3c35;
+  --accent-amber: #e8c274;
+  --accent-amber-subtle: #3c3424;
+  --accent-indigo: #b3a2ee;
+  --accent-violet: #c4a4ee;
+  --viz-quantum: #6bd2df;
+  --viz-classical: #82b2fb;
+  --viz-emergency: #f18b81;
+  --viz-valid: #7ed6ac;
+  --viz-warning: #e8c274;
+  --shadow-sm: 0 2px 7px #0002;
+}
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+.app-shell,
+.main-shell {
+  background: transparent;
+}
+.page-content {
+  background: transparent;
+}
+.topbar {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+.page-container {
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.panel {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+.heartbeat-background {
+  opacity: 0.2;
+}
+.observatory .data-table {
+  font-size: 12px;
+}
+.observatory .data-table th,
+.observatory .data-table td {
+  white-space: nowrap;
+}
+.observatory .table-scroll {
+  max-width: 100%;
+  overflow: auto;
+}
+.observatory * {
+  min-width: 0;
+}
+.research-archive {
+  margin: 24px 0;
+  padding: 18px 22px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-surface);
+}
+.research-archive > summary {
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.field-control,
+select,
+input {
+  color-scheme: light dark;
+}
+.field-control option,
+select option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--viz-quantum);
+  outline-offset: 3px;
+}
+pre {
+  max-width: 100%;
+  overflow: auto;
+}
+svg {
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .observatory * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

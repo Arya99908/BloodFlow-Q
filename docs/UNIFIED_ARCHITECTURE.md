@@ -12,7 +12,7 @@ BloodFlow-Q is an emergency healthcare logistics research platform designed to o
 
 ```mermaid
 flowchart TD
-    subgraph UI ["Frontend (React 18 + Vite)"]
+    subgraph UI ["Frontend (React 19 + Vite)"]
         A[Dashboard & Metrics]
         B[Interactive SVG Network]
         C[Flagship Policy Demo]
@@ -80,10 +80,10 @@ flowchart TD
 
 ### 2.2 Backend Sandboxing & Safety Layer
 * **Process Isolation (`backend/jobs.py`):**
-  Heavy optimization calls (`/optimize`, `/simulate-emergency`, `/demo-run`, `/demo/flagship`) are offloaded to dedicated worker processes spawned via `multiprocessing.Process`.
+  In production, heavy optimization calls (`/optimize`, `/simulate-emergency`, `/demo-run`, `/demo/flagship`) are offloaded to dedicated worker processes spawned via `multiprocessing.Process`. Development and explicitly injected test services execute in-process; production isolation is enabled by `create_app` when no service is injected.
 * **Resource Limits:**
   - `_SLOTS = threading.BoundedSemaphore(2)` restricts concurrent heavy computations.
-  - Hard 60-second execution deadlines with automated process termination (`kill`) protect against frozen simulator runs.
+  - Production isolated jobs have hard 60-second execution deadlines with automated process termination (`kill`) to protect against frozen simulator runs; in-process development calls do not have this worker-termination deadline.
   - Maximum request body size is capped at 1 MiB (`bound_request_body` middleware).
 
 ### 2.3 User Interface & Presentation Shell

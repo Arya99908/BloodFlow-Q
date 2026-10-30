@@ -4,6 +4,9 @@ import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { EmptyState, ErrorState, LoadingState } from '../components/Feedback';
 import PageHeader from '../components/PageHeader';
+import AllocationSankey from '../components/AllocationSankey';
+import './emergency-observatory.css';
+import { emergencyAllocationResult } from '../utils/allocationFlow';
 import HoldButton from '../components/HoldButton';
 import { StatItem, MetaRow, StatusBadge } from '../components/DataField';
 import { calculateObjectiveUpperBound, countScenarioQubits, estimateCandidateStates } from '../utils/scenarioBounds';
@@ -12,7 +15,7 @@ const urgencyLabels = { critical: 'Critical', high: 'High', medium: 'Medium', lo
 const titleCase = (value) => String(value || '').replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 const totalDemand = (scenario) => (scenario?.hospitals || []).reduce((total, hospital) => total + Object.values(hospital.demand || {}).reduce((sum, units) => sum + Number(units || 0), 0), 0);
 
-export default function EmergencySimulation() {
+export default function EmergencySimulation({ onInspectNetwork }) {
   const { data: scenario, loading, error, reload } = useApi(api.getScenario, []);
   const [kind, setKind] = useState('demand_spike');
   const [entity, setEntity] = useState('');
@@ -215,7 +218,7 @@ export default function EmergencySimulation() {
         <section className="panel emergency-result-panel"><div className="panel-heading"><div><h2>Re-optimization report</h2><p>Scenario changes and metrics returned by the API.</p></div></div>
           {submitting && <LoadingState label="Emergency request sent. Waiting for the backend optimizer…" />}
           {!submitting && !result && !submitError && <EmptyState title="No emergency event simulated" detail="Choose an event and run the simulation to see its actual before and after results." />}
-          {result && <EmergencyComparison report={result} />}
+          {result && <><EmergencyComparison report={result} />{onInspectNetwork && <button className="button button-primary" disabled={!emergencyAllocationResult(result)} onClick={() => onInspectNetwork({ scenario: result.modified_scenario, result: emergencyAllocationResult(result) })}>Inspect affected network</button>}</>}
         </section>
       </div>
     </>}
@@ -375,6 +378,7 @@ function EmergencyComparison({ report }) {
       <p className="muted-copy">The backend reported no allocation quantity changes.</p>
     )}
 
+    <AllocationSankey scenario={afterScenario} result={emergencyAllocationResult(report)} title="Emergency reallocation flow" />
     <div className="result-section-title">New allocation</div>
     {report.after_allocation?.length ? (
       <div className="table-scroll" role="region" aria-label="Scrollable data table" tabIndex={0}>

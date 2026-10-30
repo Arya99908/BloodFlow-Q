@@ -4889,8 +4889,8 @@ textarea.field-control { min-height: 96px; resize: vertical; }
 :root[data-theme="dark"] .metric-violet .metric-icon { background: #2c2148; }
 
 @media (max-width: 680px) {
-  .theme-toggle { width: 34px; padding: 0; }
-  .theme-toggle span { display: none; }
+  .theme-toggle { width: auto; padding: 0; }
+  .theme-toggle > span:not(.squish-switch-root) { display: none; }
 }
 
 
@@ -6530,7 +6530,7 @@ select.field-control option { color:#2b2d42; background:#edf2f4; }
 .app-footer > span:nth-child(2) { flex-wrap:wrap; }
 @media(max-width:760px) { .home-hero-visual { opacity:.22; }.optimization-api-notice,.demo-api-status { align-items:flex-start; flex-wrap:wrap; }.optimization-api-notice > span,.demo-api-status > span { min-width:calc(100% - 40px); }.home-destination-card { grid-template-columns:34px minmax(0,1fr) 18px; gap:10px; padding:17px 15px; }.home-destination-copy > span { font-size:10px; } }
 @media(max-width:720px) { .topbar-right .page-glide-select { display:block; width:112px; flex:0 0 112px; }.topbar-right .page-glide-select .glide-select__trigger { min-height:34px; padding:4px 7px; font-size:11px; }.page-content { padding-bottom:112px; } }
-@media(max-width:460px) { .topbar { gap:6px; }.topbar-brand { gap:6px; font-size:12px; }.topbar-brand img { width:27px;height:27px; }.topbar-right { gap:5px; }.topbar-right .page-glide-select { width:102px;flex-basis:102px; }.topbar-right .theme-switch > span { display:none; }.topbar-right .alert-center-trigger { width:34px; } }
+@media(max-width:460px) { .topbar { gap:6px; }.topbar-brand { gap:6px; font-size:12px; }.topbar-brand img { width:27px;height:27px; }.topbar-right { gap:5px; }.topbar-right .page-glide-select { width:102px;flex-basis:102px; }.topbar-right .theme-switch > span:not(.squish-switch-root) { display:none; }.topbar-right .alert-center-trigger { width:34px; } }
 
 /* Shared interactions and route-aware navigation. */
 .breadcrumb-link { padding:0; border:0; color:var(--text-muted); background:transparent; font:inherit; cursor:pointer; }
@@ -7081,7 +7081,7 @@ dialog.welcome-backdrop { width: 100vw; height: 100dvh; max-width: none; max-hei
 dialog.welcome-backdrop::backdrop { background: rgba(0,0,0,.55); }
 #main-content:focus { outline: none; }
 
-/* Network route cards – dark mode enhancement */
+/* Network route cards - dark mode enhancement */
 :root[data-theme="dark"] .route-card-selected {
   background: #172d49 !important;
   border-color: #60a5fa !important;

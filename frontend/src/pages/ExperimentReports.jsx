@@ -35,8 +35,9 @@ export default function ExperimentReports() {
   const qaoa = config.qaoa || {};
 
   return <>
-    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Experiment reports" description="Inspect the saved paired-seed simulator study, including infeasible and skipped outcomes." />
+    <PageHeader eyebrow="REPRODUCIBLE RESEARCH" title="Research & evidence" description="Compare solvers, trace experimental observations, and inspect the limits of each result." />
     <ComparativeEvidenceExplorer />
+    <details className="research-archive"><summary>Historical study reports and earlier comparisons</summary>
     <FullReviewStudy />
     <ResearchFollowup />
     <WarmQAOAComparison />
@@ -112,5 +113,6 @@ export default function ExperimentReports() {
         </>;
       })()}
     </>}
+    </details>
   </>;
 }

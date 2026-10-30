@@ -53,6 +53,7 @@ export default function App() {
     catch { return 'light'; }
   });
   const [optimizationResult, setOptimizationResult] = useState(null);
+  const [networkInspection, setNetworkInspection] = useState(null);
   const [optimizationLoading, setOptimizationLoading] = useState(false);
   const [optimizationError, setOptimizationError] = useState('');
   const [toast, setToast] = useState(null);
@@ -165,9 +166,9 @@ export default function App() {
       case 'dashboard': return <Dashboard onNavigate={navigate} onOptimization={runQuickOptimization} theme={theme} />;
       case 'blood-banks': return <BloodBanks />;
       case 'hospitals': return <Hospitals />;
-      case 'network': return <NetworkPage />;
+      case 'network': return <NetworkPage inspection={networkInspection} onClearInspection={() => setNetworkInspection(null)} />;
       case 'optimization': return <Optimization initialRun={optimizationResult} initialLoading={optimizationLoading} initialError={optimizationError} onNavigate={navigate} />;
-      case 'emergency': return <EmergencySimulation />;
+      case 'emergency': return <EmergencySimulation onInspectNetwork={inspection => { setNetworkInspection(inspection); navigate('network'); }} />;
       case 'demo': return <DemoMode />;
       case 'donor-network': return <DonorNetwork demoState={coordinationDemo} onStartDemo={startCoordinationDemo} onDemoAction={advanceCoordinationDemo} />;
       case 'emergency-requests': return <EmergencyRequests demoState={coordinationDemo} onStartDemo={startCoordinationDemo} onDemoAction={advanceCoordinationDemo} />;

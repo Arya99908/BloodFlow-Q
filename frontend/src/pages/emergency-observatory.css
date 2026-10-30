@@ -1,0 +1,15 @@
+.emergency-workflow-step.step-done {
+  background: color-mix(
+    in srgb,
+    var(--viz-valid, #14856d) 12%,
+    var(--bg-surface)
+  );
+  border-color: var(--viz-valid, #14856d);
+}
+.emergency-workflow-step.step-done .workflow-step-title {
+  color: var(--text-primary);
+}
+.emergency-workflow-step.step-done .workflow-step-icon {
+  background: var(--viz-valid, #14856d);
+  color: var(--bg-canvas);
+}

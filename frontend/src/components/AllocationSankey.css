@@ -1,0 +1,155 @@
+.allocation-flow {
+  min-width: 0;
+  border-top: 1px solid var(--border-default);
+  margin-top: 20px;
+  padding-top: 16px;
+}
+.allocation-flow-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  justify-content: space-between;
+}
+.allocation-flow-heading h4 {
+  margin: 0;
+  font-size: 16px;
+}
+.allocation-flow-heading span,
+.allocation-caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.allocation-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.allocation-totals dt {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.allocation-totals dd {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.allocation-svg-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-canvas);
+}
+.allocation-svg-scroll svg {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  max-height: 600px;
+}
+.allocation-stage {
+  font-size: 12px;
+  fill: var(--text-secondary);
+  font-weight: 650;
+}
+.allocation-node text {
+  font-size: 10px;
+  fill: var(--text-primary);
+}
+.allocation-node rect {
+  fill: var(--viz-valid, #14856d);
+}
+.allocation-node.allocation-bank rect,
+.allocation-node.allocation-inventory rect {
+  fill: var(--viz-classical, #377ede);
+}
+.allocation-node.allocation-remaining rect {
+  fill: var(--viz-warning, #bd861f);
+}
+.allocation-ribbon {
+  fill: none;
+  stroke: var(--viz-valid, #14856d);
+  opacity: 0.36;
+  cursor: pointer;
+  transition: opacity 0.18s;
+}
+.allocation-ribbon.allocation-inventory {
+  stroke: var(--viz-classical, #377ede);
+}
+.allocation-ribbon.allocation-remaining {
+  stroke: var(--viz-warning, #bd861f);
+}
+.allocation-ribbon:hover,
+.allocation-ribbon:focus,
+.allocation-ribbon.is-selected {
+  opacity: 0.8;
+  outline: none;
+}
+.allocation-ribbon:focus-visible {
+  stroke: var(--text-primary);
+}
+.allocation-readout {
+  font-size: 12px;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+.allocation-caption {
+  line-height: 1.6;
+}
+.allocation-hospitals {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  margin: 18px 0;
+}
+.allocation-hospitals > div {
+  display: grid;
+  gap: 5px;
+}
+.allocation-hospitals span,
+.allocation-hospitals small {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.allocation-demand-track {
+  height: 9px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: color-mix(
+    in srgb,
+    var(--viz-emergency, #ef655c) 25%,
+    var(--bg-surface)
+  );
+}
+.allocation-demand-track i {
+  height: 100%;
+  display: block;
+  background: var(--viz-valid, #14856d);
+  transition: width 0.25s;
+}
+.allocation-flow summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.allocation-flow .table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+@media (max-width: 500px) {
+  .allocation-totals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .allocation-ribbon,
+  .allocation-demand-track i {
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .allocation-svg-scroll svg {
+    min-width: 690px;
+  }
+}
