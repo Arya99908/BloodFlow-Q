@@ -3,3 +3,6 @@
 experiments/results/full_review_20261024/production_v2/source_snapshot/** -whitespace
 # The downloaded report preserves Markdown hard line breaks from historical prose.
 frontend/public/full-review-report.md whitespace=-blank-at-eol
+
+# PDFs are binary documents; do not apply text line-ending or whitespace rules.
+*.pdf binary

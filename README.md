@@ -20,6 +20,20 @@ The short product tour previews the allocation workspace, network, solver workfl
 
 The animated preview is a short excerpt; the full video includes audio.
 
+## Project presentation
+
+The [BloodFlow-Q idea presentation (PDF)](docs/BloodFlow-Q-Idea-Presentation.pdf)
+is included in this repository. It introduces the problem, proposed workflow,
+optimization mapping, implementation architecture, and a small warm-start
+experiment.
+
+**Scope note:** The slides are included as supplied and contain some proposed
+or future-state statements. The current prototype does not implement Rh
+compatibility, expiry or cold-chain scheduling, golden-hour deadlines, vehicle
+routing, or clinical triage. Use the implementation summary and limitations in
+this README and the linked technical documentation as the source of truth for
+what the software actually does.
+
 ## Start with the competition demonstration
 
 Open **Demo mode** from the home page. The new two-bank/two-hospital story makes stock competition, route disruption, and policy trade-offs explicit. Compare service-first and weighted-cost policies, then run MILP/Exact/Greedy, standard/warm/XY QAOA and a genuine seed-only control. Export the complete synthetic plan, settings, shortage explanations and failures.
@@ -36,37 +50,46 @@ BloodFlow-Q studies a synthetic, aggregate, single-period allocation problem: co
 
 ## 3. Why it matters
 
-The project makes allocation trade-offs inspectable and tests how classical and simulated quantum methods behave when inputs change. Its measured outcomes are synthetic feasibility, shortage, objective value and runtime—not patient survival, clinical efficacy or demonstrated institutional adoption.
+The prototype makes allocation assumptions, trade-offs, and solver outputs visible
+in a repeatable synthetic setting. It lets a team inspect how modeled shortages
+and transport burdens change under a demand spike or route disruption. Its results
+measure software behavior on synthetic scenarios; they do not establish patient
+benefit, clinical performance, or deployment readiness.
 
 ## 4. Solution
 
 BloodFlow-Q delivers an end-to-end optimization and decision-support system featuring:
 - **Unified FastAPI & Python Engine:** Orchestrates scenario modeling, constraint validation, and solver execution.
-- **Multi-Algorithm Baseline Suite:** Solves allocations using deterministic Greedy, classical MILP (SciPy HiGHS, with explicit solve limits), and exhaustive Exact search for small instances.
-- **Hybrid Quantum Pipeline:** Formulates allocations as a Quadratic Unconstrained Binary Optimization (QUBO) model mapped to an Ising Hamiltonian, sampled via parameterized QAOA circuits on Qiskit Aer.
+- **Multi-Algorithm Baseline Suite:** Compares deterministic Greedy, SciPy HiGHS LP/MILP baselines, and exhaustive Exact search for small instances. A MILP result is treated as optimal only when the solver reports success within its configured limit.
+- **Hybrid Quantum Pipeline:** Formulates the allocation as a Quadratic Unconstrained Binary Optimization (QUBO), maps it to an Ising Hamiltonian, and samples parameterized QAOA circuits on Qiskit Aer. Optional LP-derived warm-start preparation is a classical initialization choice, not a quantum speedup.
 - **Independent feasibility validation:** Decodes sampled bitstrings and checks candidate allocations against inventory and compatibility rules. Any repair is reported separately.
 - **Dynamic Emergency Simulation:** Simulates demand shocks and route disruptions, computing real-time before-and-after reallocation metrics.
 
 ## 5. Why quantum
 
-The allocation objective and constraint penalties can be encoded as a QUBO and converted to an Ising Hamiltonian. QAOA samples candidate allocations from that model. The experiments compare those samples with classical baselines to measure feasibility, objective quality, and runtime. This encoding alone does not establish that quantum computation is needed or faster.
+QUBO-to-Ising conversion gives this prototype a concrete way to study QAOA on a
+small allocation model: a parameterized circuit samples candidate bitstrings,
+which are then decoded and checked by ordinary classical code. The current
+allocation model also has a strong classical LP/MILP structure, so quantum
+computation is not shown to be necessary, faster, or better for this problem.
+The purpose is to make the hybrid workflow testable and compare it fairly with
+classical methods.
 
 ## 6. Architecture
 
 ```text
 Synthetic JSON scenario
         ↓
-FastAPI request and service layer
-        ↓
-Scenario model → objective and constraints
-        ├── Greedy heuristic baseline
-        ├── MILP solver (SciPy HiGHS classical optimal)
-        ├── Exact solver (small cases only)
+Data validation → scenario, objective, and constraints
+        ├── Greedy baseline
+        ├── LP/MILP baseline (SciPy HiGHS)
+        ├── Exact enumeration (tiny cases only)
         └── QUBO → Ising → QAOA simulator → measured bitstring
+                     ↑ optional classical LP warm start
                                       ↓
-                         decoder and classical validation
+                         decoder → classical validation
                                       ↓
-                       API result → React dashboard
+                 FastAPI services → React dashboard
 ```
 
 The frontend does not implement optimization mathematics. Backend services call the shared solver modules, and QAOA candidates pass through a classical validator without silent repair.
@@ -111,11 +134,30 @@ The data layer rejects malformed or inconsistent scenarios. Classical solvers re
 
 ## 13. Results
 
-The reproducible local experiment run used five one-bank, one-hospital, one-group scenarios. All 15 method runs (Greedy, Exact, and QAOA for each scenario) completed and passed the validator. Mean objective values across these five synthetic cases were **96.42 Greedy**, **95.64 Exact**, and **107.38 QAOA**. QAOA's mean per-scenario approximation gap versus Exact was **47.29%**; its median gap was 0%, reflecting that it matched Exact on three scenarios, was slightly worse on one, and returned a substantially worse feasible candidate on the normal reference scenario.
+The repository contains separate synthetic studies; their metrics must not be
+merged as though they came from one experiment. In the six-case paired LP
+warm-start study, standard QAOA averaged a **17.7% feasible-shot rate**, while
+LP-warm-start QAOA averaged **32.1%** (a paired mean change of **+14.4
+percentage points**). Across 60 runs per method, the best feasible sample
+matched the exact reference in **45/60** standard runs and **60/60** warm-start
+runs. This is a small simulator study; the LP relaxation is a strong classical
+input and can itself supply an optimal allocation on these tiny cases.
+Warm-start also adds preprocessing time. These results do not show that the
+quantum circuit is better than the classical solver.
 
-These are descriptive measurements from one small local simulator run, not general performance evidence. QAOA matched Exact on three of the five cases, was slightly worse on one, and had a much larger gap on the normal reference case. See the full [experiment analysis](docs/EXPERIMENT_RESULTS.md), [raw results](experiments/results/20261007-01.json), and [saved configuration](experiments/configurations/20261007-01.json).
+The broader October 24 review records 1,377 completed and 33 skipped method
+runs over fixed synthetic cases, with explicit status and metric definitions.
+See [the full experiment report](docs/EXPERIMENT_RESULTS.md), the
+[paired warm-start study](docs/EXPERIMENT_RESULTS_WARM_QAOA.md), and the
+[warm-start raw results](experiments/results/warm-qaoa-paired-20261022.json).
+The paired study is an imported historical snapshot; its report identifies the
+source hashes as belonging to that earlier implementation. It is historical
+evidence, not a guarantee that a rerun of the present checkout will reproduce
+every bit or timing.
 
-**The results do not demonstrate quantum advantage.** In this run QAOA used a local classical simulator and was slower than the classical methods; the scenario set is far too small to support general claims.
+**No result demonstrates quantum advantage.** QAOA was run on a classical
+simulator, the cases are small and synthetic, and classical LP/MILP/exact
+methods remain essential references.
 
 ## 14. How to run
 
@@ -234,12 +276,27 @@ BloodFlow-Q is a research prototype for operational optimization using synthetic
 
 The simplified compatibility rules must be checked against authoritative transfusion guidance and qualified transfusion-service requirements before any real-world use; this prototype is not suitable for such use. See [docs/SECURITY_AND_SAFETY.md](docs/SECURITY_AND_SAFETY.md).
 
-## 18. References
+## 18. AI-assisted development disclosure
+
+AI coding and writing tools were used during development for tasks such as
+scaffolding, documentation, and test drafting. The project team remains
+responsible for reviewing the implementation, understanding the methods, and
+presenting measured results and limitations accurately.
+
+## 19. Team
+
+- **Rahul Arya AV** ([@Arya99908](https://github.com/Arya99908))
+- **Shreesha KS** ([@Beezsy-del](https://github.com/Beezsy-del))
+- **Syed Afnan** ([@syedafnan7-lab](https://github.com/syedafnan7-lab))
+- **Shishir Patil** ([@shishir7patil-arch](https://github.com/shishir7patil-arch))
+
+## 20. References
 
 1. Farhi, Goldstone, and Gutmann, [“A Quantum Approximate Optimization Algorithm”](https://arxiv.org/abs/1411.4028), arXiv:1411.4028.
 2. Lucas, [“Ising formulations of many NP problems”](https://doi.org/10.3389/fphy.2014.00005), *Frontiers in Physics* (2014).
-3. IBM Quantum, [QAOA tutorial](https://quantum.cloud.ibm.com/docs/en/tutorials/quantum-approximate-optimization-algorithm) and [Qiskit `QAOAAnsatz` API](https://quantum.cloud.ibm.com/docs/en/api/qiskit/qiskit.circuit.library.QAOAAnsatz).
-4. Qiskit Aer, [`AerSimulator` reference](https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html).
-5. FastAPI, [official tutorial](https://fastapi.tiangolo.com/tutorial/).
-6. React, [official learning documentation](https://react.dev/learn/).
-7. Vite, [official guide](https://vite.dev/guide/).
+3. Egger, Mareček, and Woerner, [“Warm-starting quantum optimization”](https://quantum-journal.org/papers/q-2021-06-17-479/), *Quantum* 5, 479 (2021).
+4. IBM Quantum, [QAOA tutorial](https://quantum.cloud.ibm.com/docs/en/tutorials/quantum-approximate-optimization-algorithm) and [Qiskit `QAOAAnsatz` API](https://quantum.cloud.ibm.com/docs/en/api/qiskit/qiskit.circuit.library.QAOAAnsatz).
+5. Qiskit Aer, [`AerSimulator` reference](https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.AerSimulator.html).
+6. FastAPI, [official tutorial](https://fastapi.tiangolo.com/tutorial/).
+7. React, [official learning documentation](https://react.dev/learn/).
+8. Vite, [official guide](https://vite.dev/guide/).
