@@ -1,6 +1,6 @@
 # Reproducing the paired warm-start study
 
-> Integration note (24 October 2026): the 120-run JSON is an unchanged historical snapshot imported from `BloodFlow-Q1-codex-warm-qaoa-integration`. Its source hashes identify that study's original code, not this updated checkout. New runs record current source hashes and must use a fresh run ID. The broader October 23 research remains a separate study.
+> Integration note (24 October 2026): the 120-run JSON is an unchanged historical snapshot imported from the historical warm-start integration checkout. Its source hashes identify that study's original code, not this updated checkout. New runs record current source hashes and must use a fresh run ID. The broader October 23 research remains a separate study.
 
 
 From the repository root, activate the project's Python environment and run:

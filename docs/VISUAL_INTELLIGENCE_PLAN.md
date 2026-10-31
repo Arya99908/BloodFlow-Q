@@ -32,7 +32,6 @@ Proposed dark palette roles: charcoal `#111820` canvas, cyan `#22d3ee` quantum, 
 3. **Network and resource flows:** enhance `Network.jsx` and its current validator instead of replacing SVG. Compute fulfillment and remaining inventory from actual validated shipments. Share a conservation-preserving allocation-flow representation between the emergency and flagship views.
 4. **Clinical policy comparison:** retain `backend/flagship.py` policy engine. Run weighted and service-first policies against identical inputs; expose hospital fulfillment, shortages, stock remaining and transport costs. Use backend shortage explanations; avoid causal claims not justified by returned decision data.
 5. **Quantum inspector:** distinguish QAOA p, compiled depth, basis decomposition, sampled counts, exact statevector probabilities and physical execution. Show a recorded circuit only when operations exist; metadata alone cannot reconstruct a circuit. Separate supplementary resource fixtures from the selected live/saved run.
-6. **Foundation skills:** repository-specific scientific visualization, research integrity and browser QA skills live in `.agents/skills/`. Preserve other project instructions and contributor attribution.
 
 ## Research guardrails
 

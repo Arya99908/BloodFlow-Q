@@ -1,7 +1,6 @@
 # BloodFlow-Q: Integration Master Report
 
 **Date:** 2026-10-30  
-**Integration Lead:** Antigravity / Principal Software Architect & Quantum Optimization Lead  
 **Canonical Integration Workspace:** `C:\Users\HP\BloodFlow-Q-Integration`  
 **Integration Branch:** `integration/bloodflow-unified-2026`  
 **Target Repository:** `https://github.com/syedafnan7-lab/BloodFlow-Q1.git`
@@ -10,7 +9,7 @@
 
 ## 1. Executive Summary
 
-BloodFlow-Q has been successfully consolidated into a unified, verified, production-quality release candidate on branch `integration/bloodflow-unified-2026`. This consolidation synthesizes three weeks of intensive development across disparate branches and repositories authored by Rahul Arya AV (`Arya99908`), Shreesha KS (`Beezsy-del`), and Syed Afnan (`syedafnan7-lab`).
+BloodFlow-Q has been consolidated into an integration build on branch `integration/bloodflow-unified-2026`. The build combines work from branches and repositories maintained by Rahul Arya AV (`Arya99908`), Shreesha KS (`Beezsy-del`), and Syed Afnan (`syedafnan7-lab`).
 
 The resulting application establishes:
 1. **Mathematical & Algorithmic Rigor:** Verified continuous LP relaxation (HiGHS), warm-started QAOA with interpolated binary register encoding, XY-mixer gates, Hamiltonian normalization, and multi-restart variational parameter optimization.
@@ -35,7 +34,7 @@ The unified branch integrates verified source assets from the following Git refe
 | **Latest Hackathon Snapshot Sync** | `Beezsy-del/BloodFlow-Q` | `bloodflow-q-main-4` | `eddb537` | Shreesha KS |
 | **Comparative Evidence Explorer** | `Arya99908/BloodFlow-Q` | `main` | `753ddeb` | Arya |
 | **Emergency Demo Comparison Metrics** | `Arya99908/BloodFlow-Q` | `main` | `8abb206` | Rahul Arya AV |
-| **Dark Mode Route Card Styling** | `syedafnan7-lab/BloodFlow-Q1` | `codex/bloodflow-ui-refresh` | Working Tree | Syed Afnan |
+| **Dark Mode Route Card Styling** | `syedafnan7-lab/BloodFlow-Q1` | UI refresh (`b6dc312`) | Working Tree | Syed Afnan |
 | **Design Toolchain & Interoperability Audit** | `syedafnan7-lab/BloodFlow-Q1` | `round2-research` | Working Tree | Arya / Afnan |
 
 ---
@@ -102,4 +101,4 @@ The integration workspace was subjected to end-to-end verification:
 
 ## Optimization UI follow-up — 2026-10-30
 
-See [Optimization UI engineering report](OPTIMIZATION_UI_ENGINEERING_REPORT.md) for alert/theme root causes, responsive grid and dock clearance fixes, honest benchmark runtime/status semantics, tests, and Playwright MCP screenshots. Changes are locally verified and not yet deployed.
+See [Optimization UI engineering report](OPTIMIZATION_UI_ENGINEERING_REPORT.md) for alert/theme root causes, responsive grid and dock clearance fixes, honest benchmark runtime/status semantics, tests, and Playwright screenshots. Changes are locally verified and not yet deployed.

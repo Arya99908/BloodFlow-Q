@@ -1,7 +1,7 @@
 # BloodFlow-Q — UI/UX Design System, Redundancy Audit & Content Matrix
 
 ## Executive Summary
-This document audits the user experience, interaction quality, visual hierarchy, and cross-tab redundancy of **BloodFlow-Q**, establishing single-source-of-truth assignments and design standards across all routes.
+This report describes the purpose of each page, the shared visual conventions, and the places where repeated content can be reduced.
 
 ---
 
@@ -22,7 +22,7 @@ To prevent cognitive clutter and contradictory metrics, each major domain has a 
 
 ## 2. Design System & Interaction Hierarchy
 
-### A. Dark Mode & High-Contrast Cybernetics
+### A. Dark theme and contrast
 * **Background Surface**: Layered slate tokens (`--bg-surface: #0f172a`, `--bg-surface-elevated: #1e293b`).
 * **Accent & Feedback**:
   * Primary Action: Vibrant crimson / coral (`#ef233c`) for emergency actions.
@@ -31,10 +31,10 @@ To prevent cognitive clutter and contradictory metrics, each major domain has a 
 
 ### B. Reactive Interactions & Micro-Animations
 * **Animated Data Counters**: Numbers format with regional delimiters and tabular numerals (`font-variant-numeric: tabular-nums`) to prevent layout jank during transitions.
-* **Dock Navigation**: Floating Dock (`Dock.jsx`) features smooth magnification with dynamic tooltips and automatic label positioning that never collides with page content.
+* **Dock Navigation**: Floating Dock (`Dock.jsx`) features smooth magnification with dynamic tooltips and automatic label positioning with responsive positioning.
 * **Progressive Disclosure**: High-level findings and charts appear first; complete methodological details and raw measurement tables remain expandable on demand.
 
 ### C. Accessibility & Ergonomics
-* All buttons, selectors, and interactive cards provide explicit `aria-label`, `role="tab"`, and `aria-selected` attributes.
-* High keyboard operability with full `Enter` / `Space` / `Escape` key handling.
-* Full support for `prefers-reduced-motion: reduce`.
+* Interactive controls should provide appropriate `aria-label`, `role="tab"`, and `aria-selected` attributes.
+* Keyboard interactions use `Enter` / `Space` / `Escape` key handling.
+* Animations should respect `prefers-reduced-motion: reduce`.

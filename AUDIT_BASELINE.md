@@ -1,19 +1,18 @@
 # BLOODFLOW-Q: AUDIT BASELINE REPORT
 **Date:** 2026-10-08
-**Auditor Roles:** Quantum Computing Research Engineer, QUBO/Ising/QAOA Specialist, Optimization Engineer, Backend Architect, Verification Engineer
 **Objective:** Baseline audit of existing implementation, forensics, mathematical verification, defect identification, and repair plan.
 
 ---
 
 ## 1. EXECUTIVE SUMMARY & VERDICT
 
-BloodFlow-Q was subjected to an adversarial forensic and mathematical audit.
+BloodFlow-Q was subjected to an review of the implementation and mathematical formulation.
 
 **Preliminary Quantum Authenticity Rating:** **B+ (Genuine but with architectural and baseline enhancement opportunities)**
 
 ### What is REAL:
 1. **Mathematical QUBO Pipeline:** A genuine algebraic QUBO mapping exists in `quantum/qubo.py`. Variables are binary decompositions of shipment quantities, unmet demand, and inventory slack. The energy polynomial matches the classical objective plus squared constraint penalties.
-2. **Ising Hamiltonian Formulation:** A mathematically rigorous transformation from QUBO $x \in \{0, 1\}^n$ to Ising $z \in \{+1, -1\}^n$ ($x_i = (1 - z_i)/2$) is implemented in `quantum/ising.py`. The resulting operator is a Qiskit `SparsePauliOp` with correct linear $Z$, quadratic $ZZ$, and constant offset terms.
+2. **Ising Hamiltonian Formulation:** A transformation from QUBO $x \in \{0, 1\}^n$ to Ising $z \in \{+1, -1\}^n$ ($x_i = (1 - z_i)/2$) is implemented in `quantum/ising.py`. The resulting operator is a Qiskit `SparsePauliOp` with correct linear $Z$, quadratic $ZZ$, and constant offset terms.
 3. **QAOA Implementation:** A genuine parameterized quantum circuit ansatz is built in `quantum/qaoa_solver.py` ($H$-layer $\to$ alternating cost $R_z / R_{zz}$ and mixer $R_x$ layers $\to$ measurement). Angles $(\gamma, \beta)$ are optimized using classical optimizers (`COBYLA`, `Nelder-Mead`, `Powell`).
 4. **Local Quantum Simulator:** AerSimulator runs transpiled quantum circuits and generates shot counts. The best candidate bitstring is extracted from measurement distributions, reversed according to Qiskit classical register conventions, and evaluated.
 5. **Independent Feasibility Validation & No Hidden Repair:** The decoder (`optimization/decoder.py`) passes decoded candidates to `validate_allocation`. If a candidate is infeasible, **it is NOT secretly repaired**. Its violations are recorded and its unpenalized objective is explicitly labeled as infeasible.

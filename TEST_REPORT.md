@@ -1,4 +1,26 @@
-# BloodFlow-Q — Comprehensive Test Execution & Verification Report
+# BloodFlow-Q test report
+
+## Latest local validation — 2026-10-31
+
+The merged checkout passed 241 backend tests plus 21 subtests, and 83 frontend tests. The production build passed. Backend tests emitted two existing SciPy COBYLA budget warnings; Vite reported a chart chunk larger than 500 kB.
+
+Commands run from the repository root:
+
+```sh
+.venv/bin/python -m pytest -q
+npm test --prefix frontend
+VITE_API_BASE_URL=https://example.org npm run build --prefix frontend
+```
+
+The HTTPS origin above is a build-only placeholder. It is not a deployed API.
+
+Playwright checks covered research-tab switching and the donor, emergency-request, blood-bank, and quantum-lab routes. No page exceptions or failed local responses occurred during those checks. The synthetic donor form exposed four positive groups. At a 390 px viewport, the reports document width was also 390 px.
+
+Live database/RLS tests, physical quantum execution, cross-browser coverage, and a full scientific rerun were not part of this verification. Details are in [the integration record](docs/LOCAL_INTEGRATION_20261031.md).
+
+## Historical integration snapshot
+
+The sections below preserve the earlier integration report. Counts, timings, and environment details describe that snapshot, not the current checkout. A passing test count is not a code-coverage measurement.
 
 ## 1. Automated Test Suites Summary
 
@@ -51,7 +73,7 @@
 * `measurementValues.test.js`: 6 passed (clipboard async writes, measurement zero retention)
 * `dashboardAccess.test.js`: 5 passed (authorization codes, missing configuration diagnostics)
 * `alertCenter.test.js`: 3 passed (critical demand extraction, corridor cutoff detection)
-* `chatbot.test.js`: 7 passed (AI assistant prompts, quantum explanation, routing)
+* `chatbot.test.js`: 7 passed (chatbot responses, quantum explanation, routing)
 * `networkExplorer.test.js`: 10 passed (SVG coordinates, zoom anchors, 24x24 scalability)
 * `routing.test.js`: 2 passed (route resolution, 404 handler)
 * `apiService.test.js`: 2 passed (boundary forwarding, error codes)

@@ -58,15 +58,14 @@ The intended design is a restrained research console: neutral slate surfaces and
 
 ### Tool and component decisions
 
-- **Connected design services:** no TypeUI, Product Design, Miro, Figma, Penpot, or Vercel integration surfaced in the current Codex tool environment. No design file or board was supplied. This review therefore uses the equivalent product-flow map and design notes above; it does not claim those services were used.
-- **Primary UI foundation:** keep React 18, Vite, and the existing hand-authored CSS system. The frontend has no Tailwind configuration. shadcn/ui's current Vite instructions style components with Tailwind, and DaisyUI is a Tailwind plugin, so adding either would introduce a second styling foundation for no demonstrated gap. Use native project components and Radix primitives for focused accessible interactions.
+- **Primary UI foundation:** keep React, Vite, and the existing hand-authored CSS system. The frontend has no Tailwind configuration. shadcn/ui's current Vite instructions style components with Tailwind, and DaisyUI is a Tailwind plugin, so adding either would introduce a second styling foundation for no demonstrated gap. Use native project components and Radix primitives for focused accessible interactions.
 - **Existing specialized component:** `frontend/src/components/Tooltip.jsx` adapts Skiper UI's free Custom Tooltip using the already-installed Radix Tooltip package. Skiper documents that the free component permits personal/commercial use with attribution; the app footer currently links to Skiper UI. Keep that attribution if this implementation remains. Do not copy premium blocks or add its broader Tailwind/animation dependency set for this tooltip.
 - **Icons:** continue using the already-installed `lucide-react` family with consistent sizing and stroke width. Do not add another icon package.
 - **Research charts:** keep the current project-native CSS/HTML visualizations. They derive from validated backend responses or checked-in research artifacts, and their accessible labels expose measured values. Add a charting package only if a concrete chart cannot be expressed clearly with the existing approach.
 - **Motion:** keep state-driven CSS transitions; do not add a second animation framework. Respect `prefers-reduced-motion` and never animate fabricated solver progress or imply that motion is quantum execution.
 - **Storybook:** it is not installed and there is no `.storybook` setup. Defer it for this sprint: the key charts and comparison panels are application-specific and already have project tests for research metrics. Reconsider Storybook if the component set grows enough to justify maintaining a separate component harness; it must use the same component props and synthetic fixtures as the app.
 - **Design source of truth:** no Figma or Penpot artifact is currently connected. Keep CSS variables and working application components authoritative; adopt one design tool if the team later provides an approved design file, rather than maintaining duplicate systems.
-- **Preview deployment:** no Vercel connector surfaced here. Use the configured local Vite/API environment and production build for this pass. A preview deployment should be attempted only through the existing authorized project setup, never by publishing a production change just to inspect UI.
+- **Preview deployment:** use the local Vite/API environment for review. Publish previews through the configured project deployment process.
 
 ### Interaction and accessibility rules
 
@@ -77,8 +76,6 @@ The intended design is a restrained research console: neutral slate surfaces and
 
 ### References reviewed
 
-- [TypeUI Codex guide](https://www.typeui.sh/docs/guides/codex) (connection/setup guide; MCP not connected here)
-- [Product Design overview](https://openai.com/business/plugins/product-design/) (no capability available in this coding environment)
 - [shadcn/ui Vite installation](https://ui.shadcn.com/docs/installation/vite) and [manual setup](https://ui.shadcn.com/docs/installation/manual)
 - [DaisyUI introduction](https://daisyui.com/docs/intro/)
 - [Skiper Custom Tooltip and license](https://skiper-ui.com/v1/skiper101) and [Skiper quick start](https://www.skiper-ui.com/docs/quick-start)

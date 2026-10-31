@@ -1,7 +1,6 @@
 # BloodFlow-Q — Reports Dashboard Data Integrity & Backend Integration Audit
 
 **Document Version:** 1.0.0  
-**Author:** Principal Software Architect & Data Engineering Lead  
 **Audit Scope:** Reports Dashboard (`ExperimentReports.jsx`, `ResearchVisualDashboard.jsx`), Telemetry Service (`backend/reporting_service.py`), API Route (`backend/routes/reports.py`), Data Integrity Verification (`tests/test_reporting_telemetry.py`, `frontend/tests/reportingDataIntegrity.test.js`).
 
 ---
@@ -9,7 +8,7 @@
 ## 1. Executive Summary & Root Cause Analysis
 
 ### The Problem
-In the previous UI iteration, an executive visualization layer was created to mirror a reference design layout from Mokkup.ai. However, the data backing the KPI cards, availability combo chart, collected vs. used grouped bars, inflow/outflow curves, expiry heatmap, and regional stock breakdown table was driven by hardcoded mock objects (`INVENTORY_DATA` and `QUANTUM_TELEMETRY_DATA`).
+In the previous UI iteration, a reporting dashboard was created to mirror a reference design layout from Mokkup. However, the data backing the KPI cards, availability combo chart, collected vs. used grouped bars, inflow/outflow curves, expiry heatmap, and regional stock breakdown table was driven by hardcoded mock objects (`INVENTORY_DATA` and `QUANTUM_TELEMETRY_DATA`).
 
 These placeholder numbers displayed arbitrary values (e.g., 5,000 units of A+, 25.2K stock, fake quarterly percentages) that were completely disconnected from BloodFlow-Q's actual backend synthetic data fixtures (`data/blood_banks.json`, `data/hospitals.json`, `data/routes.json`), optimization results, and domain models.
 

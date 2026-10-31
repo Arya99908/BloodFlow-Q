@@ -32,7 +32,7 @@ has been recorded by the running backend process.
 
 The bundled scenario uses generic ABO labels (`O`, `A`, `B`, `AB`). The Blood
 Banks page displays those labels as returned and does not present them as
-Rh-specific groups such as `O-` or `O+`.
+Rh-specific groups. Donor coordination separately supports A+, B+, AB+, and O+.
 
 This interface is for synthetic aggregate logistics experiments only. It is
 not a clinical decision tool, and its simplified compatibility labels are not

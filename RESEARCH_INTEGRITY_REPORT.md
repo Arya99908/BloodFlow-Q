@@ -1,9 +1,9 @@
 # BloodFlow-Q — Research Integrity & Quantum Defensibility Report
 
 ## Executive Summary
-This document provides an unsparing, mathematically rigorous evaluation of the quantum optimization algorithms, classical baselines, and empirical results implemented in **BloodFlow-Q**.
+This report reviews the quantum formulation, classical baselines, and experimental results in BloodFlow-Q.
 
-The primary objective is **scientific credibility**: clearly distinguishing genuine mathematical achievements from promotional claims, documenting total unimodularity, disclosing hardware limitations, and ensuring full transparency for competition judges and peer reviewers.
+The review distinguishes measured results from claims, states the assumptions behind integrality, and records the limits of simulator-based experiments.
 
 ---
 

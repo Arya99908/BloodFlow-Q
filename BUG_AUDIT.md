@@ -1,7 +1,7 @@
-# BloodFlow-Q — Comprehensive Bug & Defect Audit
+# BloodFlow-Q — Bug audit
 
 ## Executive Summary
-This document records every concrete bug, edge case, calculation error, and race condition identified across the codebase and describes their root causes, remediations, and regression tests.
+This report records issues identified during integration, the fixes made, and the checks used to verify them.
 
 ---
 
@@ -20,7 +20,7 @@ This document records every concrete bug, edge case, calculation error, and race
 * **Verification**: Verified via `tests/test_reporting_telemetry.py` (all 7 suites passing) and `frontend/tests/reportingDataIntegrity.test.js`.
 
 ### Bug 3: FullReview Monolithic Table & Lack of Graphical Evidence
-* **Symptom**: The Full Review section presented 1,377 trials as a raw, static, unstyled HTML table, obscuring critical ablation insights and making scientific comparison impossible.
+* **Symptom**: The Full Review section presented 1,377 trials as a raw, static, unstyled HTML table, obscuring critical ablation insights and making comparisons harder to inspect.
 * **Root Cause**: The component was a legacy stub that simply iterated over `study.methods` without providing comparative visual dimensions, logarithmic scaling, or ablation breakdowns.
 * **Fix**: Transformed `FullReviewStudy.jsx` into a 4-tab interactive graphical evidence suite:
   1. 6-Solver Comparison with dynamic metric toggles (Feasible Shot Rate, Logarithmic Runtime, Optimality Gap).
@@ -44,4 +44,4 @@ This document records every concrete bug, edge case, calculation error, and race
 ---
 
 ## 2. Integrity Verification
-All 212 backend tests and 58 frontend automated tests pass without a single failure or regression.
+The integration snapshot reported 212 backend and 58 frontend tests passing. See [TEST_REPORT.md](TEST_REPORT.md) for the latest local validation.

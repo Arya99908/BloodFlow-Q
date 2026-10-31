@@ -9,13 +9,13 @@ The subsequent evidence/handover commit contains this report and browser artifac
 
 The requested Documents folder originally pointed at `Beezsy-del/BloodFlow-Q`, branch `evenmore-fix-and-heartbeat-additon`, commit `46693f6`, with 23 modified tracked files and 57 untracked files. All 80 contributions were preserved in local commit `6effd80` on `backup/documents-main-3-before-observatory`. They already existed on the integration branch; the only differing file lacked the integration branch's newer dark-theme CSS additions.
 
-Both repositories were fetched. `syedafnan7-lab/BloodFlow-Q1`, branch `integration/bloodflow-unified-2026`, was verified at `cfe11b1`, still its latest remote commit at inspection. The feature branch starts from that verified commit in the requested Documents folder. The Downloads copies were not modified by this mission.
+Both repositories were fetched. `syedafnan7-lab/BloodFlow-Q1`, branch `integration/bloodflow-unified-2026`, was verified at `cfe11b1`, still its latest remote commit at inspection. The feature branch starts from that verified commit in the requested Documents folder. The Downloads copies were not modified during this work.
 
 Read and checked the five integration/architecture/hardware/benchmark/attribution documents against actual code and artifacts. The actual frontend is React 19.3.1 and Vite 6, rather than the reported React 18. The app already had a history-based route registry, lazy pages, SVG network, independent allocation validator, optional Supabase pilot, and a clinical policy fixture. FastAPI's process isolation is production-only; its admission semaphore also applies in other modes. Those contracts and the optimizer mathematics were preserved. Contributor attribution remains unchanged.
 
-## Specialist findings and resulting changes
+## Findings and changes
 
-| Specialty | Finding | Resolution |
+| Area | Finding | Resolution |
 |---|---|---|
 | Architecture | Rich existing network, routing and policy interfaces; substantial local contributions | Preserved snapshot, based feature work on integration, extended existing components |
 | Research | Aggregate evidence insufficient for paired statistics; operational and encoded feasibility differ | Exported 1,410 raw observations with source hashes, metric definitions and independent fields |
@@ -24,34 +24,11 @@ Read and checked the five integration/architecture/hardware/benchmark/attributio
 | QA/security | Dashboard mixed custom/emergency results with default scenario; mobile switch hidden | Added validated scenario-aware dashboard adapter/regressions; fixed mobile CSS |
 | Browser QA | Network intrinsic overflow, stale after-state hover quantities, clipped Sankey, low-contrast emergency steps | Fixed and replayed real interactions in both themes and viewport sizes |
 
-Four specialist roles were fulfilled by three subagents, with the architecture auditor also performing the independent QA/security audit. Implementation ownership was separated across research extraction, network/policy flows, main observatory/inspector, and QA fixes.
-
-## Skills and MCP environment
-
-Existing global skills installed earlier in this session: Anthropic `frontend-design`, Vercel `web-design-guidelines`, official OpenAI `playwright`. The available skill catalog and official curated list were inspected. No unrelated collections were installed. Skill creation followed the explicitly invoked skill-creator/skill-installer guidance and writing-for-agents conventions.
-
-Created and validated with `quick_validate.py`:
-
-- `.agents/skills/bloodflow-scientific-visualization/SKILL.md`
-- `.agents/skills/bloodflow-research-integrity/SKILL.md`
-- `.agents/skills/bloodflow-browser-qa/SKILL.md`
-
-They contain actual project source paths, denominator/timing rules, paired-observation handling, snapshot conventions, and browser workflows. Existing instructions were preserved.
-
-| MCP | Configuration and verification |
-|---|---|
-| Playwright | Existing `npx -y @playwright/mcp@latest`; initialize/tools-list passed; actual Chromium browser interactions, screenshots and assertions executed through MCP |
-| Context7 | Existing `npx -y @upstash/context7-mcp@latest`; resolve-library-id/query-docs used for ECharts and Motion |
-| shadcn | Existing server preserved; initialization exposed seven tools in setup verification; no unnecessary component migration |
-| OpenAI Developer Docs | Added `https://developers.openai.com/mcp`; remote initialization and tools/list both returned HTTP 200 |
-
-These servers are in the existing global Codex config, without overwriting other configuration. They were not exposed as native tools in this running turn, so local MCP protocol clients were used for verification and browser work. A fresh Codex session can discover the configured servers normally. No authentication secrets were requested or invented.
-
 ## Library decision
 
 Added only Apache ECharts for statistical charts, using modular imports and SVG rendering, a ResizeObserver, theme observation and disposal. Existing Motion/GSAP and the SVG network remain. Plotly overlaps the required plotting functionality; D3 is lower-level than necessary; Cytoscape and React Flow would replace an already capable graph. No Figma integration was needed without a Figma source.
 
-References inspected: [ECharts modular usage](https://github.com/apache/echarts-doc/blob/master/en/tutorial/tree-shaking.md), [ECharts rendering](https://github.com/apache/echarts-doc/blob/master/en/tutorial/renderer.md), [Plotly](https://plotly.com/javascript/), [D3](https://d3js.org/what-is-d3), [Cytoscape](https://js.cytoscape.org/), [React Flow](https://reactflow.dev/), [Motion](https://motion.dev/docs/react), [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp).
+References inspected: [ECharts modular usage](https://github.com/apache/echarts-doc/blob/master/en/tutorial/tree-shaking.md), [ECharts rendering](https://github.com/apache/echarts-doc/blob/master/en/tutorial/renderer.md), [Plotly](https://plotly.com/javascript/), [D3](https://d3js.org/what-is-d3), [Cytoscape](https://js.cytoscape.org/), [React Flow](https://reactflow.dev/), [Motion](https://motion.dev/docs/react).
 
 Vite was updated within the existing compatible range from 6.4.4 to 6.4.5 to resolve the reported development dependency advisory. Final `npm audit` reports zero vulnerabilities.
 
@@ -116,10 +93,9 @@ Operational feasible-shot rate, strict equality feasibility probability and opti
 | Final frontend |**74 passed**, including 20 new adapter/data regressions |
 | Production build |Passed with explicit build-only HTTPS origin |
 | npm dependency audit |Zero vulnerabilities |
-| New skill validation |All three passed |
 | Real browser |Eight requested pages, 1440×1000 and 390×844, light/dark; final responsive checks passed |
 
-Raw outputs are in `output/validation/`. Browser manifests/transcripts, replayable reports/quantum MCP snippets and screenshots are in `output/playwright/`. Frontend tests use Node's test runner for contracts/adapters; component interactions are exercised in the real browser, not a separate React component-renderer test suite.
+Raw outputs are in `output/validation/`. Browser manifests/transcripts, replayable reports/quantum browser scripts and screenshots are in `output/playwright/`. Frontend tests use Node's test runner for contracts/adapters; component interactions are exercised in the real browser, not a separate React component-renderer test suite.
 
 Browser interactions included all six observatory views, all distribution metrics, runtime/resource selectors, scenario/family/solver filters, empty selection, JSON download, source links, tab keyboard navigation and point tooltip; all 15 execution examples and complete-count disclosure; dashboard refresh/pagination/quick optimize; Greedy/MILP executions and comparison; full-scenario QAOA resource rejection; actual flagship policies, emergency form/hold control, network filters/inspection/after-state, and the end-to-end handoff. No console errors or failed API responses were observed in final page checks. Development StrictMode caused expected aborted duplicate static requests, followed by successful loads.
 
@@ -181,9 +157,6 @@ The production-build origin above is deliberately non-working and used only to v
 `A` denotes a new file; `M` denotes an enhanced existing file. Browser artifacts and this handover are in the subsequent local evidence commit.
 
 ```text
-A	.agents/skills/bloodflow-browser-qa/SKILL.md
-A	.agents/skills/bloodflow-research-integrity/SKILL.md
-A	.agents/skills/bloodflow-scientific-visualization/SKILL.md
 M	docs/CLASSICAL_QUANTUM_BENCHMARKS.md
 M	docs/QUANTUM_HARDWARE_READINESS.md
 M	docs/UNIFIED_ARCHITECTURE.md

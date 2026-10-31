@@ -3,7 +3,6 @@
 **Date:** 2026-10-18  
 **Repository:** `https://github.com/Beezsy-del/BloodFlow-Q`  
 **Branch:** `quantum-optimizer-fix`  
-**Author / Auditor:** Principal Full-Stack Architect & Quantum Optimization Specialist  
 
 ---
 

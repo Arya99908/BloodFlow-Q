@@ -2,13 +2,12 @@
 
 **Audit Date:** 2026-10-08
 **Audit Scope:** End-to-end mathematical, quantum-circuit, algorithmic, baseline, and backend verification.
-**Auditor Roles:** Quantum Computing Research Engineer, QUBO/Ising Specialist, Optimization & Verification Engineer.
 
 ---
 
 ## 1. EXECUTIVE SUMMARY & VERDICT
 
-An adversarial forensic and mathematical audit was conducted on the **BloodFlow-Q** quantum optimization system. Every reported metric, algebraic mapping, circuit gate, and baseline result was independently reproduced from a clean environment without assuming prior ratings as evidence.
+An review of the implementation and mathematical formulation was conducted on the **BloodFlow-Q** quantum optimization system. Every reported metric, algebraic mapping, circuit gate, and baseline result was independently reproduced from a clean environment without assuming prior ratings as evidence.
 
 ### Classification:
 $$\mathbf{QUANTUM-DEFENSIBLE \; WITH \; MAJOR \; LIMITATIONS}$$
@@ -18,7 +17,7 @@ $$\mathbf{8.8 \;/\; 10}$$
 
 ### Summary Verdict:
 BloodFlow-Q is an **authentic, mathematically grounded, and transparent hybrid quantum optimization system**, but operates under real-world NISQ and local simulation limitations.
-- **Authentic Quantum Pipeline:** Formulates a mathematically rigorous QUBO, maps it exactly to an Ising Hamiltonian $H_C$, executes a parameterized QAOA circuit ($H \to [U_C(\gamma) U_M(\beta)]^p \to \text{Measure}$) on Qiskit Aer simulator, optimizes angles via classical minimization, and samples shots from the quantum state distribution.
+- **Authentic Quantum Pipeline:** Formulates a QUBO, maps it exactly to an Ising Hamiltonian $H_C$, executes a parameterized QAOA circuit ($H \to [U_C(\gamma) U_M(\beta)]^p \to \text{Measure}$) on Qiskit Aer simulator, optimizes angles via classical minimization, and samples shots from the quantum state distribution.
 - **Zero Mocking, Zero Hardcoding:** Does not fake quantum metrics, hardcode bitstrings, or substitute classical answers under the QAOA label.
 - **Strict Separation of Pipeline Stages (Zero Hidden Repair):**
   $$\text{Raw Quantum Bitstring} \longrightarrow \text{Decoded Candidate} \longrightarrow \text{Independent Validation} \longrightarrow \text{Unmodified Operational Result}$$
