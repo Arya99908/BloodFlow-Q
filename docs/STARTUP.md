@@ -114,6 +114,6 @@ Qiskit Aer is tested through its supported `AerSimulator` backend workflow (`Qua
 
 This project uses synthetic logistics scenarios only. It is not a clinical system. See [docs/SECURITY_AND_SAFETY.md](SECURITY_AND_SAFETY.md).
 
-## 24 October 2026 audit environment
+## Benchmark verification environment
 
-The current checkout is `/Users/shreeshaks/Documents/BloodFlow-Q-main 3`. That validation run reused the existing neighboring `../BloodFlow-Q1/.venv/bin/python` rather than installing another environment. Its measured benchmark versions are recorded in `experiments/results/full_review_20261024/production_v2/protocol.json`; they supersede the historical versions above. For a portable fresh setup, use this project's `./setup.sh` and `.venv` commands. The current local frontend is http://127.0.0.1:5173 and API is http://127.0.0.1:8000.
+Measured benchmark versions and dependency environments are recorded in `experiments/results/full_review_20261024/production_v2/protocol.json`. For a portable fresh setup, use this project's `./setup.sh` and standard `.venv` commands. By default, the local frontend runs at http://127.0.0.1:5173 and the API at http://127.0.0.1:8000.

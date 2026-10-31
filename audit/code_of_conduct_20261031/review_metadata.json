@@ -1,0 +1,8 @@
+{
+  "code_of_conduct_file": "/Users/shreeshaks/Downloads/Q-Hack_India_2026_Code_of_Conduct.html",
+  "sha256": "302c426f78fccc4c32aad5bf03f9bbb0fa7c7943da31c12c74823aca35375706",
+  "reviewed_revision": "4d168ea1221fc42e511ff693d8fb0b99e7d7194f",
+  "tests": "25 passed, 9 subtests passed: test_donor_network_migration.py, test_donor_matching.py, test_reporting_telemetry.py",
+  "user_attestation": "Round 2 and finale; accepted Round 1 project; all contributors registered on same team; no connection to organising team or judges. Self-reported, not independently verified.",
+  "review_date": "2026-10-31"
+}

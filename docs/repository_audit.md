@@ -1,6 +1,6 @@
 # Repository, contributor and application audit
 
-Audit date: 24 October 2026. Baseline: `ebd8f30c628f48ca28230c72e2a0c8b950bec2fc` on `somemore-QAOA-fix`. The baseline working tree was clean. Work was performed in `/Users/shreeshaks/Documents/BloodFlow-Q-main 3`, whose `origin` is `https://github.com/Beezsy-del/BloodFlow-Q`; similarly named neighboring folders were not treated as this checkout. This document separates source inspection, live HTTP observations, automated checks, and unverified browser/private-service behavior.
+Audit date: 24 October 2026. Baseline: `ebd8f30c628f48ca28230c72e2a0c8b950bec2fc` on `somemore-QAOA-fix`. The baseline working tree was clean. Work was performed in repository `Beezsy-del/BloodFlow-Q`. This document separates source inspection, live HTTP observations, automated checks, and unverified browser/private-service behavior.
 
 ## Repository state and accessible history
 

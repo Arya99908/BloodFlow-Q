@@ -1,7 +1,7 @@
-# BloodFlow-Q — Research Integrity & Quantum Defensibility Report
+# BloodFlow-Q — Research Evaluation & Problem Formulation
 
-## Executive Summary
-This report reviews the quantum formulation, classical baselines, and experimental results in BloodFlow-Q.
+## Overview
+This report reviews the optimization formulation, classical baselines, and experimental results in BloodFlow-Q.
 
 The review distinguishes measured results from claims, states the assumptions behind integrality, and records the limits of simulator-based experiments.
 
@@ -17,10 +17,10 @@ subject to:
 3. **Route Capacity**: $\sum_{g} x_{ij}^g \le C_{ij} \quad \forall (i, j) \in E$
 4. **Integrality**: $x_{ij}^g \in \mathbb{Z}_{\ge 0}, \quad u_j^g \in \mathbb{Z}_{\ge 0}$
 
-### Total Unimodularity (TUM) Disclosure
+### Total Unimodularity (TUM) Analysis
 * **Theorem**: When route capacities $C_{ij}$ are unconstrained or bipartite, the constraint matrix of the single-period transportation problem is **totally unimodular**.
 * **Direct Implication**: The extreme points of the continuous LP relaxation polytope are **strictly integral**. Consequently, standard simplex / interior-point LP algorithms directly identify the integer-optimal solution in polynomial time ($< 1$ ms) without requiring branch-and-bound cuts.
-* **Scientific Stance**: BloodFlow-Q explicitly discloses this mathematical reality in its research UI and documentation. We do not manufacture artificial hardness or claim quantum superiority over problems that classical linear programming already solves to global optimality in sub-millisecond time.
+* **Implications for Evaluation**: BloodFlow-Q evaluates the formulation against classical linear programming and MILP baselines, recognizing that single-period bipartite transportation formulations are solvable to integer optimality by classical solvers in sub-millisecond time without manufacturing artificial hardness.
 
 ---
 

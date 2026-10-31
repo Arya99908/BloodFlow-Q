@@ -1,7 +1,6 @@
-# BloodFlow-Q: Integration Master Report
+# BloodFlow-Q: Integration Report
 
 **Date:** 2026-10-30  
-**Canonical Integration Workspace:** `C:\Users\HP\BloodFlow-Q-Integration`  
 **Integration Branch:** `integration/bloodflow-unified-2026`  
 **Target Repository:** `https://github.com/syedafnan7-lab/BloodFlow-Q1.git`
 

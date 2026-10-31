@@ -1,7 +1,7 @@
-# BloodFlow-Q — Bug audit
+# BloodFlow-Q — Issue and defect resolution log
 
-## Executive Summary
-This report records issues identified during integration, the fixes made, and the checks used to verify them.
+## Overview
+This report records technical issues identified during development, the fixes made, and the regression tests used to verify them.
 
 ---
 

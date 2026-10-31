@@ -1,7 +1,7 @@
-# BloodFlow-Q — Repository audit and consolidation
+# BloodFlow-Q — Repository integration record
 
-## Executive Overview
-This report summarizes the branches reviewed, their main features, and the decisions made during integration.
+## Overview
+This document summarizes the branches reviewed, their main features, and the integration decisions.
 
 Repository inspected: `https://github.com/syedafnan7-lab/BloodFlow-Q1`
 

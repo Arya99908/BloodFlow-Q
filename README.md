@@ -243,3 +243,7 @@ The simplified compatibility rules must be checked against authoritative transfu
 5. FastAPI, [official tutorial](https://fastapi.tiangolo.com/tutorial/).
 6. React, [official learning documentation](https://react.dev/learn/).
 7. Vite, [official guide](https://vite.dev/guide/).
+
+## 19. Q-Hack submission integrity
+
+For Round 2 and the finale, read the [conduct review](docs/QHACK_CODE_OF_CONDUCT_REVIEW.md), [AI and submission disclosure](docs/QHACK_SUBMISSION_DISCLOSURE.md), and [third-party attribution inventory](docs/THIRD_PARTY_ATTRIBUTIONS.md). The premium promotional film is not cleared as a standalone submission demo: the official event FAQ requires a real team-member-recorded demonstration and voiceover. Complete the remaining provenance declarations before submitting.

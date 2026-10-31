@@ -1,8 +1,8 @@
 import { api } from './api.js';
 
 /**
- * Client-side domain reasoning engine that powers the BloodFlow-Q AI Copilot.
- * Ensures the assistant works smoothly whether the backend API is online or offline.
+ * Client-side query engine for BloodFlow-Q logistics exploration.
+ * Supports scenario queries and solver navigation.
  */
 export async function askAiAssistant(message, history = [], context = {}) {
   // 1. Try backend /chat endpoint first
@@ -202,7 +202,7 @@ BloodFlow-Q provides 4 complementary allocation solvers:
 
   // 8. General Greeting / Assistance
   citations.push(`BloodFlow-Q v0.1.0 Synthetic Research Environment`);
-  const reply = `Hello! I am **Q-Bot**, your **BloodFlow-Q Logistics Intelligence Copilot** 🤖.
+  const reply = `Hello! I am your **BloodFlow-Q Logistics Assistant**.
 
 I monitor your live supply network:
 - **Supply:** ${totalStock.toLocaleString()} units stored across ${banks.length} blood banks

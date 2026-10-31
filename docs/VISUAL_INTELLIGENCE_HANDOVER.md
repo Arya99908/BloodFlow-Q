@@ -1,6 +1,6 @@
 # BloodFlow-Q visual intelligence release handover
 
-Date: 2026-10-30. Workspace: `/Users/shreeshaks/Documents/BloodFlow-Q-main 3`.
+Date: 2026-10-30.
 
 Implementation commit: `569e65e`. Branch: `feat/visual-intelligence-observatory`.
 The subsequent evidence/handover commit contains this report and browser artifacts; use `git log -1 --oneline` for its hash. No push, merge into main, deployment, or database mutation was performed.
@@ -123,7 +123,7 @@ Focused captures include distributions, paired seeds, policy flows, emergency fl
 The project-local `.venv` and frontend packages are installed. The app was restarted successfully using its own development script.
 
 ```bash
-cd '/Users/shreeshaks/Documents/BloodFlow-Q-main 3'
+cd BloodFlow-Q
 ./dev.sh
 ```
 

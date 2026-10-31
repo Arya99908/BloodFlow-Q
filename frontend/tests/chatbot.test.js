@@ -81,9 +81,9 @@ test('AI Assistant handles theme toggle action request', () => {
   assert.ok(res.suggested_actions.some((a) => a.type === 'theme'));
 });
 
-test('AI Assistant fallback provides helpful greeting with prompt chips', () => {
+test('Logistics Assistant fallback provides helpful greeting with prompt chips', () => {
   const res = generateClientDomainResponse('Hello', { scenario: mockScenario });
 
-  assert.ok(res.reply.includes('Q-Bot'));
+  assert.ok(res.reply.includes('Logistics Assistant'));
   assert.ok(res.suggested_actions.length > 0);
 });

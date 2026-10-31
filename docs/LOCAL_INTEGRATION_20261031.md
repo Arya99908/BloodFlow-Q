@@ -1,6 +1,5 @@
 # Local unified integration — 2026-10-31
 
-Working checkout: `/Users/shreeshaks/Documents/BloodFlow-Q-main 3`.
 Working branch: `integration/main3-unified-cleanup-2026`.
 
 ## Preservation and merge

@@ -1,4 +1,4 @@
-"""AI Assistant / Chatbot endpoint for BloodFlow-Q logistics intelligence."""
+"""Domain query and assistance endpoint for BloodFlow-Q logistics."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ class ChatResponse(BaseModel):
 
 
 def _generate_domain_response(message: str, scenario_dict: dict[str, Any], history: list[ChatMessage]) -> ChatResponse:
-    """Intelligent domain reasoning engine for BloodFlow-Q logistics."""
+    """Domain response generator for scenario logistics queries."""
     msg = message.lower().strip()
     banks = scenario_dict.get("blood_banks", [])
     hospitals = scenario_dict.get("hospitals", [])
@@ -191,7 +191,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
     else:
         citations.append(f"BloodFlow-Q v0.1.0 Synthetic Environment ({len(banks)} banks, {len(hospitals)} hospitals)")
         reply = (
-            f"Hello! I am your **BloodFlow-Q Logistics Intelligence Copilot** 🤖.\n\n"
+            f"Hello! I am your **BloodFlow-Q Logistics Assistant**.\n\n"
             f"I have direct visibility into the current synthetic supply scenario:\n"
             f"- **Supply:** {total_stock:,} blood units across {len(banks)} blood banks\n"
             f"- **Demand:** {total_demand:,} units requested by {len(hospitals)} hospitals ({critical_demand:,} high/critical priority)\n"
@@ -215,7 +215,7 @@ def _generate_domain_response(message: str, scenario_dict: dict[str, Any], histo
 
 @router.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest, service=Depends(get_service)):
-    """Handles conversational questions with live scenario context and LLM fallback."""
+    """Handles scenario queries with live network context."""
     scenario = service.get_scenario()
     if isinstance(scenario, dict):
         scenario_dict = scenario

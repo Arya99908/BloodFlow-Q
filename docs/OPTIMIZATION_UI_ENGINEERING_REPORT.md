@@ -1,6 +1,6 @@
 # Optimization UI and semantic-theme engineering report
 
-Implemented locally on 2026-10-30 in `BloodFlow-Q-main 3`, starting from `6e06f50`. These changes are not deployed. The production screenshot and reproduction were from `https://bloodflow-q.vercel.app/optimization`; after-fix verification used Vite on port 5173 and the actual local API on port 8000. The deployed build has older explanatory copy than this checkout.
+Implemented on 2026-10-30, starting from `6e06f50`. These changes are not deployed. The production screenshot and reproduction were from `https://bloodflow-q.vercel.app/optimization`; after-fix verification used Vite on port 5173 and the actual local API on port 8000. The deployed build has older explanatory copy than this checkout.
 
 ## Root causes and corrections
 

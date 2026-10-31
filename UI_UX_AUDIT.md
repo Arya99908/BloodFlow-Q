@@ -1,7 +1,7 @@
-# BloodFlow-Q — UI/UX Design System, Redundancy Audit & Content Matrix
+# BloodFlow-Q — UI/UX Design System and Navigation Guide
 
-## Executive Summary
-This report describes the purpose of each page, the shared visual conventions, and the places where repeated content can be reduced.
+## Overview
+This document describes the structure of each page, the shared visual conventions, and navigation boundaries.
 
 ---
 

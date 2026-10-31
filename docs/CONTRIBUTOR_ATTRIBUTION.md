@@ -3,7 +3,7 @@
 **Date:** 2026-10-30  
 **Integration Reference:** `integration/bloodflow-unified-2026`
 
-This document records the main contributions to the allocation model, solvers, frontend, and coordination workflows.
+This document records the main contributions to the allocation model, solvers, frontend, and coordination workflows. These credits identify contributor responsibilities; they do not assert that no AI assistance or third-party material was used. See [the submission disclosure](QHACK_SUBMISSION_DISCLOSURE.md) for confirmed assistance and remaining provenance checks.
 
 ---
 
