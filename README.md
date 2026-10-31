@@ -4,6 +4,22 @@
 
 All bundled scenarios and experiment data are synthetic. BloodFlow-Q is an operational logistics research prototype and not a clinical transfusion decision system.
 
+## App Demo
+
+Watch the BloodFlow-Q product introduction: a tour of the allocation workspace, network, solver workflow, and research evidence.
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/Beezsy-del/BloodFlow-Q/statics-update/docs/media/BloodFlow-Q_Product_Introduction.mp4">
+    <img src="docs/media/bloodflow-q-preview.gif" width="800" alt="BloodFlow-Q product introduction — click to watch the full video" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/Beezsy-del/BloodFlow-Q/statics-update/docs/media/BloodFlow-Q_Product_Introduction.mp4"><strong>Watch the full introduction</strong></a> · 1 min 22 sec · 1080p · MP4
+</p>
+
+The animated preview is a short excerpt; the full video includes audio.
+
 ## Start with the competition demonstration
 
 Open **Demo mode** from the home page. The two-bank/two-hospital scenario makes stock competition, route disruption, and policy trade-offs explicit. Compare service-first and weighted-cost policies, then run MILP/Exact/Greedy, standard/warm/XY QAOA and a genuine seed-only control. Export the complete synthetic plan, settings, shortage explanations and failures.
