@@ -285,10 +285,12 @@ presenting measured results and limitations accurately.
 
 ## 19. Team
 
-- **Rahul Arya AV** ([@Arya99908](https://github.com/Arya99908))
-- **Shreesha KS** ([@Beezsy-del](https://github.com/Beezsy-del))
-- **Syed Afnan** ([@syedafnan7-lab](https://github.com/syedafnan7-lab))
-- **Shishir Patil** ([@shishir7patil-arch](https://github.com/shishir7patil-arch))
+| Team member | Role | Technical responsibilities |
+| --- | --- | --- |
+| **Rahul Arya AV** ([@Arya99908](https://github.com/Arya99908)) | **Team Lead & Technical Coordinator** | Coordinates technical planning, task ownership, subsystem integration, and release readiness across the optimization, backend, and frontend workstreams. |
+| **Syed Afnan** ([@syedafnan7-lab](https://github.com/syedafnan7-lab)) | **UI/UX Designer & Frontend Experience Engineer** | Designs application workflows, responsive layouts, interface components, and research visualizations, with a focus on navigation, accessibility, and clear presentation of solver results. |
+| **Shishir Patil** ([@shishir7patil-arch](https://github.com/shishir7patil-arch)) | **Software Reliability & Code Structure Engineer** | Investigates and fixes defects, refactors module structure, improves component and service organization, and checks regression behavior across application workflows. |
+| **Shreesha K S** ([@Beezsy-del](https://github.com/Beezsy-del)) | **Quantum Optimization Engineer — Warm-Start QAOA & XY Mixers** | Integrates LP-informed warm-start state preparation into the QAOA pipeline and implements XY-mixer circuit variants, with attention to parameter initialization, excitation-preserving evolution, and comparative solver validation. |
 
 ## 20. References
 
