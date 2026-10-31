@@ -43,6 +43,18 @@ export default function Home({ onNavigate, researcherName = '', theme = 'light' 
       </div>
       <div className="home-hero-visual" aria-hidden="true"><MagicRings className="home-magic-rings" color="#e71e61" colorTwo="#3aa5a0" ringCount={7} motion="pulse" speed={0.45} lineThickness={1.5} glow={1.1} baseRadius={0.29} radiusStep={0.105} rotation={-18} tilt={23} opacity={0.85} followMouse={false} clickBurst={false} intro theme={theme} /><div className="home-visual-orbit orbit-one" /><div className="home-visual-orbit orbit-two" /><TiltedCard className="home-visual-tilt" imageSrc="/bloodflow-q-logo.webp" altText="BloodFlow-Q quantum logistics mark" containerWidth="190px" containerHeight="190px" imageWidth="160px" imageHeight="160px" rotateAmplitude={9} glare={0.28} shadow={0.26} parallax={0.3} showTooltip={false} intro={false} /><div className="home-visual-label"><i /> NETWORK MODEL <b>v2.001</b></div></div>
     </section>
+    <section className="home-introduction" aria-labelledby="home-introduction-title">
+      <div className="home-introduction-copy">
+        <span className="eyebrow">PRODUCT WALKTHROUGH</span>
+        <h2 id="home-introduction-title">See how BloodFlow-Q works</h2>
+        <p>A short tour of the synthetic allocation workspace, network view, solver pipeline, and experiment reports.</p>
+        <span className="home-introduction-note"><ShieldCheck size={15} /> Research demonstration using synthetic data</span>
+      </div>
+      <video className="home-introduction-video" controls preload="none" playsInline poster="/media/bloodflow-q-preview.gif" aria-label="BloodFlow-Q product introduction video">
+        <source src="/media/BloodFlow-Q_Product_Introduction.mp4" type="video/mp4" />
+        Your browser does not support embedded video. Use the product introduction link in the project README.
+      </video>
+    </section>
     <section className="home-explore" aria-labelledby="home-explore-title">
       <div className="home-section-heading"><div><span className="eyebrow">RESEARCH WORKSPACE</span><h2 id="home-explore-title">Where would you like to begin?</h2></div><span>Choose a workspace to explore</span></div>
       <div className="home-destination-grid">{destinations.map(({ id, icon: Icon, eyebrow, title, detail }, index) => <BorderGlow key={id} className="home-destination-glow" backgroundColor={theme === 'dark' ? '#202438' : '#ffffff'} borderRadius={15} glowRadius={10} glowColor="350 82 62" colors={['#e71e61', '#3aa5a0', '#0b3c65']}><button className="home-destination-card" onClick={() => onNavigate(id)}><span className="home-destination-number">0{index + 1}</span><span className="home-destination-icon"><Icon size={20} /></span><span className="home-destination-copy"><small>{eyebrow}</small><strong>{title}</strong><span>{detail}</span></span><ArrowRight className="home-destination-arrow" size={17} /></button></BorderGlow>)}</div>

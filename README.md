@@ -4,11 +4,27 @@
 
 All bundled scenarios and experiment data are synthetic. BloodFlow-Q is an operational logistics research prototype and not a clinical transfusion decision system.
 
+## Product introduction
+
+The short product tour previews the allocation workspace, network, solver workflow, and research evidence.
+
+<p align="center">
+  <a href="https://bloodflow-q.vercel.app/media/BloodFlow-Q_Product_Introduction.mp4">
+    <img src="frontend/public/media/bloodflow-q-preview.gif" width="800" alt="BloodFlow-Q product introduction preview. Select to watch the full video." />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://bloodflow-q.vercel.app/media/BloodFlow-Q_Product_Introduction.mp4"><strong>Watch the full introduction</strong></a> · MP4
+</p>
+
+The animated preview is a short excerpt; the full video includes audio.
+
 ## Start with the competition demonstration
 
 Open **Demo mode** from the home page. The new two-bank/two-hospital story makes stock competition, route disruption, and policy trade-offs explicit. Compare service-first and weighted-cost policies, then run MILP/Exact/Greedy, standard/warm/XY QAOA and a genuine seed-only control. Export the complete synthetic plan, settings, shortage explanations and failures.
 
-See [the three-minute demo and evidence guide](docs/COMPETITION_DEMO.md). This new implementation does not retroactively change the historical results below. No quantum advantage or clinical validation is claimed.
+See [the three-minute demo and evidence guide](docs/COMPETITION_DEMO.md). The demo does not retroactively change the historical results below. No quantum advantage or clinical validation is claimed.
 
 ## 1. One-line pitch
 
@@ -28,12 +44,12 @@ BloodFlow-Q delivers an end-to-end optimization and decision-support system feat
 - **Unified FastAPI & Python Engine:** Orchestrates scenario modeling, constraint validation, and solver execution.
 - **Multi-Algorithm Baseline Suite:** Solves allocations using deterministic Greedy, classical MILP (SciPy HiGHS, with explicit solve limits), and exhaustive Exact search for small instances.
 - **Hybrid Quantum Pipeline:** Formulates allocations as a Quadratic Unconstrained Binary Optimization (QUBO) model mapped to an Ising Hamiltonian, sampled via parameterized QAOA circuits on Qiskit Aer.
-- **Zero-Cheating Classical Validator:** Decodes raw quantum bitstrings and rigorously verifies candidate allocations against inventory and compatibility rules—without hidden repairs.
+- **Independent feasibility validation:** Decodes sampled bitstrings and checks candidate allocations against inventory and compatibility rules. Any repair is reported separately.
 - **Dynamic Emergency Simulation:** Simulates demand shocks and route disruptions, computing real-time before-and-after reallocation metrics.
 
 ## 5. Why quantum
 
-Resource allocation with quadratic penalties maps naturally to Ising spin glasses and Quantum Approximate Optimization Algorithms (QAOA). By encoding multi-commodity constraints directly into the problem Hamiltonian $H_C$, we explore how alternating quantum phase-separation and mixer unitaries navigate constrained logistics landscapes, establishing a rigorous, reproducible benchmark for near-term quantum optimization.
+The allocation objective and constraint penalties can be encoded as a QUBO and converted to an Ising Hamiltonian. QAOA samples candidate allocations from that model. The experiments compare those samples with classical baselines to measure feasibility, objective quality, and runtime. This encoding alone does not establish that quantum computation is needed or faster.
 
 ## 6. Architecture
 
